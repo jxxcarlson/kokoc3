@@ -1,4 +1,4 @@
-module Document exposing(..)
+module Document exposing(Document, getDocument, DocMsg(..))
 
 import Dict exposing(Dict)
 import Time exposing(Posix)
@@ -83,7 +83,7 @@ type TextType
 
 -- MSG
 
-type DocumentMsg = 
+type DocMsg = 
   ReceiveDocument (Result Http.Error DocumentRecord)
 
 -- DECODERS
@@ -100,9 +100,9 @@ documentDecoder =
         |> JPipeline.required "id" Decode.int
         |> JPipeline.required "identifier" Decode.string
 
-        |> JPipeline.required "author_id" Decode.int
-        |> JPipeline.required "author_identifier" Decode.string
-        |> JPipeline.required "author_name" Decode.string
+        |> JPipeline.required "authorId" Decode.int
+        |> JPipeline.required "authorIdentifier" Decode.string
+        |> JPipeline.required "authorName" Decode.string
 
         |> JPipeline.required "title" Decode.string
         |> JPipeline.required "content" Decode.string
@@ -114,11 +114,11 @@ documentDecoder =
         |> JPipeline.required "tags" (Decode.list Decode.string)
 
         |> JPipeline.required "children" (Decode.list decodeChild)
-        |> JPipeline.required "parent_id" Decode.int
-        |> JPipeline.required "parent_title" Decode.string
+        |> JPipeline.required "parentId" Decode.int
+        |> JPipeline.required "parentTitle" Decode.string
 
-        |> JPipeline.required "text_type" (Decode.string |> Decode.andThen decodeTextType)
-        |> JPipeline.required "doc_type" (Decode.string |> Decode.andThen decodeDocType)
+        |> JPipeline.required "textType" (Decode.string |> Decode.andThen decodeTextType)
+        |> JPipeline.required "docType" (Decode.string |> Decode.andThen decodeDocType)
         
         |> JPipeline.required "archive" Decode.string
         |> JPipeline.required "version" Decode.int
@@ -174,13 +174,36 @@ decodeChild =
         |> JPipeline.required "comment" (Decode.string)
 
 
+-- decodeHttpResponse : Decoder (Http.Response Document)
+-- decodeHttpResponse = 
+--   Decode.succeed (Http.Response Document)
+--     |> JPipeline.required "url" Decode.string
+--     |> JPipeline.required "status" (Decode.string |> Decode.andThen decodeHttpStatus)
+--     |> JPipeline.required "headers" (Decode.dict Decode.string)
+--     |> JPipeline.required "body" documentDecoder
+
+-- type alias Status = 
+--   {  code: Int
+--      , message: String 
+--   }
+
+-- decodeHttpStatus : Decoder (Http.Response Document)
+-- decodeHttpStatus = 
+--   Decode.succeed Status
+--     |> JPipeline.required "code" Decode.int
+--     |> JPipeline.required "message" Decode.string
+
+
 -- REQUEST
 
 getDocumentRequest : Int -> String -> Http.Request DocumentRecord
 getDocumentRequest id token = 
   Http.request
     { method = "Get"
-    , headers = [Http.header "Authorization" ("Bearer " ++ token)]
+    , headers = [
+          Http.header "Authorization" ("Bearer " ++ token)
+        , Http.header "APIVersion" "V2"
+    ]
     , url = Configuration.backend ++ "/api/documents/" ++ (String.fromInt id)
     , body = Http.jsonBody Encode.null
     , expect = Http.expectJson documentRecordDecoder
@@ -188,6 +211,6 @@ getDocumentRequest id token =
     , withCredentials = False
     }
 
-getDocument : Int  -> String -> Cmd DocumentMsg 
+getDocument : Int  -> String -> Cmd DocMsg 
 getDocument id token =
     Http.send ReceiveDocument <| getDocumentRequest id token

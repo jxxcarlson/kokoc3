@@ -2,6 +2,7 @@ module User exposing(
      Token
    , defaultToken
    , getToken
+   , readToken
    , UserMsg(..)) 
 
 
@@ -23,6 +24,11 @@ type Token =
 defaultToken : Token 
 defaultToken =
   Token "invalid" 
+
+readToken : Token -> String 
+readToken token = 
+  case token of 
+    Token str -> str
 
 
 -- MSG

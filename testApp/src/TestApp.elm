@@ -5,7 +5,6 @@ module TestApp exposing (main)
 import Browser
 import Html
 import Http
-import User exposing(Token, UserMsg(..))
 import Widget exposing(..)
 
 import Element exposing (..)
@@ -14,6 +13,9 @@ import Element.Font as Font
 import Element.Input as Input
 import Element.Border as Border
 import Element.Lazy
+
+import User exposing(Token, UserMsg(..), readToken)
+import Document exposing(Document, getDocument, DocMsg(..))
 
 
 main =
@@ -42,7 +44,9 @@ type Msg
     | AcceptPassword String
     | ReverseText
     | GetToken
+    | GetDocument Int
     | UserMsg User.UserMsg
+    | DocMsg Document.DocMsg
 
 
 -- INIT
@@ -82,9 +86,32 @@ update msg model =
             Err err -> 
                 ({model | message = "Token error"},   Cmd.none  )
 
+        DocMsg (ReceiveDocument result)->
+          case result of 
+            Ok document -> 
+               ({ model | message = "document OK"},   Cmd.none  )
+            Err err -> 
+                ({model | message = handleHttpError err},   Cmd.none  )
+
         GetToken ->
-           (model,   Cmd.map UserMsg (User.getToken "jxxcarlson@gmail.com" model.password)  )
+           (model, Cmd.map UserMsg (User.getToken "jxxcarlson@gmail.com" model.password)  )
+
+        GetDocument id ->
+           (model, Cmd.map DocMsg (Document.getDocument id (readToken model.token)))
         
+
+handleHttpError : Http.Error -> String 
+handleHttpError error = 
+  case error of 
+    Http.BadUrl str -> str 
+    Http.Timeout -> "timeout"
+    Http.NetworkError -> "Network error"
+    Http.BadStatus resp -> "Bad status: " ++ "darn! ++"  ++ (Debug.toString resp)
+    Http.BadPayload str1 resp -> "Bad payload: " ++ str1  ++ ", payload = " ++ "bad payload"
+
+-- handleErrorReponse : Http.Resonse 
+-- handleErrorReponse resp =
+  
 
 
 -- VIEW 
@@ -97,6 +124,7 @@ view model =
                 [ label 18 "Test App"
                 , passwordInput model
                 , getTokenButton model
+                , getDocumentButton model
                 , Element.el [] (text model.message)
                 ]
         ]
@@ -137,4 +165,11 @@ getTokenButton model =
   Input.button buttonStyle {
     onPress =  Just GetToken
   , label = Element.text "Get token"
+  } 
+
+getDocumentButton : Model -> Element Msg    
+getDocumentButton model = 
+  Input.button buttonStyle {
+    onPress =  Just (GetDocument 369)
+  , label = Element.text "Get document 369"
   } 
