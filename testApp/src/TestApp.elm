@@ -82,11 +82,8 @@ update msg model =
             Err err -> 
                 ({model | message = "Token error"},   Cmd.none  )
 
-
         GetToken ->
            (model,   Cmd.map UserMsg (User.getToken "jxxcarlson@gmail.com" model.password)  )
-        
-
         
 
 
@@ -97,7 +94,7 @@ view model =
    Element.layout [Font.size 14, width (px 400), height (px 600)] <|
         Element.column [ paddingXY 20 20, height (px 240)] [
             Element.column [paddingXY 40 40, spacing 15,  Background.color grey]
-                [ label 18 "Skeleton App"
+                [ label 18 "Test App"
                 , passwordInput model
                 , getTokenButton model
                 , Element.el [] (text model.message)
