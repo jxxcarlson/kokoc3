@@ -1,6 +1,6 @@
 module User exposing(
      Token
-   , defaultToken
+   , invalidToken
    , getToken
    , readToken
    , UserMsg(..)) 
@@ -21,14 +21,41 @@ import Configuration
 type Token = 
    Token String 
 
-defaultToken : Token 
-defaultToken =
+type alias TokenClaims =
+    { username : String, user_id : Int }
+
+
+type ValidatedTokenClaims =
+  ValidatedTokenClaims TokenClaims 
+  | InvalidTokenClaims
+
+
+{-| Return a default and invalid token -}
+invalidToken : Token 
+invalidToken =
   Token "invalid" 
 
+{-| Return the token string -}
 readToken : Token -> String 
 readToken token = 
   case token of 
     Token str -> str
+
+
+-- tokenClaimsDecoder : Decoder ValidatedTokenClaims
+-- tokenClaimsDecoder =
+--     Decode.succeed ValidatedTokenClaims
+--         |> JPipeline.required "username" Decode.string
+--         |> JPipeline.required "user_id" Decode.int
+
+-- decodeToken : Token -> ValidatedTokenClaims 
+-- decodeToken token =
+--   case token of 
+--     Token tokenValue ->
+--         case Jwt.decodeToken tokenClaimsDecoder tokenValue of
+--                     Ok tokenClaims -> ValidatedTokenClaims tokenClaims
+--                     Err error -> InvalidTokenClaims
+                        
 
 
 -- MSG

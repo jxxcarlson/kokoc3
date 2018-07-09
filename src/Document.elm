@@ -1,11 +1,18 @@
-module Document exposing(Document, getDocument, DocMsg(..))
+module Document exposing(
+      Document
+    , getDocumentById 
+    , DocMsg(..)
+    , view
+    , basicDocument
+  )
 
 import Dict exposing(Dict)
 import Time exposing(Posix)
 import Json.Encode as Encode    
 import Json.Decode as Decode exposing (at, int, list, string, decodeString, Decoder)
 import Json.Decode.Pipeline as JPipeline exposing (required, optional, hardcoded)
-import Http 
+import Http
+import Html exposing(Html) 
 
 import Configuration
 
@@ -49,6 +56,31 @@ type alias Document =
     , modified : Posix
     }
 
+basicDocument : Document 
+basicDocument = Document
+    0
+    "basicDocument123"
+    0
+    "author123"
+    "Phineas Phud"
+    "Welcome!"
+    "Pythagoras said: $a^2 + b^2 = c^2$."
+    1  
+    True
+    Dict.empty
+    []
+    []
+    0
+    "Parent"
+    MiniLatex
+    Standard
+    "default"
+    0
+    (Time.millisToPosix 0)
+    (Time.millisToPosix 0)
+    (Time.millisToPosix 0)
+
+
 
 type alias Child =
     { title : String
@@ -78,7 +110,7 @@ type TextType
     | Markdown
     | Asciidoc
     | AsciidocLatex
-    | Plain
+    | PlainText
 
 
 -- MSG
@@ -196,8 +228,8 @@ decodeChild =
 
 -- REQUEST
 
-getDocumentRequest : Int -> String -> Http.Request DocumentRecord
-getDocumentRequest id token = 
+getDocumentByIdRequest : Int -> String -> Http.Request DocumentRecord
+getDocumentByIdRequest id token = 
   Http.request
     { method = "Get"
     , headers = [
@@ -211,6 +243,40 @@ getDocumentRequest id token =
     , withCredentials = False
     }
 
-getDocument : Int  -> String -> Cmd DocMsg 
-getDocument id token =
-    Http.send ReceiveDocument <| getDocumentRequest id token
+getDocumentById : Int  -> String -> Cmd DocMsg 
+getDocumentById id token =
+    Http.send ReceiveDocument <| getDocumentByIdRequest id token
+
+-- VIEW
+
+view : Document -> Html msg 
+view document =
+  case document.textType of
+    MiniLatex -> viewMiniLatex document 
+    Markdown -> viewMarkdown document 
+    Asciidoc -> viewAsciidoc document 
+    AsciidocLatex -> viewAsciidocLatex document 
+    PlainText -> viewPlainText document
+    
+
+viewMiniLatex : Document -> Html msg
+viewMiniLatex document =
+  Html.div [] [Html.text <| "MiniLatex: " ++ document.title] 
+
+viewMarkdown : Document -> Html msg
+viewMarkdown document =
+  Html.div [] [Html.text <| "Markdown: " ++ document.title]  
+
+viewAsciidoc : Document -> Html msg
+viewAsciidoc document =
+  Html.div [] [Html.text <| "Asciidoc: " ++ document.title] 
+
+viewAsciidocLatex : Document -> Html msg
+viewAsciidocLatex document =
+  Html.div [] [Html.text <| "Asciidoc LaTeX: " ++ document.title]  
+
+viewPlainText : Document -> Html msg
+viewPlainText document =
+  Html.div [] [Html.text <| "Plain text: " ++ document.title] 
+
+    

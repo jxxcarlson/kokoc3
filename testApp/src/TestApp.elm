@@ -15,7 +15,7 @@ import Element.Border as Border
 import Element.Lazy
 
 import User exposing(Token, UserMsg(..), readToken)
-import Document exposing(Document, getDocument, DocMsg(..))
+import Document exposing(Document, getDocumentById, DocMsg(..))
 
 
 main =
@@ -36,15 +36,18 @@ type alias Model =
     {   message  : String
       , password : String
       , token    : Token
+      , docInfo  : String
+      , currentDocument : Document
     }
 
 
 type Msg
     = NoOp
     | AcceptPassword String
+    | AcceptDocInfo String
     | ReverseText
     | GetToken
-    | GetDocument Int
+    | GetDocumentById Int
     | UserMsg User.UserMsg
     | DocMsg Document.DocMsg
 
@@ -53,12 +56,17 @@ type Msg
 
 init : Flags -> ( Model, Cmd Msg )
 init flags =
-    ( {   message = "App started"
-        , password = ""
-        , token = User.defaultToken
-      }
-    , Cmd.none
-    )
+   let 
+        doc = Document.basicDocument 
+   in
+        ( {   message = "App started"
+            , password = ""
+            , docInfo = "369"
+            , token = User.invalidToken
+            , currentDocument = { doc | title = "Welcome!"}
+        }
+        , Cmd.none
+        )
 
 
 subscriptions model =
@@ -76,6 +84,9 @@ update msg model =
         AcceptPassword str ->
             ( { model | password = str }, Cmd.none )
 
+        AcceptDocInfo str ->
+            ( { model | docInfo = str }, Cmd.none )
+
         ReverseText ->
             ( { model | message = model.message |> String.reverse |> String.toLower }, Cmd.none )
 
@@ -88,16 +99,16 @@ update msg model =
 
         DocMsg (ReceiveDocument result)->
           case result of 
-            Ok document -> 
-               ({ model | message = "document OK"},   Cmd.none  )
+            Ok documentRecord -> 
+               ({ model | message = "document OK", currentDocument = documentRecord.document},   Cmd.none  )
             Err err -> 
                 ({model | message = handleHttpError err},   Cmd.none  )
 
         GetToken ->
            (model, Cmd.map UserMsg (User.getToken "jxxcarlson@gmail.com" model.password)  )
 
-        GetDocument id ->
-           (model, Cmd.map DocMsg (Document.getDocument id (readToken model.token)))
+        GetDocumentById id ->
+           (model, Cmd.map DocMsg (Document.getDocumentById id (readToken model.token)))
         
 
 handleHttpError : Http.Error -> String 
@@ -124,8 +135,10 @@ view model =
                 [ label 18 "Test App"
                 , passwordInput model
                 , getTokenButton model
+                , documentInfoInput model
                 , getDocumentButton model
                 , Element.el [] (text model.message)
+                , Element.el [] (Element.html <| Document.view model.currentDocument)
                 ]
         ]
         
@@ -156,6 +169,14 @@ passwordInput model =
       , label = Input.labelAbove [ Font.size 14, Font.bold ] (text "Password")
     }
 
+documentInfoInput : Model -> Element Msg
+documentInfoInput model =
+    Input.text [width (px 200), height (px 30) , Font.color black] {
+        text = model.docInfo 
+      , placeholder = Nothing
+      , onChange = Just(\str -> AcceptDocInfo str)
+      , label = Input.labelAbove [ Font.size 14, Font.bold ] (text "Doc Info")
+    }
 
 -- CONTROLS
 
@@ -170,6 +191,9 @@ getTokenButton model =
 getDocumentButton : Model -> Element Msg    
 getDocumentButton model = 
   Input.button buttonStyle {
-    onPress =  Just (GetDocument 369)
-  , label = Element.text "Get document 369"
+    onPress =  Just (GetDocumentById <| idFromDocInfo model.docInfo)
+  , label = Element.text "Get document"
   } 
+
+idFromDocInfo str = 
+  str |> String.toInt |> Maybe.withDefault 0
