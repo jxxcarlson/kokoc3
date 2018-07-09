@@ -14,6 +14,7 @@ import Json.Decode as Decode exposing (at, int, list, string, decodeString, Deco
 import Json.Decode.Pipeline as JPipeline exposing (required, optional, hardcoded)
 import Http
 import Html exposing(Html)
+import Html.Attributes as HA
 
 import MeenyLatex.Differ exposing (EditRecord)
 import MeenyLatex.Driver as MiniLatex
@@ -279,7 +280,13 @@ documentContentView document =
 
 viewMiniLatex : Document -> Html msg
 viewMiniLatex document =
-  Html.div [] [renderMiniLatex document.content] 
+  let 
+    editRecord =
+        MiniLatex.setup 0 document.content   
+  in 
+    MiniLatex.getRenderedText "" editRecord
+        |> List.map (\x -> Html.div [ HA.style "margin-bottom" "0.65em", HA.style "width" "300px" ] [  x ])
+        |> Html.div []
 
 viewMarkdown : Document -> Html msg
 viewMarkdown document =
@@ -297,9 +304,3 @@ viewPlainText : Document -> Html msg
 viewPlainText document =
   Html.div [] [Html.text <| "Plain text" ] 
 
-renderMiniLatex : String -> Html msg 
-renderMiniLatex sourceText =
-  let 
-    macroDefinitions = ""
-  in 
-    MiniLatex.render macroDefinitions sourceText

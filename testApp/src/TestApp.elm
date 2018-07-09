@@ -130,21 +130,60 @@ handleHttpError error =
 -- VIEW 
 
 
-view model =
-   Element.layout [Font.size 14, width (px 400), height (px 600)] <|
-        Element.column [ paddingXY 20 20, height (px 240)] [
-            Element.column [paddingXY 40 40, spacing 15,  Background.color grey]
-                [ label 18 "Test App"
-                , passwordInput model
-                , getTokenButton model
-                , documentInfoInput model
-                , getDocumentButton model
-                , Element.el [] (text model.message)
-                , DocumentView.view model.currentDocument
-                ]
+-- view1 model =
+--    Element.layout [Font.size 14, width (px 400), height (px 600)] <|
+--         Element.column [ paddingXY 20 20, height (px 240)] [
+--             Element.column [paddingXY 40 40, spacing 15,  Background.color grey]
+--                 [ label 18 "Test App"
+
+--                 , 
+--                 , 
+--                 , DocumentView.view model.currentDocument
+--                 ]
+        -- ]
+        
+
+view  model =
+   Element.layout [Font.size 14, width fill, height fill] <|
+        Element.column [ width fill, height fill] [
+            header model
+            , body model
+            , footer model
         ]
         
 
+header model = 
+  Element.row [width fill, Background.color Widget.grey, height (px 40), paddingXY 20 0, spacing 10] [
+      passwordInput model, getTokenButton (px 75) model
+  ]
+
+body model = 
+  Element.row [width fill, height fill, Background.color Widget.white, centerX] [
+     bodyLeftColumn model,  bodyCenterColumn model, bodyRightColumn model
+  ]
+
+bodyLeftColumn model = 
+  Element.column [width (px 250), height fill, 
+    Background.color Widget.lightBlue, paddingXY 20 20, spacing 10] [
+       documentInfoInput model
+     , getDocumentButton (px 100) model
+  ]
+
+bodyCenterColumn model = 
+  Element.column [width fill, height fill, paddingXY 20 20
+    , Background.color Widget.lightGrey, centerX] [
+      DocumentView.view model.currentDocument
+  ]
+
+bodyRightColumn model = 
+  Element.column [width (px 250), height fill, Background.color Widget.lightBlue, centerX] [
+      text "RC"
+  ]
+
+footer model = 
+  Element.row [width fill, Background.color Widget.grey, height (px 40), paddingXY 20 0] [
+      Element.el [] (text model.message)
+  ] 
 
 showIf condition element =
     if condition then
@@ -168,7 +207,7 @@ passwordInput model =
         text = model.password 
       , placeholder = Nothing
       , onChange = Just(\str -> AcceptPassword str)
-      , label = Input.labelAbove [ Font.size 14, Font.bold ] (text "Password")
+      , label = Input.labelLeft [ Font.size 14, Font.bold, moveDown 10 ] (text "Password")
     }
 
 documentInfoInput : Model -> Element Msg
@@ -183,16 +222,16 @@ documentInfoInput model =
 -- CONTROLS
 
 
-getTokenButton : Model -> Element Msg    
-getTokenButton model = 
-  Input.button buttonStyle {
+getTokenButton : Length -> Model -> Element Msg    
+getTokenButton width_ model = 
+  Input.button (buttonStyle width_) {
     onPress =  Just GetToken
   , label = Element.text "Get token"
   } 
 
-getDocumentButton : Model -> Element Msg    
-getDocumentButton model = 
-  Input.button buttonStyle {
+getDocumentButton : Length -> Model -> Element Msg    
+getDocumentButton width_ model = 
+  Input.button (buttonStyle  width_) {
     onPress =  Just (GetDocumentById <| idFromDocInfo model.docInfo)
   , label = Element.text "Get document"
   } 

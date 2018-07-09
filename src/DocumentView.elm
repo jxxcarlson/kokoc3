@@ -18,7 +18,7 @@ view doc =
   in 
     Element.column [] [
         Element.el [] (text viewDoc.title)
-        , Element.el [] (Element.html viewDoc.content)
+        , Element.el [width (px 600), scrollbarY] (Element.html viewDoc.content)
     ]
 
 -- VIEW
