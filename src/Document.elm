@@ -13,8 +13,7 @@ import Json.Encode as Encode
 import Json.Decode as Decode exposing (at, int, list, string, decodeString, Decoder)
 import Json.Decode.Pipeline as JPipeline exposing (required, optional, hardcoded)
 import Http
-import Html exposing(Html)
-import Html.Attributes as HA
+import Element exposing(Element)
 
 import MeenyLatex.Differ exposing (EditRecord)
 import MeenyLatex.Driver as MiniLatex
@@ -259,7 +258,7 @@ getDocumentById id token =
 
 type alias DocumentView msg = 
   {    title: String
-     , content: Html msg 
+     , content: Element msg 
    }
 
 viewDocument : Document -> DocumentView msg
@@ -268,7 +267,7 @@ viewDocument doc =
     , content = documentContentView doc
   }
 
-documentContentView : Document -> Html msg 
+documentContentView : Document -> Element msg 
 documentContentView document = 
   case document.textType of
     MiniLatex -> viewMiniLatex document 
@@ -278,29 +277,29 @@ documentContentView document =
     PlainText -> viewPlainText document
   
 
-viewMiniLatex : Document -> Html msg
+viewMiniLatex : Document -> Element msg
 viewMiniLatex document =
   let 
     editRecord =
         MiniLatex.setup 0 document.content   
   in 
     MiniLatex.getRenderedText "" editRecord
-        |> List.map (\x -> Html.div [ HA.style "margin-bottom" "0.65em", HA.style "width" "300px" ] [  x ])
-        |> Html.div []
+        |> List.map (\x -> Element.paragraph [  ] [ Element.html x ])
+        |> Element.column []
 
-viewMarkdown : Document -> Html msg
+viewMarkdown : Document -> Element msg
 viewMarkdown document =
-  Html.div [] [Html.text <| "Markdown"]  
+  Element.el [ ] (Element.text "Markdown")
 
-viewAsciidoc : Document -> Html msg
+viewAsciidoc : Document -> Element msg
 viewAsciidoc document =
-  Html.div [] [Html.text <| "Asciidoc"] 
+  Element.el [ ] (Element.text "Asciidoc")
 
-viewAsciidocLatex : Document -> Html msg
+viewAsciidocLatex : Document -> Element msg
 viewAsciidocLatex document =
-  Html.div [] [Html.text <| "Asciidoc LaTeX"]  
+  Element.el [ ] (Element.text "Asciidoc LaTeX")
 
-viewPlainText : Document -> Html msg
+viewPlainText : Document -> Element msg
 viewPlainText document =
-  Html.div [] [Html.text <| "Plain text" ] 
+   Element.el [ ] (Element.text "Plain text")
 
