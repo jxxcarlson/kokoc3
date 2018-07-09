@@ -15,7 +15,12 @@ import Json.Decode.Pipeline as JPipeline exposing (required, optional, hardcoded
 import Http
 import Html exposing(Html)
 
+import MeenyLatex.Differ exposing (EditRecord)
+import MeenyLatex.Driver as MiniLatex
+
 import Configuration
+
+
 
 
 
@@ -272,10 +277,9 @@ documentContentView document =
     PlainText -> viewPlainText document
   
 
-
 viewMiniLatex : Document -> Html msg
 viewMiniLatex document =
-  Html.div [] [Html.text <| "MiniLatex"] 
+  Html.div [] [renderMiniLatex document.content] 
 
 viewMarkdown : Document -> Html msg
 viewMarkdown document =
@@ -292,3 +296,10 @@ viewAsciidocLatex document =
 viewPlainText : Document -> Html msg
 viewPlainText document =
   Html.div [] [Html.text <| "Plain text" ] 
+
+renderMiniLatex : String -> Html msg 
+renderMiniLatex sourceText =
+  let 
+    macroDefinitions = ""
+  in 
+    MiniLatex.render macroDefinitions sourceText
