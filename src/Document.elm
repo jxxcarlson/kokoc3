@@ -1,9 +1,10 @@
 module Document exposing(
       Document
+    , DocumentView
     , getDocumentById 
     , DocMsg(..)
-    , view
     , basicDocument
+    , viewDocument
   )
 
 import Dict exposing(Dict)
@@ -12,7 +13,7 @@ import Json.Encode as Encode
 import Json.Decode as Decode exposing (at, int, list, string, decodeString, Decoder)
 import Json.Decode.Pipeline as JPipeline exposing (required, optional, hardcoded)
 import Http
-import Html exposing(Html) 
+import Html exposing(Html)
 
 import Configuration
 
@@ -247,36 +248,47 @@ getDocumentById : Int  -> String -> Cmd DocMsg
 getDocumentById id token =
     Http.send ReceiveDocument <| getDocumentByIdRequest id token
 
+
 -- VIEW
 
-view : Document -> Html msg 
-view document =
+type alias DocumentView msg = 
+  {    title: String
+     , content: Html msg 
+   }
+
+viewDocument : Document -> DocumentView msg
+viewDocument doc = 
+  { title = doc.title 
+    , content = documentContentView doc
+  }
+
+documentContentView : Document -> Html msg 
+documentContentView document = 
   case document.textType of
     MiniLatex -> viewMiniLatex document 
     Markdown -> viewMarkdown document 
     Asciidoc -> viewAsciidoc document 
     AsciidocLatex -> viewAsciidocLatex document 
     PlainText -> viewPlainText document
-    
+  
+
 
 viewMiniLatex : Document -> Html msg
 viewMiniLatex document =
-  Html.div [] [Html.text <| "MiniLatex: " ++ document.title] 
+  Html.div [] [Html.text <| "MiniLatex"] 
 
 viewMarkdown : Document -> Html msg
 viewMarkdown document =
-  Html.div [] [Html.text <| "Markdown: " ++ document.title]  
+  Html.div [] [Html.text <| "Markdown"]  
 
 viewAsciidoc : Document -> Html msg
 viewAsciidoc document =
-  Html.div [] [Html.text <| "Asciidoc: " ++ document.title] 
+  Html.div [] [Html.text <| "Asciidoc"] 
 
 viewAsciidocLatex : Document -> Html msg
 viewAsciidocLatex document =
-  Html.div [] [Html.text <| "Asciidoc LaTeX: " ++ document.title]  
+  Html.div [] [Html.text <| "Asciidoc LaTeX"]  
 
 viewPlainText : Document -> Html msg
 viewPlainText document =
-  Html.div [] [Html.text <| "Plain text: " ++ document.title] 
-
-    
+  Html.div [] [Html.text <| "Plain text" ] 

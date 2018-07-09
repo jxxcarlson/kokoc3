@@ -3,3 +3,4 @@ testAppOriginal
 testApp/index.html
 testApp/dist/index.html
 elm-package.json
+testApp/dist/Main.js

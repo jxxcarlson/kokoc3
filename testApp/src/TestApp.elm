@@ -1,4 +1,4 @@
-module TestApp exposing (main)
+module Main exposing (main)
 
 {- This app retrieves and displays weather data from openweathermap.org. -}
 
@@ -15,7 +15,9 @@ import Element.Border as Border
 import Element.Lazy
 
 import User exposing(Token, UserMsg(..), readToken)
-import Document exposing(Document, getDocumentById, DocMsg(..))
+import Document exposing(Document, DocMsg(..))
+import DocumentView exposing(view)
+
 
 
 main =
@@ -138,7 +140,7 @@ view model =
                 , documentInfoInput model
                 , getDocumentButton model
                 , Element.el [] (text model.message)
-                , Element.el [] (Element.html <| Document.view model.currentDocument)
+                , DocumentView.view model.currentDocument
                 ]
         ]
         
