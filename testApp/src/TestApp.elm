@@ -144,7 +144,7 @@ handleHttpError error =
         
 
 view  model =
-   Element.layout [Font.size 14, width fill, height fill] <|
+   Element.layout [Font.size 14, width fill, height fill, clipY] <|
         Element.column [ width fill, height fill] [
             header model
             , body model
