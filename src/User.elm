@@ -37,9 +37,14 @@ invalidToken =
 
 {-| Return the token string -}
 readToken : Token -> String 
-readToken token = 
-  case token of 
-    Token str -> str
+readToken (Token str) = 
+   str
+
+-- readToken1 : Token -> String 
+-- readToken1 token = 
+--   case token of 
+--     Token str -> str
+
 
 
 -- tokenClaimsDecoder : Decoder ValidatedTokenClaims
