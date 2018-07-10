@@ -8,7 +8,15 @@ import Element.Border as Border
 import Element.Lazy
 
 
-
+listItemStyle width_ = [
+     Font.size 13 
+    , mouseDown [  Font.size 13, Background.color lightYellow]
+    -- , Background.color blue, Font.color white
+    , Font.color blue
+    , width width_
+    , height (px 18)
+    , paddingXY 10 0
+   ]
 
 
 buttonStyle width_ = [

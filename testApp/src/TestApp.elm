@@ -23,7 +23,7 @@ import DocumentList exposing(
         , documentListLength
      )
 import DocumentView exposing(view)
-import DocumentListView
+import DocumentListView exposing(DocListViewMsg(..))
 
 
 
@@ -62,6 +62,7 @@ type Msg
     | UserMsg User.UserMsg
     | DocMsg Document.DocMsg
     | DocListMsg DocumentList.DocListMsg
+    | DocListViewMsg DocumentListView.DocListViewMsg
 
 
 -- INIT
@@ -128,6 +129,12 @@ update msg model =
             Err err -> 
                 ({model | message = handleHttpError err},   Cmd.none  )
 
+        DocListViewMsg (SetCurrentDocument document)->
+               ({ model | 
+                 message = "document: " ++ document.title
+                 , currentDocument = document
+                 }
+                 ,   Cmd.none  )
         GetToken ->
            (model, Cmd.map UserMsg (User.getToken "jxxcarlson@gmail.com" model.password)  )
 
@@ -193,7 +200,7 @@ bodyLeftColumn model =
        documentInfoInput model
      , getDocumentButton (px 135) model
      , getPublicDocumentsButton (px 135) model
-     , DocumentListView.view model.documentList
+     , Element.map DocListViewMsg (DocumentListView.view model.documentList)
   ]
 
 bodyCenterColumn model = 
