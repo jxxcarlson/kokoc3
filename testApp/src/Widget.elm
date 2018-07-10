@@ -14,7 +14,7 @@ listItemStyle width_ = [
     -- , Background.color blue, Font.color white
     , Font.color blue
     , width width_
-    , height (px 18)
+    , height (px 24)
     , paddingXY 10 0
    ]
 

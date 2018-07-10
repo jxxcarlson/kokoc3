@@ -48,6 +48,7 @@ type alias Model =
       , docInfo  : String
       , currentDocument : Document
       , documentList : DocumentList 
+      , counter : Int
     }
 
 
@@ -78,6 +79,7 @@ init flags =
             , token = User.invalidToken
             , currentDocument = { doc | title = "Welcome!"}
             , documentList = DocumentList.empty
+            , counter = 0
         }
         , Cmd.none
         )
@@ -134,6 +136,7 @@ update msg model =
                  message = "document: " ++ document.title
                  , currentDocument = document
                  , documentList = DocumentList.select (Just document) model.documentList
+                 , counter = model.counter + 1
                  }
                  ,   Cmd.none  )
         GetToken ->
@@ -152,7 +155,7 @@ handleHttpError error =
     Http.BadUrl str -> str 
     Http.Timeout -> "timeout"
     Http.NetworkError -> "Network error"
-    Http.BadStatus resp -> "Bad status: " ++ "darn! ++"  ++ (Debug.toString resp)
+    Http.BadStatus resp -> "Bad status: " ++ "darn!"
     Http.BadPayload str1 resp -> "Bad payload: " ++ str1  ++ ", payload = " ++ "bad payload"
 
 -- handleErrorReponse : Http.Resonse 
@@ -207,7 +210,7 @@ bodyLeftColumn model =
 bodyCenterColumn model = 
   Element.column [width fill, height fill, paddingXY 20 20
     , Background.color Widget.lightGrey, centerX] [
-      DocumentView.view model.currentDocument
+      DocumentView.view model.counter model.currentDocument
   ]
 
 bodyRightColumn model = 

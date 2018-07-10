@@ -6,19 +6,20 @@ import Element.Font as Font
 import Element.Input as Input
 import Element.Border as Border
 import Element.Lazy
+import Element.Keyed as Keyed
 
 import Html exposing(Html) 
 
 import Document exposing(Document, DocumentView, viewDocument)
 
-view : Document -> Element msg 
-view doc = 
+view : Int -> Document -> Element msg 
+view counter doc = 
   let 
     viewDoc = viewDocument doc 
   in 
     Element.column [spacing 15] [
         Element.el [Font.size 18, Font.bold] (text viewDoc.title)
-        , Element.el [width (px 600), height (px 570), scrollbarY] (viewDoc.content)
+        , Keyed.el [width (px 600), height (px 570), scrollbarY] ((String.fromInt counter), viewDoc.content)
     ]
 
 -- VIEW
