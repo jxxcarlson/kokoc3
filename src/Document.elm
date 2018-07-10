@@ -2,6 +2,7 @@ module Document exposing(
       Document
     , DocumentView
     , getDocumentById 
+    , documentDecoder
     , DocMsg(..)
     , basicDocument
     , viewDocument

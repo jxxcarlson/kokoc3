@@ -16,6 +16,7 @@ import Element.Lazy
 
 import User exposing(Token, UserMsg(..), readToken)
 import Document exposing(Document, DocMsg(..))
+import DocumentList exposing(DocumentList, findPublicDocuments)
 import DocumentView exposing(view)
 
 
