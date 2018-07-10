@@ -16,8 +16,14 @@ import Element.Lazy
 
 import User exposing(Token, UserMsg(..), readToken)
 import Document exposing(Document, DocMsg(..))
-import DocumentList exposing(DocumentList, DocListMsg(..), findPublicDocuments, documentListLength)
+import DocumentList exposing(
+     DocumentList
+        , DocListMsg(..)
+        , findPublicDocuments
+        , documentListLength
+     )
 import DocumentView exposing(view)
+import DocumentListView
 
 
 
@@ -41,6 +47,7 @@ type alias Model =
       , token    : Token
       , docInfo  : String
       , currentDocument : Document
+      , documentList : DocumentList 
     }
 
 
@@ -69,6 +76,7 @@ init flags =
             , docInfo = "369"
             , token = User.invalidToken
             , currentDocument = { doc | title = "Welcome!"}
+            , documentList = DocumentList.empty
         }
         , Cmd.none
         )
@@ -112,7 +120,11 @@ update msg model =
         DocListMsg (ReceiveDocumentList result)->
           case result of 
             Ok documentList -> 
-               ({ model | message = "documentList: " ++ (String.fromInt <| documentListLength documentList)},   Cmd.none  )
+               ({ model | 
+                 message = "documentList: " ++ (String.fromInt <| documentListLength documentList)
+                 , documentList = documentList
+                 }
+                 ,   Cmd.none  )
             Err err -> 
                 ({model | message = handleHttpError err},   Cmd.none  )
 
@@ -123,7 +135,7 @@ update msg model =
            (model, Cmd.map DocMsg (Document.getDocumentById id (readToken model.token)))
 
         GetPublicDocuments query ->
-           (model, Cmd.map DocListMsg (DocumentList.findPublicDocuments query))
+           ({ model | message = "query: " ++ query}, Cmd.map DocListMsg (DocumentList.findPublicDocuments query))
         
 
 handleHttpError : Http.Error -> String 
@@ -181,6 +193,7 @@ bodyLeftColumn model =
        documentInfoInput model
      , getDocumentButton (px 135) model
      , getPublicDocumentsButton (px 135) model
+     , DocumentListView.view model.documentList
   ]
 
 bodyCenterColumn model = 
@@ -253,7 +266,7 @@ getDocumentButton width_ model =
 getPublicDocumentsButton : Length -> Model -> Element Msg    
 getPublicDocumentsButton width_ model = 
   Input.button (buttonStyle  width_) {
-    onPress =  Just (GetPublicDocuments <| model.docInfo)
+    onPress =  Just (GetPublicDocuments model.docInfo)
   , label = Element.text "Get public docs"
   } 
 

@@ -2,6 +2,8 @@ module DocumentList exposing(
     DocumentList
   , DocListMsg(..)
   , findPublicDocuments
+  , empty
+  , documents
   , documentListLength
   )
 
@@ -16,9 +18,17 @@ import Document exposing(Document, documentDecoder)
 type DocumentList = 
   DocumentList (List Document) 
 
+empty : DocumentList 
+empty = 
+  DocumentList []
+
+documents : DocumentList -> List Document 
+documents (DocumentList docs) =
+  docs
+
 documentListLength : DocumentList -> Int 
-documentListLength (DocumentList documents) =
-  List.length documents
+documentListLength (DocumentList documents_) =
+  List.length documents_
 
 type DocListMsg = 
   ReceiveDocumentList (Result Http.Error DocumentList)
@@ -52,4 +62,3 @@ findPublicDocumentsRequest queryString =
     , timeout = Just 5000
     , withCredentials = False
     }
-
