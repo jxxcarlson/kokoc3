@@ -32,6 +32,6 @@ selectedElementStyle maybeSelectedDocument document =
   case maybeSelectedDocument of 
     Nothing -> Font.regular 
     Just selectedDocument -> if selectedDocument.id == document.id then 
-                                Font.bold 
+                                Font.extraBold 
                                 else  
                                 Font.regular
