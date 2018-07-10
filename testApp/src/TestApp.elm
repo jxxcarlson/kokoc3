@@ -14,7 +14,7 @@ import Element.Input as Input
 import Element.Border as Border
 import Element.Lazy
 
-import User exposing(Token, UserMsg(..), readToken)
+import User exposing(Token, UserMsg(..), readToken, User)
 import Document exposing(Document, DocMsg(..))
 import DocumentList exposing(
      DocumentList
@@ -45,6 +45,7 @@ type alias Model =
     {   message  : String
       , password : String
       , token    : Token
+      , maybeCurrentUser : Maybe User
       , docInfo  : String
       , currentDocument : Document
       , documentList : DocumentList 
@@ -60,6 +61,7 @@ type Msg
     | GetToken
     | GetDocumentById Int
     | GetPublicDocuments String
+    | GetUserDocuments String
     | UserMsg User.UserMsg
     | DocMsg Document.DocMsg
     | DocListMsg DocumentList.DocListMsg
@@ -77,6 +79,7 @@ init flags =
             , password = ""
             , docInfo = "369"
             , token = User.invalidToken
+            , maybeCurrentUser = Just User.testUser
             , currentDocument = { doc | title = "Welcome!"}
             , documentList = DocumentList.empty
             , counter = 0
@@ -109,7 +112,7 @@ update msg model =
         UserMsg (ReceiveToken result)->
           case result of 
             Ok token -> 
-               ({ model | token = token, message = "token OK"},   Cmd.none  )
+               ({ model | token = token, maybeCurrentUser = User.maybeSetToken token model.maybeCurrentUser, message = "token OK"},   Cmd.none  )
             Err err -> 
                 ({model | message = "Token error"},   Cmd.none  )
 
@@ -147,6 +150,12 @@ update msg model =
 
         GetPublicDocuments query ->
            ({ model | message = "query: " ++ query}, Cmd.map DocListMsg (DocumentList.findPublicDocuments query))
+        
+        GetUserDocuments query ->
+          case model.maybeCurrentUser of 
+            Nothing -> ( model, Cmd.none)
+            Just user ->
+             ({ model | message = "query: " ++ query}, Cmd.map DocListMsg (DocumentList.findUserDocuments user query))
         
 
 handleHttpError : Http.Error -> String 
@@ -204,6 +213,7 @@ bodyLeftColumn model =
        documentInfoInput model
      , getDocumentButton (px 135) model
      , getPublicDocumentsButton (px 135) model
+     , getUserDocumentsButton (px 135) model
      , Element.map DocListViewMsg (DocumentListView.view model.documentList)
   ]
 
@@ -279,6 +289,13 @@ getPublicDocumentsButton width_ model =
   Input.button (buttonStyle  width_) {
     onPress =  Just (GetPublicDocuments model.docInfo)
   , label = Element.text "Get public docs"
+  } 
+
+getUserDocumentsButton : Length -> Model -> Element Msg    
+getUserDocumentsButton width_ model = 
+  Input.button (buttonStyle  width_) {
+    onPress =  Just (GetUserDocuments model.docInfo)
+  , label = Element.text "Get user docs"
   } 
 
 idFromDocInfo str = 

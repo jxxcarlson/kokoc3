@@ -2,6 +2,7 @@ module DocumentList exposing(
     DocumentList
   , DocListMsg(..)
   , findPublicDocuments
+  , findUserDocuments
   , empty
   , selected
   , select
@@ -14,6 +15,7 @@ import Json.Decode as Decode exposing (at, int, list, string, decodeString, Deco
 import Json.Decode.Pipeline as JPipeline exposing (required, optional, hardcoded)
 import Http
 import Configuration
+import User exposing(User)
 
 import Document exposing(Document, documentDecoder)
 
@@ -54,6 +56,10 @@ findPublicDocuments : String -> Cmd DocListMsg
 findPublicDocuments queryString = 
   Http.send ReceiveDocumentList <| findPublicDocumentsRequest queryString
 
+findUserDocuments : User -> String -> Cmd DocListMsg
+findUserDocuments user queryString = 
+  Http.send ReceiveDocumentList <| findUserDocumentsRequest user queryString
+
 -- DECODERS
 
 listDocumentDecoder : Decoder (List Document)
@@ -77,6 +83,21 @@ findPublicDocumentsRequest queryString =
           Http.header "APIVersion" "V2"
     ]
     , url = Configuration.backend ++ "/api/public/documents?" ++ queryString
+    , body = Http.jsonBody Encode.null
+    , expect = Http.expectJson documentListDecoder
+    , timeout = Just 5000
+    , withCredentials = False
+    }
+
+findUserDocumentsRequest : User -> String -> Http.Request DocumentList
+findUserDocumentsRequest user queryString = 
+  Http.request
+    { method = "Get"
+    , headers = [
+          Http.header "APIVersion" "V2"
+        , Http.header "authorization" ("Bearer " ++ (User.getTokenString user))
+    ]
+    , url = Configuration.backend ++ "/api/documents?" ++ queryString
     , body = Http.jsonBody Encode.null
     , expect = Http.expectJson documentListDecoder
     , timeout = Just 5000

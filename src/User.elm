@@ -3,7 +3,12 @@ module User exposing(
    , invalidToken
    , getToken
    , readToken
-   , UserMsg(..)) 
+   , UserMsg(..)
+   , User
+   , testUser
+   , maybeSetToken
+   , getTokenString
+   ) 
 
 
 import Json.Encode as Encode    
@@ -17,6 +22,35 @@ import Configuration
 -- localhost:4000/api/authentication
 
 -- MODEL
+
+type User = User {
+    email: String
+  , id : Int 
+  , token : Token 
+  , username : String 
+  }
+
+testUser = User {
+    email = "jxxcarlson@gmail.com"
+  , id = 1
+  , token =  Token "fake"
+  , username = "jxxcarlson"
+  }
+
+getTokenString : User -> String 
+getTokenString (User user) = 
+  readToken user.token
+
+setToken : Token -> User -> User 
+setToken token (User user) = 
+  User { user | token = token }
+
+maybeSetToken : Token -> Maybe User -> Maybe User 
+maybeSetToken token maybeUser = 
+   case maybeUser of 
+     Nothing -> Nothing 
+     Just user -> Just (setToken token user)
+
 
 type Token = 
    Token String 
