@@ -16,9 +16,9 @@ view doc =
   let 
     viewDoc = viewDocument doc 
   in 
-    Element.column [] [
-        Element.el [] (text viewDoc.title)
-        , Element.el [width (px 600), height (px 580), scrollbarY] (viewDoc.content)
+    Element.column [spacing 15] [
+        Element.el [Font.size 18, Font.bold] (text viewDoc.title)
+        , Element.el [width (px 600), height (px 570), scrollbarY] (viewDoc.content)
     ]
 
 -- VIEW
