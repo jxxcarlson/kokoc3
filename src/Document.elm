@@ -14,9 +14,13 @@ import Json.Decode as Decode exposing (at, int, list, string, decodeString, Deco
 import Json.Decode.Pipeline as JPipeline exposing (required, optional, hardcoded)
 import Http
 import Element exposing(Element)
+import Html exposing(Html)
+import Html.Attributes as HA 
 
 import MeenyLatex.Differ exposing (EditRecord)
 import MeenyLatex.Driver as MiniLatex
+
+import MarkdownTools
 
 import Configuration
 
@@ -289,17 +293,23 @@ viewMiniLatex document =
 
 viewMarkdown : Document -> Element msg
 viewMarkdown document =
-  Element.el [ ] (Element.text "Markdown")
+  Element.el [ ] (Element.html <| MarkdownTools.view document.content)
 
 viewAsciidoc : Document -> Element msg
 viewAsciidoc document =
-  Element.el [ ] (Element.text "Asciidoc")
+  Element.el [ ] (Element.html <| asciidocText document.content)
 
 viewAsciidocLatex : Document -> Element msg
 viewAsciidocLatex document =
-  Element.el [ ] (Element.text "Asciidoc LaTeX")
+  Element.el [ ] (Element.html <| asciidocText document.content)
 
 viewPlainText : Document -> Element msg
 viewPlainText document =
-   Element.el [ ] (Element.text "Plain text")
+   Element.el [ ] (Element.html <| MarkdownTools.view document.content)
+
+asciidocText : String -> Html msg
+asciidocText content =
+    Html.node "asciidoc-text"
+        [ HA.property "content" (Encode.string <| "== ASCIIDOC\n\n*This is a test*") ]
+        []
 
