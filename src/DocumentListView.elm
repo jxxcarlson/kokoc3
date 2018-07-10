@@ -13,7 +13,7 @@ type DocListViewMsg =
 
 view : DocumentList -> Element DocListViewMsg 
 view docList =
-  Element.column [spacing 5 ] ( List.map (setCurrentDocumentButton docList.selected) (documents docList) )
+  Element.column [spacing 5 ] ( List.map (setCurrentDocumentButton <| DocumentList.selected  docList) (documents docList) )
 
 viewDocument :  Document -> Element msg 
 viewDocument doc =

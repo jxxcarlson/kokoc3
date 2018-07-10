@@ -3,6 +3,8 @@ module DocumentList exposing(
   , DocListMsg(..)
   , findPublicDocuments
   , empty
+  , selected
+  , select
   , documents
   , documentListLength
   )
@@ -15,24 +17,34 @@ import Configuration
 
 import Document exposing(Document, documentDecoder)
 
-type alias DocumentList = {
-    documents: List Document
+type alias DocumentListRecord = {
+      documents: List Document
     , selected: Maybe Document
   }
+
+type DocumentList = DocumentList DocumentListRecord
  
 
 empty : DocumentList 
-empty = {
+empty = DocumentList {
     documents = []
   , selected = Nothing 
   }
 
 documents : DocumentList -> List Document 
-documents documentList =
+documents (DocumentList documentList) =
   documentList.documents
 
+selected : DocumentList -> Maybe Document 
+selected (DocumentList docListRecord) =
+ docListRecord.selected
+
+select : Maybe Document -> DocumentList -> DocumentList 
+select maybeSelectedDocument (DocumentList documentList) =
+    DocumentList { documents = documentList.documents, selected = maybeSelectedDocument}
+
 documentListLength : DocumentList -> Int 
-documentListLength documentList =
+documentListLength (DocumentList documentList) =
   List.length documentList.documents
 
 type DocListMsg = 
@@ -47,12 +59,15 @@ findPublicDocuments queryString =
 listDocumentDecoder : Decoder (List Document)
 listDocumentDecoder =
   Decode.field "documents" (Decode.list documentDecoder)
+
   
-documentListDecoder : Decoder DocumentList 
-documentListDecoder =
-  Decode.map2 DocumentList listDocumentDecoder (Decode.succeed Nothing)
+documentListRecordDecoder : Decoder DocumentListRecord 
+documentListRecordDecoder =
+    Decode.map2 DocumentListRecord listDocumentDecoder (Decode.succeed Nothing)
 
-
+documentListDecoder : Decoder DocumentList
+documentListDecoder = 
+  Decode.map DocumentList documentListRecordDecoder
 
 findPublicDocumentsRequest : String -> Http.Request DocumentList
 findPublicDocumentsRequest queryString = 
