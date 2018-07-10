@@ -15,20 +15,25 @@ import Configuration
 
 import Document exposing(Document, documentDecoder)
 
-type DocumentList = 
-  DocumentList (List Document) 
+type alias DocumentList = {
+    documents: List Document
+    , selected: Maybe Document
+  }
+ 
 
 empty : DocumentList 
-empty = 
-  DocumentList []
+empty = {
+    documents = []
+  , selected = Nothing 
+  }
 
 documents : DocumentList -> List Document 
-documents (DocumentList docs) =
-  docs
+documents documentList =
+  documentList.documents
 
 documentListLength : DocumentList -> Int 
-documentListLength (DocumentList documents_) =
-  List.length documents_
+documentListLength documentList =
+  List.length documentList.documents
 
 type DocListMsg = 
   ReceiveDocumentList (Result Http.Error DocumentList)
@@ -39,14 +44,14 @@ findPublicDocuments queryString =
 
 -- DECODERS
 
-documentListDecoder : Decoder DocumentList
+listDocumentDecoder : Decoder (List Document)
+listDocumentDecoder =
+  Decode.field "documents" (Decode.list documentDecoder)
+  
+documentListDecoder : Decoder DocumentList 
 documentListDecoder =
-  Decode.succeed DocumentList
-    |> JPipeline.required "documents" (Decode.list documentDecoder)
+  Decode.map2 DocumentList listDocumentDecoder (Decode.succeed Nothing)
 
--- documentListDecoder : Decoder DocumentList
--- documentListDecoder =
---     Decode.map DocumentList (Decode.list documentDecoder)
 
 
 findPublicDocumentsRequest : String -> Http.Request DocumentList

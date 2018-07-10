@@ -130,9 +130,14 @@ update msg model =
                 ({model | message = handleHttpError err},   Cmd.none  )
 
         DocListViewMsg (SetCurrentDocument document)->
+          let 
+            documentList = model.documentList 
+            nextDocumentList = {documentList | selected = Just document}
+          in
                ({ model | 
                  message = "document: " ++ document.title
                  , currentDocument = document
+                 , documentList = nextDocumentList
                  }
                  ,   Cmd.none  )
         GetToken ->
