@@ -16,7 +16,7 @@ import Element.Lazy
 
 import User exposing(Token, UserMsg(..), readToken)
 import Document exposing(Document, DocMsg(..))
-import DocumentList exposing(DocumentList, findPublicDocuments)
+import DocumentList exposing(DocumentList, DocListMsg(..), findPublicDocuments, documentListLength)
 import DocumentView exposing(view)
 
 
@@ -51,8 +51,10 @@ type Msg
     | ReverseText
     | GetToken
     | GetDocumentById Int
+    | GetPublicDocuments String
     | UserMsg User.UserMsg
     | DocMsg Document.DocMsg
+    | DocListMsg DocumentList.DocListMsg
 
 
 -- INIT
@@ -107,11 +109,21 @@ update msg model =
             Err err -> 
                 ({model | message = handleHttpError err},   Cmd.none  )
 
+        DocListMsg (ReceiveDocumentList result)->
+          case result of 
+            Ok documentList -> 
+               ({ model | message = "documentList: " ++ (String.fromInt <| documentListLength documentList)},   Cmd.none  )
+            Err err -> 
+                ({model | message = handleHttpError err},   Cmd.none  )
+
         GetToken ->
            (model, Cmd.map UserMsg (User.getToken "jxxcarlson@gmail.com" model.password)  )
 
         GetDocumentById id ->
            (model, Cmd.map DocMsg (Document.getDocumentById id (readToken model.token)))
+
+        GetPublicDocuments query ->
+           (model, Cmd.map DocListMsg (DocumentList.findPublicDocuments query))
         
 
 handleHttpError : Http.Error -> String 
@@ -167,7 +179,8 @@ bodyLeftColumn model =
   Element.column [width (px 250), height fill, 
     Background.color Widget.lightBlue, paddingXY 20 20, spacing 10] [
        documentInfoInput model
-     , getDocumentButton (px 100) model
+     , getDocumentButton (px 135) model
+     , getPublicDocumentsButton (px 135) model
   ]
 
 bodyCenterColumn model = 
@@ -234,7 +247,14 @@ getDocumentButton : Length -> Model -> Element Msg
 getDocumentButton width_ model = 
   Input.button (buttonStyle  width_) {
     onPress =  Just (GetDocumentById <| idFromDocInfo model.docInfo)
-  , label = Element.text "Get document"
+  , label = Element.text "Get document by id"
+  } 
+
+getPublicDocumentsButton : Length -> Model -> Element Msg    
+getPublicDocumentsButton width_ model = 
+  Input.button (buttonStyle  width_) {
+    onPress =  Just (GetPublicDocuments <| model.docInfo)
+  , label = Element.text "Get public docs"
   } 
 
 idFromDocInfo str = 

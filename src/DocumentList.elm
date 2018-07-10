@@ -1,4 +1,9 @@
-module DocumentList exposing(DocumentList, findPublicDocuments)
+module DocumentList exposing(
+    DocumentList
+  , DocListMsg(..)
+  , findPublicDocuments
+  , documentListLength
+  )
 
 import Json.Encode as Encode    
 import Json.Decode as Decode exposing (at, int, list, string, decodeString, Decoder)
@@ -10,6 +15,10 @@ import Document exposing(Document, documentDecoder)
 
 type DocumentList = 
   DocumentList (List Document) 
+
+documentListLength : DocumentList -> Int 
+documentListLength (DocumentList documents) =
+  List.length documents
 
 type DocListMsg = 
   ReceiveDocumentList (Result Http.Error DocumentList)
@@ -25,6 +34,11 @@ documentListDecoder =
   Decode.succeed DocumentList
     |> JPipeline.required "documents" (Decode.list documentDecoder)
 
+-- documentListDecoder : Decoder DocumentList
+-- documentListDecoder =
+--     Decode.map DocumentList (Decode.list documentDecoder)
+
+
 findPublicDocumentsRequest : String -> Http.Request DocumentList
 findPublicDocumentsRequest queryString = 
   Http.request
@@ -32,7 +46,7 @@ findPublicDocumentsRequest queryString =
     , headers = [
           Http.header "APIVersion" "V2"
     ]
-    , url = Configuration.backend ++ "/api/documents?" ++ queryString
+    , url = Configuration.backend ++ "/api/public/documents?" ++ queryString
     , body = Http.jsonBody Encode.null
     , expect = Http.expectJson documentListDecoder
     , timeout = Just 5000
