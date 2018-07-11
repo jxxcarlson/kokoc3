@@ -136,6 +136,21 @@ update msg model =
             Err err -> 
                 ({model | message = handleHttpError err},   Cmd.none  )
 
+        DocListMsg (ReceiveDocumentListAndPreserveCurrentSelection result)->
+          case result of 
+            Ok documentList -> 
+              let 
+                nextDocumentList = DocumentList.select (Just model.currentDocument) documentList
+              in
+                ({ model | 
+                    message = "documentList: " ++ (String.fromInt <| documentListLength documentList)
+                    , documentList = nextDocumentList
+                    }
+                    ,   Cmd.none  )
+            Err err -> 
+                ({model | message = handleHttpError err},   Cmd.none  )
+
+
         DocListViewMsg (SetCurrentDocument document)->
                ({ model | 
                  message = "document: " ++ document.title
@@ -149,6 +164,11 @@ update msg model =
           case model.maybeCurrentUser of 
             Nothing -> (model, Cmd.none)
             Just user ->  (model, Cmd.map DocListMsg (DocumentList.loadMasterDocument user docId))
+
+        DocViewMsg (LoadMasterWithCurrentSelection docId) ->
+          case model.maybeCurrentUser of 
+            Nothing -> (model, Cmd.none)
+            Just user ->  (model, Cmd.map DocListMsg (DocumentList.loadMasterDocumentWithCurrentSelection user docId))
 
         GetToken ->
            (model, Cmd.map UserMsg (User.getToken "jxxcarlson@gmail.com" model.password)  )

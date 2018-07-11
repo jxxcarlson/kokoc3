@@ -3,6 +3,7 @@ module DocumentList exposing(
   , DocListMsg(..)
   , findDocuments
   , loadMasterDocument
+  , loadMasterDocumentWithCurrentSelection
   , empty
   , selected
   , select
@@ -51,6 +52,7 @@ documentListLength (DocumentList documentList) =
 
 type DocListMsg = 
   ReceiveDocumentList (Result Http.Error DocumentList)
+  | ReceiveDocumentListAndPreserveCurrentSelection (Result Http.Error DocumentList)
 
 findDocuments : Maybe User -> String -> Cmd DocListMsg
 findDocuments maybeUser queryString = 
@@ -60,6 +62,10 @@ findDocuments maybeUser queryString =
 loadMasterDocument : User -> Int -> Cmd DocListMsg 
 loadMasterDocument user docId = 
   Http.send ReceiveDocumentList <| loadMasterDocumentRequest user docId
+
+loadMasterDocumentWithCurrentSelection : User -> Int -> Cmd DocListMsg 
+loadMasterDocumentWithCurrentSelection user docId = 
+  Http.send ReceiveDocumentListAndPreserveCurrentSelection <| loadMasterDocumentRequest user docId
 
 -- DECODERS
 

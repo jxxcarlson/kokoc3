@@ -16,6 +16,7 @@ import Widget
 
 type DocViewMsg = 
   LoadMaster Int
+  | LoadMasterWithCurrentSelection Int
 
 
 view : Int -> Document -> Element DocViewMsg 
@@ -45,7 +46,7 @@ loadMasterDocumentButton : Document -> Element DocViewMsg
 loadMasterDocumentButton  document = 
   Element.el [] (
         Input.button (Widget.titleStyle) {
-            onPress =  Just (LoadMaster document.parentId)
+            onPress =  Just (LoadMasterWithCurrentSelection document.parentId)
         , label = Element.el [ moveUp 0, padding 5, Font.size 18, Font.bold] (text (document.parentTitle ++ " :: "))
         } 
     )
