@@ -19,7 +19,7 @@ import Document exposing(Document, DocMsg(..))
 import DocumentList exposing(
      DocumentList
         , DocListMsg(..)
-        , findPublicDocuments
+        , findDocuments
         , documentListLength
      )
 import DocumentView exposing(view, DocViewMsg(..))
@@ -157,13 +157,13 @@ update msg model =
            (model, Cmd.map DocMsg (Document.getDocumentById id (readToken model.token)))
 
         GetPublicDocuments query ->
-           ({ model | message = "query: " ++ query}, Cmd.map DocListMsg (DocumentList.findPublicDocuments query))
+           ({ model | message = "query: " ++ query}, Cmd.map DocListMsg (DocumentList.findDocuments Nothing query))
         
         GetUserDocuments query ->
           case model.maybeCurrentUser of 
             Nothing -> ( model, Cmd.none)
             Just user ->
-             ({ model | message = "query: " ++ query}, Cmd.map DocListMsg (DocumentList.findUserDocuments user query))
+             ({ model | message = "query: " ++ query}, Cmd.map DocListMsg (DocumentList.findDocuments (Just user) query))
         
         LoadMasterDocument idString ->
           case model.maybeCurrentUser of 
