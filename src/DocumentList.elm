@@ -3,6 +3,7 @@ module DocumentList exposing(
   , DocListMsg(..)
   , findPublicDocuments
   , findUserDocuments
+  , loadMasterDocument
   , empty
   , selected
   , select
@@ -60,6 +61,10 @@ findUserDocuments : User -> String -> Cmd DocListMsg
 findUserDocuments user queryString = 
   Http.send ReceiveDocumentList <| findUserDocumentsRequest user queryString
 
+loadMasterDocument : User -> Int -> Cmd DocListMsg 
+loadMasterDocument user docId = 
+  Http.send ReceiveDocumentList <| loadMasterDocumentRequest user docId
+
 -- DECODERS
 
 listDocumentDecoder : Decoder (List Document)
@@ -98,6 +103,21 @@ findUserDocumentsRequest user queryString =
         , Http.header "authorization" ("Bearer " ++ (User.getTokenString user))
     ]
     , url = Configuration.backend ++ "/api/documents?" ++ queryString
+    , body = Http.jsonBody Encode.null
+    , expect = Http.expectJson documentListDecoder
+    , timeout = Just 5000
+    , withCredentials = False
+    }
+
+loadMasterDocumentRequest :User -> Int -> Http.Request DocumentList 
+loadMasterDocumentRequest  user docId =
+    Http.request
+    { method = "Get"
+    , headers = [
+          Http.header "APIVersion" "V2"
+        , Http.header "authorization" ("Bearer " ++ (User.getTokenString user))
+    ]
+    , url = Configuration.backend ++ "/api/documents?master=" ++ (String.fromInt docId)
     , body = Http.jsonBody Encode.null
     , expect = Http.expectJson documentListDecoder
     , timeout = Just 5000

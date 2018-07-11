@@ -1,4 +1,4 @@
-module DocumentView exposing(view)
+module DocumentView exposing(view, DocViewMsg(..))
 
 import Element exposing (..)
 import Element.Background as Background
@@ -11,20 +11,42 @@ import Element.Keyed as Keyed
 import Html exposing(Html) 
 
 import Document exposing(Document, DocumentView, viewDocument)
+import Widget
 
-view : Int -> Document -> Element msg 
+
+type DocViewMsg = 
+  LoadMaster Int
+
+
+view : Int -> Document -> Element DocViewMsg 
 view counter doc = 
   let 
     viewDoc = viewDocument doc 
   in 
     Element.column [spacing 15] [
-        Element.el [Font.size 18, Font.bold] (text viewDoc.title)
-        , Keyed.el [width (px 600), height (px 570), scrollbarY] ((String.fromInt counter), viewDoc.content)
+        titleLine doc
+        , (contentView counter viewDoc)
     ]
 
--- VIEW
+contentView counter viewDoc = 
+  Keyed.el [width (px 600), height (px 570), scrollbarY] ((String.fromInt counter), viewDoc.content)
+
+
+titleLine : Document -> Element DocViewMsg 
+titleLine document = 
+  if document.parentId == 0 then 
+    Element.el [Font.size 18, Font.bold] (text document.title) 
+  else 
+    loadMasterDocumentButton  document 
 
 
 
-
+loadMasterDocumentButton : Document -> Element DocViewMsg    
+loadMasterDocumentButton  document = 
+  Element.el [] (
+        Input.button (Widget.listItemStyle  (px 190)) {
+            onPress =  Just (LoadMaster document.parentId)
+        , label = Element.el [ height (px 40), padding 5, Font.size 18, Font.bold] (text document.title)
+        } 
+    )
     

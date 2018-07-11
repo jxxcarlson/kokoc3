@@ -27,8 +27,6 @@ import Configuration
 
 
 
-
-
 -- TYPES
 
 type alias DocumentRecord =
@@ -215,26 +213,6 @@ decodeChild =
         |> JPipeline.required "doc_identifier" (Decode.string)
         |> JPipeline.required "doc_id" (Decode.int)
         |> JPipeline.required "comment" (Decode.string)
-
-
--- decodeHttpResponse : Decoder (Http.Response Document)
--- decodeHttpResponse = 
---   Decode.succeed (Http.Response Document)
---     |> JPipeline.required "url" Decode.string
---     |> JPipeline.required "status" (Decode.string |> Decode.andThen decodeHttpStatus)
---     |> JPipeline.required "headers" (Decode.dict Decode.string)
---     |> JPipeline.required "body" documentDecoder
-
--- type alias Status = 
---   {  code: Int
---      , message: String 
---   }
-
--- decodeHttpStatus : Decoder (Http.Response Document)
--- decodeHttpStatus = 
---   Decode.succeed Status
---     |> JPipeline.required "code" Decode.int
---     |> JPipeline.required "message" Decode.string
 
 
 -- REQUEST

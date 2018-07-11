@@ -11,7 +11,6 @@ import Element.Lazy
 listItemStyle width_ = [
      Font.size 13 
     , mouseDown [  Font.size 13, Background.color lightYellow]
-    -- , Background.color blue, Font.color white
     , Font.color blue
     , width width_
     , height (px 24)
@@ -42,6 +41,8 @@ lightGrey = Element.rgb 0.95 0.95 0.95
 lightBlue = Element.rgb 0.85 0.85 0.9
 
 lightYellow = Element.rgb 0.9 0.9 0.8
+
+orange = Element.rgb 0.9 0.85 0.2
 
 black = Element.rgb 0.1 0.1 0.1
 

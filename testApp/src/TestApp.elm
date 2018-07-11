@@ -22,7 +22,7 @@ import DocumentList exposing(
         , findPublicDocuments
         , documentListLength
      )
-import DocumentView exposing(view)
+import DocumentView exposing(view, DocViewMsg(..))
 import DocumentListView exposing(DocListViewMsg(..))
 
 
@@ -62,10 +62,12 @@ type Msg
     | GetDocumentById Int
     | GetPublicDocuments String
     | GetUserDocuments String
+    | LoadMasterDocument String
     | UserMsg User.UserMsg
     | DocMsg Document.DocMsg
     | DocListMsg DocumentList.DocListMsg
     | DocListViewMsg DocumentListView.DocListViewMsg
+    | DocViewMsg DocumentView.DocViewMsg
 
 
 -- INIT
@@ -142,6 +144,12 @@ update msg model =
                  , counter = model.counter + 1
                  }
                  ,   Cmd.none  )
+
+        DocViewMsg (LoadMaster docId) ->
+          case model.maybeCurrentUser of 
+            Nothing -> (model, Cmd.none)
+            Just user ->  (model, Cmd.map DocListMsg (DocumentList.loadMasterDocument user docId))
+
         GetToken ->
            (model, Cmd.map UserMsg (User.getToken "jxxcarlson@gmail.com" model.password)  )
 
@@ -156,6 +164,16 @@ update msg model =
             Nothing -> ( model, Cmd.none)
             Just user ->
              ({ model | message = "query: " ++ query}, Cmd.map DocListMsg (DocumentList.findUserDocuments user query))
+        
+        LoadMasterDocument idString ->
+          case model.maybeCurrentUser of 
+            Nothing -> ( model, Cmd.none)
+            Just user ->
+              case String.toInt idString  of 
+                Nothing ->  ( model, Cmd.none)
+                Just id -> 
+                 ( model, Cmd.map DocListMsg (DocumentList.loadMasterDocument user id ))
+
         
 
 handleHttpError : Http.Error -> String 
@@ -214,13 +232,14 @@ bodyLeftColumn model =
      , getDocumentButton (px 135) model
      , getPublicDocumentsButton (px 135) model
      , getUserDocumentsButton (px 135) model
+     , loadMasterDocumentButton (px 135) model
      , Element.map DocListViewMsg (DocumentListView.view model.documentList)
   ]
 
 bodyCenterColumn model = 
   Element.column [width fill, height fill, paddingXY 20 20
     , Background.color Widget.lightGrey, centerX] [
-      DocumentView.view model.counter model.currentDocument
+      Element.map DocViewMsg (DocumentView.view model.counter model.currentDocument)
   ]
 
 bodyRightColumn model = 
@@ -296,6 +315,13 @@ getUserDocumentsButton width_ model =
   Input.button (buttonStyle  width_) {
     onPress =  Just (GetUserDocuments model.docInfo)
   , label = Element.text "Get user docs"
+  } 
+
+loadMasterDocumentButton : Length -> Model -> Element Msg    
+loadMasterDocumentButton width_ model = 
+  Input.button (buttonStyle  width_) {
+    onPress =  Just (LoadMasterDocument model.docInfo)
+  , label = Element.text "Load master doc"
   } 
 
 idFromDocInfo str = 
