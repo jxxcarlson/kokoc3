@@ -24,8 +24,7 @@ import DocumentList exposing(
      )
 import DocumentView exposing(view, DocViewMsg(..))
 import DocumentListView exposing(DocListViewMsg(..))
-
-import DocumentDictionary exposing(DocumentDictionary)
+import DocumentDictionary exposing(DocumentDictionary, DocDictMsg(..))
 
 
 
@@ -71,6 +70,7 @@ type Msg
     | DocListMsg DocumentList.DocListMsg
     | DocListViewMsg DocumentListView.DocListViewMsg
     | DocViewMsg DocumentView.DocViewMsg
+    | DocDictMsg DocumentDictionary.DocDictMsg
 
 
 -- INIT
@@ -162,7 +162,7 @@ update msg model =
                  , documentList = DocumentList.select (Just document) model.documentList
                  , counter = model.counter + 1
                  }
-                 ,   Cmd.none  )
+                 , Cmd.map  DocDictMsg <| DocumentDictionary.loadTexMacros (readToken model.token) document document.tags model.documentDictionary  )
 
         DocViewMsg (LoadMaster docId) ->
           case model.maybeCurrentUser of 
@@ -198,7 +198,7 @@ update msg model =
                 Just id -> 
                  ( model, Cmd.map DocListMsg (DocumentList.loadMasterDocument user id ))
 
-        DocMsg (PutDocumentInDictionaryAsTexMacros result) -> 
+        DocDictMsg (PutDocumentInDictionaryAsTexMacros result) -> 
           case result of 
             Ok documentRecord -> 
               let 

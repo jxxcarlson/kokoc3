@@ -3,6 +3,17 @@ module Utility exposing(..)
 
 import Regex 
 
+
+findTag : String -> List String -> Maybe String 
+findTag tagFragment tagList = 
+  tagList |> List.filter (\x -> String.startsWith (tagFragment ++ ":") x) |> List.head
+
+lookUpKeyInTagList : String -> List String -> Maybe String 
+lookUpKeyInTagList key tagList = 
+  case (findTag key tagList) of 
+    Nothing -> Nothing 
+    Just str -> (String.split ":" str) |> List.drop 1 |> List.head
+
 {-| Replace all values that satisfy a predicate with a replacement value.
 -}
 replaceIf : (a -> Bool) -> a -> List a -> List a

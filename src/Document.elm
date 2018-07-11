@@ -1,7 +1,9 @@
 module Document exposing(
       Document
+    , DocumentRecord
     , DocumentView
     , getDocumentById 
+    , getDocumentByIdRequest
     , documentDecoder
     , DocMsg(..)
     , basicDocument
@@ -24,6 +26,7 @@ import MeenyLatex.Driver as MiniLatex
 import MarkdownTools
 
 import Configuration
+import Utility
 
 
 
@@ -120,7 +123,7 @@ type TextType
 
 type DocMsg = 
   ReceiveDocument (Result Http.Error DocumentRecord)
-  | PutDocumentInDictionaryAsTexMacros (Result Http.Error DocumentRecord)
+  
 
 -- DECODERS
 
@@ -233,9 +236,7 @@ getDocumentById id token =
 
 
 
-putTexMacoDocumentInDictionaryById : Int -> String -> Cmd DocMsg
-putTexMacoDocumentInDictionaryById id token = 
-  Http.send PutDocumentInDictionaryAsTexMacros (getDocumentByIdRequest id token)
+
 
 -- ACTIONS
 

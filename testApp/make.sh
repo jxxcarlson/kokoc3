@@ -4,7 +4,7 @@ reset=`tput setaf 7`
 
 echo
 echo "${color}Compile testApp${reset}"
-/Users/carlson/Downloads/2/elm make --optimize ./src/TestApp.elm --output ./dist/Main.js
+/Users/carlson/Downloads/2/elm make  --optimize ./src/TestApp.elm --output ./dist/Main.js
 
 if [ "$1" = "-r" ]
 then

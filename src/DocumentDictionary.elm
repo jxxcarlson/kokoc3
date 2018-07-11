@@ -1,12 +1,20 @@
-module DocumentDictionary exposing(DocumentDictionary, empty, put, get, member) 
+module DocumentDictionary exposing(DocumentDictionary, empty, put, 
+  get, member, matchId, putTexMacroDocumentInDictionaryById, loadTexMacros, DocDictMsg(..)) 
 
 import Dict exposing(Dict)
+import Http 
 
-import Document exposing(Document)
+import Document exposing(Document, DocumentRecord)
+import Utility
 
 
 type DocumentDictionary = 
   DocumentDictionary (Dict String Document)
+  
+
+type DocDictMsg = 
+  PutDocumentInDictionaryAsTexMacros (Result Http.Error DocumentRecord)
+
 
 empty = DocumentDictionary Dict.empty
 
@@ -22,3 +30,33 @@ member : String -> DocumentDictionary -> Bool
 member key (DocumentDictionary dict) =
   Dict.member key dict
   
+matchId : Int -> String -> DocumentDictionary -> Bool 
+matchId id key (DocumentDictionary dict) = 
+  let 
+    maybeDocument = Dict.get key dict
+  in 
+    case maybeDocument of 
+      Nothing -> False 
+      Just doc -> doc.id == id 
+
+putTexMacroDocumentInDictionaryById : Int -> String -> Cmd DocDictMsg
+putTexMacroDocumentInDictionaryById id token = 
+  Http.send PutDocumentInDictionaryAsTexMacros (Document.getDocumentByIdRequest id token)
+
+
+loadTexMacros : String -> Document -> List String -> DocumentDictionary -> Cmd DocDictMsg
+loadTexMacros token document tagList documentDictionary =
+  let 
+    maybeTexMacroIdString = Utility.lookUpKeyInTagList "texmacros" tagList
+    (texMacrosPresent, id) = case maybeTexMacroIdString of 
+        Nothing -> (False, 0) 
+        Just idString -> 
+            let 
+                id_ = (String.toInt idString |> Maybe.withDefault 0)
+                matches = matchId id_ "texmacros" documentDictionary 
+            in 
+                (matches, id_)
+  in 
+    case (texMacrosPresent, id) of 
+      (False, _) -> Cmd.none
+      (True, id_) -> putTexMacroDocumentInDictionaryById id_ token
