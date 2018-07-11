@@ -37,16 +37,16 @@ titleLine document =
   if document.parentId == 0 then 
     Element.el [Font.size 18, Font.bold] (text document.title) 
   else 
-    loadMasterDocumentButton  document 
+    Element.row [] [loadMasterDocumentButton  document, Element.el [moveLeft 13, Font.size 18, Font.bold] (text document.title) ]
 
 
 
 loadMasterDocumentButton : Document -> Element DocViewMsg    
 loadMasterDocumentButton  document = 
   Element.el [] (
-        Input.button (Widget.listItemStyle  (px 190)) {
+        Input.button (Widget.titleStyle) {
             onPress =  Just (LoadMaster document.parentId)
-        , label = Element.el [ height (px 40), padding 5, Font.size 18, Font.bold] (text document.title)
+        , label = Element.el [ moveUp 0, padding 5, Font.size 18, Font.bold] (text (document.parentTitle ++ " :: "))
         } 
     )
     

@@ -18,6 +18,13 @@ listItemStyle width_ = [
     , clipX
    ]
 
+titleStyle = [
+     Font.size 13 
+    , mouseDown [  Font.size 13]
+    , Font.color blue
+    , paddingXY 10 0
+    , clipX
+   ]
 
 buttonStyle width_ = [
      Font.size 13 

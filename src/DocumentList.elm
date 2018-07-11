@@ -57,14 +57,6 @@ findDocuments maybeUser queryString =
   Http.send ReceiveDocumentList <| findDocumentsRequest maybeUser queryString
 
 
--- findPublicDocuments : String -> Cmd DocListMsg
--- findPublicDocuments queryString = 
---   Http.send ReceiveDocumentList <| findPublicDocumentsRequest queryString
-
--- findUserDocuments : User -> String -> Cmd DocListMsg
--- findUserDocuments user queryString = 
---   Http.send ReceiveDocumentList <| findUserDocumentsRequest user queryString
-
 loadMasterDocument : User -> Int -> Cmd DocListMsg 
 loadMasterDocument user docId = 
   Http.send ReceiveDocumentList <| loadMasterDocumentRequest user docId
@@ -103,34 +95,6 @@ findDocumentsRequest maybeUser queryString =
     , withCredentials = False
     }
 
--- findPublicDocumentsRequest : String -> Http.Request DocumentList
--- findPublicDocumentsRequest queryString = 
---   Http.request
---     { method = "Get"
---     , headers = [
---           Http.header "APIVersion" "V2"
---     ]
---     , url = Configuration.backend ++ "/api/public/documents?" ++ queryString
---     , body = Http.jsonBody Encode.null
---     , expect = Http.expectJson documentListDecoder
---     , timeout = Just 5000
---     , withCredentials = False
---     }
-
--- findUserDocumentsRequest : User -> String -> Http.Request DocumentList
--- findUserDocumentsRequest user queryString = 
---   Http.request
---     { method = "Get"
---     , headers = [
---           Http.header "APIVersion" "V2"
---         , Http.header "authorization" ("Bearer " ++ (User.getTokenString user))
---     ]
---     , url = Configuration.backend ++ "/api/documents?" ++ queryString
---     , body = Http.jsonBody Encode.null
---     , expect = Http.expectJson documentListDecoder
---     , timeout = Just 5000
---     , withCredentials = False
---     }
 
 loadMasterDocumentRequest :User -> Int -> Http.Request DocumentList 
 loadMasterDocumentRequest  user docId =
