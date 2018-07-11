@@ -25,6 +25,8 @@ import DocumentList exposing(
 import DocumentView exposing(view, DocViewMsg(..))
 import DocumentListView exposing(DocListViewMsg(..))
 
+import DocumentDictionary exposing(DocumentDictionary)
+
 
 
 main =
@@ -49,6 +51,7 @@ type alias Model =
       , docInfo  : String
       , currentDocument : Document
       , documentList : DocumentList 
+      , documentDictionary : DocumentDictionary
       , counter : Int
     }
 
@@ -84,6 +87,7 @@ init flags =
             , maybeCurrentUser = Just User.testUser
             , currentDocument = { doc | title = "Welcome!"}
             , documentList = DocumentList.empty
+            , documentDictionary = DocumentDictionary.empty
             , counter = 0
         }
         , Cmd.none
@@ -194,6 +198,16 @@ update msg model =
                 Just id -> 
                  ( model, Cmd.map DocListMsg (DocumentList.loadMasterDocument user id ))
 
+        DocMsg (PutDocumentInDictionaryAsTexMacros result) -> 
+          case result of 
+            Ok documentRecord -> 
+              let 
+                dict = model.documentDictionary
+                doc = documentRecord.document
+              in
+                 ({ model | documentDictionary = DocumentDictionary.put "texmacros" doc dict },   Cmd.none  )
+            Err err -> 
+                ({model | message = handleHttpError err},   Cmd.none  )
         
 
 handleHttpError : Http.Error -> String 

@@ -102,12 +102,6 @@ type alias Child =
 type alias AccessDict =
     Dict String String
 
-{-| Entries in the documentDict point to
-    special associated documents such as
-    a summary, a commentary, or a TeX macro file 
- -}
-type alias DocumentDict =
-    Dict String Document
 
 {-| A master document has list of children -}
 type DocType
@@ -126,6 +120,7 @@ type TextType
 
 type DocMsg = 
   ReceiveDocument (Result Http.Error DocumentRecord)
+  | PutDocumentInDictionaryAsTexMacros (Result Http.Error DocumentRecord)
 
 -- DECODERS
 
@@ -235,6 +230,15 @@ getDocumentByIdRequest id token =
 getDocumentById : Int  -> String -> Cmd DocMsg 
 getDocumentById id token =
     Http.send ReceiveDocument <| getDocumentByIdRequest id token
+
+
+
+putTexMacoDocumentInDictionaryById : Int -> String -> Cmd DocMsg
+putTexMacoDocumentInDictionaryById id token = 
+  Http.send PutDocumentInDictionaryAsTexMacros (getDocumentByIdRequest id token)
+
+-- ACTIONS
+
 
 
 -- VIEW
