@@ -37,7 +37,7 @@ titleLine document =
   if document.parentId == 0 then 
     Element.el [Font.size 18, Font.bold] (text document.title) 
   else 
-    Element.row [] [loadMasterDocumentButton  document, Element.el [moveLeft 13, Font.size 18, Font.bold] (text document.title) ]
+    Element.row [moveLeft 15] [loadMasterDocumentButton  document, Element.el [moveLeft 13, Font.size 18, Font.bold] (text document.title) ]
 
 
 
