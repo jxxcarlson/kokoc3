@@ -68,6 +68,37 @@ type alias Document =
     , modified : Posix
     }
 
+initialText = 
+    """
+Type something in the search box, upper left, to find a document.
+
+\\subheading{Search Tips}
+
+\\begin{enumerate}
+
+\\item Type words or fragments of words to search by title.
+For example, type \\strong{atom}.  If you wanted to be
+more specific, you could type \\strong{hydrogen atom},
+or for that mattter \\strong{ato hy}.
+
+\\item Every document has a numerical ID, like a person's
+social security number. You can type the ID in the search
+box to find a document.   If someone says, "My class notes
+are on document \\strong{440} at knode.io,"" you 
+know what to do. 
+
+\\item You can do full text searches.  For example,
+\\strong{text=atom} finds documents with \\italic{atom}
+in the text.  The search \\strong{text=atom, text=oscillator}
+finds those texts that also have \\italic{oscillator} in the
+text.
+
+
+\\end{enumerate}
+
+There is more to searching, but this is enough for now.
+"""
+
 basicDocument : Document 
 basicDocument = Document
     0
@@ -75,12 +106,12 @@ basicDocument = Document
     0
     "author123"
     "Phineas Phud"
-    "Welcome!"
-    "Pythagoras said: $a^2 + b^2 = c^2$."
+    "Welcome to kNode Reader"
+    initialText
     1  
     True
     Dict.empty
-    []
+    ["texmacros:453"]
     []
     0
     "Parent"
@@ -279,8 +310,12 @@ prependMacros macros_ sourceText =
 viewMiniLatex : String -> Document -> Element msg
 viewMiniLatex texMacros document =
   let 
+    source = if texMacros == "" then 
+                document.content 
+             else 
+                prependMacros texMacros document.content
     editRecord =
-        MiniLatex.setup 0 (prependMacros texMacros document.content)   
+        MiniLatex.setup 0 source 
   in 
     MiniLatex.getRenderedText texMacros editRecord
         |> List.map (\x -> Element.paragraph [  ] [ Element.html x ])

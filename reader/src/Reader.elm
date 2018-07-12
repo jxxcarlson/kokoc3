@@ -228,9 +228,9 @@ view  model =
         
 header : Model -> Element Msg
 header model = 
-  Element.row [width fill, Background.color Widget.grey, height (px 40), paddingXY 20 0, spacing 10] [
-      documentInfoInput model
-     , getDocumentsButton (px 60) model 
+  Element.row [width fill, Background.color Widget.grey, height (px 40), paddingXY 20 0, spacing 100] [
+      Element.row [ spacing 20] [documentInfoInput model, getDocumentsButton (px 60) model ]
+     , Element.el [ Font.size 24] (text "kNode Reader")
   ]
 
 body : Model -> Element Msg
