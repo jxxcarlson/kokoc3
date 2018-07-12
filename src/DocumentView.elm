@@ -19,10 +19,10 @@ type DocViewMsg =
   | LoadMasterWithCurrentSelection Int
 
 
-view : Int -> Document -> Element DocViewMsg 
-view counter doc = 
+view : Int -> String -> Document -> Element DocViewMsg 
+view counter texMacros doc = 
   let 
-    viewDoc = viewDocument doc 
+    viewDoc = viewDocument texMacros doc 
   in 
     Element.column [spacing 15] [
         titleLine doc

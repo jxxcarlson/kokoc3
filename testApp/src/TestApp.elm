@@ -218,27 +218,7 @@ handleHttpError error =
     Http.NetworkError -> "Network error"
     Http.BadStatus resp -> "Bad status: " ++ "darn!"
     Http.BadPayload str1 resp -> "Bad payload: " ++ str1  ++ ", payload = " ++ "bad payload"
-
--- handleErrorReponse : Http.Resonse 
--- handleErrorReponse resp =
-  
-
-
--- VIEW 
-
-
--- view1 model =
---    Element.layout [Font.size 14, width (px 400), height (px 600)] <|
---         Element.column [ paddingXY 20 20, height (px 240)] [
---             Element.column [paddingXY 40 40, spacing 15,  Background.color grey]
---                 [ label 18 "Test App"
-
---                 , 
---                 , 
---                 , DocumentView.view model.currentDocument
---                 ]
-        -- ]
-        
+      
 
 view  model =
    Element.layout [Font.size 14, width fill, height fill, clipY] <|
@@ -248,17 +228,19 @@ view  model =
             , footer model
         ]
         
-
+header : Model -> Element Msg
 header model = 
   Element.row [width fill, Background.color Widget.grey, height (px 40), paddingXY 20 0, spacing 10] [
       passwordInput model, getTokenButton (px 75) model
   ]
 
+body : Model -> Element Msg
 body model = 
   Element.row [width fill, height fill, Background.color Widget.white, centerX] [
      bodyLeftColumn model,  bodyCenterColumn model, bodyRightColumn model
   ]
 
+bodyLeftColumn : Model -> Element Msg
 bodyLeftColumn model = 
   Element.column [width (px 250), height fill, 
     Background.color Widget.lightBlue, paddingXY 20 20, spacing 10] [
@@ -270,17 +252,27 @@ bodyLeftColumn model =
      , Element.map DocListViewMsg (DocumentListView.view model.documentList)
   ]
 
+bodyCenterColumn : Model -> Element Msg
 bodyCenterColumn model = 
   Element.column [width fill, height fill, paddingXY 20 20
     , Background.color Widget.lightGrey, centerX] [
-      Element.map DocViewMsg (DocumentView.view model.counter model.currentDocument)
+      Element.map DocViewMsg (DocumentView.view model.counter (texMacros model) model.currentDocument)
   ]
 
+texMacros : Model -> String
+texMacros model = 
+  case DocumentDictionary.get "texmacros"  model.documentDictionary of 
+    Nothing -> ""
+    Just doc -> doc.content
+    
+  
+bodyRightColumn : Model -> Element Msg
 bodyRightColumn model = 
   Element.column [width (px 250), height fill, Background.color Widget.lightBlue, centerX] [
       text "RC"
   ]
 
+footer : Model -> Element Msg
 footer model = 
   Element.row [width fill, Background.color Widget.grey, height (px 40), paddingXY 20 0] [
       Element.el [] (text model.message)

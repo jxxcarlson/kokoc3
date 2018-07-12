@@ -52,11 +52,11 @@ loadTexMacros token document tagList documentDictionary =
         Nothing -> (False, 0) 
         Just idString -> 
             let 
-                id_ = (String.toInt idString |> Maybe.withDefault 0)
+                id_ = String.toInt idString |> Maybe.withDefault 0
                 matches = matchId id_ "texmacros" documentDictionary 
             in 
                 (matches, id_)
   in 
     case (texMacrosPresent, id) of 
-      (False, _) -> Cmd.none
+      (False, id_) -> putTexMacroDocumentInDictionaryById id_ token
       (True, id_) -> putTexMacroDocumentInDictionaryById id_ token

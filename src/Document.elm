@@ -249,29 +249,38 @@ type alias DocumentView msg =
      , content: Element msg 
    }
 
-viewDocument : Document -> DocumentView msg
-viewDocument doc = 
+viewDocument : String -> Document -> DocumentView msg
+viewDocument texMacros doc = 
   { title = doc.title 
-    , content = documentContentView doc
+    , content = documentContentView texMacros doc
   }
 
-documentContentView : Document -> Element msg 
-documentContentView document = 
+documentContentView : String -> Document -> Element msg 
+documentContentView texMacros document = 
   case document.textType of
-    MiniLatex -> viewMiniLatex document 
+    MiniLatex -> viewMiniLatex texMacros document 
     Markdown -> viewMarkdown document 
     Asciidoc -> viewAsciidoc document 
     AsciidocLatex -> viewAsciidocLatex document 
     PlainText -> viewPlainText document
   
+normalize str = 
+  str |> String.lines |> List.filter (\x -> x /= "") |> String.join("\n") 
 
-viewMiniLatex : Document -> Element msg
-viewMiniLatex document =
+   
+prependMacros macros_ sourceText = 
+  let
+    macros__ =  (macros_ |> normalize)
+  in
+    "$$\n" ++ macros__ ++ "\n$$\n\n" ++ sourceText 
+
+viewMiniLatex : String -> Document -> Element msg
+viewMiniLatex texMacros document =
   let 
     editRecord =
-        MiniLatex.setup 0 document.content   
+        MiniLatex.setup 0 (prependMacros texMacros document.content)   
   in 
-    MiniLatex.getRenderedText "" editRecord
+    MiniLatex.getRenderedText texMacros editRecord
         |> List.map (\x -> Element.paragraph [  ] [ Element.html x ])
         |> Element.column []
 
