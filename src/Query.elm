@@ -17,9 +17,17 @@ parse input =
         else
             parseQueryHelper input
 
-
 parseQueryHelper : String -> String
-parseQueryHelper input =
+parseQueryHelper input = 
+  let 
+    headWord = input |> String.words |> List.head |> Maybe.withDefault "xxx"
+  in 
+    case String.toInt headWord of 
+      Nothing -> parseQueryHelper_ input 
+      Just id -> "id=" ++ (String.fromInt id)  
+
+parseQueryHelper_ : String -> String
+parseQueryHelper_ input =
   let 
      brackets : Regex.Regex
      brackets =
@@ -33,6 +41,8 @@ parseQueryHelper input =
         |> List.filter (\item -> item /= "")
         |> List.map (\item -> transformItem item)
         |> String.join ("&")
+
+
 
 
 transformItem : String -> String
