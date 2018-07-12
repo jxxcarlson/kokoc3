@@ -64,6 +64,7 @@ type Msg
     | GetToken
     | GetDocumentById Int
     | GetPublicDocuments String
+    | GetPublicDocumentsRawQuery String
     | GetUserDocuments String
     | LoadMasterDocument String
     | UserMsg User.UserMsg
@@ -183,6 +184,9 @@ update msg model =
 
         GetPublicDocuments query ->
            ({ model | message = "query: " ++ query}, Cmd.map DocListMsg (DocumentList.findDocuments Nothing (Query.parse query)))
+
+        GetPublicDocumentsRawQuery query ->
+           ({ model | message = "query: " ++ query}, Cmd.map DocListMsg (DocumentList.findDocuments Nothing query))
         
         GetUserDocuments query ->
           case model.maybeCurrentUser of 
@@ -229,7 +233,7 @@ view  model =
 header : Model -> Element Msg
 header model = 
   Element.row [width fill, Background.color Widget.grey, height (px 40), paddingXY 20 0, spacing 100] [
-      Element.row [ spacing 20] [documentInfoInput model, getDocumentsButton (px 60) model ]
+      Element.row [ spacing 20] [documentInfoInput model, getDocumentsButton (px 60) model, getRandomDocumentsButton (px 70) model ]
      , Element.el [ Font.size 24] (text "kNode Reader")
   ]
 
@@ -336,6 +340,12 @@ getDocumentsButton width_ model =
   , label = Element.text "Search"
   } 
 
+getRandomDocumentsButton : Length -> Model -> Element Msg    
+getRandomDocumentsButton width_ model = 
+  Input.button (buttonStyle  width_) {
+    onPress =  Just (GetPublicDocumentsRawQuery "random=public")
+  , label = Element.text "Random"
+  } 
 
 
 idFromDocInfo str = 
