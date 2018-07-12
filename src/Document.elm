@@ -6,6 +6,7 @@ module Document exposing(
     , getDocumentByIdRequest
     , documentDecoder
     , DocMsg(..)
+    , DocType(..)
     , basicDocument
     , viewDocument
   )

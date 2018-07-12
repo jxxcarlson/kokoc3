@@ -1,4 +1,4 @@
-module DocumentListView exposing(view, DocListViewMsg(..))
+module DocumentListView exposing(view, viewWithHeading, DocListViewMsg(..))
 
 import Element exposing (..)
 import Element.Input as Input
@@ -11,6 +11,13 @@ import Document exposing(Document)
 type DocListViewMsg = 
   SetCurrentDocument Document
 
+
+viewWithHeading : String -> DocumentList -> Element DocListViewMsg
+viewWithHeading heading docList = 
+  Element.column [ spacing 10] [
+     Element.el [moveRight 10, Font.size 18, Font.bold] (text heading)
+    , view docList
+  ]
 
 view : DocumentList -> Element DocListViewMsg 
 view docList =

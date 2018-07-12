@@ -15,7 +15,7 @@ import Element.Border as Border
 import Element.Lazy
 
 import User exposing(Token, UserMsg(..), readToken, User)
-import Document exposing(Document, DocMsg(..))
+import Document exposing(Document, DocType(..), DocMsg(..))
 import DocumentList exposing(
      DocumentList
         , DocListMsg(..)
@@ -243,8 +243,20 @@ bodyLeftColumn : Model -> Element Msg
 bodyLeftColumn model = 
   Element.column [width (px 250), height fill, 
     Background.color Widget.lightBlue, paddingXY 20 20, spacing 10] [ 
-      Element.map DocListViewMsg (DocumentListView.view model.documentList)
+      Element.map DocListViewMsg (DocumentListView.viewWithHeading (docListTitle model) model.documentList)
   ]
+
+
+docListTitle : Model -> String 
+docListTitle model = 
+  let  
+    documentCount = List.length (DocumentList.documents model.documentList)
+    firstDocument = DocumentList.getFirst model.documentList
+    title = case firstDocument.docType of 
+      Standard -> "Search Results"
+      Master -> "Contents"
+  in 
+    title ++ " (" ++ String.fromInt documentCount ++ ")"  
 
 bodyCenterColumn : Model -> Element Msg
 bodyCenterColumn model = 
