@@ -133,11 +133,15 @@ update msg model =
         DocListMsg (ReceiveDocumentList result)->
           case result of 
             Ok documentList -> 
+              let 
+                currentDocument = DocumentList.getFirst documentList
+              in
                ({ model | 
                  message = "documentList: " ++ (String.fromInt <| documentListLength documentList)
-                 , documentList = documentList
+                 , documentList = DocumentList.selectFirst documentList
+                 , currentDocument = DocumentList.getFirst documentList
                  }
-                 ,   Cmd.none  )
+                 ,  Cmd.map  DocDictMsg <| DocumentDictionary.loadTexMacros (readToken model.maybeToken) currentDocument currentDocument.tags model.documentDictionary   )
             Err err -> 
                 ({model | message = handleHttpError err},   Cmd.none  )
 
@@ -264,8 +268,8 @@ bodyRightColumn model =
 
 footer : Model -> Element Msg
 footer model = 
-  Element.row [width fill, Background.color Widget.grey, height (px 40), paddingXY 20 0] [
-      Element.el [] (text model.message)
+  Element.row [spacing 15, width fill, Background.color Widget.grey, height (px 40), paddingXY 20 0] [
+      Element.el [] (text model.message), Element.el [] (text ("id " ++ (String.fromInt model.currentDocument.id )))
   ] 
 
 showIf condition element =

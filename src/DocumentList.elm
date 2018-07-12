@@ -7,6 +7,8 @@ module DocumentList exposing(
   , empty
   , selected
   , select
+  , selectFirst
+  , getFirst
   , documents
   , documentListLength
   )
@@ -45,6 +47,24 @@ selected (DocumentList docListRecord) =
 select : Maybe Document -> DocumentList -> DocumentList 
 select maybeSelectedDocument (DocumentList documentList) =
     DocumentList { documents = documentList.documents, selected = maybeSelectedDocument}
+
+selectFirst : DocumentList -> DocumentList 
+selectFirst documentList = 
+  let 
+    maybeFirstDocument = List.head (documents documentList)
+  in 
+    select maybeFirstDocument documentList
+
+getFirst : DocumentList -> Document 
+getFirst documentList = 
+  List.head (documents documentList) |> Maybe.withDefault notFoundDocument
+
+notFoundDocument : Document 
+notFoundDocument = 
+  let 
+    doc =  Document.basicDocument 
+  in 
+    { doc | title = "Not found" }
 
 documentListLength : DocumentList -> Int 
 documentListLength (DocumentList documentList) =
