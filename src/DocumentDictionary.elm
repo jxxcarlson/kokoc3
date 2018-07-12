@@ -58,5 +58,5 @@ loadTexMacros maybeTokenString document tagList documentDictionary =
                 (matches, id_)
   in 
     case (texMacrosPresent, id) of 
-      (False, id_) -> putTexMacroDocumentInDictionaryById id_ maybeTokenString
+      (False, id_) -> Cmd.none
       (True, id_) -> putTexMacroDocumentInDictionaryById id_ maybeTokenString
