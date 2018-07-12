@@ -39,7 +39,10 @@ testUser = User {
 
 getTokenString : User -> String 
 getTokenString (User user) = 
-  readToken user.token
+  let
+    (Token str) = user.token
+  in
+    str 
 
 setToken : Token -> User -> User 
 setToken token (User user) = 
@@ -70,9 +73,12 @@ invalidToken =
   Token "invalid" 
 
 {-| Return the token string -}
-readToken : Token -> String 
-readToken (Token str) = 
-   str
+readToken : Maybe Token -> Maybe String 
+readToken maybeToken = 
+  case maybeToken of
+    Nothing -> Nothing 
+    Just (Token str)-> Just str
+   
 
 -- readToken1 : Token -> String 
 -- readToken1 token = 

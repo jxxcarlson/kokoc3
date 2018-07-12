@@ -59,13 +59,13 @@ findDocuments maybeUser queryString =
   Http.send ReceiveDocumentList <| findDocumentsRequest maybeUser queryString
 
 
-loadMasterDocument : User -> Int -> Cmd DocListMsg 
-loadMasterDocument user docId = 
-  Http.send ReceiveDocumentList <| loadMasterDocumentRequest user docId
+loadMasterDocument : Maybe User -> Int -> Cmd DocListMsg 
+loadMasterDocument maybeUser docId = 
+  Http.send ReceiveDocumentList <| loadMasterDocumentRequest maybeUser docId
 
-loadMasterDocumentWithCurrentSelection : User -> Int -> Cmd DocListMsg 
-loadMasterDocumentWithCurrentSelection user docId = 
-  Http.send ReceiveDocumentListAndPreserveCurrentSelection <| loadMasterDocumentRequest user docId
+loadMasterDocumentWithCurrentSelection : Maybe User -> Int -> Cmd DocListMsg 
+loadMasterDocumentWithCurrentSelection maybeUser docId = 
+  Http.send ReceiveDocumentListAndPreserveCurrentSelection <| loadMasterDocumentRequest maybeUser docId
 
 -- DECODERS
 
@@ -102,15 +102,18 @@ findDocumentsRequest maybeUser queryString =
     }
 
 
-loadMasterDocumentRequest :User -> Int -> Http.Request DocumentList 
-loadMasterDocumentRequest  user docId =
+loadMasterDocumentRequest : Maybe User -> Int -> Http.Request DocumentList 
+loadMasterDocumentRequest  maybeUser docId =
+  let 
+    (route, headers) = case Debug.log "LD, maybeUser" maybeUser of 
+      Nothing -> ("/api/public/documents?master=" ++ (String.fromInt docId), [Http.header "APIVersion" "V2"])
+      Just user -> ("/api/documents?master=" ++ (String.fromInt docId), 
+        [Http.header "APIVersion" "V2", Http.header "authorization" ("Bearer " ++ (User.getTokenString user))])
+  in
     Http.request
     { method = "Get"
-    , headers = [
-          Http.header "APIVersion" "V2"
-        , Http.header "authorization" ("Bearer " ++ (User.getTokenString user))
-    ]
-    , url = Configuration.backend ++ "/api/documents?master=" ++ (String.fromInt docId)
+    , headers = headers
+    , url = Configuration.backend ++ route
     , body = Http.jsonBody Encode.null
     , expect = Http.expectJson documentListDecoder
     , timeout = Just 5000

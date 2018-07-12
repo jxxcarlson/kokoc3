@@ -39,13 +39,13 @@ matchId id key (DocumentDictionary dict) =
       Nothing -> False 
       Just doc -> doc.id == id 
 
-putTexMacroDocumentInDictionaryById : Int -> String -> Cmd DocDictMsg
-putTexMacroDocumentInDictionaryById id token = 
-  Http.send PutDocumentInDictionaryAsTexMacros (Document.getDocumentByIdRequest id token)
+putTexMacroDocumentInDictionaryById : Int -> Maybe String -> Cmd DocDictMsg
+putTexMacroDocumentInDictionaryById id maybeTokenString = 
+  Http.send PutDocumentInDictionaryAsTexMacros (Document.getDocumentByIdRequest id maybeTokenString)
 
 
-loadTexMacros : String -> Document -> List String -> DocumentDictionary -> Cmd DocDictMsg
-loadTexMacros token document tagList documentDictionary =
+loadTexMacros : Maybe String -> Document -> List String -> DocumentDictionary -> Cmd DocDictMsg
+loadTexMacros maybeTokenString document tagList documentDictionary =
   let 
     maybeTexMacroIdString = Utility.lookUpKeyInTagList "texmacros" tagList
     (texMacrosPresent, id) = case maybeTexMacroIdString of 
@@ -58,5 +58,5 @@ loadTexMacros token document tagList documentDictionary =
                 (matches, id_)
   in 
     case (texMacrosPresent, id) of 
-      (False, id_) -> putTexMacroDocumentInDictionaryById id_ token
-      (True, id_) -> putTexMacroDocumentInDictionaryById id_ token
+      (False, id_) -> putTexMacroDocumentInDictionaryById id_ maybeTokenString
+      (True, id_) -> putTexMacroDocumentInDictionaryById id_ maybeTokenString

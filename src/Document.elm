@@ -215,25 +215,27 @@ decodeChild =
 
 -- REQUEST
 
-getDocumentByIdRequest : Int -> String -> Http.Request DocumentRecord
-getDocumentByIdRequest id token = 
-  Http.request
-    { method = "Get"
-    , headers = [
-          Http.header "Authorization" ("Bearer " ++ token)
-        , Http.header "APIVersion" "V2"
-    ]
-    , url = Configuration.backend ++ "/api/documents/" ++ (String.fromInt id)
-    , body = Http.jsonBody Encode.null
-    , expect = Http.expectJson documentRecordDecoder
-    , timeout = Just 5000
-    , withCredentials = False
-    }
+getDocumentByIdRequest : Int -> Maybe String -> Http.Request DocumentRecord
+getDocumentByIdRequest id maybeTokenString = 
+  let 
+    (route, headers) = case maybeTokenString of 
+       Nothing -> ("/api/public/documents/" ++ (String.fromInt id), [Http.header "APIVersion" "V2"])
+       Just tokenString -> ("/api/documents/" ++ (String.fromInt id),
+         [Http.header "APIVersion" "V2", Http.header "Authorization" ("Bearer " ++ tokenString)] )
+  in
+    Http.request
+        { method = "Get"
+        , headers = headers
+        , url = Configuration.backend ++ route
+        , body = Http.jsonBody Encode.null
+        , expect = Http.expectJson documentRecordDecoder
+        , timeout = Just 5000
+        , withCredentials = False
+        }
 
-getDocumentById : Int  -> String -> Cmd DocMsg 
-getDocumentById id token =
-    Http.send ReceiveDocument <| getDocumentByIdRequest id token
-
+getDocumentById : Int  -> Maybe String -> Cmd DocMsg 
+getDocumentById id maybeTokenString =
+    Http.send ReceiveDocument <| getDocumentByIdRequest id maybeTokenString
 
 
 
