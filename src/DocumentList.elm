@@ -105,7 +105,7 @@ findDocumentsRequest maybeUser queryString =
 loadMasterDocumentRequest : Maybe User -> Int -> Http.Request DocumentList 
 loadMasterDocumentRequest  maybeUser docId =
   let 
-    (route, headers) = case Debug.log "LD, maybeUser" maybeUser of 
+    (route, headers) = case maybeUser of 
       Nothing -> ("/api/public/documents?master=" ++ (String.fromInt docId), [Http.header "APIVersion" "V2"])
       Just user -> ("/api/documents?master=" ++ (String.fromInt docId), 
         [Http.header "APIVersion" "V2", Http.header "authorization" ("Bearer " ++ (User.getTokenString user))])
