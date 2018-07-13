@@ -260,8 +260,8 @@ documentContentView texMacros document =
   case document.textType of
     MiniLatex -> viewMiniLatex texMacros document 
     Markdown -> viewMarkdown document 
-    Asciidoc -> viewAsciidoc document 
-    AsciidocLatex -> viewAsciidocLatex document 
+    Asciidoc -> viewAsciidoc document.content 
+    AsciidocLatex -> viewAsciidoc document.content 
     PlainText -> viewPlainText document
   
 normalize str = 
@@ -292,21 +292,31 @@ viewMarkdown : Document -> Element msg
 viewMarkdown document =
   Element.el [ ] (Element.html <| MarkdownTools.view document.content)
 
-viewAsciidoc : Document -> Element msg
-viewAsciidoc document =
-  Element.el [ ] (Element.html <| asciidocText document.content)
 
+-- YAY: https://ellie-test-19-cutover.now.sh/LGShLFZHvha1
 -- https://ellie-test-19-cutover.now.sh/LGc6jCfs64a1
+
+viewAsciidoc : String -> Element msg
+viewAsciidoc str =
+  Element.el [ ] (Element.html <| asciidocText str)
+
 
 asciidocText : String -> Html msg
 asciidocText str =
     Html.node "asciidoc-text"
-        [ HA.property "content" (Encode.string <| str) ]
+        [ HA.property "content" (Encode.string str) ]
         []
 
-viewAsciidocLatex : Document -> Element msg
-viewAsciidocLatex document =
-  Element.el [ ] (Element.html <| asciidocText document.content)
+
+-- asciidocText : String -> Html msg
+-- asciidocText str =
+--     Html.node "asciidoc-text"
+--         [ HA.property "content" (Encode.string <| str) ]
+--         []
+
+-- viewAsciidocLatex : Document -> Element msg
+-- viewAsciidocLatex document =
+--   Element.el [ ] (Element.html <| asciidocText document.content)
 
 viewPlainText : Document -> Element msg
 viewPlainText document =
