@@ -242,11 +242,6 @@ getDocumentById id maybeTokenString =
 
 
 
-
--- ACTIONS
-
-
-
 -- VIEW
 
 type alias DocumentView msg = 
@@ -301,17 +296,6 @@ viewAsciidoc : Document -> Element msg
 viewAsciidoc document =
   Element.el [ ] (Element.html <| asciidocText document.content)
 
--- viewAsciidoc : Document -> Element msg
--- viewAsciidoc document =
---   Element.node "asciidoc-text" [ Element.htmlAttribute "content"] (Encode.string <| document.content)
-
-
--- asciidocText : String -> Html msg
--- asciidocText content =
---     Html.node "asciidoc-text"
---         [ HA.property "content" (Encode.string <| content) ]
---         []
-
 -- https://ellie-test-19-cutover.now.sh/LGc6jCfs64a1
 
 asciidocText : String -> Html msg
@@ -331,7 +315,10 @@ viewPlainText document =
 
 initialText = 
     """
+\\section{Getting started}
+
 Type something in the search box, upper left, to find a document.
+Or press the \\strong{Random} button.
 
 \\section{Search Tips}
 
@@ -374,7 +361,7 @@ There is more to searching, but this is enough for now.....
  with others.  With the kNode Reader,
  you can read what others write without signing in.
  To keep track of what you are reading or to
- write your own content to distribute on kNode.io 
+ write your own content to distribute on kNode.io, 
  sign up for an account. You can write in 
  plain text, Markdown, Asciidoc, or MiniLatex.
 

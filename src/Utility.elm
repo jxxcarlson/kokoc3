@@ -65,11 +65,7 @@ softBreak width string =
             |> Regex.find (softBreakRegexp width)
             |> List.map (.match)
 
--- softBreakLongLines : Int -> String -> List String
--- softBreakLongLines width string = 
---   string 
---     |> String.lines
---     |> String.
+
 
 softBreakAltAux : Int -> String -> List String
 softBreakAltAux width string =
