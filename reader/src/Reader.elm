@@ -134,7 +134,10 @@ update msg model =
         UserMsg (ReceiveToken result)->
           case result of 
             Ok token -> 
-               ({ model | maybeToken = Just token, maybeCurrentUser = User.maybeSetToken token model.maybeCurrentUser, message = "token OK"},   Cmd.none  )
+               ({ model | 
+                 maybeToken = Just token
+                 , maybeCurrentUser = User.maybeSetToken token (Just User.testUser)
+                 , message = "token OK"},   Cmd.none  )
             Err err -> 
                 ({model | message = "Token error"},   Cmd.none  )
 
@@ -336,22 +339,29 @@ footer model =
   Element.row [spacing 15, width fill, Background.color Widget.grey, height (px 40), paddingXY 20 0] [
         Element.el [] (text model.message)
       , Element.el [] (text ("id " ++ (String.fromInt model.currentDocument.id )))
+      , Element.el [] (text <| access model.currentDocument)
+      , Element.el [] (text <| currentUserName model.maybeCurrentUser)
       , Element.el [] (text ("keys: " ++ (showKeys model)))
   ] 
+
+currentUserName : Maybe User -> String  
+currentUserName maybeCurrentUser =
+  case maybeCurrentUser of 
+    Nothing -> "User: NONE"
+    Just user -> "User: " ++ User.username user
+
+access : Document -> String 
+access doc = 
+  case doc.public of 
+    True -> "Public document"
+    False -> "Private document"
 
 showKeys : Model -> String 
 showKeys model = 
   DocumentDictionary.keys model.documentDictionary |> String.join ", "
 
 
-showIf condition element =
-    if condition then
-        element
-    else
-        text ""
-
-
--- OUPUTS
+-- OUTPUTS
 
 label : Int -> String -> Element msg
 label fontSize str =
@@ -395,9 +405,15 @@ getTokenButton width_ model =
 getDocumentsButton : Length -> Model -> Element Msg    
 getDocumentsButton width_ model = 
   Input.button (buttonStyle  width_) {
-    onPress =  Just (GetPublicDocuments model.docInfo)
+    onPress =  Just ((getDocumentMsg model.appMode model.docInfo))
   , label = Element.text "Search"
   } 
+
+getDocumentMsg : AppMode -> String -> Msg 
+getDocumentMsg appMode docInfo = 
+  case appMode of 
+    Reading -> GetPublicDocuments docInfo
+    Writing -> GetUserDocuments docInfo
 
 getRandomDocumentsButton : Length -> Model -> Element Msg    
 getRandomDocumentsButton width_ model = 

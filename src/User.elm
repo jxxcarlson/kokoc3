@@ -8,6 +8,7 @@ module User exposing(
    , testUser
    , maybeSetToken
    , getTokenString
+   , username
    ) 
 
 
@@ -29,6 +30,10 @@ type User = User {
   , token : Token 
   , username : String 
   }
+
+username : User -> String
+username (User user) =
+  user.username
 
 testUser = User {
     email = "jxxcarlson@gmail.com"
