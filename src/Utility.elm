@@ -2,6 +2,8 @@
 module Utility exposing(..)
 
 import Regex 
+import Html.Attributes as HA
+import Element
 
 
 findTag : String -> List String -> Maybe String 
@@ -101,3 +103,4 @@ softBreakRegexp : Int -> Regex.Regex
 softBreakRegexp width =
     Maybe.withDefault Regex.never <|
        Regex.fromString (".{1," ++ (String.fromInt width) ++ "}(\\s+|$)|\\S+?(\\s+|$)")
+

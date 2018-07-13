@@ -6,6 +6,7 @@ import Browser
 import Browser.Dom as Dom
 import Task
 import Html
+import Html.Attributes
 import Http
 import Widget exposing(..)
 
@@ -55,7 +56,11 @@ type alias Model =
       , documentList : DocumentList 
       , documentDictionary : DocumentDictionary
       , counter : Int
+      , appMode : AppMode
     }
+
+type AppMode = 
+  Reading | Writing
 
 
 type Msg
@@ -76,6 +81,7 @@ type Msg
     | DocViewMsg DocumentView.DocViewMsg
     | DocDictMsg DocumentDictionary.DocDictMsg
     | GoHome
+    | ChangeMode AppMode
 
 
 -- INIT
@@ -94,6 +100,7 @@ init flags =
             , documentList = DocumentList.empty
             , documentDictionary = DocumentDictionary.empty
             , counter = 0
+            , appMode = Reading 
         }
         , focusSearchBox
         )
@@ -232,6 +239,9 @@ update msg model =
             doc = Document.basicDocument  
           in 
            ({model | currentDocument = { doc | title = "Welcome!" }}, Cmd.none)
+
+        ChangeMode nextAppMode ->
+          ({model | appMode = nextAppMode}, Cmd.none)
         
 
 handleHttpError : Http.Error -> String 
@@ -256,16 +266,25 @@ view  model =
         
 header : Model -> Element Msg
 header model = 
-  Element.row [width fill, Background.color Widget.grey, height (px 40), paddingXY 20 0, spacing 100, alignLeft] [
+  Element.row [width fill, Background.color Widget.grey, height (px 40), paddingXY 20 0, spacing 10, alignLeft] [
       Element.row [ spacing 20]  [
          documentInfoInput model
         , getDocumentsButton (px 60) model
         , getRandomDocumentsButton (px 70) model
-        , Element.el [ Font.size 24] (text "kNode Reader")
-        , homeButton (px 70) model ]
-        
-      
+        , Element.el [ Font.size 24] (text <| appTitle model.appMode)
+        , homeButton (px 55) model 
+        , readerModeButton (px 52) model
+        , writerModeButton (px 52) model]
+        , passwordInput model
+        , getTokenButton (px 80) model
   ]
+
+appTitle : AppMode -> String 
+appTitle appMode =
+  case appMode of 
+    Reading -> "kNode Reader"
+    Writing -> "kNode Writer"
+  
 
 body : Model -> Element Msg
 body model = 
@@ -343,21 +362,24 @@ label fontSize str =
 
 passwordInput : Model -> Element Msg
 passwordInput model =
-    Input.text [width (px 200), height (px 30) , Font.color black] {
+    Input.newPassword [width (px 100), height (px 30) , Font.color black] {
         text = model.password 
       , placeholder = Nothing
+      , show = False
       , onChange = Just(\str -> AcceptPassword str)
-      , label = Input.labelAbove [ Font.size 14, Font.bold, moveDown 10 ] (text "Password")
+      , label = Input.labelLeft [ Font.size 12, Font.bold, moveDown 10 ] (text "Password")
     }
 
 documentInfoInput : Model -> Element Msg
 documentInfoInput model =
-    Input.text [id "search-box", width (px 400), height (px 30) , Font.color black] {
+    Input.text [htmlAttribute (Html.Attributes.id "search-box"), width (px 400), height (px 30) , Font.color black] {
         text = model.docInfo 
       , placeholder = Nothing
       , onChange = Just(\str -> AcceptDocInfo str)
       , label = Input.labelLeft [ Font.size 14, Font.bold ] (text "")
     }
+
+
 
 -- CONTROLS
 
@@ -391,5 +413,27 @@ homeButton width_ model =
   , label = Element.text "Home"
   } 
 
+readerModeButton : Length -> Model -> Element Msg    
+readerModeButton width_ model = 
+  Input.button (modeButtonStyle model.appMode Reading  width_) {
+    onPress =  Just (ChangeMode Reading)
+  , label = Element.text "Read"
+  } 
+
+writerModeButton : Length -> Model -> Element Msg    
+writerModeButton width_ model = 
+  Input.button (modeButtonStyle model.appMode Writing  width_) {
+    onPress =  Just (ChangeMode Writing)
+  , label = Element.text "Write"
+  } 
+
+modeButtonStyle appMode buttonMode width_ = 
+  case appMode == buttonMode of 
+    True -> buttonStyleWithColor Widget.darkRed width_  
+    False -> buttonStyleWithColor Widget.blue width_ 
+
+
+
 idFromDocInfo str = 
   str |> String.toInt |> Maybe.withDefault 0
+

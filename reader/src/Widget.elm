@@ -36,6 +36,16 @@ buttonStyle width_ = [
     , Border.rounded 8
    ]
 
+buttonStyleWithColor backgroundColor width_  = [
+     Font.size 13 
+    , mouseDown [  Font.size 13, Background.color mouseDownColor]
+    , Background.color backgroundColor, Font.color white
+    , width width_
+    , height (px 24)
+    , paddingXY 10 0
+    , Border.rounded 8
+   ]
+
 mouseDownColor = 
   Element.rgb 0.7 0.1 0.1
 
@@ -53,8 +63,8 @@ orange = Element.rgb 0.9 0.85 0.2
 
 black = Element.rgb 0.1 0.1 0.1
 
-blue = Element.rgb 0.0 0.0 1.0
+blue = Element.rgb 0.0 0.0 0.5
 
-darkRed = Element.rgb 0.55 0.0 0.0
+darkRed = Element.rgb 0.45 0.0 0.0
 
 white = Element.rgb 1.0 1.0 1.0
