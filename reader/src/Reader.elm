@@ -8,7 +8,7 @@ import Task
 import Html
 import Html.Attributes
 import Http
-import Widget exposing(..)
+import Debounce exposing(Debounce)
 
 import Element exposing (..)
 import Element.Background as Background
@@ -17,6 +17,8 @@ import Element.Input as Input
 import Element.Keyed as Keyed
 import Element.Border as Border
 import Element.Lazy
+
+import Widget exposing(..)
 
 import User exposing(Token, UserMsg(..), readToken, User)
 import Document exposing(Document, DocType(..), DocMsg(..))
@@ -58,6 +60,8 @@ type alias Model =
       , documentDictionary : DocumentDictionary
       , counter : Int
       , appMode : AppMode
+      , debounce : Debounce String
+      , sourceText : String
     }
 
 type AppMode = 
@@ -83,8 +87,21 @@ type Msg
     | DocDictMsg DocumentDictionary.DocDictMsg
     | GoHome
     | ChangeMode AppMode
+    | DebounceMsg Debounce.Msg
+    | GetContent String
+    | UpdateEditorContent String 
 
+-- This defines how the debouncer should work.
+-- Choose the strategy for your use case.
+debounceConfig : Debounce.Config Msg
+debounceConfig =
+  { strategy = Debounce.later 250
+  , transform = DebounceMsg
+  }
 
+updateEditorContentCmd : String -> Cmd Msg
+updateEditorContentCmd str =
+    Task.perform UpdateEditorContent (Task.succeed str)
 -- INIT
 
 init : Flags -> ( Model, Cmd Msg )
@@ -101,7 +118,9 @@ init flags =
             , documentList = DocumentList.empty
             , documentDictionary = DocumentDictionary.empty
             , counter = 0
+            , debounce = Debounce.init
             , appMode = Reading 
+            , sourceText = ""
         }
         , focusSearchBox
         )
@@ -246,7 +265,31 @@ update msg model =
 
         ChangeMode nextAppMode ->
           ({model | appMode = nextAppMode}, Cmd.none)
-        
+
+        DebounceMsg msg_ ->
+            let
+                (debounce, cmd) =
+                    Debounce.update debounceConfig (Debounce.takeLast updateEditorContentCmd) msg_ model.debounce
+            in
+                ({ model | debounce = debounce }, cmd)  
+
+        GetContent str ->
+            let
+                (debounce, cmd) =
+                   Debounce.push debounceConfig str model.debounce
+            in
+                ({ model
+                    | sourceText = str
+                    , debounce = debounce
+                    }
+                    , cmd)
+
+        UpdateEditorContent str ->
+          let  
+            currentDocument = model.currentDocument -- ###
+            nextCurrentDocument = { currentDocument | content = str }
+          in  
+            ( {model | currentDocument = nextCurrentDocument}, Cmd.none )
 
 handleHttpError : Http.Error -> String 
 handleHttpError error = 
@@ -335,7 +378,7 @@ textArea model width_ height_ label_  =
         [ ( (String.fromInt model.counter)
           , Input.multiline 
                 [ width (width_), height (height_), padding 10, scrollbarY ]
-                { onChange = Nothing
+                { onChange = Just GetContent
                 , text = model.currentDocument.content
                 , label = Input.labelLeft [ Font.size 14, Font.bold ] (text "")
                 , placeholder = Nothing
