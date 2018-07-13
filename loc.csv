@@ -1,6 +1,7 @@
-dat,src,tst
+dat,src,rea
 7/8,185,139,get doc by id
 7/9,243,161,view minilatex
 7/10,396,187,DocumentList module (opaque), rq public docs, LH search results, select doc on click, key node + counter for minilatex
 7/11,540,252,load master doc
 7/12,636,326,add DocumentDictionrary, loadTexMacros
+7/13,806,351,MILESTONE: Reader

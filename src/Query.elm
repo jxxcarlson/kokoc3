@@ -4,9 +4,10 @@ import Regex
 
 
 parse: String -> String
-parse input =
+parse input_ =
     let
-        cmd =
+      input = String.replace "author=" "authorname=" input_
+      cmd =
             input
                 |> String.split "="
                 |> List.head

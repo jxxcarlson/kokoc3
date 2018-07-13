@@ -1,4 +1,4 @@
-module DocumentDictionary exposing(DocumentDictionary, empty, put, 
+module DocumentDictionary exposing(DocumentDictionary, empty, put, keys, 
   get, member, matchId, putTexMacroDocumentInDictionaryById, loadTexMacros, DocDictMsg(..)) 
 
 import Dict exposing(Dict)
@@ -17,6 +17,11 @@ type DocDictMsg =
 
 
 empty = DocumentDictionary Dict.empty
+
+keys : DocumentDictionary -> List String 
+keys (DocumentDictionary dict) = 
+  Dict.keys dict 
+  
 
 put : String -> Document -> DocumentDictionary -> DocumentDictionary 
 put key document (DocumentDictionary dict) = 
@@ -58,5 +63,6 @@ loadTexMacros maybeTokenString document tagList documentDictionary =
                 (matches, id_)
   in 
     case (texMacrosPresent, id) of 
-      (False, id_) -> Cmd.none
+      (False, 0) -> Cmd.none
+      (False, id_) -> putTexMacroDocumentInDictionaryById id_ maybeTokenString
       (True, id_) -> putTexMacroDocumentInDictionaryById id_ maybeTokenString

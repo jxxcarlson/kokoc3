@@ -128,7 +128,7 @@ update msg model =
         DocMsg (ReceiveDocument result)->
           case result of 
             Ok documentRecord -> 
-               ({ model | message = "document OK", currentDocument = documentRecord.document},   Cmd.none  )
+               ({ model | message = "document OK", currentDocument = documentRecord.document},  Cmd.none)
             Err err -> 
                 ({model | message = handleHttpError err},   Cmd.none  )
 
@@ -175,8 +175,8 @@ update msg model =
                  , counter = model.counter + 1
                  }
                  , Cmd.batch[
-                     Cmd.map  DocDictMsg <| DocumentDictionary.loadTexMacros (readToken model.maybeToken) document document.tags model.documentDictionary 
-                  ,  loadMasterCommand
+                        loadMasterCommand
+                      , Cmd.map  DocDictMsg <| DocumentDictionary.loadTexMacros (readToken model.maybeToken) document document.tags model.documentDictionary            
                  ]
                )
 
@@ -217,7 +217,8 @@ update msg model =
                 dict = model.documentDictionary
                 doc = documentRecord.document
               in
-                 ({ model | documentDictionary = DocumentDictionary.put "texmacros" doc dict },   Cmd.none  )
+                 ({ model | message = "Put texmacros: " ++ (String.fromInt doc.id) 
+                 , documentDictionary = DocumentDictionary.put "texmacros" doc dict },   Cmd.none  )
             Err err -> 
                 ({model | message = handleHttpError err},   Cmd.none  )
         GoHome ->
@@ -237,6 +238,8 @@ handleHttpError error =
     Http.BadPayload str1 resp -> "Bad payload: " ++ str1  ++ ", payload = " ++ "bad payload"
       
 
+-- VIEW
+
 view  model =
    Element.layout [Font.size 14, width fill, height fill] <|
         Element.column [ width fill, height fill] [
@@ -252,8 +255,9 @@ header model =
          documentInfoInput model
         , getDocumentsButton (px 60) model
         , getRandomDocumentsButton (px 70) model
-        , homeButton (px 70) model
-        , Element.el [ Font.size 24] (text "kNode Reader") ]
+        , Element.el [ Font.size 24] (text "kNode Reader")
+        , homeButton (px 70) model ]
+        
       
   ]
 
@@ -305,8 +309,15 @@ bodyRightColumn model =
 footer : Model -> Element Msg
 footer model = 
   Element.row [spacing 15, width fill, Background.color Widget.grey, height (px 40), paddingXY 20 0] [
-      Element.el [] (text model.message), Element.el [] (text ("id " ++ (String.fromInt model.currentDocument.id )))
+        Element.el [] (text model.message)
+      , Element.el [] (text ("id " ++ (String.fromInt model.currentDocument.id )))
+      , Element.el [] (text ("keys: " ++ (showKeys model)))
   ] 
+
+showKeys : Model -> String 
+showKeys model = 
+  DocumentDictionary.keys model.documentDictionary |> String.join ", "
+
 
 showIf condition element =
     if condition then
@@ -335,7 +346,7 @@ passwordInput model =
 
 documentInfoInput : Model -> Element Msg
 documentInfoInput model =
-    Input.text [width (px 200), height (px 30) , Font.color black] {
+    Input.text [width (px 400), height (px 30) , Font.color black] {
         text = model.docInfo 
       , placeholder = Nothing
       , onChange = Just(\str -> AcceptDocInfo str)
