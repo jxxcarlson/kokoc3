@@ -91,8 +91,10 @@ know what to do.
 \\item You can do full text searches.  For example,
 \\strong{text=atom} finds documents with \\italic{atom}
 in the text.  The search \\strong{text=atom, text=oscillator}
-finds those texts that also have \\italic{oscillator} in the
-text.
+finds those texts that also contain the word \\italic{oscillator}.
+
+\\item Click the \\strong{Random} button to produce
+a  list of random documents.
 
 
 \\end{enumerate}

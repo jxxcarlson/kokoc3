@@ -73,6 +73,7 @@ type Msg
     | DocListViewMsg DocumentListView.DocListViewMsg
     | DocViewMsg DocumentView.DocViewMsg
     | DocDictMsg DocumentDictionary.DocDictMsg
+    | GoHome
 
 
 -- INIT
@@ -162,13 +163,22 @@ update msg model =
 
 
         DocListViewMsg (SetCurrentDocument document)->
+            let  
+              loadMasterCommand = case document.docType of 
+                Standard -> Cmd.none 
+                Master -> Cmd.map DocListMsg (DocumentList.loadMasterDocument model.maybeCurrentUser document.id)
+            in
                ({ model | 
                  message = "document: " ++ document.title
                  , currentDocument = document
                  , documentList = DocumentList.select (Just document) model.documentList
                  , counter = model.counter + 1
                  }
-                 , Cmd.map  DocDictMsg <| DocumentDictionary.loadTexMacros (readToken model.maybeToken) document document.tags model.documentDictionary  )
+                 , Cmd.batch[
+                     Cmd.map  DocDictMsg <| DocumentDictionary.loadTexMacros (readToken model.maybeToken) document document.tags model.documentDictionary 
+                  ,  loadMasterCommand
+                 ]
+               )
 
         DocViewMsg (LoadMaster docId) ->
            (model, Cmd.map DocListMsg (DocumentList.loadMasterDocument model.maybeCurrentUser docId))
@@ -210,6 +220,11 @@ update msg model =
                  ({ model | documentDictionary = DocumentDictionary.put "texmacros" doc dict },   Cmd.none  )
             Err err -> 
                 ({model | message = handleHttpError err},   Cmd.none  )
+        GoHome ->
+          let  
+            doc = Document.basicDocument  
+          in 
+           ({model | currentDocument = { doc | title = "Welcome!" }}, Cmd.none)
         
 
 handleHttpError : Http.Error -> String 
@@ -232,9 +247,14 @@ view  model =
         
 header : Model -> Element Msg
 header model = 
-  Element.row [width fill, Background.color Widget.grey, height (px 40), paddingXY 20 0, spacing 100] [
-      Element.row [ spacing 20] [documentInfoInput model, getDocumentsButton (px 60) model, getRandomDocumentsButton (px 70) model ]
-     , Element.el [ Font.size 24] (text "kNode Reader")
+  Element.row [width fill, Background.color Widget.grey, height (px 40), paddingXY 20 0, spacing 100, alignLeft] [
+      Element.row [ spacing 20]  [
+         documentInfoInput model
+        , getDocumentsButton (px 60) model
+        , getRandomDocumentsButton (px 70) model
+        , homeButton (px 70) model
+        , Element.el [ Font.size 24] (text "kNode Reader") ]
+      
   ]
 
 body : Model -> Element Msg
@@ -347,6 +367,12 @@ getRandomDocumentsButton width_ model =
   , label = Element.text "Random"
   } 
 
+homeButton : Length -> Model -> Element Msg    
+homeButton width_ model = 
+  Input.button (buttonStyle  width_) {
+    onPress =  Just (GoHome)
+  , label = Element.text "Home"
+  } 
 
 idFromDocInfo str = 
   str |> String.toInt |> Maybe.withDefault 0
