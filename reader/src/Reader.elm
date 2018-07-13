@@ -3,6 +3,8 @@ module Main exposing (main)
 {- This app retrieves and displays weather data from openweathermap.org. -}
 
 import Browser
+import Browser.Dom as Dom
+import Task
 import Html
 import Http
 import Widget exposing(..)
@@ -93,8 +95,12 @@ init flags =
             , documentDictionary = DocumentDictionary.empty
             , counter = 0
         }
-        , Cmd.none
+        , focusSearchBox
         )
+
+focusSearchBox : Cmd Msg
+focusSearchBox =
+  Task.attempt (\_ -> NoOp) (Dom.focus "search-box")
 
 
 subscriptions model =
@@ -346,7 +352,7 @@ passwordInput model =
 
 documentInfoInput : Model -> Element Msg
 documentInfoInput model =
-    Input.text [width (px 400), height (px 30) , Font.color black] {
+    Input.text [id "search-box", width (px 400), height (px 30) , Font.color black] {
         text = model.docInfo 
       , placeholder = Nothing
       , onChange = Just(\str -> AcceptDocInfo str)
