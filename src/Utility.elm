@@ -104,3 +104,4 @@ softBreakRegexp width =
     Maybe.withDefault Regex.never <|
        Regex.fromString (".{1," ++ (String.fromInt width) ++ "}(\\s+|$)|\\S+?(\\s+|$)")
 
+    

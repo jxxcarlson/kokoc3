@@ -30,7 +30,7 @@ view counter texMacros doc =
     ]
 
 contentView counter viewDoc = 
-  Keyed.el [width (px 600), height (px 570), scrollbarY] ((String.fromInt counter), viewDoc.content)
+  Keyed.el [width (px 600), height (px 680), scrollbarY] ((String.fromInt counter), viewDoc.content)
 
 
 titleLine : Document -> Element DocViewMsg 

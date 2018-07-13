@@ -14,6 +14,7 @@ import Element exposing (..)
 import Element.Background as Background
 import Element.Font as Font
 import Element.Input as Input
+import Element.Keyed as Keyed
 import Element.Border as Border
 import Element.Lazy
 
@@ -289,19 +290,66 @@ appTitle appMode =
     Writing -> "kNode Writer"
   
 
-body : Model -> Element Msg
-body model = 
+body : Model -> Element Msg 
+body model =
+  case model.appMode of 
+    Reading -> readerBody model 
+    Writing -> writerBody model  
+
+
+readerBody : Model -> Element Msg
+readerBody model = 
+  Element.row [width (fillPortion 4), height fill, Background.color Widget.white, centerX] [
+     bodyLeftColumn 2 model,  bodyReaderColumn 7 model, bodyRightColumn 2 model
+  ]
+writerBody : Model -> Element Msg
+writerBody model = 
   Element.row [width fill, height fill, Background.color Widget.white, centerX] [
-     bodyLeftColumn model,  bodyCenterColumn model, bodyRightColumn model
+     bodyLeftColumn 2 model,  bodyEditorColumn 5 model, bodyReaderColumn 5 model
   ]
 
-bodyLeftColumn : Model -> Element Msg
-bodyLeftColumn model = 
-  Element.column [width (px 250), height fill, 
+bodyLeftColumn : Int -> Model -> Element Msg
+bodyLeftColumn portion_ model = 
+  Element.column [width (fillPortion portion_), height fill, 
     Background.color Widget.lightBlue, paddingXY 20 20, spacing 10] [ 
       Element.map DocListViewMsg (DocumentListView.viewWithHeading (docListTitle model) model.documentList)
   ]
 
+bodyReaderColumn : Int -> Model -> Element Msg
+bodyReaderColumn portion_  model  = 
+  Element.column [width (fillPortion portion_ ), height (px 720), paddingXY 20 20
+    , Background.color Widget.lightGrey, centerX] [
+      Element.map DocViewMsg (DocumentView.view model.counter (texMacros model) model.currentDocument)
+  ]
+
+
+bodyEditorColumn : Int -> Model -> Element Msg
+bodyEditorColumn portion_ model  = 
+  Element.column [width (fillPortion portion_), height fill
+    , Background.color Widget.lightYellow, centerX] [
+     textArea model (fillPortion portion_) (px 720) "Editor"
+  ]
+
+textArea model width_ height_ label_  =
+    Keyed.row []
+        [ ( (String.fromInt model.counter)
+          , Input.multiline 
+                [ width (width_), height (height_), padding 10, scrollbarY ]
+                { onChange = Nothing
+                , text = model.currentDocument.content
+                , label = Input.labelLeft [ Font.size 14, Font.bold ] (text "")
+                , placeholder = Nothing
+                , spellcheck = False
+                }
+          )
+        ]
+
+
+bodyRightColumn : Int -> Model -> Element Msg
+bodyRightColumn portion_ model = 
+  Element.column [width (fillPortion portion_), height fill, Background.color Widget.lightBlue, centerX] [
+      Element.none
+  ]
 
 docListTitle : Model -> String 
 docListTitle model = 
@@ -314,12 +362,8 @@ docListTitle model =
   in 
     title ++ " (" ++ String.fromInt documentCount ++ ")"  
 
-bodyCenterColumn : Model -> Element Msg
-bodyCenterColumn model = 
-  Element.column [width fill, height fill, paddingXY 20 20
-    , Background.color Widget.lightGrey, centerX] [
-      Element.map DocViewMsg (DocumentView.view model.counter (texMacros model) model.currentDocument)
-  ]
+
+
 
 texMacros : Model -> String
 texMacros model = 
@@ -328,11 +372,7 @@ texMacros model =
     Just doc -> doc.content
     
   
-bodyRightColumn : Model -> Element Msg
-bodyRightColumn model = 
-  Element.column [width (px 250), height fill, Background.color Widget.lightBlue, centerX] [
-      Element.none
-  ]
+
 
 footer : Model -> Element Msg
 footer model = 
