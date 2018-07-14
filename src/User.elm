@@ -8,6 +8,7 @@ module User exposing(
    , testUser
    , maybeSetToken
    , getTokenString
+   , getTokenStringFromMaybeUser
    , username
    ) 
 
@@ -48,6 +49,12 @@ getTokenString (User user) =
     (Token str) = user.token
   in
     str 
+
+getTokenStringFromMaybeUser : Maybe User -> String 
+getTokenStringFromMaybeUser maybeUser = 
+  case maybeUser of 
+    Nothing -> "invalidTokenString"
+    Just user -> getTokenString user
 
 setToken : Token -> User -> User 
 setToken token (User user) = 

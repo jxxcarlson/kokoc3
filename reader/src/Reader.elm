@@ -90,6 +90,7 @@ type Msg
     | DebounceMsg Debounce.Msg
     | GetContent String
     | UpdateEditorContent String 
+    | SaveDocument
 
 -- This defines how the debouncer should work.
 -- Choose the strategy for your use case.
@@ -161,11 +162,18 @@ update msg model =
             Err err -> 
                 ({model | message = "Token error"},   Cmd.none  )
 
-        DocMsg (ReceiveDocument result)->
+        DocMsg (ReceiveDocument result) ->
           case result of 
             Ok documentRecord -> 
                ({ model | message = "document OK", currentDocument = documentRecord.document},  Cmd.none)
             Err err -> 
+                ({model | message = handleHttpError err},   Cmd.none  )
+
+        DocMsg (AcknowledgeUpdateOfDocument result) -> 
+           case result of 
+             Ok documentRecord -> 
+               ({ model | message = "document saved: OK"},  Cmd.none)
+             Err err -> 
                 ({model | message = handleHttpError err},   Cmd.none  )
 
         DocListMsg (ReceiveDocumentList result)->
@@ -270,8 +278,14 @@ update msg model =
             let
                 (debounce, cmd) =
                     Debounce.update debounceConfig (Debounce.takeLast updateEditorContentCmd) msg_ model.debounce
+
+                tokenString = User.getTokenStringFromMaybeUser model.maybeCurrentUser
             in
-                ({ model | debounce = debounce }, cmd)  
+                ({ model | debounce = debounce }, Cmd.batch [
+                  cmd, 
+                  Cmd.map DocMsg <| Document.saveDocument tokenString model.currentDocument
+                  ]
+                )  
 
         GetContent str ->
             let
@@ -290,6 +304,9 @@ update msg model =
             nextCurrentDocument = { currentDocument | content = str }
           in  
             ( {model | currentDocument = nextCurrentDocument}, Cmd.none )
+
+        SaveDocument ->
+           ( { model | message = "Saved document: " ++ String.fromInt model.currentDocument.id}, Cmd.none )
 
 handleHttpError : Http.Error -> String 
 handleHttpError error = 

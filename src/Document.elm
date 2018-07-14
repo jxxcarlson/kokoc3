@@ -3,6 +3,7 @@ module Document exposing(
     , DocumentRecord
     , DocumentView
     , getDocumentById 
+    , saveDocument
     , getDocumentByIdRequest
     , documentDecoder
     , DocMsg(..)
@@ -125,7 +126,8 @@ type TextType
 -- MSG
 
 type DocMsg = 
-  ReceiveDocument (Result Http.Error DocumentRecord)
+    ReceiveDocument (Result Http.Error DocumentRecord)
+  | AcknowledgeUpdateOfDocument (Result Http.Error DocumentRecord)
   
 
 -- DECODERS
@@ -216,6 +218,98 @@ decodeChild =
         |> JPipeline.required "comment" (Decode.string)
 
 
+
+-- ENCODERS
+
+
+encodeDocumentRecord : Document -> Encode.Value
+encodeDocumentRecord document =
+    Encode.object
+        [ ( "document"
+          , encodeDocument document
+          )
+        ]
+
+
+encodeDocument : Document -> Encode.Value
+encodeDocument document =
+    Encode.object
+        [ 
+          ( "id", Encode.int <| document.id )
+        , ( "identifier", Encode.string <| document.identifier )
+
+        , ( "author_id", Encode.int <| document.authorId )
+        , ( "author_name", Encode.string <| document.authorName )
+
+        , ( "title", Encode.string <| document.title )
+        , ( "content", Encode.string <| document.content )
+
+        , ( "tags", Encode.list Encode.string document.tags )
+        , ( "parent_id", Encode.int <| document.parentId )
+        , ( "parent_title", Encode.string <| document.parentTitle )
+        
+        , ( "attributes", encodeDocumentAttributes <| document )
+       
+        ]
+
+        -- |> JPipeline.required "authorIdentifier" Decode.string
+        -- |> JPipeline.required "access" (Decode.dict Decode.string)
+        -- |> JPipeline.required "children" (Decode.list decodeChild)
+        -- |> JPipeline.required "lastViewed" (Decode.map Time.millisToPosix Decode.int)
+        -- |> JPipeline.required "created" (Decode.map Time.millisToPosix Decode.int)
+        -- |> JPipeline.required "lastModified" (Decode.map Time.millisToPosix Decode.int)
+
+encodeDocumentAttributes : Document -> Encode.Value
+encodeDocumentAttributes doc =
+    Encode.object
+        [ ( "text_type", encodeTextType <| doc.textType )
+        , ( "public", Encode.bool <| doc.public )
+        , ( "doc_type", encodeDocType <| doc.docType )
+        , ( "level", Encode.int <| doc.level )
+        , ( "archive", Encode.string <| doc.archive )
+        , ( "version", Encode.int <| doc.version )
+        ]
+encodeDocType : DocType -> Encode.Value
+encodeDocType docType =
+    case docType of
+        Standard ->
+            Encode.string "standard"
+
+        Master ->
+            Encode.string "master"
+
+
+encodeTextType : TextType -> Encode.Value
+encodeTextType textType =
+    case textType of
+        Asciidoc ->
+            Encode.string "adoc"
+
+        AsciidocLatex ->
+            Encode.string "adoc_latex"
+
+        MiniLatex ->
+            Encode.string "latex"
+
+        PlainText ->
+            Encode.string "plain"
+
+        Markdown ->
+            Encode.string "markdown"
+
+
+
+encodeChild : Child -> Encode.Value
+encodeChild record =
+    Encode.object
+        [ ( "title", Encode.string <| record.title )
+        , ( "level", Encode.int <| record.level )
+        , ( "doc_identifier", Encode.string <| record.docIdentifier )
+        , ( "doc_id", Encode.int <| record.docId )
+        , ( "comment", Encode.string <| record.comment )
+        ]
+
+
 -- REQUEST
 
 getDocumentByIdRequest : Int -> Maybe String -> Http.Request DocumentRecord
@@ -241,6 +335,21 @@ getDocumentById id maybeTokenString =
     Http.send ReceiveDocument <| getDocumentByIdRequest id maybeTokenString
 
 
+saveDocumentRequest : String -> Document -> Http.Request DocumentRecord
+saveDocumentRequest tokenString document = 
+    Http.request
+        { method = "Put"
+        , headers = [Http.header "APIVersion" "V2", Http.header "Authorization" ("Bearer " ++ tokenString)]
+        , url = Configuration.backend ++ "/api/documents/" ++ (String.fromInt document.id)
+        , body = Http.jsonBody (encodeDocumentRecord document)
+        , expect = Http.expectJson documentRecordDecoder
+        , timeout = Just 5000
+        , withCredentials = False
+        }
+
+saveDocument : String -> Document -> Cmd DocMsg 
+saveDocument tokenString document =
+    Http.send AcknowledgeUpdateOfDocument <| saveDocumentRequest tokenString document
 
 -- VIEW
 
