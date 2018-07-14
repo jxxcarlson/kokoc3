@@ -369,7 +369,7 @@ documentContentView texMacros document =
   case document.textType of
     MiniLatex -> viewMiniLatex texMacros document 
     Markdown -> viewMarkdown document 
-    Asciidoc -> viewAsciidoc document.content 
+    Asciidoc -> asciiDocViewer document 
     AsciidocLatex -> viewAsciidoc document.content 
     PlainText -> viewPlainText document
   
@@ -405,6 +405,11 @@ viewMarkdown document =
 -- YAY: https://ellie-test-19-cutover.now.sh/LGShLFZHvha1
 -- https://ellie-test-19-cutover.now.sh/LGc6jCfs64a1
 
+asciiDocViewer document = 
+  case document.docType of 
+    Master -> viewChildren document 
+    Standard -> viewAsciidoc document.content 
+
 viewAsciidoc : String -> Element msg
 viewAsciidoc str =
   Element.el [ ] (Element.html <| asciidocText str)
@@ -431,6 +436,17 @@ viewPlainText : Document -> Element msg
 viewPlainText document =
    Element.el [ ] (Element.html <| MarkdownTools.view document.content)
 
+
+viewChildren : Document -> Element msg 
+viewChildren document = 
+  Element.column [Element.spacing 10] (List.map viewChild document.children)
+  
+viewChild : Child -> Element msg 
+viewChild child = 
+  Element.el [] (Element.text <| child.title)
+
+
+-- TEXT
 
 initialText = 
     """

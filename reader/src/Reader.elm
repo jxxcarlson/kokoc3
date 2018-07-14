@@ -62,6 +62,7 @@ type alias Model =
       , appMode : AppMode
       , debounce : Debounce String
       , sourceText : String
+      , currentDocumentDirty : Bool
     }
 
 type AppMode = 
@@ -122,6 +123,7 @@ init flags =
             , debounce = Debounce.init
             , appMode = Reading 
             , sourceText = ""
+            , currentDocumentDirty = False
         }
         , focusSearchBox
         )
@@ -216,6 +218,7 @@ update msg model =
                  message = "document: " ++ document.title
                  , currentDocument = document
                  , documentList = DocumentList.select (Just document) model.documentList
+                 , currentDocumentDirty = False
                  , counter = model.counter + 1
                  }
                  , Cmd.batch[
@@ -281,7 +284,7 @@ update msg model =
 
                 tokenString = User.getTokenStringFromMaybeUser model.maybeCurrentUser
             in
-                ({ model | debounce = debounce }, Cmd.batch [
+                ({ model | debounce = debounce, currentDocumentDirty = False}, Cmd.batch [
                   cmd, 
                   Cmd.map DocMsg <| Document.saveDocument tokenString model.currentDocument
                   ]
@@ -294,6 +297,7 @@ update msg model =
             in
                 ({ model
                     | sourceText = str
+                    , currentDocumentDirty = True 
                     , debounce = debounce
                     }
                     , cmd)
@@ -438,11 +442,16 @@ footer : Model -> Element Msg
 footer model = 
   Element.row [spacing 15, width fill, Background.color Widget.grey, height (px 40), paddingXY 20 0] [
         Element.el [] (text model.message)
-      , Element.el [] (text ("id " ++ (String.fromInt model.currentDocument.id )))
+      , Element.el [documentDirtyIndicator  model, padding 5] (text ("id " ++ (String.fromInt model.currentDocument.id )))
       , Element.el [] (text <| access model.currentDocument)
       , Element.el [] (text <| currentUserName model.maybeCurrentUser)
       , Element.el [] (text ("keys: " ++ (showKeys model)))
   ] 
+
+documentDirtyIndicator  model = 
+  case model.currentDocumentDirty  of 
+    False -> Background.color Widget.indicatorGood
+    True -> Background.color Widget.indicatorBad
 
 currentUserName : Maybe User -> String  
 currentUserName maybeCurrentUser =
