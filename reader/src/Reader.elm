@@ -9,6 +9,7 @@ import Html
 import Html.Attributes
 import Http
 import Debounce exposing(Debounce)
+import Time exposing(Posix)
 
 import Json.Encode as Encode
 import Json.Decode as Decode
@@ -44,7 +45,7 @@ main =
         { init = init
         , view = view
         , update = update
-        , subscriptions = subscriptions
+        , subscriptions = subscriptions 
         }
 
 
@@ -67,6 +68,7 @@ type alias Model =
       , debounce : Debounce String
       , sourceText : String
       , currentDocumentDirty : Bool
+      , autosaveDuration : Float
     }
 
 type AppMode = 
@@ -95,7 +97,7 @@ type Msg
     | DebounceMsg Debounce.Msg
     | GetContent String
     | UpdateEditorContent String 
-    | SaveDocument
+    | SaveCurrentDocument Posix
     | Outside InfoForElm
 
 
@@ -134,6 +136,7 @@ init flags =
             , appMode = Reading 
             , sourceText = ""
             , currentDocumentDirty = False
+             , autosaveDuration = 10*1000
         }
         , focusSearchBox
         )
@@ -143,8 +146,19 @@ focusSearchBox =
   Task.attempt (\_ -> NoOp) (Dom.focus "search-box")
 
 
+-- SUBSCRIPITONS
+
+autosaveSubscription : Model -> Sub Msg
+autosaveSubscription model =
+    if model.currentDocumentDirty then
+        Time.every model.autosaveDuration SaveCurrentDocument
+    else
+        Sub.none
+
 subscriptions model =
-    Sub.none
+    Sub.batch [
+      autosaveSubscription model
+    ]
 
 
 -- UPDATE
@@ -319,7 +333,7 @@ update msg model =
           in  
             ( {model | currentDocument = nextCurrentDocument}, Cmd.none )
 
-        SaveDocument ->
+        SaveCurrentDocument time ->
            ( { model | message = "Saved document: " ++ String.fromInt model.currentDocument.id}, Cmd.none )
 
         Outside infoForElm_ ->
@@ -348,13 +362,6 @@ handleHttpError error =
 -- OUTSIDE
 
 
--- import Msg exposing (Msg, InfoForElm(..))
--- import User.Data as Data
--- import Model exposing (Model)
--- import Utility
--- import Task
--- import Document.Msg exposing (DocumentMsg(SaveDocument))
--- import Document.Task
 
 type InfoForElm = 
   DocumentDataFromOutside Document 
@@ -366,10 +373,6 @@ port infoForElm : (GenericOutsideData -> msg) -> Sub msg
 
 type InfoForOutside
     = DocumentData Encode.Value
-    -- | UserData Encode.Value
-    -- | AskToReconnectUser Encode.Value
-    -- | DisconnectUser Encode.Value
-    -- | PutTextToRender Encode.Value
 
 
 type alias GenericOutsideData =
@@ -381,18 +384,6 @@ sendInfoOutside info =
     case info of
         DocumentData value ->
             infoForOutside { tag = "DocumentData", data = value }
-
-        -- UserData value ->
-        --     infoForOutside { tag = "UserData", data = value }
-
-        -- AskToReconnectUser value ->
-        --     infoForOutside { tag = "AskToReconnectUser", data = value }
-
-        -- DisconnectUser value ->
-        --     infoForOutside { tag = "DisconnectUser", data = value }
-
-        -- PutTextToRender value ->
-        --     infoForOutside { tag = "PutTextToRender", data = value }
 
 
 getInfoFromOutside : (InfoForElm -> msg) -> (String -> msg) -> Sub msg
@@ -406,16 +397,7 @@ getInfoFromOutside tagger onError =
                             tagger <| DocumentDataFromOutside result
 
                         Err e ->
-                            onError "Bad decode ("
-
-                -- "RenderedText" ->
-                --     case Decode.decodeValue Decode.string outsideInfo.data of
-                --         Ok renderedText ->
-                --             tagger <| RenderedText renderedText
-
-                --         Err e ->
-                --             onError e
-
+                            onError "Bad decode (getInfoFromOutside)"
                 _ ->
                     onError <| "Unexpected info from outside"
         )
