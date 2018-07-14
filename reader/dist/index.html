@@ -152,12 +152,18 @@ a:active { color: blue;}
 			set content(value) {
 				if (this._content === value) return
 				this._content = value
+
+				var jaxScript = this.querySelector('script')
+				if (!jaxScript) return
+				jaxScript.textContent = this._content
+				enqueueUpdate(this)
 			}
 		
 			connectedCallback() {
 				this._connected = true
 				this.style.opacity = 1
 				this.style.display = 'inline'
+				enqueueTypeset(this)
 				this.innerHTML = asciidoctor.convert(this._content, {safe: 'safe', attributes: 'icons=font'})
 			}
 		})

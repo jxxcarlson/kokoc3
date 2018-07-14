@@ -506,17 +506,6 @@ asciidocText str =
         [ HA.property "content" (Encode.string str) ]
         []
 
-
--- asciidocText : String -> Html msg
--- asciidocText str =
---     Html.node "asciidoc-text"
---         [ HA.property "content" (Encode.string <| str) ]
---         []
-
--- viewAsciidocLatex : Document -> Element msg
--- viewAsciidocLatex document =
---   Element.el [ ] (Element.html <| asciidocText document.content)
-
 viewPlainText : Document -> Element msg
 viewPlainText document =
    Element.el [ ] (Element.html <| MarkdownTools.view document.content)
