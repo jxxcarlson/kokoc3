@@ -1,4 +1,4 @@
-module Main exposing (main)
+port module Main exposing (main)
 
 {- This app retrieves and displays weather data from openweathermap.org. -}
 
@@ -9,6 +9,9 @@ import Html
 import Html.Attributes
 import Http
 import Debounce exposing(Debounce)
+
+import Json.Encode as Encode
+import Json.Decode as Decode
 
 import Element exposing (..)
 import Element.Background as Background
@@ -32,6 +35,7 @@ import DocumentView exposing(view, DocViewMsg(..))
 import DocumentListView exposing(DocListViewMsg(..))
 import DocumentDictionary exposing(DocumentDictionary, DocDictMsg(..))
 import Query 
+
 
 
 
@@ -92,6 +96,10 @@ type Msg
     | GetContent String
     | UpdateEditorContent String 
     | SaveDocument
+    | Outside InfoForElm
+
+
+
 
 -- This defines how the debouncer should work.
 -- Choose the strategy for your use case.
@@ -104,6 +112,8 @@ debounceConfig =
 updateEditorContentCmd : String -> Cmd Msg
 updateEditorContentCmd str =
     Task.perform UpdateEditorContent (Task.succeed str)
+
+
 -- INIT
 
 init : Flags -> ( Model, Cmd Msg )
@@ -312,6 +322,19 @@ update msg model =
         SaveDocument ->
            ( { model | message = "Saved document: " ++ String.fromInt model.currentDocument.id}, Cmd.none )
 
+        Outside infoForElm_ ->
+            ({model | message = "Outside infoForElm"}, Cmd.none)
+
+saveDocToLocalStorage : Document -> Cmd msg
+saveDocToLocalStorage document =
+    let
+        value =
+            Document.encodeDocumentForOutside document
+    in
+        sendInfoOutside (DocumentData value)
+
+
+
 handleHttpError : Http.Error -> String 
 handleHttpError error = 
   case error of 
@@ -321,6 +344,84 @@ handleHttpError error =
     Http.BadStatus resp -> "Bad status: " ++ "darn!"
     Http.BadPayload str1 resp -> "Bad payload: " ++ str1  ++ ", payload = " ++ "bad payload"
       
+
+-- OUTSIDE
+
+
+-- import Msg exposing (Msg, InfoForElm(..))
+-- import User.Data as Data
+-- import Model exposing (Model)
+-- import Utility
+-- import Task
+-- import Document.Msg exposing (DocumentMsg(SaveDocument))
+-- import Document.Task
+
+type InfoForElm = 
+  DocumentDataFromOutside Document 
+
+port infoForOutside : GenericOutsideData -> Cmd msg
+
+port infoForElm : (GenericOutsideData -> msg) -> Sub msg
+
+
+type InfoForOutside
+    = DocumentData Encode.Value
+    -- | UserData Encode.Value
+    -- | AskToReconnectUser Encode.Value
+    -- | DisconnectUser Encode.Value
+    -- | PutTextToRender Encode.Value
+
+
+type alias GenericOutsideData =
+    { tag : String, data : Encode.Value }
+
+
+sendInfoOutside : InfoForOutside -> Cmd msg
+sendInfoOutside info =
+    case info of
+        DocumentData value ->
+            infoForOutside { tag = "DocumentData", data = value }
+
+        -- UserData value ->
+        --     infoForOutside { tag = "UserData", data = value }
+
+        -- AskToReconnectUser value ->
+        --     infoForOutside { tag = "AskToReconnectUser", data = value }
+
+        -- DisconnectUser value ->
+        --     infoForOutside { tag = "DisconnectUser", data = value }
+
+        -- PutTextToRender value ->
+        --     infoForOutside { tag = "PutTextToRender", data = value }
+
+
+getInfoFromOutside : (InfoForElm -> msg) -> (String -> msg) -> Sub msg
+getInfoFromOutside tagger onError =
+    infoForElm
+        (\outsideInfo ->
+            case outsideInfo.tag of
+                "ReconnectDocument" ->
+                    case Decode.decodeValue Document.decodeDocumentFromOutside outsideInfo.data of
+                        Ok result ->
+                            tagger <| DocumentDataFromOutside result
+
+                        Err e ->
+                            onError "Bad decode ("
+
+                -- "RenderedText" ->
+                --     case Decode.decodeValue Decode.string outsideInfo.data of
+                --         Ok renderedText ->
+                --             tagger <| RenderedText renderedText
+
+                --         Err e ->
+                --             onError e
+
+                _ ->
+                    onError <| "Unexpected info from outside"
+        )
+
+
+
 
 -- VIEW
 

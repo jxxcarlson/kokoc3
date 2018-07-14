@@ -6,6 +6,8 @@ module Document exposing(
     , saveDocument
     , getDocumentByIdRequest
     , documentDecoder
+    , encodeDocumentForOutside
+    , decodeDocumentFromOutside
     , DocMsg(..)
     , DocType(..)
     , basicDocument
