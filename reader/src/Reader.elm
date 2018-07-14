@@ -308,7 +308,7 @@ update msg model =
 
                 tokenString = User.getTokenStringFromMaybeUser model.maybeCurrentUser
             in
-                ({ model | debounce = debounce, currentDocumentDirty = False}, Cmd.batch [
+                ({ model | debounce = debounce}, Cmd.batch [
                   cmd, 
                   Cmd.map DocMsg <| Document.saveDocument tokenString model.currentDocument
                   ]
@@ -334,7 +334,12 @@ update msg model =
             ( {model | currentDocument = nextCurrentDocument}, Cmd.none )
 
         SaveCurrentDocument time ->
-           ( { model | message = "Saved document: " ++ String.fromInt model.currentDocument.id}, Cmd.none )
+          let  
+              tokenString = User.getTokenStringFromMaybeUser model.maybeCurrentUser 
+          in 
+              ( { model | message = "Saved document: " ++ String.fromInt model.currentDocument.id
+                        , currentDocumentDirty = False }
+                , Cmd.map DocMsg <| Document.saveDocument tokenString model.currentDocument )
 
         Outside infoForElm_ ->
             ({model | message = "Outside infoForElm"}, Cmd.none)
@@ -526,6 +531,7 @@ footer model =
   Element.row [spacing 15, width fill, Background.color Widget.grey, height (px 40), paddingXY 20 0] [
         Element.el [] (text model.message)
       , Element.el [documentDirtyIndicator  model, padding 5] (text ("id " ++ (String.fromInt model.currentDocument.id )))
+      , saveCurrentDocumentButton (px 50) model
       , Element.el [] (text <| access model.currentDocument)
       , Element.el [] (text <| currentUserName model.maybeCurrentUser)
       , Element.el [] (text ("keys: " ++ (showKeys model)))
@@ -612,6 +618,14 @@ getRandomDocumentsButton width_ model =
   Input.button (buttonStyle  width_) {
     onPress =  Just (GetPublicDocumentsRawQuery "random=public")
   , label = Element.text "Random"
+  } 
+
+
+saveCurrentDocumentButton : Length -> Model -> Element Msg    
+saveCurrentDocumentButton width_ model = 
+  Input.button (buttonStyle  width_) {
+    onPress =  Just (SaveCurrentDocument (Time.millisToPosix 10))
+  , label = Element.text "Save"
   } 
 
 homeButton : Length -> Model -> Element Msg    
