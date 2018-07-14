@@ -309,8 +309,8 @@ update msg model =
                 tokenString = User.getTokenStringFromMaybeUser model.maybeCurrentUser
             in
                 ({ model | debounce = debounce}, Cmd.batch [
-                  cmd, 
-                  Cmd.map DocMsg <| Document.saveDocument tokenString model.currentDocument
+                  cmd  
+                  , saveDocToLocalStorage model.currentDocument
                   ]
                 )  
 
@@ -383,6 +383,14 @@ type InfoForOutside
 type alias GenericOutsideData =
     { tag : String, data : Encode.Value }
 
+-- sendUserDataToLocalStorage : Model -> Cmd Msg
+-- sendUserDataToLocalStorage model =
+--     case model.maybeCurrentUser of
+--         Nothing ->
+--             Cmd.none
+
+--         Just user ->
+--             OutsideInfo.sendInfoOutside (UserData <| Data.encodeUserData user)
 
 sendInfoOutside : InfoForOutside -> Cmd msg
 sendInfoOutside info =
