@@ -10,6 +10,7 @@ module Document exposing(
     , decodeDocumentFromOutside
     , DocMsg(..)
     , DocType(..)
+    , TextType(..)
     , basicDocument
     , viewDocument
   )

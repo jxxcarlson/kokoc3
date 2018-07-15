@@ -18,6 +18,17 @@ listItemStyle width_ = [
     , clipX
    ]
 
+listItemStyleNarrow width_ = [
+     Font.size 13 
+    , mouseDown [  Font.size 13, Background.color lightYellow]
+    , Font.color blue
+    , width width_
+    , height (px 16)
+    , paddingXY 20 0
+    , clipX
+   ]
+
+
 titleStyle = [
      Font.size 13 
     , mouseDown [  Font.size 13]

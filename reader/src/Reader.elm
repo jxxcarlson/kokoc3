@@ -25,7 +25,7 @@ import Element.Lazy
 import Widget exposing(..)
 
 import User exposing(Token, UserMsg(..), readToken, User)
-import Document exposing(Document, DocType(..), DocMsg(..))
+import Document exposing(Document, DocType(..), DocMsg(..), TextType(..))
 import DocumentList exposing(
      DocumentList
         , DocListMsg(..)
@@ -69,16 +69,24 @@ type alias Model =
       , sourceText : String
       , currentDocumentDirty : Bool
       , autosaveDuration : Float
+      , toolPanelState : ToolPanelState
+      , documentTitle : String
     }
 
 type AppMode = 
   Reading | Writing
+  
+type ToolPanelState = 
+  ShowToolPanel | HideToolPanel
 
+
+-- MSG
 
 type Msg
     = NoOp
     | AcceptPassword String
     | AcceptDocInfo String
+    | AcceptDocumenTitle String
     | ReverseText
     | GetToken
     | GetDocumentById Int
@@ -99,6 +107,11 @@ type Msg
     | UpdateEditorContent String 
     | SaveCurrentDocument Posix
     | Outside InfoForElm
+    | ToggleToolPanelState 
+    | NewDocument
+    | UpdateDocument
+    | SetDocumentTextType TextType
+    | SetDocumentType DocType
     
 
 
@@ -138,6 +151,8 @@ init flags =
             , sourceText = ""
             , currentDocumentDirty = False
             , autosaveDuration = 10*1000
+            , toolPanelState = HideToolPanel
+            , documentTitle = ""
         }
         , Cmd.batch [ 
             focusSearchBox
@@ -178,6 +193,9 @@ update msg model =
 
         AcceptDocInfo str ->
             ( { model | docInfo = str }, Cmd.none )
+
+        AcceptDocumenTitle str ->
+            ( { model | documentTitle = str }, Cmd.none )
 
         ReverseText ->
             ( { model | message = model.message |> String.reverse |> String.toLower }, Cmd.none )
@@ -332,7 +350,7 @@ update msg model =
 
         UpdateEditorContent str ->
           let  
-            currentDocument = model.currentDocument -- ###
+            currentDocument = model.currentDocument 
             nextCurrentDocument = { currentDocument | content = str }
           in  
             ( {model | currentDocument = nextCurrentDocument}, Cmd.none )
@@ -347,6 +365,37 @@ update msg model =
 
         Outside infoForElm_ ->
             ({model | message = "Outside infoForElm"}, Cmd.none)
+
+        ToggleToolPanelState ->
+           let  
+              nextToolPanelState = 
+                case model.toolPanelState of 
+                  HideToolPanel -> ShowToolPanel
+                  ShowToolPanel -> HideToolPanel
+              nextModel = case nextToolPanelState of 
+                 HideToolPanel -> { model | toolPanelState = nextToolPanelState }
+                 ShowToolPanel -> 
+                   { model | 
+                      documentTitle  = model.currentDocument.title
+                    , toolPanelState = nextToolPanelState
+                    }             
+          in 
+            ( nextModel , Cmd.none)
+
+        NewDocument -> 
+          (model, Cmd.none)
+
+        UpdateDocument -> 
+          (model, Cmd.none)
+
+        SetDocumentTextType textType -> 
+           (model, Cmd.none)
+
+        SetDocumentType docType ->
+          (model, Cmd.none)
+
+-- UPDATE END
+
 
 saveDocToLocalStorage : Document -> Cmd msg
 saveDocToLocalStorage document =
@@ -473,7 +522,44 @@ bodyLeftColumn : Int -> Model -> Element Msg
 bodyLeftColumn portion_ model = 
   Element.column [width (fillPortion portion_), height fill, 
     Background.color Widget.lightBlue, paddingXY 20 20, spacing 10] [ 
-      Element.map DocListViewMsg (DocumentListView.viewWithHeading (docListTitle model) model.documentList)
+       toggleToolsButton (px 80) model
+      , toolsOrContents model
+  ]
+
+-- TOOLS
+
+toolsOrContents model = 
+  case model.toolPanelState of 
+    ShowToolPanel -> toolsPanel model
+    HideToolPanel -> Element.map DocListViewMsg (DocumentListView.viewWithHeading (docListTitle model) model.documentList)
+
+toolsPanel model = Element.column [ spacing 15, padding 10] [ 
+  Element.el [Font.bold, Font.size 18] (text "Tools Panel")
+  , Element.row [spacing 10] [newDocumentButton model, updateDocumentButton model]
+  , documentTitleInput model
+  , documentPanels model
+  ]
+
+documentPanels model = 
+  Element.column [height shrink, spacing 10] [
+    Element.el [Font.bold] (text "Text type")
+  , textTypePanel model
+  , Element.el [Font.bold] (text "Document type")
+  , documentTypePanel model
+  ]
+
+textTypePanel model = 
+  Element.column [spacing 5] [
+      miniLatexTypeButton model 
+    , asciidocTypeButton model 
+    , markdownTypeButton model 
+    , plainTextTypeButton model 
+  ]
+
+documentTypePanel model = 
+  Element.column [spacing 5] [
+      standardDocumentButton model 
+    , masterDocumentButton model 
   ]
 
 bodyReaderColumn : Int -> Model -> Element Msg
@@ -597,9 +683,119 @@ documentInfoInput model =
       , label = Input.labelLeft [ Font.size 14, Font.bold ] (text "")
     }
 
+documentTitleInput : Model -> Element Msg
+documentTitleInput model =
+    Input.text [htmlAttribute (Html.Attributes.id "title-input"), width (px 250), height (px 30) , Font.color black] {
+        text = model.documentTitle
+      , placeholder = Nothing
+      , onChange = Just(\str -> AcceptDocumenTitle str)
+      , label = Input.labelAbove [ Font.size 14, Font.bold ] (text "Title")
+    }
 
 
--- CONTROLS
+-- BUTTONS
+
+miniLatexTypeButton : Model -> Element Msg 
+miniLatexTypeButton model = 
+  Input.button (textTypeButtonStyle model MiniLatex) {
+    onPress =  Just (SetDocumentTextType MiniLatex)
+  , label = Element.text ("MiniLatex")
+  }
+
+asciidocTypeButton : Model -> Element Msg 
+asciidocTypeButton model = 
+  Input.button (textTypeButtonStyle model Asciidoc) {
+    onPress =  Just (SetDocumentTextType Asciidoc)
+  , label = Element.text ("Asciidoc")
+  }
+
+markdownTypeButton : Model -> Element Msg 
+markdownTypeButton model = 
+  Input.button (textTypeButtonStyle model Markdown) {
+    onPress =  Just (SetDocumentTextType Markdown)
+  , label = Element.text ("Markdown")
+  }
+
+plainTextTypeButton : Model -> Element Msg 
+plainTextTypeButton model = 
+  Input.button (textTypeButtonStyle model PlainText) {
+    onPress =  Just (SetDocumentTextType PlainText)
+  , label = Element.text ("Plain Text")
+  } 
+
+
+textTypeButtonStyle : Model -> TextType -> List (Attribute msg) 
+textTypeButtonStyle model textType = 
+  (
+     (listItemStyleNarrow (px 110))  ++  (highLightTextType model.currentDocument.textType textType)
+  )
+
+documentTypeButtonStyle : Model -> DocType -> List (Attribute msg) 
+documentTypeButtonStyle model docType = 
+  (
+     (listItemStyleNarrow (px 110))  ++  (highLightDocumentType model.currentDocument.docType docType)
+  )
+
+standardDocumentButton : Model -> Element Msg 
+standardDocumentButton model = 
+  Input.button (documentTypeButtonStyle model Standard) {
+    onPress =  Just (SetDocumentType Standard)
+  , label = Element.text ("Standard")
+  }
+
+masterDocumentButton : Model -> Element Msg 
+masterDocumentButton model = 
+  Input.button (documentTypeButtonStyle model Master) {
+    onPress =  Just (SetDocumentType Master)
+  , label = Element.text ("Master")
+  }
+
+highLightDocumentType : DocType -> DocType  -> List (Attribute msg) 
+highLightDocumentType docType1 docType2 = 
+  case docType1 == docType2 of 
+    True -> [Font.bold]
+    False -> [Font.light] 
+
+highLightTextType : TextType -> TextType  -> List (Attribute msg) 
+highLightTextType textType1 textType2 = 
+  case textType1 == textType2 of 
+    True -> [Font.bold]
+    False -> [Font.light] 
+
+newDocumentButton :  Model -> Element Msg    
+newDocumentButton model = 
+  Input.button (buttonStyle (px 110)) {
+    onPress =  Just (NewDocument)
+  , label = Element.text ("New document")
+  }
+
+updateDocumentButton :  Model -> Element Msg    
+updateDocumentButton model = 
+  Input.button (buttonStyle (px 130)) {
+    onPress =  Just (UpdateDocument)
+  , label = Element.text ("Update document")
+  }
+
+toggleToolsButton : Length -> Model -> Element Msg    
+toggleToolsButton width_ model = 
+  case model.appMode  of 
+    Writing -> toggleToolsButton_ width_ model
+    Reading -> Element.none
+
+
+toggleToolsButton_ : Length -> Model -> Element Msg    
+toggleToolsButton_ width_ model = 
+  Input.button ((buttonStyle width_ )++ [moveRight 10]) {
+    onPress =  Just (ToggleToolPanelState)
+  , label = Element.text (toggleToolsTitle model.toolPanelState)
+  }
+
+toggleToolsTitle : ToolPanelState -> String 
+toggleToolsTitle toolPanelState =
+  case toolPanelState of 
+     ShowToolPanel -> "Hide tools"
+     HideToolPanel -> "Show tools"
+
 
 
 getTokenButton : Length -> Model -> Element Msg    
