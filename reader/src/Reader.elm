@@ -389,10 +389,18 @@ update msg model =
           (model, Cmd.none)
 
         SetDocumentTextType textType -> 
-           (model, Cmd.none)
+          let  
+            document = model.currentDocument 
+            nextDocument = { document | textType = textType }
+          in 
+           ( { model | currentDocument = nextDocument }, Cmd.none)
 
         SetDocumentType docType ->
-          (model, Cmd.none)
+           let  
+            document = model.currentDocument 
+            nextDocument = { document | docType = docType }
+          in 
+           ( { model | currentDocument = nextDocument }, Cmd.none)
 
 -- UPDATE END
 
@@ -772,7 +780,7 @@ newDocumentButton model =
 updateDocumentButton :  Model -> Element Msg    
 updateDocumentButton model = 
   Input.button (buttonStyle (px 130)) {
-    onPress =  Just (UpdateDocument)
+    onPress =  Just (SaveCurrentDocument (Time.millisToPosix 10))
   , label = Element.text ("Update document")
   }
 
