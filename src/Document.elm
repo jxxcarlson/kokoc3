@@ -21,6 +21,7 @@ import Json.Decode as Decode exposing (at, int, list, string, decodeString, Deco
 import Json.Decode.Pipeline as JPipeline exposing (required, optional, hardcoded)
 import Http
 import Element exposing(Element)
+import Element.Keyed as Keyed
 import Html exposing(Html)
 import Html.Attributes as HA 
 
@@ -449,13 +450,20 @@ viewDocument texMacros doc =
     , content = documentContentView texMacros doc
   }
 
+
 documentContentView : String -> Document -> Element msg 
 documentContentView texMacros document = 
+    case document.docType of 
+        Master -> viewChildren document 
+        Standard -> documentContentView_ texMacros document
+
+documentContentView_ :String -> Document -> Element msg 
+documentContentView_  texMacros document =    
   case document.textType of
     MiniLatex -> viewMiniLatex texMacros document 
     Markdown -> viewMarkdown document 
-    Asciidoc -> asciiDocViewer document 
-    AsciidocLatex -> viewAsciidoc document.content 
+    Asciidoc -> viewAsciidoc document
+    AsciidocLatex -> viewAsciidoc document
     PlainText -> viewPlainText document
   
 normalize str = 
@@ -490,14 +498,14 @@ viewMarkdown document =
 -- YAY: https://ellie-test-19-cutover.now.sh/LGShLFZHvha1
 -- https://ellie-test-19-cutover.now.sh/LGc6jCfs64a1
 
-asciiDocViewer document = 
-  case document.docType of 
-    Master -> viewChildren document 
-    Standard -> viewAsciidoc document.content 
+-- viewAsciidoc document = 
+--   case document.docType of 
+--     Master -> viewChildren document 
+--     Standard -> viewAsciidoc_ document.content 
 
-viewAsciidoc : String -> Element msg
-viewAsciidoc str =
-  Element.el [ ] (Element.html <| asciidocText str)
+viewAsciidoc : Document -> Element msg
+viewAsciidoc document =
+  Keyed.el [ ] ("foo", (Element.html <| asciidocText document.content))
 
 
 asciidocText : String -> Html msg
