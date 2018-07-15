@@ -51,6 +51,7 @@ main =
 
 -- TYPES
 
+
 type alias Flags =
     {}
 
@@ -71,6 +72,7 @@ type alias Model =
       , autosaveDuration : Float
       , toolPanelState : ToolPanelState
       , documentTitle : String
+      , tagString : String 
     }
 
 type AppMode = 
@@ -87,6 +89,7 @@ type Msg
     | AcceptPassword String
     | AcceptDocInfo String
     | AcceptDocumenTitle String
+    | AcceptDocumentTagString String
     | ReverseText
     | GetToken
     | GetDocumentById Int
@@ -106,10 +109,10 @@ type Msg
     | GetContent String
     | UpdateEditorContent String 
     | SaveCurrentDocument Posix
+    | UpdateCurrentDocument
     | Outside InfoForElm
     | ToggleToolPanelState 
     | NewDocument
-    | UpdateDocument
     | SetDocumentTextType TextType
     | SetDocumentType DocType
     
@@ -153,6 +156,7 @@ init flags =
             , autosaveDuration = 10*1000
             , toolPanelState = HideToolPanel
             , documentTitle = ""
+            , tagString = ""
         }
         , Cmd.batch [ 
             focusSearchBox
@@ -196,6 +200,9 @@ update msg model =
 
         AcceptDocumenTitle str ->
             ( { model | documentTitle = str }, Cmd.none )
+
+        AcceptDocumentTagString str ->
+            ( { model | tagString = str }, Cmd.none )
 
         ReverseText ->
             ( { model | message = model.message |> String.reverse |> String.toLower }, Cmd.none )
@@ -363,6 +370,18 @@ update msg model =
                         , currentDocumentDirty = False }
                 , Cmd.map DocMsg <| Document.saveDocument tokenString model.currentDocument )
 
+        UpdateCurrentDocument ->
+          let  
+              tokenString = User.getTokenStringFromMaybeUser model.maybeCurrentUser 
+              currentDocument = model.currentDocument 
+              nextCurrentDocument = { currentDocument | title = model.documentTitle }
+          in 
+              ( { model | message = "Saved document: " ++ String.fromInt model.currentDocument.id
+                        , currentDocumentDirty = False 
+                        , currentDocument = nextCurrentDocument}
+                , Cmd.map DocMsg <| Document.saveDocument tokenString nextCurrentDocument )
+
+
         Outside infoForElm_ ->
             ({model | message = "Outside infoForElm"}, Cmd.none)
 
@@ -383,9 +402,6 @@ update msg model =
             ( nextModel , Cmd.none)
 
         NewDocument -> 
-          (model, Cmd.none)
-
-        UpdateDocument -> 
           (model, Cmd.none)
 
         SetDocumentTextType textType -> 
@@ -546,6 +562,7 @@ toolsPanel model = Element.column [ spacing 15, padding 10] [
   , Element.row [spacing 10] [newDocumentButton model, updateDocumentButton model]
   , documentTitleInput model
   , documentPanels model
+  , tagInputPane model (px 250) (px 140) "Tags"
   ]
 
 documentPanels model = 
@@ -599,6 +616,19 @@ textArea model width_ height_ label_  =
           )
         ]
 
+tagInputPane model width_ height_ label_  =
+    Keyed.row []
+        [ ( (String.fromInt model.counter)
+          , Input.multiline 
+                [ width (width_), height (height_), padding 10, scrollbarY ]
+                { onChange = Just AcceptDocumentTagString
+                , text = model.currentDocument.tags |> String.join ", "
+                , label = Input.labelAbove [ Font.size 14, Font.bold ] (text "")
+                , placeholder = Nothing
+                , spellcheck = False
+                }
+          )
+        ]
 
 bodyRightColumn : Int -> Model -> Element Msg
 bodyRightColumn portion_ model = 
@@ -780,7 +810,7 @@ newDocumentButton model =
 updateDocumentButton :  Model -> Element Msg    
 updateDocumentButton model = 
   Input.button (buttonStyle (px 130)) {
-    onPress =  Just (SaveCurrentDocument (Time.millisToPosix 10))
+    onPress =  Just (UpdateCurrentDocument)
   , label = Element.text ("Update document")
   }
 
