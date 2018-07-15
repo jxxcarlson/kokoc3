@@ -164,11 +164,47 @@ a:active { color: blue;}
 				this.style.opacity = 1
 				this.style.display = 'inline'
 				enqueueTypeset(this)
+
 				this.innerHTML = asciidoctor.convert(this._content, {safe: 'safe', attributes: 'icons=font'})
 			}
 		})
+
+		app.ports.infoForOutside.subscribe(msg => {
+
+			console.log("app.ports.infoForOutside")
+
+			switch(msg.tag) {
+
+			case "DocumentData":
+				console.log("DocumentData")
+					processDocumentData(msg.data)
+				break;
+
+			case "AskToReconnectDocument":
+				console.log("AskToReconnectDocument")
+				askToReconnectDocument(msg.data)
+			break;	
+
+			}
+
+		})
+
+		var processDocumentData = function(documentData) {
+		console.log("I will put the currentDocument data in local storage" );
+		console.log(JSON.stringify(documentData))
+		localStorage.setItem("currentDocument", documentData);
+		}
+		
+		var askToReconnectDocument = function (str) {
+		console.log("!!! askToReconnectDocument !!!" );
+		// app.ports.infoForElm.send({tag: "ReconnectDocument", data: localStorage})
+		}
+
+	
    
   </script>
+
+ 
 </body>
 
 
