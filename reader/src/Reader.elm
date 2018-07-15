@@ -99,6 +99,7 @@ type Msg
     | UpdateEditorContent String 
     | SaveCurrentDocument Posix
     | Outside InfoForElm
+    
 
 
 
@@ -136,10 +137,13 @@ init flags =
             , appMode = Reading 
             , sourceText = ""
             , currentDocumentDirty = False
-             , autosaveDuration = 10*1000
+            , autosaveDuration = 10*1000
         }
-        , focusSearchBox
-        )
+        , Cmd.batch [ 
+            focusSearchBox
+          , sendInfoOutside (AskToReconnectDocument Encode.null)
+        ])
+
 
 focusSearchBox : Cmd Msg
 focusSearchBox =
@@ -309,7 +313,7 @@ update msg model =
                 tokenString = User.getTokenStringFromMaybeUser model.maybeCurrentUser
             in
                 ({ model | debounce = debounce}, Cmd.batch [
-                  cmd  
+                    cmd  
                   , saveDocToLocalStorage model.currentDocument
                   ]
                 )  
@@ -369,34 +373,31 @@ handleHttpError error =
 
 
 type InfoForElm = 
-  DocumentDataFromOutside Document 
+  DocumentDataFromOutside Document
+
 
 port infoForOutside : GenericOutsideData -> Cmd msg
 
 port infoForElm : (GenericOutsideData -> msg) -> Sub msg
 
 
-type InfoForOutside
-    = DocumentData Encode.Value
+type InfoForOutside =
+    DocumentData Encode.Value 
+  | AskToReconnectDocument Encode.Value
 
 
 type alias GenericOutsideData =
     { tag : String, data : Encode.Value }
 
--- sendUserDataToLocalStorage : Model -> Cmd Msg
--- sendUserDataToLocalStorage model =
---     case model.maybeCurrentUser of
---         Nothing ->
---             Cmd.none
-
---         Just user ->
---             OutsideInfo.sendInfoOutside (UserData <| Data.encodeUserData user)
 
 sendInfoOutside : InfoForOutside -> Cmd msg
 sendInfoOutside info =
     case info of
         DocumentData value ->
             infoForOutside { tag = "DocumentData", data = value }
+
+        AskToReconnectDocument value ->
+            infoForOutside { tag = "AskToReconnectDocument", data = Encode.null }
 
 
 getInfoFromOutside : (InfoForElm -> msg) -> (String -> msg) -> Sub msg
@@ -541,6 +542,7 @@ footer model =
       , Element.el [documentDirtyIndicator  model, padding 5] (text ("id " ++ (String.fromInt model.currentDocument.id )))
       , saveCurrentDocumentButton (px 50) model
       , Element.el [] (text <| access model.currentDocument)
+      , getAuthorsDocumentsButton (px 90) model
       , Element.el [] (text <| currentUserName model.maybeCurrentUser)
       , Element.el [] (text ("keys: " ++ (showKeys model)))
   ] 
@@ -628,6 +630,23 @@ getRandomDocumentsButton width_ model =
   , label = Element.text "Random"
   } 
 
+
+getAuthorsDocumentsButton : Length -> Model -> Element Msg  
+getAuthorsDocumentsButton width_ model = 
+  if model.currentDocument.id > 0 then 
+    getAuthorsDocumentsButton_ width_ model 
+  else 
+    Element.none
+
+getAuthorsDocumentsButton_ : Length -> Model -> Element Msg    
+getAuthorsDocumentsButton_ width_ model = 
+  let  
+    authorname = model.currentDocument.authorName 
+  in 
+    Input.button (buttonStyle  width_) {
+      onPress =  Just (GetPublicDocumentsRawQuery ("authorname=" ++ authorname))
+    , label = Element.text "Author docs"
+    } 
 
 saveCurrentDocumentButton : Length -> Model -> Element Msg    
 saveCurrentDocumentButton width_ model = 
