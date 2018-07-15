@@ -63,7 +63,7 @@ orange = Element.rgb 0.9 0.85 0.2
 
 black = Element.rgb 0.1 0.1 0.1
 
-blue = Element.rgb 0.0 0.0 0.5
+blue = Element.rgb 0.3 0.3 0.5
 
 darkRed = Element.rgb 0.45 0.0 0.0
 
