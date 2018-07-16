@@ -28,6 +28,15 @@ listItemStyleNarrow width_ = [
     , clipX
    ]
 
+listItemStyleNarrow2 width_ = [
+     Font.size 13 
+    , mouseDown [  Font.size 13, Background.color lightYellow]
+    , Font.color blue
+    , width width_
+    , height (px 16)
+    , clipX
+   ]
+
 
 titleStyle = [
      Font.size 13 
@@ -83,3 +92,15 @@ white = Element.rgb 1.0 1.0 1.0
 indicatorBad = Element.rgb 1.0 0.9 0.0
 
 indicatorGood = Element.rgb 0.0 0.9 0.0
+
+linkButton url label_ width_ =
+  newTabLink (listItemStyleNarrow2 width_)
+      { url = url
+      , label = text label_
+      }
+
+linkButtonFat url label_ width_ =
+  newTabLink (buttonStyle width_)
+      { url = url
+      , label = Element.el [moveDown 0] (text label_)
+      }

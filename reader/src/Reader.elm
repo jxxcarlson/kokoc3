@@ -24,6 +24,7 @@ import Element.Lazy
 
 import Widget exposing(..)
 
+import Configuration
 import User exposing(Token, UserMsg(..), readToken, User)
 import Document exposing(Document, DocType(..), DocMsg(..), TextType(..))
 import DocumentList exposing(
@@ -374,7 +375,8 @@ update msg model =
           let  
               tokenString = User.getTokenStringFromMaybeUser model.maybeCurrentUser 
               currentDocument = model.currentDocument 
-              nextCurrentDocument = { currentDocument | title = model.documentTitle }
+              tags = model.tagString |> String.split "," |> List.map String.trim
+              nextCurrentDocument = { currentDocument | title = model.documentTitle, tags = tags}
           in 
               ( { model | message = "Saved document: " ++ String.fromInt model.currentDocument.id
                         , currentDocumentDirty = False 
@@ -557,13 +559,97 @@ toolsOrContents model =
     ShowToolPanel -> toolsPanel model
     HideToolPanel -> Element.map DocListViewMsg (DocumentListView.viewWithHeading (docListTitle model) model.documentList)
 
-toolsPanel model = Element.column [ spacing 15, padding 10] [ 
+toolsPanel model = Element.column [ spacing 15, padding 10, height shrink] [ 
   Element.el [Font.bold, Font.size 18] (text "Tools Panel")
   , Element.row [spacing 10] [newDocumentButton model, updateDocumentButton model]
   , documentTitleInput model
   , documentPanels model
   , tagInputPane model (px 250) (px 140) "Tags"
+  , versionsPanel model
   ]
+
+versionsPanel model = 
+  Element.column [spacing 5] [
+     Element.el [] (text <| "Version: " ++ (String.fromInt model.currentDocument.version))
+     , Element.column [] [
+         showVersionButton model
+        , newVersionButton model
+       ]
+  ]
+
+printDocument model =
+  case model.currentDocument.id > 0 of 
+    True -> printDocument_ model  
+    False -> Element.none  
+
+
+printDocument_ model =
+    printButton model.currentDocument
+
+printButton document =
+    Widget.linkButtonFat (printUrl document) "Print" (px 50)
+
+
+printUrl : Document -> String
+printUrl document =
+    Configuration.backend ++ "/print/documents" ++ "/" ++ (String.fromInt document.id) ++ "?" ++ printTypeString document
+
+
+
+printTypeString : Document -> String
+printTypeString document =
+    case document.textType of
+        Asciidoc ->
+            "text=adoc"
+
+        AsciidocLatex ->
+            "text=adoc_latex"
+
+        MiniLatex ->
+            "text=latex"
+
+        PlainText ->
+            "text=latex"
+
+        Markdown ->
+            "text=markdown"
+
+showVersionButton model = 
+  linkButton (showVersionsUrl model.currentDocument) "Show versions" (px 100)
+  
+newVersionButton model = 
+  linkButton (newVersionUrl model.currentDocument) "New version" (px 100)
+
+
+showVersionsUrl : Document -> String
+showVersionsUrl document =
+    Configuration.backend ++ "/archive/versions" ++ "/" ++ (String.fromInt document.id)
+
+
+newVersionUrl : Document -> String
+newVersionUrl document =
+    Configuration.backend ++ "/archive/new_version" ++ "/" ++(String.fromInt document.id)
+
+
+tagInputPane model width_ height_ label_  = 
+  Element.column [] [
+      Element.el [Font.bold] (text label_)
+    , tagInputPane_ model width_ height_ label_ 
+  ]
+
+tagInputPane_ model width_ height_ label_  =
+    Keyed.row []
+        [ ( (String.fromInt model.counter)
+          , Input.multiline 
+                [ width (width_), height (height_), padding 10, scrollbarY ]
+                { onChange = Just AcceptDocumentTagString
+                , text = model.currentDocument.tags |> String.join ", "
+                , label = Input.labelAbove [ Font.size 14, Font.bold ] (text "")
+                , placeholder = Nothing
+                , spellcheck = False
+                }
+          )
+        ]
 
 documentPanels model = 
   Element.column [height shrink, spacing 10] [
@@ -577,6 +663,7 @@ textTypePanel model =
   Element.column [spacing 5] [
       miniLatexTypeButton model 
     , asciidocTypeButton model 
+    , asciidocLatexTypeButton model 
     , markdownTypeButton model 
     , plainTextTypeButton model 
   ]
@@ -616,19 +703,7 @@ textArea model width_ height_ label_  =
           )
         ]
 
-tagInputPane model width_ height_ label_  =
-    Keyed.row []
-        [ ( (String.fromInt model.counter)
-          , Input.multiline 
-                [ width (width_), height (height_), padding 10, scrollbarY ]
-                { onChange = Just AcceptDocumentTagString
-                , text = model.currentDocument.tags |> String.join ", "
-                , label = Input.labelAbove [ Font.size 14, Font.bold ] (text "")
-                , placeholder = Nothing
-                , spellcheck = False
-                }
-          )
-        ]
+
 
 bodyRightColumn : Int -> Model -> Element Msg
 bodyRightColumn portion_ model = 
@@ -665,6 +740,7 @@ footer model =
         Element.el [] (text model.message)
       , Element.el [documentDirtyIndicator  model, padding 5] (text ("id " ++ (String.fromInt model.currentDocument.id )))
       , saveCurrentDocumentButton (px 50) model
+      , printDocument model 
       , Element.el [] (text <| access model.currentDocument)
       , getAuthorsDocumentsButton (px 90) model
       , Element.el [] (text <| currentUserName model.maybeCurrentUser)
@@ -745,6 +821,13 @@ asciidocTypeButton model =
   Input.button (textTypeButtonStyle model Asciidoc) {
     onPress =  Just (SetDocumentTextType Asciidoc)
   , label = Element.text ("Asciidoc")
+  }
+
+asciidocLatexTypeButton : Model -> Element Msg 
+asciidocLatexTypeButton model = 
+  Input.button (textTypeButtonStyle model AsciidocLatex) {
+    onPress =  Just (SetDocumentTextType AsciidocLatex)
+  , label = Element.text ("Asciidoc Latex")
   }
 
 markdownTypeButton : Model -> Element Msg 
