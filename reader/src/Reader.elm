@@ -226,13 +226,19 @@ update msg model =
             Err err -> 
                 ({model | message = handleHttpError err},   Cmd.none  )
 
+        -- ### 
         DocMsg (NewDocumentCreated result) ->
           case result of 
             Ok documentRecord -> 
-               ({ model | message = "document OK"
-                         , currentDocument = documentRecord.document
+              let   
+                nextDocument = documentRecord.document
+                selectedDocId_ = selectedDocId nextDocument
+                cmd = attachDocmentToMasterBelow  selectedDocId_ nextDocument
+              in  
+               ({ model | message = "selectedDocId = " ++ (String.fromInt selectedDocId_)
+                         , currentDocument = nextDocument
                          , documentList = DocumentList.prepend documentRecord.document model.documentList
-                },  Cmd.none)
+                },  cmd)
             Err err -> 
                 ({model | message = handleHttpError err},   Cmd.none  )
 
@@ -1121,11 +1127,11 @@ newDocumentForUserWithParent user model =
        Nothing -> 0 
        Just selectedDoc -> selectedDoc.id
   in  
-    Document.createDocument (User.getTokenString user) (makeNewDocumentWithParent parentId parentTitle user )
+    Document.createDocument (User.getTokenString user) (makeNewDocumentWithParent parentId parentTitle selectedDocumentId user )
   
 
-makeNewDocumentWithParent : Int -> String -> User -> Document
-makeNewDocumentWithParent parentId parentTitle user =
+makeNewDocumentWithParent : Int -> String -> Int -> User -> Document
+makeNewDocumentWithParent parentId parentTitle selectedDocumentId user =
     let
         newDocument_ = Document.basicDocument
     in
@@ -1135,6 +1141,26 @@ makeNewDocumentWithParent parentId parentTitle user =
           , authorName = User.username user
           , parentId = parentId
           , parentTitle = parentTitle
-          , content = "New Child Document of " ++ parentTitle
+          , content = "New Child Document of " ++ parentTitle ++ ", placeUnder:" ++ (String.fromInt selectedDocumentId)
         }
 
+selectedDocId : Document -> Int 
+selectedDocId document = 
+  document.content 
+      |> String.split "," 
+      |> List.drop 1 
+      |> List.head 
+      |> Maybe.withDefault "placeUnder:0"
+      |> String.trim
+      |> String.split ":"
+      |> List.drop 1
+      |> List.head 
+      |> Maybe.withDefault "0"
+      |> String.toInt
+      |> Maybe.withDefault 0
+
+attachDocmentToMasterBelow : Int -> Document -> Cmd Msg
+attachDocmentToMasterBelow  selectedDocId_ nextDocument =
+  Cmd.none  
+
+-- ###
