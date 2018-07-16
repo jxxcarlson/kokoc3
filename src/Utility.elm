@@ -104,4 +104,12 @@ softBreakRegexp width =
     Maybe.withDefault Regex.never <|
        Regex.fromString (".{1," ++ (String.fromInt width) ++ "}(\\s+|$)|\\S+?(\\s+|$)")
 
-    
+
+{-| 
+> foo = [0, 1, 2, 3, 4, 5, 6]
+> listInsertAt 3 111 foo
+[0,1,2,111,3,4,5,6]
+-}
+listInsertAt : Int -> a -> List a  -> List a
+listInsertAt k item list = 
+  (List.take k list) ++ [item] ++ (List.drop k list)

@@ -10,6 +10,7 @@ module DocumentList exposing(
   , selectFirst
   , getFirst
   , documents
+  , setDocuments
   , prepend
   , documentListLength
   )
@@ -45,6 +46,10 @@ prepend document (DocumentList documentListRecord) =
 documents : DocumentList -> List Document 
 documents (DocumentList documentList) =
   documentList.documents
+
+setDocuments : List Document -> DocumentList -> DocumentList
+setDocuments listOfDocuments (DocumentList documentListRecord)  = 
+  DocumentList { documentListRecord | documents = listOfDocuments }
 
 selected : DocumentList -> Maybe Document 
 selected (DocumentList docListRecord) =

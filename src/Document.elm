@@ -15,6 +15,7 @@ module Document exposing(
     , TextType(..)
     , basicDocument
     , viewDocument
+    , wordCount
   )
 
 import Dict exposing(Dict)
@@ -560,6 +561,15 @@ viewChildren document =
 viewChild : Child -> Element msg 
 viewChild child = 
   Element.el [] (Element.text <| child.title)
+
+
+-- HELPER
+
+wordCount : Document -> Int
+wordCount document =
+    document.content
+        |> String.words
+        |> List.length
 
 
 -- TEXT
