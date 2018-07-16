@@ -10,6 +10,7 @@ module DocumentList exposing(
   , selectFirst
   , getFirst
   , documents
+  , prepend
   , documentListLength
   )
 
@@ -35,6 +36,11 @@ empty = DocumentList {
     documents = []
   , selected = Nothing 
   }
+
+prepend : Document -> DocumentList -> DocumentList 
+prepend document (DocumentList documentListRecord) = 
+   DocumentList { documentListRecord | documents = document :: documentListRecord.documents, selected = Just document }
+   
 
 documents : DocumentList -> List Document 
 documents (DocumentList documentList) =

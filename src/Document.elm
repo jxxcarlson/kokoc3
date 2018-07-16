@@ -4,6 +4,7 @@ module Document exposing(
     , DocumentView
     , getDocumentById 
     , saveDocument
+    , createDocument
     , getDocumentByIdRequest
     , documentDecoder
     , encodeDocumentForOutside
@@ -84,7 +85,7 @@ basicDocument = Document
     "author123"
     "Phineas Phud"
     "Welcome to kNode Reader"
-    initialText
+    newDocumentText
     1  
     True
     Dict.empty
@@ -131,7 +132,9 @@ type TextType
 
 type DocMsg = 
     ReceiveDocument (Result Http.Error DocumentRecord)
+  | NewDocumentCreated (Result Http.Error DocumentRecord)
   | AcknowledgeUpdateOfDocument (Result Http.Error DocumentRecord)
+
   
 
 -- DECODERS
@@ -339,13 +342,6 @@ encodeChildForOutside child =
             , ( "comment", Encode.string <| child.comment )
         ]
 
-     -- |> JPipeline.required "authorIdentifier" Decode.string
-        -- |> JPipeline.required "access" (Decode.dict Decode.string)
-        -- |> JPipeline.required "children" (Decode.list decodeChild)
-        -- |> JPipeline.required "lastViewed" (Decode.map Time.millisToPosix Decode.int)
-        -- |> JPipeline.required "created" (Decode.map Time.millisToPosix Decode.int)
-        -- |> JPipeline.required "lastModified" (Decode.map Time.millisToPosix Decode.int)
-
 encodeDocumentAttributes : Document -> Encode.Value
 encodeDocumentAttributes doc =
     Encode.object
@@ -437,6 +433,22 @@ saveDocumentRequest tokenString document =
 saveDocument : String -> Document -> Cmd DocMsg 
 saveDocument tokenString document =
     Http.send AcknowledgeUpdateOfDocument <| saveDocumentRequest tokenString document
+
+createDocumentRequest : String -> Document -> Http.Request DocumentRecord
+createDocumentRequest tokenString document = 
+  Http.request
+        { method = "Post"
+        , headers = [Http.header "APIVersion" "V2", Http.header "Authorization" ("Bearer " ++ tokenString)]
+        , url = Configuration.backend ++ "/api/documents/"
+        , body = Http.jsonBody (encodeDocumentRecord document)
+        , expect = Http.expectJson documentRecordDecoder
+        , timeout = Just 5000
+        , withCredentials = False
+        }
+
+createDocument : String -> Document -> Cmd DocMsg 
+createDocument tokenString document =
+    Http.send NewDocumentCreated <| createDocumentRequest tokenString document
 
 -- VIEW
 
@@ -531,7 +543,9 @@ viewChild child =
 
 -- TEXT
 
-initialText = 
+newDocumentText = "Replace this sentence by some really great prose ..."
+
+welcomeText = 
     """
 \\section{Getting started}
 

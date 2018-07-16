@@ -114,6 +114,7 @@ type Msg
     | Outside InfoForElm
     | ToggleToolPanelState 
     | NewDocument
+    | NewChildDocument
     | SetDocumentTextType TextType
     | SetDocumentType DocType
     
@@ -225,6 +226,16 @@ update msg model =
             Err err -> 
                 ({model | message = handleHttpError err},   Cmd.none  )
 
+        DocMsg (NewDocumentCreated result) ->
+          case result of 
+            Ok documentRecord -> 
+               ({ model | message = "document OK"
+                         , currentDocument = documentRecord.document
+                         , documentList = DocumentList.prepend documentRecord.document model.documentList
+                },  Cmd.none)
+            Err err -> 
+                ({model | message = handleHttpError err},   Cmd.none  )
+
         DocMsg (AcknowledgeUpdateOfDocument result) -> 
            case result of 
              Ok documentRecord -> 
@@ -285,7 +296,7 @@ update msg model =
            (model, Cmd.map DocListMsg (DocumentList.loadMasterDocument model.maybeCurrentUser docId))
 
         DocViewMsg (LoadMasterWithCurrentSelection docId) ->
-         (model, Cmd.map DocListMsg (DocumentList.loadMasterDocumentWithCurrentSelection model.maybeCurrentUser docId))
+         ({model | appMode = Reading} , Cmd.map DocListMsg (DocumentList.loadMasterDocumentWithCurrentSelection model.maybeCurrentUser docId))
 
         GetToken ->
            (model, Cmd.map UserMsg (User.getToken "jxxcarlson@gmail.com" model.password)  )
@@ -294,16 +305,21 @@ update msg model =
            (model, Cmd.map DocMsg (Document.getDocumentById id (readToken model.maybeToken)))
 
         GetPublicDocuments query ->
-           ({ model | message = "query: " ++ query}, Cmd.map DocListMsg (DocumentList.findDocuments Nothing (Query.parse query)))
+           ({ model | 
+               message = "query: " ++ query
+             , appMode = Reading
+            }
+            , Cmd.map DocListMsg (DocumentList.findDocuments Nothing (Query.parse query)))
 
         GetPublicDocumentsRawQuery query ->
-           ({ model | message = "query: " ++ query}, Cmd.map DocListMsg (DocumentList.findDocuments Nothing query))
+           ({ model | message = "query: " ++ query, appMode = Reading}, 
+             Cmd.map DocListMsg (DocumentList.findDocuments Nothing query))
         
         GetUserDocuments query ->
           case model.maybeCurrentUser of 
             Nothing -> ( model, Cmd.none)
             Just user ->
-             ({ model | message = "query: " ++ query}, Cmd.map DocListMsg (DocumentList.findDocuments (Just user) (Query.parse query)))
+             ({ model | message = "query: " ++ query, appMode = Reading}, Cmd.map DocListMsg (DocumentList.findDocuments (Just user) (Query.parse query)))
         
         LoadMasterDocument idString ->
               case String.toInt idString  of 
@@ -404,7 +420,10 @@ update msg model =
             ( nextModel , Cmd.none)
 
         NewDocument -> 
-          (model, Cmd.none)
+          (model, Cmd.map DocMsg (newDocument model))
+
+        NewChildDocument -> 
+          (model, Cmd.map DocMsg (newChildDocument model))
 
         SetDocumentTextType textType -> 
           let  
@@ -548,7 +567,8 @@ bodyLeftColumn : Int -> Model -> Element Msg
 bodyLeftColumn portion_ model = 
   Element.column [width (fillPortion portion_), height fill, 
     Background.color Widget.lightBlue, paddingXY 20 20, spacing 10] [ 
-       toggleToolsButton (px 80) model
+        Element.row [spacing 10] [ toggleToolsButton (px 80) model, newDocumentButton model ]
+      , newChildButton model 
       , toolsOrContents model
   ]
 
@@ -559,13 +579,28 @@ toolsOrContents model =
     ShowToolPanel -> toolsPanel model
     HideToolPanel -> Element.map DocListViewMsg (DocumentListView.viewWithHeading (docListTitle model) model.documentList)
 
-toolsPanel model = Element.column [ spacing 15, padding 10, height shrink] [ 
+toolsPanel model = Element.column [ spacing 15, padding 10, height shrink, scrollbarY] [ 
   Element.el [Font.bold, Font.size 18] (text "Tools Panel")
-  , Element.row [spacing 10] [newDocumentButton model, updateDocumentButton model]
+  , Element.row [spacing 10] [updateDocumentButton model]
+  , masterDocPanel model
   , documentTitleInput model
   , documentPanels model
   , tagInputPane model (px 250) (px 140) "Tags"
   , versionsPanel model
+  ]
+
+masterDocPanel model = 
+  let  
+    headDocument = DocumentList.getFirst  model.documentList 
+  in 
+    case headDocument.docType of 
+      Master -> masterDocPanelWithMaster headDocument model  
+      Standard -> Element.none 
+
+masterDocPanelWithMaster headDocument model = 
+  Element.column [spacing 5] [ 
+    Element.el [] (text <| "Master doc: " ++ (String.fromInt headDocument.id))
+
   ]
 
 versionsPanel model = 
@@ -883,11 +918,40 @@ highLightTextType textType1 textType2 =
     True -> [Font.bold]
     False -> [Font.light] 
 
+
 newDocumentButton :  Model -> Element Msg    
 newDocumentButton model = 
+  case model.appMode of 
+    Reading -> Element.none 
+    Writing -> newDocumentButton_ model
+
+newDocumentButton_ :  Model -> Element Msg    
+newDocumentButton_ model = 
   Input.button (buttonStyle (px 110)) {
     onPress =  Just (NewDocument)
   , label = Element.text ("New document")
+  }
+
+newChildButton :  Model -> Element Msg    
+newChildButton model = 
+  case model.appMode of 
+    Reading -> Element.none 
+    Writing -> newChildButton_ model
+
+newChildButton_ :  Model -> Element Msg    
+newChildButton_ model = 
+  let 
+    headDocument = DocumentList.getFirst model.documentList
+  in 
+    case headDocument.docType of 
+      Standard -> Element.none 
+      Master -> newChildButton__ model
+
+newChildButton__ :  Model -> Element Msg    
+newChildButton__ model = 
+  Input.button (buttonStyle (px 130)) {
+    onPress =  Just (NewChildDocument) 
+  , label = Element.text ("New subdocument")
   }
 
 updateDocumentButton :  Model -> Element Msg    
@@ -906,7 +970,7 @@ toggleToolsButton width_ model =
 
 toggleToolsButton_ : Length -> Model -> Element Msg    
 toggleToolsButton_ width_ model = 
-  Input.button ((buttonStyle width_ )++ [moveRight 10]) {
+  Input.button (buttonStyle width_ ) {
     onPress =  Just (ToggleToolPanelState)
   , label = Element.text (toggleToolsTitle model.toolPanelState)
   }
@@ -1002,4 +1066,75 @@ modeButtonStyle appMode buttonMode width_ =
 
 idFromDocInfo str = 
   str |> String.toInt |> Maybe.withDefault 0
+
+-- HELPERS
+
+
+newDocument : Model ->Cmd DocMsg
+newDocument model =
+  case model.maybeCurrentUser of 
+    Nothing -> Cmd.none
+    Just user -> newDocumentForUser user model
+
+newDocumentForUser : User -> Model -> Cmd DocMsg
+newDocumentForUser user model =  
+  let  
+    headDocument = DocumentList.getFirst  model.documentList
+    parentId = case headDocument.docType of 
+      Master -> headDocument.id 
+      Standard -> 0 
+    selectedDocumentId = case  DocumentList.selected model.documentList of 
+       Nothing -> 0 
+       Just selectedDoc -> selectedDoc.id
+  in  
+    Document.createDocument (User.getTokenString user) (makeNewDocument user )
+
+makeNewDocument : User -> Document
+makeNewDocument user =
+    let
+        newDocument_ = Document.basicDocument
+    in
+       { newDocument_ | 
+            title = "New Document"
+          , authorId =  User.userId user
+          , authorName = User.username user
+        }
+  
+
+newChildDocument : Model ->Cmd DocMsg
+newChildDocument model =
+  case model.maybeCurrentUser of 
+    Nothing -> Cmd.none
+    Just user -> newDocumentForUserWithParent user model
+
+newDocumentForUserWithParent : User -> Model -> Cmd DocMsg
+newDocumentForUserWithParent user model =  
+  let  
+    headDocument = DocumentList.getFirst  model.documentList
+    parentId = case headDocument.docType of 
+      Master -> headDocument.id 
+      Standard -> 0 
+    parentTitle = case headDocument.docType of 
+      Master -> headDocument.title 
+      Standard -> "" 
+    selectedDocumentId = case  DocumentList.selected model.documentList of 
+       Nothing -> 0 
+       Just selectedDoc -> selectedDoc.id
+  in  
+    Document.createDocument (User.getTokenString user) (makeNewDocumentWithParent parentId parentTitle user )
+  
+
+makeNewDocumentWithParent : Int -> String -> User -> Document
+makeNewDocumentWithParent parentId parentTitle user =
+    let
+        newDocument_ = Document.basicDocument
+    in
+       { newDocument_ | 
+            title = "New Child Document"
+          , authorId =  User.userId user
+          , authorName = User.username user
+          , parentId = parentId
+          , parentTitle = parentTitle
+          , content = "New Child Document of " ++ parentTitle
+        }
 

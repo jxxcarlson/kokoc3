@@ -10,6 +10,7 @@ module User exposing(
    , getTokenString
    , getTokenStringFromMaybeUser
    , username
+   , userId
    ) 
 
 
@@ -35,6 +36,10 @@ type User = User {
 username : User -> String
 username (User user) =
   user.username
+
+userId : User -> Int
+userId (User user) =
+  user.id
 
 testUser = User {
     email = "jxxcarlson@gmail.com"
