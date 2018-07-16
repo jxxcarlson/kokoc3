@@ -607,17 +607,17 @@ toolsPanel model = Element.column [ spacing 15, padding 10, height shrink, scrol
   , versionsPanel model
   ]
 
-masterDocPanel model = 
-  let  
-    headDocument = DocumentList.getFirst  model.documentList 
-  in 
-    case headDocument.docType of 
-      Master -> masterDocPanelWithMaster headDocument model  
-      Standard -> Element.none 
+-- masterDocPanel model = 
+--   let  
+--     headDocument = DocumentList.getFirst  model.documentList 
+--   in 
+--     case headDocument.docType of 
+--       Master -> masterDocPanelWithMaster headDocument model  
+--       Standard -> Element.none 
 
-masterDocPanelWithMaster headDocument model = 
+masterDocPanel model = 
   Element.column [spacing 5] [ 
-    Element.el [] (text <| "Master doc: " ++ (String.fromInt headDocument.id))
+    Element.el [] (text <| "Master doc: " ++ (String.fromInt model.currentDocument.parentId))
 
   ]
 
@@ -1183,7 +1183,7 @@ attachDocumentToMasterBelowCmd_ : String -> Int -> Document -> Document -> Cmd D
 attachDocumentToMasterBelowCmd_  tokenString selectedDocId_ childDocument masterDocument =
   let  
     masterDocumentId = childDocument.parentId 
-    query = "?attach=below&child=" ++ (String.fromInt childDocument.id) ++ "&current=" ++ (String.fromInt selectedDocId_)
+    query =  ("attach=below&child=" ++ (String.fromInt childDocument.id) ++ "&current=" ++ (String.fromInt selectedDocId_))
   in  
     case masterDocumentId == masterDocument.id of 
       False -> Cmd.none 

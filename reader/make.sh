@@ -4,7 +4,7 @@ reset=`tput setaf 7`
 
 echo
 echo "${color}Compile reader${reset}"
-/Users/carlson/Downloads/2/elm make --optimize ./src/Reader.elm --output ./dist/Main.js
+/Users/carlson/Downloads/2/elm make ./src/Reader.elm --output ./dist/Main.js
 
 if [ "$1" = "-r" ]
 then

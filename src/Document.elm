@@ -452,7 +452,7 @@ updateDocumentWithQueryStringRequest tokenString queryString document =
 
 updateDocumentWithQueryString : String -> String -> Document -> Cmd DocMsg 
 updateDocumentWithQueryString tokenString queryString document =
-    Http.send AcknowledgeUpdateOfDocument <| saveDocumentRequest tokenString document
+    Http.send AcknowledgeUpdateOfDocument <| updateDocumentWithQueryStringRequest tokenString queryString document
 
 
 createDocumentRequest : String -> Document -> Http.Request DocumentRecord
