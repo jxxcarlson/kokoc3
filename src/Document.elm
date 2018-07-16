@@ -4,6 +4,7 @@ module Document exposing(
     , DocumentView
     , getDocumentById 
     , saveDocument
+    , updateDocumentWithQueryString
     , createDocument
     , getDocumentByIdRequest
     , documentDecoder
@@ -430,9 +431,29 @@ saveDocumentRequest tokenString document =
         , withCredentials = False
         }
 
+
 saveDocument : String -> Document -> Cmd DocMsg 
 saveDocument tokenString document =
     Http.send AcknowledgeUpdateOfDocument <| saveDocumentRequest tokenString document
+
+
+updateDocumentWithQueryStringRequest : String -> String -> Document -> Http.Request DocumentRecord
+updateDocumentWithQueryStringRequest tokenString queryString document = 
+    Http.request
+        { method = "Put"
+        , headers = [Http.header "APIVersion" "V2", Http.header "Authorization" ("Bearer " ++ tokenString)]
+        , url = Configuration.backend ++ "/api/documents/" ++ (String.fromInt document.id) ++ "?" ++ queryString
+        , body = Http.jsonBody (encodeDocumentRecord document)
+        , expect = Http.expectJson documentRecordDecoder
+        , timeout = Just 5000
+        , withCredentials = False
+        }
+
+
+updateDocumentWithQueryString : String -> String -> Document -> Cmd DocMsg 
+updateDocumentWithQueryString tokenString queryString document =
+    Http.send AcknowledgeUpdateOfDocument <| saveDocumentRequest tokenString document
+
 
 createDocumentRequest : String -> Document -> Http.Request DocumentRecord
 createDocumentRequest tokenString document = 

@@ -63,6 +63,7 @@ type alias Model =
       , maybeCurrentUser : Maybe User
       , docInfo  : String
       , currentDocument : Document
+      , maybeMasterDocument : Maybe Document
       , documentList : DocumentList 
       , documentDictionary : DocumentDictionary
       , counter : Int
@@ -148,6 +149,7 @@ init flags =
             , maybeToken = Nothing
             , maybeCurrentUser = Nothing
             , currentDocument = { doc | title = "Welcome!"}
+            , maybeMasterDocument = Nothing 
             , documentList = DocumentList.empty
             , documentDictionary = DocumentDictionary.empty
             , counter = 0
@@ -233,7 +235,7 @@ update msg model =
               let   
                 nextDocument = documentRecord.document
                 selectedDocId_ = selectedDocId nextDocument
-                cmd = attachDocmentToMasterBelow  selectedDocId_ nextDocument
+                cmd = Cmd.map DocMsg (attachDocumentToMasterBelowCmd  (User.getTokenStringFromMaybeUser model.maybeCurrentUser) selectedDocId_ nextDocument model.maybeMasterDocument)
               in  
                ({ model | message = "selectedDocId = " ++ (String.fromInt selectedDocId_)
                          , currentDocument = nextDocument
@@ -254,11 +256,15 @@ update msg model =
             Ok documentList -> 
               let 
                 currentDocument = DocumentList.getFirst documentList
+                nextMaybeMasterDocument = case currentDocument.docType of 
+                  Standard -> Nothing 
+                  Master -> Just currentDocument
               in
                ({ model | 
                  message = "documentList: " ++ (String.fromInt <| documentListLength documentList)
                  , documentList = DocumentList.selectFirst documentList
                  , currentDocument = DocumentList.getFirst documentList
+                 , maybeMasterDocument = nextMaybeMasterDocument
                  }
                  ,  Cmd.map  DocDictMsg <| DocumentDictionary.loadTexMacros (readToken model.maybeToken) currentDocument currentDocument.tags model.documentDictionary   )
             Err err -> 
@@ -268,11 +274,16 @@ update msg model =
           case result of 
             Ok documentList -> 
               let 
+                currentDocument = DocumentList.getFirst documentList
+                nextMaybeMasterDocument = case currentDocument.docType of 
+                  Standard -> Nothing 
+                  Master -> Just currentDocument
                 nextDocumentList = DocumentList.select (Just model.currentDocument) documentList
               in
                 ({ model | 
                     message = "documentList: " ++ (String.fromInt <| documentListLength documentList)
                     , documentList = nextDocumentList
+                    , maybeMasterDocument = nextMaybeMasterDocument 
                     }
                     ,   Cmd.none  )
             Err err -> 
@@ -314,18 +325,19 @@ update msg model =
            ({ model | 
                message = "query: " ++ query
              , appMode = Reading
+             , toolPanelState = HideToolPanel
             }
             , Cmd.map DocListMsg (DocumentList.findDocuments Nothing (Query.parse query)))
 
         GetPublicDocumentsRawQuery query ->
-           ({ model | message = "query: " ++ query, appMode = Reading}, 
+           ({ model | message = "query: " ++ query, appMode = Reading, toolPanelState = HideToolPanel}, 
              Cmd.map DocListMsg (DocumentList.findDocuments Nothing query))
         
         GetUserDocuments query ->
           case model.maybeCurrentUser of 
             Nothing -> ( model, Cmd.none)
             Just user ->
-             ({ model | message = "query: " ++ query, appMode = Reading}, Cmd.map DocListMsg (DocumentList.findDocuments (Just user) (Query.parse query)))
+             ({ model | message = "query: " ++ query, appMode = Reading, toolPanelState = HideToolPanel }, Cmd.map DocListMsg (DocumentList.findDocuments (Just user) (Query.parse query)))
         
         LoadMasterDocument idString ->
               case String.toInt idString  of 
@@ -786,6 +798,7 @@ footer model =
       , getAuthorsDocumentsButton (px 90) model
       , Element.el [] (text <| currentUserName model.maybeCurrentUser)
       , Element.el [] (text ("keys: " ++ (showKeys model)))
+      , Element.el [] (text <| displayCurrentMasterDocument model)
   ] 
 
 documentDirtyIndicator  model = 
@@ -1159,8 +1172,26 @@ selectedDocId document =
       |> String.toInt
       |> Maybe.withDefault 0
 
-attachDocmentToMasterBelow : Int -> Document -> Cmd Msg
-attachDocmentToMasterBelow  selectedDocId_ nextDocument =
-  Cmd.none  
+
+attachDocumentToMasterBelowCmd : String -> Int -> Document -> Maybe Document -> Cmd DocMsg
+attachDocumentToMasterBelowCmd  tokenString selectedDocId_ childDocument maybeMasterDocument =
+  case maybeMasterDocument of 
+    Nothing -> Cmd.none 
+    Just masterDocument -> attachDocumentToMasterBelowCmd_  tokenString selectedDocId_ childDocument masterDocument
+
+attachDocumentToMasterBelowCmd_ : String -> Int -> Document -> Document -> Cmd DocMsg
+attachDocumentToMasterBelowCmd_  tokenString selectedDocId_ childDocument masterDocument =
+  let  
+    masterDocumentId = childDocument.parentId 
+    query = "?attach=below&child=" ++ (String.fromInt childDocument.id) ++ "&current=" ++ (String.fromInt selectedDocId_)
+  in  
+    case masterDocumentId == masterDocument.id of 
+      False -> Cmd.none 
+      True ->  (Document.updateDocumentWithQueryString tokenString query masterDocument)   
+
+displayCurrentMasterDocument model = 
+  case model.maybeMasterDocument of 
+    Nothing -> "Master: none"
+    Just doc -> "Master: " ++ (String.fromInt doc.id) 
 
 -- ###
