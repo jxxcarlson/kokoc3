@@ -14,7 +14,7 @@ module Document exposing(
     , DocType(..)
     , TextType(..)
     , basicDocument
-    , viewDocument
+    , view
     , wordCount
   )
 
@@ -479,8 +479,8 @@ type alias DocumentView msg =
      , content: Element msg 
    }
 
-viewDocument : String -> Document -> DocumentView msg
-viewDocument texMacros doc = 
+view : String -> Document -> DocumentView msg
+view texMacros doc = 
   { title = doc.title 
     , content = documentContentView texMacros doc
   }

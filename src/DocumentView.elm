@@ -10,7 +10,7 @@ import Element.Keyed as Keyed
 
 import Html exposing(Html) 
 
-import Document exposing(Document, DocumentView, viewDocument)
+import Document exposing(Document, DocumentView)
 import Widget
 
 
@@ -20,13 +20,10 @@ type DocViewMsg =
 
 
 view : Int -> String -> Document -> Element DocViewMsg 
-view counter texMacros doc = 
-  let 
-    viewDoc = viewDocument texMacros doc 
-  in 
+view counter texMacros document = 
     Element.column [spacing 15] [
-        titleLine doc
-        , (contentView counter viewDoc)
+        titleLine document
+        , (contentView counter (Document.view texMacros document ))
     ]
 
 contentView counter viewDoc = 
