@@ -12,16 +12,16 @@ type DocListViewMsg =
   SetCurrentDocument Document
 
 
-viewWithHeading : String -> DocumentList -> Element DocListViewMsg
-viewWithHeading heading docList = 
+viewWithHeading : Int -> String -> DocumentList -> Element DocListViewMsg
+viewWithHeading height_ heading docList = 
   Element.column [ spacing 10] [
      Element.el [moveRight 10, Font.size 18, Font.bold] (text heading)
-    , view docList
+    , view height_ docList
   ]
 
-view : DocumentList -> Element DocListViewMsg 
-view docList =
-  Element.column [spacing 5, scrollbarY, height (px 400) ] 
+view : Int -> DocumentList -> Element DocListViewMsg 
+view height_ docList =
+  Element.column [spacing 5, scrollbarY, height (px (height_ - 150)) ] 
     ( List.map (setCurrentDocumentButton <| DocumentList.selected  docList) (documents docList) )
 
 viewDocument :  Document -> Element msg 

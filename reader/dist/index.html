@@ -78,7 +78,11 @@ a:active { color: blue;}
  	<script>
 
 		var root = document.getElementById('main');
-		var app = Elm.Main.init({node: root, flags:  { }});		
+		var app = Elm.Main.init({node: root, flags:  {
+					width:  window.innerWidth,
+					height: window.innerHeight
+				}
+		});		
 		
 		var typesetTimeout = null
 		var typesetQueue = []

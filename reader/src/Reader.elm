@@ -56,7 +56,10 @@ main =
 
 
 type alias Flags =
-    {}
+    {
+      width : Int
+    , height : Int  
+    }
 
 type alias Model =
     {   message  : String
@@ -77,6 +80,8 @@ type alias Model =
       , toolPanelState : ToolPanelState
       , documentTitle : String
       , tagString : String 
+      , windowWidth : Int  
+      , windowHeight : Int  
     }
 
 type AppMode = 
@@ -163,6 +168,8 @@ init flags =
             , toolPanelState = HideToolPanel
             , documentTitle = ""
             , tagString = ""
+            , windowWidth = flags.width
+            , windowHeight = flags.height
         }
         , Cmd.batch [ 
             focusSearchBox
@@ -537,8 +544,8 @@ getInfoFromOutside tagger onError =
 -- VIEW
 
 view  model =
-   Element.layout [Font.size 14, width fill, height fill] <|
-        Element.column [ width fill, height fill] [
+   Element.layout [Font.size 14, width fill, height fill, clipY] <|
+        Element.column [ width fill, height (px model.windowHeight)] [
             header model
             , body model
             , footer model
@@ -598,7 +605,7 @@ bodyLeftColumn portion_ model =
 toolsOrContents model = 
   case model.toolPanelState of 
     ShowToolPanel -> toolsPanel model
-    HideToolPanel -> Element.map DocListViewMsg (DocumentListView.viewWithHeading (docListTitle model) model.documentList)
+    HideToolPanel -> Element.map DocListViewMsg (DocumentListView.viewWithHeading model.windowHeight (docListTitle model) model.documentList)
 
 toolsPanel model = Element.column [ spacing 15, padding 10, height shrink, scrollbarY] [ 
   Element.el [Font.bold, Font.size 18] (text "Tools Panel")
@@ -792,7 +799,7 @@ texMacros model =
 
 footer : Model -> Element Msg
 footer model = 
-  Element.row [spacing 15, width fill, Background.color Widget.grey, height (px 40), paddingXY 20 0] [
+  Element.row [moveUp 8, spacing 15, width fill, Background.color Widget.grey, height (px 40), paddingXY 20 0] [
         Element.el [] (text model.message)
       , Element.el [documentDirtyIndicator  model, padding 5] (text ("id " ++ (String.fromInt model.currentDocument.id )))
       , saveCurrentDocumentButton (px 50) model
