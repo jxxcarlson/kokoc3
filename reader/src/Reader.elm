@@ -587,8 +587,8 @@ readerBody model =
   ]
 writerBody : Model -> Element Msg
 writerBody model = 
-  Element.row [width fill, height fill, Background.color Widget.white, centerX] [
-     bodyLeftColumn 2 model,  bodyEditorColumn 5 model, bodyReaderColumn model.windowHeight 5 model
+  Element.row [width fill, height (px (model.windowHeight - 70)), Background.color Widget.white, centerX] [
+     bodyLeftColumn 2 model,  bodyEditorColumn model.windowHeight 5 model, bodyReaderColumn model.windowHeight 5 model
   ]
 
 bodyLeftColumn : Int -> Model -> Element Msg
@@ -745,18 +745,18 @@ bodyReaderColumn windowHeight_ portion_  model  =
   ]
 
 
-bodyEditorColumn : Int -> Model -> Element Msg
-bodyEditorColumn portion_ model  = 
-  Element.column [width (fillPortion portion_), height fill
+bodyEditorColumn : Int -> Int -> Model -> Element Msg
+bodyEditorColumn windowHeight_ portion_ model  = 
+  Element.column [width (fillPortion portion_), height (px (windowHeight_ - 80))
     , Background.color Widget.lightYellow, centerX] [
-     textArea model (fillPortion portion_) (px 720) "Editor"
+     textArea model (fillPortion portion_) windowHeight_ "Editor"
   ]
 
-textArea model width_ height_ label_  =
+textArea model width_ windowHeight_ label_  =
     Keyed.row []
         [ ( (String.fromInt model.counter)
           , Input.multiline 
-                [ width (width_), height (height_), padding 10, scrollbarY ]
+                [ width (width_), height (px (windowHeight_ - 80)), paddingXY 10 0, scrollbarY ]
                 { onChange = Just GetContent
                 , text = model.currentDocument.content
                 , label = Input.labelLeft [ Font.size 14, Font.bold ] (text "")
@@ -765,7 +765,7 @@ textArea model width_ height_ label_  =
                 }
           )
         ]
-
+-- (px (windowHeight_ - 40))
 
 
 bodyRightColumn : Int -> Model -> Element Msg
@@ -810,6 +810,7 @@ footer model =
       , Element.el [] (text ("keys: " ++ (showKeys model)))
       , Element.el [] (text <| displayCurrentMasterDocument model)
       , Element.el [] (text <| (String.fromInt (Document.wordCount model.currentDocument)) ++ " words")
+      , Element.el [] (text <| "Window height: " ++ (String.fromInt model.windowHeight))
   ] 
 
 documentDirtyIndicator  model = 
