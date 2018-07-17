@@ -19,15 +19,15 @@ type DocViewMsg =
   | LoadMasterWithCurrentSelection Int
 
 
-view : Int -> String -> Document -> Element DocViewMsg 
-view counter texMacros document = 
+view : Int -> Int -> String -> Document -> Element DocViewMsg 
+view windowHeight_ counter texMacros document = 
     Element.column [spacing 15] [
         titleLine document
-        , (contentView counter (Document.view texMacros document ))
+        , (contentView windowHeight_ counter (Document.view texMacros document ))
     ]
 
-contentView counter viewDoc = 
-  Keyed.el [width (fill), height (px 680), scrollbarY] ((String.fromInt counter), viewDoc.content)
+contentView windowHeight_ counter viewDoc = 
+  Keyed.el [width (fill), height (px (windowHeight_ - 150)), scrollbarY] ((String.fromInt counter), viewDoc.content)
 
 
 titleLine : Document -> Element DocViewMsg 

@@ -583,12 +583,12 @@ body model =
 readerBody : Model -> Element Msg
 readerBody model = 
   Element.row [width (fillPortion 4), height fill, Background.color Widget.white, centerX] [
-     bodyLeftColumn 2 model,  bodyReaderColumn 7 model, bodyRightColumn 2 model
+     bodyLeftColumn 2 model,  bodyReaderColumn model.windowHeight 7 model, bodyRightColumn 2 model
   ]
 writerBody : Model -> Element Msg
 writerBody model = 
   Element.row [width fill, height fill, Background.color Widget.white, centerX] [
-     bodyLeftColumn 2 model,  bodyEditorColumn 5 model, bodyReaderColumn 5 model
+     bodyLeftColumn 2 model,  bodyEditorColumn 5 model, bodyReaderColumn model.windowHeight 5 model
   ]
 
 bodyLeftColumn : Int -> Model -> Element Msg
@@ -737,11 +737,11 @@ documentTypePanel model =
     , masterDocumentButton model 
   ]
 
-bodyReaderColumn : Int -> Model -> Element Msg
-bodyReaderColumn portion_  model  = 
-  Element.column [width (fillPortion portion_ ), height (px 720), paddingXY 20 20
+bodyReaderColumn : Int -> Int -> Model -> Element Msg
+bodyReaderColumn windowHeight_ portion_  model  = 
+  Element.column [width (fillPortion portion_ ), height (px (windowHeight_ - 73)), paddingXY 20 20
     , Background.color Widget.lightGrey, centerX] [
-      Element.map DocViewMsg (DocumentView.view model.counter (texMacros model) model.currentDocument)
+      Element.map DocViewMsg (DocumentView.view windowHeight_ model.counter (texMacros model) model.currentDocument)
   ]
 
 
