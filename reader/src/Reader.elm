@@ -316,7 +316,7 @@ update msg model =
            (model, Cmd.map DocListMsg (DocumentList.loadMasterDocument model.maybeCurrentUser docId))
 
         DocViewMsg (LoadMasterWithCurrentSelection docId) ->
-         ({model | appMode = Reading} , Cmd.map DocListMsg (DocumentList.loadMasterDocumentWithCurrentSelection model.maybeCurrentUser docId))
+         ({model | appMode = Reading, toolPanelState = HideToolPanel} , Cmd.map DocListMsg (DocumentList.loadMasterDocumentWithCurrentSelection model.maybeCurrentUser docId))
 
         GetToken ->
            (model, Cmd.map UserMsg (User.getToken "jxxcarlson@gmail.com" model.password)  )
