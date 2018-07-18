@@ -479,26 +479,26 @@ type alias DocumentView msg =
      , content: Element msg 
    }
 
-view : String -> Document -> DocumentView msg
-view texMacros doc = 
+view : Int -> String -> Document -> DocumentView msg
+view debounceCounter texMacros doc = 
   { title = doc.title 
-    , content = documentContentView texMacros doc
+    , content = documentContentView debounceCounter texMacros doc
   }
 
 
-documentContentView : String -> Document -> Element msg 
-documentContentView texMacros document = 
+documentContentView : Int -> String -> Document -> Element msg 
+documentContentView debounceCounter texMacros document = 
     case document.docType of 
         Master -> viewChildren document 
-        Standard -> documentContentView_ texMacros document
+        Standard -> documentContentView_ debounceCounter texMacros document
 
-documentContentView_ :String -> Document -> Element msg 
-documentContentView_  texMacros document =    
+documentContentView_ : Int -> String -> Document -> Element msg 
+documentContentView_  debounceCounter texMacros document =    
   case document.textType of
     MiniLatex -> viewMiniLatex texMacros document 
     Markdown -> viewMarkdown document 
-    Asciidoc -> viewAsciidoc document
-    AsciidocLatex -> viewAsciidoc document
+    Asciidoc -> viewAsciidoc debounceCounter document.content
+    AsciidocLatex -> viewAsciidoc debounceCounter document.content
     PlainText -> viewPlainText document
   
 normalize str = 
@@ -538,9 +538,14 @@ viewMarkdown document =
 --     Master -> viewChildren document 
 --     Standard -> viewAsciidoc_ document.content 
 
-viewAsciidoc : Document -> Element msg
-viewAsciidoc document =
-  Keyed.el [ ] ("foo", (Element.html <| asciidocText document.content))
+-- viewAsciidoc : Document -> Element msg
+-- viewAsciidoc document =
+--   Keyed.el [ ] ("foo", (Element.html <| asciidocText document.content))
+
+viewAsciidoc : Int -> String -> Element msg
+viewAsciidoc debounceCounter str =
+  Keyed.el [ ] (  ("Asciidoc." ++ String.fromInt debounceCounter)
+                  , (Element.html <| asciidocText str))
 
 
 asciidocText : String -> Html msg
