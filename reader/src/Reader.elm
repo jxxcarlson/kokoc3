@@ -82,6 +82,7 @@ type alias Model =
       , tagString : String 
       , windowWidth : Int  
       , windowHeight : Int  
+      , maybeViewport : Maybe Dom.Viewport
     }
 
 type AppMode = 
@@ -125,6 +126,7 @@ type Msg
     | NewChildDocument
     | SetDocumentTextType TextType
     | SetDocumentType DocType
+    | GetViewport Dom.Viewport
     
 
 
@@ -170,6 +172,7 @@ init flags =
             , tagString = ""
             , windowWidth = flags.width
             , windowHeight = flags.height
+            , maybeViewport = Nothing
         }
         , Cmd.batch [ 
             focusSearchBox
@@ -466,6 +469,9 @@ update msg model =
             nextDocument = { document | docType = docType }
           in 
            ( { model | currentDocument = nextDocument }, Cmd.none)
+
+        GetViewport viewport -> 
+           ({model | maybeViewport = Just viewport }, Cmd.none)
 
 -- UPDATE END
 
@@ -804,12 +810,15 @@ footer model =
       , Element.el [documentDirtyIndicator  model, padding 5] (text ("id " ++ (String.fromInt model.currentDocument.id )))
       , saveCurrentDocumentButton (px 50) model
       , printDocument model 
-      , Element.el [] (text <| access model.currentDocument)
       , getAuthorsDocumentsButton (px 90) model
+
+      , Element.el [] (text <| access model.currentDocument)
+      , Element.el [] (text <| "Author: " ++ model.currentDocument.authorName )
       , Element.el [] (text <| currentUserName model.maybeCurrentUser)
+      , Element.el [] (text <| (String.fromInt (Document.wordCount model.currentDocument)) ++ " words")
+
       , Element.el [] (text ("keys: " ++ (showKeys model)))
       , Element.el [] (text <| displayCurrentMasterDocument model)
-      , Element.el [] (text <| (String.fromInt (Document.wordCount model.currentDocument)) ++ " words")
       , Element.el [] (text <| "Window height: " ++ (String.fromInt model.windowHeight))
   ] 
 
@@ -1226,5 +1235,6 @@ nextDocumentList targetDocId document documentList =
               |> DocumentList.select (Just document)
 
 
+getViewPort = Task.perform GetViewport Dom.getViewport
 
 -- ###
