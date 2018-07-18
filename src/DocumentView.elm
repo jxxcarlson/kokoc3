@@ -19,11 +19,11 @@ type DocViewMsg =
   | LoadMasterWithCurrentSelection Int
 
 
-view : Int -> Int -> String -> Document -> Element DocViewMsg 
-view windowHeight_ counter texMacros document = 
+view : Int -> Int -> Int -> String -> Document -> Element DocViewMsg 
+view windowHeight_ counter debounceCounter texMacros document = 
     Element.column [spacing 15] [
         titleLine document
-        , (contentView windowHeight_ counter (Document.view texMacros document ))
+        , (contentView windowHeight_ counter (Document.view debounceCounter texMacros document ))
     ]
 
 contentView windowHeight_ counter viewDoc = 

@@ -72,6 +72,7 @@ type alias Model =
       , documentList : DocumentList 
       , documentDictionary : DocumentDictionary
       , counter : Int
+      , debounceCounter : Int 
       , appMode : AppMode
       , debounce : Debounce String
       , sourceText : String
@@ -162,6 +163,7 @@ init flags =
             , documentList = DocumentList.empty
             , documentDictionary = DocumentDictionary.empty
             , counter = 0
+            , debounceCounter = 0
             , debounce = Debounce.init
             , appMode = Reading 
             , sourceText = ""
@@ -385,7 +387,7 @@ update msg model =
 
                 tokenString = User.getTokenStringFromMaybeUser model.maybeCurrentUser
             in
-                ({ model | debounce = debounce}, Cmd.batch [
+                ({ model | debounce = debounce, debounceCounter = model.debounceCounter + 1}, Cmd.batch [
                     cmd  
                   , saveDocToLocalStorage model.currentDocument
                   ]
@@ -747,7 +749,7 @@ bodyReaderColumn : Int -> Int -> Model -> Element Msg
 bodyReaderColumn windowHeight_ portion_  model  = 
   Element.column [width (fillPortion portion_ ), height (px (windowHeight_ - 73)), paddingXY 20 20
     , Background.color Widget.lightGrey, centerX] [
-      Element.map DocViewMsg (DocumentView.view windowHeight_ model.counter (texMacros model) model.currentDocument)
+      Element.map DocViewMsg (DocumentView.view windowHeight_ model.counter model.debounceCounter (texMacros model) model.currentDocument)
   ]
 
 
