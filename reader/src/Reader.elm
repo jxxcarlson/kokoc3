@@ -128,6 +128,7 @@ type Msg
     | SetDocumentTextType TextType
     | SetDocumentType DocType
     | GetViewport Dom.Viewport
+    | DeleteCurrentDocument
     
 
 
@@ -241,6 +242,38 @@ update msg model =
                ({ model | message = "document OK", currentDocument = documentRecord.document},  Cmd.none)
             Err err -> 
                 ({model | message = handleHttpError err},   Cmd.none  )
+
+        DocMsg (AcknowledgeDocumentDeleted result) ->
+          case result of 
+            Ok reply -> 
+              let 
+                documents = DocumentList.documents model.documentList
+                idOfDocumentToDelete = String.toInt reply |> Maybe.withDefault 0
+                indexOfDocumentToDelete = List.Extra.findIndex (\doc -> doc.id == idOfDocumentToDelete) documents |> Maybe.withDefault 0
+                maybeDocumentAboveDeleteDocument = List.Extra.getAt (indexOfDocumentToDelete - 1) documents
+                maybeDocumentBelowDeleteDocument = List.Extra.getAt (indexOfDocumentToDelete + 1) documents
+                maybeDocumentToSelect = case maybeDocumentAboveDeleteDocument of 
+                                      Just document -> Just document 
+                                      Nothing -> case maybeDocumentBelowDeleteDocument of 
+                                         Just document -> Just document 
+                                         Nothing -> Nothing                      
+                documentSelectedId = case maybeDocumentToSelect of 
+                                        Just document -> document.id 
+                                        Nothing -> 0
+                documentSelected = case maybeDocumentToSelect of 
+                   Just doc -> doc 
+                   Nothing -> Document.basicDocument
+                nextDocumentList_ = DocumentList.select maybeDocumentToSelect model.documentList                        
+              in 
+               ({ model | message = "Document deleted: " ++ (String.fromInt indexOfDocumentToDelete) ++ ", Document selected: " ++ (String.fromInt documentSelectedId) 
+                  , currentDocument = documentSelected 
+                  , toolPanelState = HideToolPanel
+                  , documentList = deleteItemInDocumentListAt idOfDocumentToDelete nextDocumentList_
+              
+                },  Cmd.none)
+            Err err -> 
+                ({model | message = handleHttpError err},   Cmd.none  )
+
 
         -- ### 
         DocMsg (NewDocumentCreated result) ->
@@ -475,6 +508,13 @@ update msg model =
         GetViewport viewport -> 
            ({model | maybeViewport = Just viewport }, Cmd.none)
 
+
+        DeleteCurrentDocument ->
+          let 
+            tokenString = (User.getTokenStringFromMaybeUser model.maybeCurrentUser)
+          in 
+            (model, (Cmd.map DocMsg (Document.deleteDocument tokenString model.currentDocument)))
+
 -- UPDATE END
 
 
@@ -617,7 +657,7 @@ toolsOrContents model =
 
 toolsPanel model = Element.column [ spacing 15, padding 10, height shrink, scrollbarY] [ 
   Element.el [Font.bold, Font.size 18] (text "Tools Panel")
-  , Element.row [spacing 10] [updateDocumentButton model]
+  , Element.row [spacing 10] [updateDocumentButton model, deleteCurrentDocumentButton (px 90) model]
   , masterDocPanel model
   , documentTitleInput model
   , documentPanels model
@@ -1078,6 +1118,13 @@ saveCurrentDocumentButton width_ model =
   , label = Element.text "Save"
   } 
 
+deleteCurrentDocumentButton : Length -> Model -> Element Msg    
+deleteCurrentDocumentButton width_ model = 
+  Input.button (buttonStyle  width_) {
+    onPress =  Just (DeleteCurrentDocument)
+  , label = Element.text "Delete"
+  } 
+
 homeButton : Length -> Model -> Element Msg    
 homeButton width_ model = 
   Input.button (buttonStyle  width_) {
@@ -1098,6 +1145,9 @@ writerModeButton width_ model =
     onPress =  Just (ChangeMode Writing)
   , label = Element.text "Write"
   } 
+
+-- END: BUTTONS
+
 
 modeButtonStyle appMode buttonMode width_ = 
   case appMode == buttonMode of 
@@ -1236,6 +1286,19 @@ nextDocumentList targetDocId document documentList =
             DocumentList.setDocuments (Utility.listInsertAt (k+1) document (DocumentList.documents documentList)) documentList
               |> DocumentList.select (Just document)
 
+deleteItemInDocumentListAt : Int -> DocumentList -> DocumentList
+deleteItemInDocumentListAt targetDocId documentList = 
+  case targetDocId == 0 of 
+    True ->  documentList
+    False ->
+      let  
+        maybeTargetIndex = List.Extra.findIndex (\doc -> doc.id ==  targetDocId) (DocumentList.documents documentList)
+      in  
+        case maybeTargetIndex of 
+          Nothing -> documentList
+          Just k -> 
+            DocumentList.setDocuments (Utility.listDeleteAt k (DocumentList.documents documentList)) documentList
+              
 
 getViewPort = Task.perform GetViewport Dom.getViewport
 

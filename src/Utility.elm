@@ -113,3 +113,8 @@ softBreakRegexp width =
 listInsertAt : Int -> a -> List a  -> List a
 listInsertAt k item list = 
   (List.take k list) ++ [item] ++ (List.drop k list)
+
+
+listDeleteAt : Int -> List a  -> List a
+listDeleteAt k list = 
+  (List.take k list) ++ (List.drop (k+1) list)

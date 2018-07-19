@@ -6,6 +6,7 @@ module Document exposing(
     , saveDocument
     , updateDocumentWithQueryString
     , createDocument
+    , deleteDocument
     , getDocumentByIdRequest
     , documentDecoder
     , encodeDocumentForOutside
@@ -136,10 +137,16 @@ type DocMsg =
     ReceiveDocument (Result Http.Error DocumentRecord)
   | NewDocumentCreated (Result Http.Error DocumentRecord)
   | AcknowledgeUpdateOfDocument (Result Http.Error DocumentRecord)
+  | AcknowledgeDocumentDeleted (Result Http.Error String)
 
   
 
 -- DECODERS
+
+replyDecoder : Decoder String
+replyDecoder =
+    Decode.field "reply" Decode.string
+
 
 documentRecordDecoder : Decoder DocumentRecord
 documentRecordDecoder =
@@ -471,6 +478,22 @@ createDocumentRequest tokenString document =
 createDocument : String -> Document -> Cmd DocMsg 
 createDocument tokenString document =
     Http.send NewDocumentCreated <| createDocumentRequest tokenString document
+
+deleteDocumentRequest : String -> Document -> Http.Request String
+deleteDocumentRequest tokenString document = 
+  Http.request
+        { method = "Delete"
+        , headers = [Http.header "APIVersion" "V2", Http.header "Authorization" ("Bearer " ++ tokenString)]
+        , url = Configuration.backend ++ "/api/documents/" ++ (String.fromInt document.id)
+        , body = Http.jsonBody (encodeDocumentRecord document)
+        , expect = Http.expectJson replyDecoder
+        , timeout = Just 5000
+        , withCredentials = False
+        }
+
+deleteDocument : String -> Document -> Cmd DocMsg 
+deleteDocument tokenString document =
+    Http.send AcknowledgeDocumentDeleted <| deleteDocumentRequest tokenString document
 
 -- VIEW
 
