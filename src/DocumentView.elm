@@ -33,16 +33,16 @@ contentView windowHeight_ counter viewDoc =
 titleLine : Document -> Element DocViewMsg 
 titleLine document = 
   if document.parentId == 0 then 
-    Element.el [Font.size 18, Font.bold] (text document.title) 
+    Element.row titleLineStyle [Element.el [Font.size 18, Font.bold] (text document.title) ]
   else 
-    Element.row [moveLeft 15] [loadMasterDocumentButton  document, Element.el [moveLeft 13, Font.size 18, Font.bold] (text document.title) ]
+    Element.row titleLineStyle [loadMasterDocumentButton  document, Element.el [moveLeft 13, Font.size 18, Font.bold] (text document.title) ]
 
-
+titleLineStyle = [paddingXY 10 0, Background.color Widget.charcoal, Font.color Widget.white, width fill, height (px 36)] 
 
 loadMasterDocumentButton : Document -> Element DocViewMsg    
 loadMasterDocumentButton  document = 
   Element.el [] (
-        Input.button (Widget.titleStyle) {
+        Input.button (Widget.titleStyleLight) {
             onPress =  Just (LoadMasterWithCurrentSelection document.parentId)
         , label = Element.el [ moveUp 0, padding 5, Font.size 18, Font.bold] (text (document.parentTitle ++ " :: "))
         } 

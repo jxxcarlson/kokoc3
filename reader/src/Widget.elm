@@ -46,6 +46,14 @@ titleStyle = [
     , clipX
    ]
 
+titleStyleLight = [
+     Font.size 13 
+    , mouseDown [  Font.size 13]
+    , Font.color mediumLightBlue
+    , paddingXY 10 0
+    , clipX
+   ]
+
 buttonStyle width_ = [
      Font.size 13 
     , mouseDown [  Font.size 13, Background.color mouseDownColor]
@@ -71,11 +79,15 @@ mouseDownColor =
 
 buttonColor = Element.rgb 0.3 0.3 0.3
 
+charcoal = Element.rgb 0.4 0.4 0.4
+
 grey = Element.rgb 0.8 0.8 0.8
 
 lightGrey = Element.rgb 0.95 0.95 0.95
 
 lightBlue = Element.rgb 0.85 0.85 0.9
+
+mediumLightBlue = Element.rgb 0.75 0.75 1.0
 
 lightYellow = Element.rgb 0.9 0.9 0.8
 

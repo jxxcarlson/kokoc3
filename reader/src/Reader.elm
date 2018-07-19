@@ -352,7 +352,7 @@ update msg model =
           case model.maybeCurrentUser of 
             Nothing -> ( model, Cmd.none)
             Just user ->
-             ({ model | message = "query: " ++ query, appMode = Reading, toolPanelState = HideToolPanel }, Cmd.map DocListMsg (DocumentList.findDocuments (Just user) (Query.parse query)))
+             ({ model | message = "query: " ++ query, toolPanelState = HideToolPanel }, Cmd.map DocListMsg (DocumentList.findDocuments (Just user) (Query.parse query)))
         
         LoadMasterDocument idString ->
               case String.toInt idString  of 
@@ -819,9 +819,9 @@ footer model =
       , Element.el [] (text <| currentUserName model.maybeCurrentUser)
       , Element.el [] (text <| (String.fromInt (Document.wordCount model.currentDocument)) ++ " words")
 
-      , Element.el [] (text ("keys: " ++ (showKeys model)))
-      , Element.el [] (text <| displayCurrentMasterDocument model)
-      , Element.el [] (text <| "Window height: " ++ (String.fromInt model.windowHeight))
+    --  , Element.el [] (text ("keys: " ++ (showKeys model)))
+    --  , Element.el [] (text <| displayCurrentMasterDocument model)
+    --  , Element.el [] (text <| "Window height: " ++ (String.fromInt model.windowHeight))
   ] 
 
 documentDirtyIndicator  model = 

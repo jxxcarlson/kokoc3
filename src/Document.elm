@@ -30,7 +30,7 @@ import Html exposing(Html)
 import Html.Attributes as HA 
 
 import MeenyLatex.Differ exposing (EditRecord)
-import MeenyLatex.Driver as MiniLatex
+import MeenyLatex.MiniLatex as MiniLatex
 
 import MarkdownTools
 
@@ -519,9 +519,9 @@ viewMiniLatex texMacros document =
              else 
                 prependMacros texMacros document.content
     editRecord =
-        MiniLatex.setup 0 source 
+        MiniLatex.initializeEditRecord 0 source 
   in 
-    MiniLatex.getRenderedText texMacros editRecord
+    MiniLatex.getRenderedText editRecord
         |> List.map (\x -> Element.paragraph [  ] [ Element.html x ])
         |> Element.column []
 
