@@ -97,6 +97,8 @@ black = Element.rgb 0.1 0.1 0.1
 
 blue = Element.rgb 0.3 0.3 0.5
 
+red = Element.rgb 1.0 0 0.0
+
 darkRed = Element.rgb 0.45 0.0 0.0
 
 white = Element.rgb 1.0 1.0 1.0

@@ -84,7 +84,10 @@ type alias Model =
       , windowWidth : Int  
       , windowHeight : Int  
       , maybeViewport : Maybe Dom.Viewport
+      , deleteDocumentState : DeleteDocumentState
     }
+
+type DeleteDocumentState = DeleteIsOnSafety | DeleteIsArmed
 
 type AppMode = 
   Reading | Writing
@@ -129,6 +132,7 @@ type Msg
     | SetDocumentType DocType
     | GetViewport Dom.Viewport
     | DeleteCurrentDocument
+    | CancelDeleteCurrentDocument
     
 
 
@@ -176,6 +180,7 @@ init flags =
             , windowWidth = flags.width
             , windowHeight = flags.height
             , maybeViewport = Nothing
+            , deleteDocumentState = DeleteIsOnSafety
         }
         , Cmd.batch [ 
             focusSearchBox
@@ -347,6 +352,7 @@ update msg model =
                ({ model | 
                  message = "document: " ++ document.title
                  , currentDocument = document
+                 , deleteDocumentState = DeleteIsOnSafety
                  , documentList = DocumentList.select (Just document) model.documentList
                  , currentDocumentDirty = False
                  , counter = model.counter + 1
@@ -481,6 +487,7 @@ update msg model =
                    { model | 
                       documentTitle  = model.currentDocument.title
                     , toolPanelState = nextToolPanelState
+                    , deleteDocumentState = DeleteIsOnSafety
                     }             
           in 
             ( nextModel , Cmd.none)
@@ -513,8 +520,15 @@ update msg model =
           let 
             tokenString = (User.getTokenStringFromMaybeUser model.maybeCurrentUser)
           in 
-            (model, (Cmd.map DocMsg (Document.deleteDocument tokenString model.currentDocument)))
+            case model.deleteDocumentState of 
+              DeleteIsOnSafety -> 
+                  ({model | deleteDocumentState = DeleteIsArmed}, Cmd.none)
+              DeleteIsArmed ->  
+                  ({model | deleteDocumentState = DeleteIsOnSafety}, (Cmd.map DocMsg (Document.deleteDocument tokenString model.currentDocument)))
 
+
+        CancelDeleteCurrentDocument ->
+          ({model | deleteDocumentState = DeleteIsOnSafety}, Cmd.none )
 -- UPDATE END
 
 
@@ -657,7 +671,7 @@ toolsOrContents model =
 
 toolsPanel model = Element.column [ spacing 15, padding 10, height shrink, scrollbarY] [ 
   Element.el [Font.bold, Font.size 18] (text "Tools Panel")
-  , Element.row [spacing 10] [updateDocumentButton model, deleteCurrentDocumentButton (px 90) model]
+  , Element.row [spacing 10] [updateDocumentButton model, deleteCurrentDocumentButton (px 60) model, cancelDeleteCurrentDocumentButton (px 60) model]
   , masterDocPanel model
   , documentTitleInput model
   , documentPanels model
@@ -858,11 +872,17 @@ footer model =
       , Element.el [] (text <| "Author: " ++ model.currentDocument.authorName )
       , Element.el [] (text <| currentUserName model.maybeCurrentUser)
       , Element.el [] (text <| (String.fromInt (Document.wordCount model.currentDocument)) ++ " words")
+      , Element.el [] (text <| deleteStateIndicator model)
 
     --  , Element.el [] (text ("keys: " ++ (showKeys model)))
     --  , Element.el [] (text <| displayCurrentMasterDocument model)
     --  , Element.el [] (text <| "Window height: " ++ (String.fromInt model.windowHeight))
   ] 
+
+deleteStateIndicator model = 
+  case model.deleteDocumentState of 
+    DeleteIsOnSafety -> "Safety ON"
+    DeleteIsArmed -> "ARMED"
 
 documentDirtyIndicator  model = 
   case model.currentDocumentDirty  of 
@@ -1120,10 +1140,31 @@ saveCurrentDocumentButton width_ model =
 
 deleteCurrentDocumentButton : Length -> Model -> Element Msg    
 deleteCurrentDocumentButton width_ model = 
-  Input.button (buttonStyle  width_) {
+  Input.button (buttonStyleWithColor (deleteButtonBackgroundColor model) width_ ) {
     onPress =  Just (DeleteCurrentDocument)
   , label = Element.text "Delete"
   } 
+
+
+cancelDeleteCurrentDocumentButton : Length -> Model -> Element Msg    
+cancelDeleteCurrentDocumentButton width_ model = 
+  case model.deleteDocumentState of 
+    DeleteIsOnSafety -> Element.none 
+    DeleteIsArmed -> cancelDeleteCurrentDocumentButton_ width_ model
+    
+
+cancelDeleteCurrentDocumentButton_ : Length -> Model -> Element Msg    
+cancelDeleteCurrentDocumentButton_ width_ model = 
+  Input.button (buttonStyle  width_) {
+    onPress =  Just (CancelDeleteCurrentDocument)
+  , label = Element.text "Cancel"
+  }  
+
+deleteButtonBackgroundColor model =
+   case model.deleteDocumentState of 
+     DeleteIsOnSafety -> Widget.blue 
+     DeleteIsArmed -> Widget.red
+
 
 homeButton : Length -> Model -> Element Msg    
 homeButton width_ model = 
