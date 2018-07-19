@@ -747,7 +747,7 @@ documentTypePanel model =
 
 bodyReaderColumn : Int -> Int -> Model -> Element Msg
 bodyReaderColumn windowHeight_ portion_  model  = 
-  Element.column [width (fillPortion portion_ ), height (px (windowHeight_ - 73)), paddingXY 20 20
+  Element.column [width (fillPortion portion_), height (px (windowHeight_ - 73)), paddingXY 20 20
     , Background.color Widget.lightGrey, centerX] [
       Element.map DocViewMsg (DocumentView.view windowHeight_ model.counter model.debounceCounter (texMacros model) model.currentDocument)
   ]

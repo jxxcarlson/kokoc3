@@ -21,7 +21,7 @@ type DocViewMsg =
 
 view : Int -> Int -> Int -> String -> Document -> Element DocViewMsg 
 view windowHeight_ counter debounceCounter texMacros document = 
-    Element.column [spacing 15] [
+    Element.column [spacing 15, width (fill |> maximum 600), centerX] [
         titleLine document
         , (contentView windowHeight_ counter (Document.view debounceCounter texMacros document ))
     ]
