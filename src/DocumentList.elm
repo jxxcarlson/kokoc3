@@ -85,6 +85,9 @@ type DocListMsg =
   ReceiveDocumentList (Result Http.Error DocumentList)
   | ReceiveDocumentListAndPreserveCurrentSelection (Result Http.Error DocumentList)
 
+
+--  REQUESTS
+
 findDocuments : Maybe User -> String -> Cmd DocListMsg
 findDocuments maybeUser queryString = 
   Http.send ReceiveDocumentList <| findDocumentsRequest maybeUser queryString
@@ -98,7 +101,7 @@ loadMasterDocumentWithCurrentSelection : Maybe User -> Int -> Cmd DocListMsg
 loadMasterDocumentWithCurrentSelection maybeUser docId = 
   Http.send ReceiveDocumentListAndPreserveCurrentSelection <| loadMasterDocumentRequest maybeUser docId
 
--- DECODERS
+-- DECODERS 
 
 listDocumentDecoder : Decoder (List Document)
 listDocumentDecoder =

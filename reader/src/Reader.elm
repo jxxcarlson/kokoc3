@@ -117,6 +117,7 @@ type Msg
     | DocListViewMsg DocumentListView.DocListViewMsg
     | DocViewMsg DocumentView.DocViewMsg
     | DocDictMsg DocumentDictionary.DocDictMsg
+    | GoToStart
     | GoHome
     | ChangeMode AppMode
     | DebounceMsg Debounce.Msg
@@ -410,11 +411,24 @@ update msg model =
                  , documentDictionary = DocumentDictionary.put "texmacros" doc dict },   Cmd.none  )
             Err err -> 
                 ({model | message = handleHttpError err},   Cmd.none  )
-        GoHome ->
+        GoToStart ->
           let  
             doc = Document.basicDocument  
           in 
            ({model | currentDocument = { doc | title = "Welcome!" }}, Cmd.none)
+
+        GoHome ->
+          case model.maybeCurrentUser of 
+            Nothing -> 
+               let 
+                 doc = Document.basicDocument  
+               in 
+                 ({model | currentDocument = { doc | title = "Welcome!" }}, Cmd.none)
+            Just user -> 
+               let 
+                 queryString = "authorname=" ++ User.username user ++ "&key=home"
+               in 
+                 (model, Cmd.map DocListMsg (DocumentList.findDocuments model.maybeCurrentUser queryString))
 
         ChangeMode nextAppMode ->
           ({model | appMode = nextAppMode}, Cmd.none)
@@ -621,7 +635,8 @@ header model =
         , getDocumentsButton (px 60) model
         , getRandomDocumentsButton (px 70) model
         , Element.el [ Font.size 24] (text <| appTitle model.appMode)
-        , homeButton (px 55) model 
+        , startButton (px 55) model 
+        , homeButton (px 55) model
         , readerModeButton (px 52) model
         , writerModeButton (px 52) model]
         , passwordInput model
@@ -1165,6 +1180,13 @@ deleteButtonBackgroundColor model =
      DeleteIsOnSafety -> Widget.blue 
      DeleteIsArmed -> Widget.red
 
+
+startButton : Length -> Model -> Element Msg    
+startButton width_ model = 
+  Input.button (buttonStyle  width_) {
+    onPress =  Just (GoToStart)
+  , label = Element.text "Start"
+  } 
 
 homeButton : Length -> Model -> Element Msg    
 homeButton width_ model = 
