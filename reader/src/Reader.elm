@@ -659,7 +659,7 @@ getInfoFromOutside tagger onError =
                             tagger <| DocumentDataFromOutside result
 
                         Err e ->(
-                            onError <| "Bad decode (getInfoFromOutside)"  ++ (Decode.errorToString e))
+                            onError <| "No doc to retrieve" )
 
                 "ReconnectUser" ->
                     case Decode.decodeValue User.decodeUserFromOutside outsideInfo.data of
@@ -778,7 +778,7 @@ loginPanel model =
     Just _ -> Element.none 
     Nothing ->
       Element.column [padding 20, spacing 20] [
-          Element.el [] (text "Sign in")
+          Element.el [Font.bold, Font.size 18] (text "Sign in")
         , emailInput model
         , passwordInput model
         , Element.row [spacing 15] [
@@ -793,7 +793,7 @@ signupPanel model =
     Just _ -> Element.none 
     Nothing ->
       Element.column [padding 20, spacing 20] [
-          Element.el [] (text "Sign up")
+          Element.el [Font.bold, Font.size 18] (text "Sign up")
         , emailInput model
         , usernameInput model
         , passwordInput model
