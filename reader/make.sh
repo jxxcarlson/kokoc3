@@ -4,7 +4,7 @@ reset=`tput setaf 7`
 
 echo
 echo "${color}Compile reader${reset}"
-/Users/carlson/Downloads/2/elm make --optimize ./src/Reader.elm --output ./dist/Main.js
+/Users/carlson/Downloads/2/elm make --optimize ./src/Reader.elm --output /usr/local/var/www/Main.js
 
 if [ "$1" = "-r" ]
 then
@@ -24,6 +24,5 @@ echo
 echo "${color}Copy files to  /usr/local/var/www/ and restart nginx${reset}"
 nginx -s stop
 cp ./dist/index.html /usr/local/var/www/
-cp ./Main.js /usr/local/var/www/
 nginx
 fi
