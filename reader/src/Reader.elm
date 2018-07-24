@@ -551,14 +551,6 @@ update msg model =
 -- UPDATE END
 
 
-saveDocToLocalStorage : Document -> Cmd msg
-saveDocToLocalStorage document =
-    let
-        value =
-            Document.encodeDocumentForOutside document
-    in
-        sendInfoOutside (DocumentData value)
-
 
 
 handleHttpError : Http.Error -> String 
@@ -584,7 +576,8 @@ port infoForElm : (GenericOutsideData -> msg) -> Sub msg
 
 
 type InfoForOutside =
-    DocumentData Encode.Value 
+    DocumentData Encode.Value
+  | UserData Encode.Value 
   | AskToReconnectDocument Encode.Value
 
 
@@ -597,6 +590,10 @@ sendInfoOutside info =
     case info of
         DocumentData value ->
             infoForOutside { tag = "DocumentData", data = value }
+
+        UserData value ->
+            infoForOutside { tag = "UserData", data = value }
+
 
         AskToReconnectDocument value ->
             infoForOutside { tag = "AskToReconnectDocument", data = Encode.null }
@@ -617,6 +614,16 @@ getInfoFromOutside tagger onError =
                 _ ->
                     onError <| "Unexpected info from outside"
         )
+
+
+
+saveDocToLocalStorage : Document -> Cmd msg
+saveDocToLocalStorage document =
+    sendInfoOutside (DocumentData (Document.encodeDocumentForOutside document))
+
+sendUserDataToLocalStorage : User -> Cmd msg
+sendUserDataToLocalStorage user =
+    sendInfoOutside (UserData (User.encodeUserForOutside user))
 
 
 processInfoForElm : Model -> InfoForElm -> (Model, Cmd Msg)

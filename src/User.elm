@@ -11,11 +11,13 @@ module User exposing(
    , getTokenStringFromMaybeUser
    , username
    , userId
+   , encodeUserForOutside
+  
    ) 
 
 
 import Json.Encode as Encode    
-import Json.Decode as Decode exposing (at, int, list, string, decodeString, Decoder)
+import Json.Decode as Decode exposing (field, at, int, list, string, decodeString, Decoder)
 import Json.Decode.Pipeline as JPipeline exposing (required, optional, hardcoded)
 import Http 
 
@@ -26,27 +28,29 @@ import Configuration
 
 -- MODEL
 
-type User = User {
+type User = User UserRecord
+
+
+type alias UserRecord = {
     email: String
   , id : Int 
   , token : Token 
   , username : String 
   }
 
-username : User -> String
-username (User user) =
-  user.username
+-- ACCESSORS
+
+email : User -> String
+email (User user) =
+  user.email
 
 userId : User -> Int
 userId (User user) =
-  user.id
+  user.id  
 
-testUser = User {
-    email = "jxxcarlson@gmail.com"
-  , id = 1
-  , token =  Token "fake"
-  , username = "jxxcarlson"
-  }
+username : User -> String
+username (User user) =
+  user.username
 
 getTokenString : User -> String 
 getTokenString (User user) = 
@@ -61,15 +65,23 @@ getTokenStringFromMaybeUser maybeUser =
     Nothing -> "invalidTokenString"
     Just user -> getTokenString user
 
+testUser = User {
+    email = "jxxcarlson@gmail.com"
+  , id = 1
+  , token =  Token "fake"
+  , username = "jxxcarlson"
+  }
+
+
 setToken : Token -> User -> User 
-setToken token (User user) = 
-  User { user | token = token }
+setToken token_ (User user) = 
+  User { user | token = token_ }
 
 maybeSetToken : Token -> Maybe User -> Maybe User 
-maybeSetToken token maybeUser = 
+maybeSetToken token_ maybeUser = 
    case maybeUser of 
      Nothing -> Nothing 
-     Just user -> Just (setToken token user)
+     Just user -> Just (setToken token_ user)
 
 
 type Token = 
@@ -112,31 +124,52 @@ tokenDecoder =
 -- ENCODERS
 
 authenticationEncoder : String -> String -> Encode.Value
-authenticationEncoder email password =
+authenticationEncoder email_ password =
     Encode.object
         [ ( "authenticate"
           , Encode.object
-                [ ( "email", Encode.string email )
+                [ ( "email", Encode.string email_ )
                 , ( "password", Encode.string password )
                 ]
           )
         ]
 
+encodeUserForOutside : User -> Encode.Value
+encodeUserForOutside user = 
+  Encode.object 
+   [
+        ("email", Encode.string <| email user)
+      , ("id", Encode.int <| userId user)
+      , ("token", Encode.string <| getTokenString user)
+      , ("username", Encode.string <| username user) 
+    ]
+
+
+decodeUserRecordFromOutside : Decoder UserRecord
+decodeUserRecordFromOutside =
+    Decode.map4 UserRecord
+       (field "email" string)
+       (field "id" int)
+       (Decode.map Token (field "token" string))
+       (field "username" string)
+
+
+    
 
 -- REQUEST
 
 tokenRequest : String -> String -> Http.Request Token
-tokenRequest email password = 
+tokenRequest email_ password = 
   Http.request
     { method = "Post"
     , headers = []
     , url = Configuration.backend ++ "/api/authentication/"
-    , body = Http.jsonBody (authenticationEncoder email password)
+    , body = Http.jsonBody (authenticationEncoder email_ password)
     , expect = Http.expectJson tokenDecoder
     , timeout = Just 5000
     , withCredentials = False
     }
 
 getToken : String  -> String -> Cmd UserMsg 
-getToken email password =
-    Http.send ReceiveToken <| tokenRequest email password
+getToken email_ password =
+    Http.send ReceiveToken <| tokenRequest email_ password
