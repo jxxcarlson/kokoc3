@@ -23,6 +23,6 @@ echo "${color}  -i: Compile app to Main.js, use index.html${reset}"
 echo
 echo "${color}Copy files to  /usr/local/var/www/ and restart nginx${reset}"
 nginx -s stop
-cp ./dist/index.html /usr/local/var/www/
+cp ./dist/index.html /usr/local/var/www/        
 nginx
-fi
+fi  

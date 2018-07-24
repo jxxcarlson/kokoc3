@@ -17,6 +17,8 @@ module Document exposing(
     , basicDocument
     , view
     , wordCount
+    , selectedDocId
+    , attachDocumentToMasterBelowCmd
   )
 
 import Dict exposing(Dict)
@@ -598,6 +600,37 @@ wordCount document =
     document.content
         |> String.words
         |> List.length
+
+selectedDocId : Document -> Int 
+selectedDocId document = 
+  document.content 
+      |> String.split "," 
+      |> List.drop 1 
+      |> List.head 
+      |> Maybe.withDefault "placeUnder:0"
+      |> String.trim
+      |> String.split ":"
+      |> List.drop 1
+      |> List.head 
+      |> Maybe.withDefault "0"
+      |> String.toInt
+      |> Maybe.withDefault 0
+
+attachDocumentToMasterBelowCmd : String -> Int -> Document -> Maybe Document -> Cmd DocMsg
+attachDocumentToMasterBelowCmd  tokenString selectedDocId_ childDocument maybeMasterDocument =
+  case maybeMasterDocument of 
+    Nothing -> Cmd.none 
+    Just masterDocument -> attachDocumentToMasterBelowCmd_  tokenString selectedDocId_ childDocument masterDocument
+
+attachDocumentToMasterBelowCmd_ : String -> Int -> Document -> Document -> Cmd DocMsg
+attachDocumentToMasterBelowCmd_  tokenString selectedDocId_ childDocument masterDocument =
+  let  
+    masterDocumentId = childDocument.parentId 
+    query =  ("attach=below&child=" ++ (String.fromInt childDocument.id) ++ "&current=" ++ (String.fromInt selectedDocId_))
+  in  
+    case masterDocumentId == masterDocument.id of 
+      False -> Cmd.none 
+      True ->  (updateDocumentWithQueryString tokenString query masterDocument)   
 
 
 -- TEXT

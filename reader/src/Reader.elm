@@ -286,8 +286,8 @@ update msg model =
             Ok documentRecord -> 
               let   
                 nextDocument = documentRecord.document
-                selectedDocId_ = selectedDocId nextDocument
-                cmd = Cmd.map DocMsg (attachDocumentToMasterBelowCmd  (User.getTokenStringFromMaybeUser model.maybeCurrentUser) selectedDocId_ nextDocument model.maybeMasterDocument)
+                selectedDocId_ = Document.selectedDocId nextDocument
+                cmd = Cmd.map DocMsg (Document.attachDocumentToMasterBelowCmd  (User.getTokenStringFromMaybeUser model.maybeCurrentUser) selectedDocId_ nextDocument model.maybeMasterDocument)
                 nextDocumentList_ = DocumentList.nextDocumentList selectedDocId_ nextDocument model.documentList  -- ###    
               in  
                ({ model | message = "selectedDocId = " ++ (String.fromInt selectedDocId_)
@@ -1292,37 +1292,8 @@ makeNewDocumentWithParent parentId parentTitle selectedDocumentId user =
           , content = "New Child Document of " ++ parentTitle ++ ", placeUnder:" ++ (String.fromInt selectedDocumentId)
         }
 
-selectedDocId : Document -> Int 
-selectedDocId document = 
-  document.content 
-      |> String.split "," 
-      |> List.drop 1 
-      |> List.head 
-      |> Maybe.withDefault "placeUnder:0"
-      |> String.trim
-      |> String.split ":"
-      |> List.drop 1
-      |> List.head 
-      |> Maybe.withDefault "0"
-      |> String.toInt
-      |> Maybe.withDefault 0
 
 
-attachDocumentToMasterBelowCmd : String -> Int -> Document -> Maybe Document -> Cmd DocMsg
-attachDocumentToMasterBelowCmd  tokenString selectedDocId_ childDocument maybeMasterDocument =
-  case maybeMasterDocument of 
-    Nothing -> Cmd.none 
-    Just masterDocument -> attachDocumentToMasterBelowCmd_  tokenString selectedDocId_ childDocument masterDocument
-
-attachDocumentToMasterBelowCmd_ : String -> Int -> Document -> Document -> Cmd DocMsg
-attachDocumentToMasterBelowCmd_  tokenString selectedDocId_ childDocument masterDocument =
-  let  
-    masterDocumentId = childDocument.parentId 
-    query =  ("attach=below&child=" ++ (String.fromInt childDocument.id) ++ "&current=" ++ (String.fromInt selectedDocId_))
-  in  
-    case masterDocumentId == masterDocument.id of 
-      False -> Cmd.none 
-      True ->  (Document.updateDocumentWithQueryString tokenString query masterDocument)   
 
 displayCurrentMasterDocument model = 
   case model.maybeMasterDocument of 
