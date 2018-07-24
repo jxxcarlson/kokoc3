@@ -19,7 +19,8 @@
             "jinjor/elm-debounce": "3.0.0",
             "jxxcarlson/meenylatex": "2.0.2",
             "mdgriffith/stylish-elephants": "7.0.1",
-            "pablohirafuji/elm-markdown": "2.0.5"
+            "pablohirafuji/elm-markdown": "2.0.5",
+            "simonh1000/elm-jwt": "6.0.0"
         },
         "indirect": {
             "elm/parser": "1.0.0",

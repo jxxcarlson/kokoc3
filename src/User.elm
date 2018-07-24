@@ -14,6 +14,7 @@ module User exposing(
    , userId
    , encodeUserForOutside
    , decodeUserFromOutside
+   , maybeUserFromEmailAndToken
    ) 
 
 
@@ -21,6 +22,7 @@ import Json.Encode as Encode
 import Json.Decode as Decode exposing (field, at, int, list, string, decodeString, Decoder)
 import Json.Decode.Pipeline as JPipeline exposing (required, optional, hardcoded)
 import Http 
+import Jwt exposing(decodeToken)
 
 import Configuration
 
@@ -93,7 +95,7 @@ type Token =
    Token String 
 
 type alias TokenClaims =
-    { username : String, user_id : Int }
+    { username : String, userId : Int }
 
 
 type ValidatedTokenClaims =
@@ -125,6 +127,14 @@ type UserMsg =
 tokenDecoder : Decoder Token
 tokenDecoder =
     Decode.map Token (Decode.field "token" Decode.string) 
+
+
+jwtDecoder : Decoder TokenClaims
+jwtDecoder =
+    Decode.succeed TokenClaims
+        |> JPipeline.required "username" Decode.string
+        |> JPipeline.required "user_id" Decode.int
+
 
 -- ENCODERS
 
@@ -160,8 +170,6 @@ decodeUserFromOutside =
        (field "username" string)
 
 
-    
-
 -- REQUEST
 
 tokenRequest : String -> String -> Http.Request Token
@@ -179,3 +187,17 @@ tokenRequest email_ password =
 getTokenCmd : String  -> String -> Cmd UserMsg 
 getTokenCmd email_ password =
     Http.send ReceiveToken <| tokenRequest email_ password
+
+
+maybeUserFromEmailAndToken : String ->String ->  Maybe User
+maybeUserFromEmailAndToken email_ token =
+    case Jwt.decodeToken jwtDecoder token of
+        Ok value ->
+            let
+                userRecord = { email = email_, id = value.userId, token = Token token, username = value.username}
+            in
+                Just (User userRecord)
+
+        Err error ->
+            Nothing
+
