@@ -15,6 +15,7 @@ module DocumentList exposing(
   , documentListLength
   , nextDocumentList
   , deleteItemInDocumentListAt
+  , make
   )
 
 import Json.Encode as Encode    
@@ -44,6 +45,14 @@ empty = DocumentList {
     documents = []
   , selected = Nothing 
   }
+
+make : Document -> List Document -> DocumentList 
+make document listOfDocuments = 
+  let 
+    documentListRecord = { documents = document::listOfDocuments, selected = Just document}
+  in 
+    DocumentList documentListRecord 
+
 
 prepend : Document -> DocumentList -> DocumentList 
 prepend document (DocumentList documentListRecord) = 

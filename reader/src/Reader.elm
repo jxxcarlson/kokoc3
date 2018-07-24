@@ -125,6 +125,7 @@ type Msg
     | SaveCurrentDocument Posix
     | UpdateCurrentDocument
     | Outside InfoForElm
+    | LogErr String
     | ToggleToolPanelState 
     | NewDocument
     | NewChildDocument
@@ -205,6 +206,7 @@ autosaveSubscription model =
 subscriptions model =
     Sub.batch [
       autosaveSubscription model
+      , getInfoFromOutside Outside LogErr
     ]
 
 
@@ -486,7 +488,8 @@ update msg model =
 
 
         Outside infoForElm_ ->
-            ({model | message = "Outside infoForElm"}, Cmd.none)
+           processInfoForElm model infoForElm_
+           
 
         ToggleToolPanelState ->
            let  
@@ -542,6 +545,9 @@ update msg model =
 
         CancelDeleteCurrentDocument ->
           ({model | deleteDocumentState = DeleteIsOnSafety}, Cmd.none )
+
+        LogErr error ->
+            ( { model | message = "Error: " ++ error }, Cmd.none )
 -- UPDATE END
 
 
@@ -566,7 +572,6 @@ handleHttpError error =
       
 
 -- OUTSIDE
-
 
 
 type InfoForElm = 
@@ -614,7 +619,16 @@ getInfoFromOutside tagger onError =
         )
 
 
-
+processInfoForElm : Model -> InfoForElm -> (Model, Cmd Msg)
+processInfoForElm model infoForElm_ =
+  case infoForElm_ of 
+     DocumentDataFromOutside document -> 
+       ({model | message = "Outside infoForElm"
+                  , currentDocument = document  
+                  , documentList = DocumentList.make document []
+            }
+            , Cmd.none
+          )  -- ####
 
 -- VIEW
 
