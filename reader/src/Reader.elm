@@ -259,12 +259,15 @@ update msg model =
             Ok token -> 
               let 
                 maybeToken = Just token
-                maybeCurrentUser = User.maybeSetToken token (Just User.testUser)
+                maybeCurrentUser = User.maybeUserFromEmailAndToken model.email (User.stringFromToken token)
               in 
                ({ model | 
                     maybeToken = maybeToken
                   , maybeCurrentUser = maybeCurrentUser
                   , message = "Authorized"
+                  , email = ""
+                  , password = ""
+                  , username = ""
                 }
                 ,  sendMaybeUserDataToLocalStorage maybeCurrentUser ) -- ### XXX Needs work
             Err err -> 

@@ -6,8 +6,8 @@ module User exposing(
    , readToken
    , UserMsg(..)
    , User
-   , testUser
    , maybeSetToken
+   , stringFromToken
    , getTokenString
    , getTokenStringFromMaybeUser
    , username
@@ -80,12 +80,12 @@ getTokenStringFromMaybeUser maybeUser =
     Nothing -> "invalidTokenString"
     Just user -> getTokenString user
 
-testUser = User {
-    email = "jxxcarlson@gmail.com"
-  , id = 1
-  , token =  Token "fake"
-  , username = "jxxcarlson"
-  }
+-- testUser = User {
+--     email = "jxxcarlson@gmail.com"
+--   , id = 1
+--   , token =  Token "fake"
+--   , username = "jxxcarlson"
+--   }
 
 
 -- TOKEN
@@ -125,6 +125,16 @@ readToken maybeToken =
     Nothing -> Nothing 
     Just (Token str)-> Just str
    
+stringFromMaybeToken : Maybe Token -> String 
+stringFromMaybeToken maybeToken = 
+  case maybeToken of
+    Nothing -> "invalidToken" 
+    Just (Token str )-> str
+
+
+stringFromToken : Token -> String 
+stringFromToken (Token str) = 
+   str
 
 -- MSG
 
@@ -233,7 +243,7 @@ getTokenCmd email_ password =
     Http.send ReceiveToken <| tokenRequest email_ password
 
 
-maybeUserFromEmailAndToken : String ->String ->  Maybe User
+maybeUserFromEmailAndToken : String -> String ->  Maybe User
 maybeUserFromEmailAndToken email_ token =
     case Jwt.decodeToken jwtDecoder token of
         Ok value ->
