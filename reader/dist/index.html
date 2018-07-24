@@ -161,17 +161,26 @@
 
 			case "AskToReconnectUser":
 				console.log("AskToReconnectUser")
-				askToReconnectUser(msg.data)	
-			
+				askToReconnectUser(msg.data);
+			break;
+
+
+		    case "AskToEraseLocalStorage":
+				console.log("AskToEraseLocalStorage")
+				localStorage.setItem("currentUser", null);	
+				localStorage.setItem("currentDocument", null);	
 			break;	
 
 			}
 
 		})
 
+
 		var processDocumentData = function(documentData) {
 		  // console.log(JSON.stringify(documentData))
-		  localStorage.setItem("currentDocument", JSON.stringify(documentData));
+		  if (documentData != null) {
+		    localStorage.setItem("currentDocument", JSON.stringify(documentData));
+		  }
 		}
 
         var askToReconnectDocument = function (str) {
@@ -182,7 +191,9 @@
 		}
 
 		var processUserData = function(userData) {
-		  localStorage.setItem("currentUser", JSON.stringify(userData));
+		  if (userData != null) {
+		      localStorage.setItem("currentUser", JSON.stringify(userData));
+		  }
 		}
 
 		var askToReconnectUser = function (str) {

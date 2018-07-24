@@ -63,6 +63,9 @@ type alias Flags =
 type alias Model =
     {   message  : String
       , password : String
+      , username : String
+      , email : String
+      , signupMode : SignupMode
       , maybeToken    : Maybe Token
       , maybeCurrentUser : Maybe User
       , docInfo  : String
@@ -94,17 +97,23 @@ type AppMode =
 type ToolPanelState = 
   ShowToolPanel | HideToolPanel
 
+type SignupMode = RegistrationMode | SigninMode 
 
 -- MSG
 
 type Msg
     = NoOp
     | AcceptPassword String
+    | AcceptEmail String
+    | AcceptUserName String 
     | AcceptDocInfo String
     | AcceptDocumenTitle String
     | AcceptDocumentTagString String
     | ReverseText
-    | GetToken
+    | SignIn
+    | SignOut
+    | RegisterUser
+    | SetSignupMode SignupMode 
     | GetDocumentById Int
     | GetPublicDocuments String
     | GetPublicDocumentsRawQuery String
@@ -161,6 +170,9 @@ init flags =
    in
         ( {   message = "App started"
             , password = ""
+            , username = ""
+            , email = ""
+            , signupMode = SigninMode
             , docInfo = ""
             , maybeToken = Nothing
             , maybeCurrentUser = Nothing
@@ -188,6 +200,8 @@ init flags =
           , sendInfoOutside (AskToReconnectDocument Encode.null)
           , sendInfoOutside (AskToReconnectUser Encode.null)
         ])
+
+
 
 
 focusSearchBox : Cmd Msg
@@ -221,6 +235,12 @@ update msg model =
 
         AcceptPassword str ->
             ( { model | password = str }, Cmd.none )
+
+        AcceptEmail str ->
+            ( { model | email = str }, Cmd.none )
+
+        AcceptUserName str ->
+            ( { model | username = str }, Cmd.none )
 
         AcceptDocInfo str ->
             ( { model | docInfo = str }, Cmd.none )
@@ -288,8 +308,6 @@ update msg model =
             Err err -> 
                 ({model | message = handleHttpError err},   Cmd.none  )
 
-
-        -- ### 
         DocMsg (NewDocumentCreated result) ->
           case result of 
             Ok documentRecord -> 
@@ -297,7 +315,7 @@ update msg model =
                 nextDocument = documentRecord.document
                 selectedDocId_ = Document.selectedDocId nextDocument
                 cmd = Cmd.map DocMsg (Document.attachDocumentToMasterBelowCmd  (User.getTokenStringFromMaybeUser model.maybeCurrentUser) selectedDocId_ nextDocument model.maybeMasterDocument)
-                nextDocumentList_ = DocumentList.nextDocumentList selectedDocId_ nextDocument model.documentList  -- ###    
+                nextDocumentList_ = DocumentList.nextDocumentList selectedDocId_ nextDocument model.documentList    
               in  
                ({ model | message = "selectedDocId = " ++ (String.fromInt selectedDocId_)
                          , currentDocument = nextDocument
@@ -352,7 +370,7 @@ update msg model =
                 ({model | message = handleHttpError err},   Cmd.none  )
 
 
-        DocListViewMsg (SetCurrentDocument document)->
+        DocListViewMsg (SetCurrentDocument document) -> -- ###
             let  
               loadMasterCommand = case document.docType of 
                 Standard -> Cmd.none 
@@ -368,7 +386,8 @@ update msg model =
                  }
                  , Cmd.batch[
                         loadMasterCommand
-                      , Cmd.map  DocDictMsg <| DocumentDictionary.loadTexMacros (readToken model.maybeToken) document document.tags model.documentDictionary            
+                      , saveDocToLocalStorage document
+                      , Cmd.map  DocDictMsg <| DocumentDictionary.loadTexMacros (readToken model.maybeToken) document document.tags model.documentDictionary        
                  ]
                )
 
@@ -378,9 +397,22 @@ update msg model =
         DocViewMsg (LoadMasterWithCurrentSelection docId) ->
          ({model | appMode = Reading, toolPanelState = HideToolPanel} , Cmd.map DocListMsg (DocumentList.loadMasterDocumentWithCurrentSelection model.maybeCurrentUser docId))
 
-        GetToken ->
-           (model, Cmd.map UserMsg (User.getTokenCmd "jxxcarlson@gmail.com" model.password)  )
+        SignIn ->
+           (model, Cmd.map UserMsg (User.getTokenCmd model.email model.password)  ) 
 
+        SignOut ->
+           ({ model | maybeCurrentUser = Nothing, maybeToken = Nothing}, eraseLocalStorage  )  -- ###
+
+
+        RegisterUser ->
+           (model, Cmd.none  ) 
+
+
+
+        SetSignupMode signupMode_  ->
+           ({ model | signupMode = signupMode_}, Cmd.none )  
+
+        
         GetDocumentById id ->
            (model, Cmd.map DocMsg (Document.getDocumentById id (readToken model.maybeToken)))
 
@@ -588,6 +620,7 @@ type InfoForOutside =
   | AskToReconnectDocument Encode.Value
   | UserData Encode.Value 
   | AskToReconnectUser Encode.Value
+  | AskToEraseLocalStorage Encode.Value
   
 
 
@@ -610,8 +643,9 @@ sendInfoOutside info =
         AskToReconnectUser value ->
             infoForOutside { tag = "AskToReconnectUser", data = Encode.null }
 
- 
-        
+        AskToEraseLocalStorage value ->
+            infoForOutside { tag = "AskToEraseLocalStorage", data = Encode.null }
+
 
 
 getInfoFromOutside : (InfoForElm -> msg) -> (String -> msg) -> Sub msg
@@ -649,6 +683,10 @@ sendMaybeUserDataToLocalStorage maybeUser =
   case maybeUser of 
     Nothing -> Cmd.none 
     Just user ->  sendInfoOutside (UserData (User.encodeUserForOutside user))
+
+eraseLocalStorage : Cmd msg
+eraseLocalStorage =
+    sendInfoOutside (AskToEraseLocalStorage Encode.null)
 
 
 processInfoForElm : Model -> InfoForElm -> (Model, Cmd Msg)
@@ -692,8 +730,6 @@ header model =
         , homeButton (px 55) model
         , readerModeButton (px 52) model
         , writerModeButton (px 52) model]
-        , passwordInput model
-        , getTokenButton (px 80) model
   ]
 
 appTitle : AppMode -> String 
@@ -730,6 +766,56 @@ bodyLeftColumn portion_ model =
       , toolsOrContents model
   ]
 
+
+loginOrSignUpPanel model = 
+  case model.signupMode of
+    SigninMode ->  loginPanel model
+    RegistrationMode -> signupPanel model
+
+loginPanel : Model -> Element Msg 
+loginPanel model = 
+  case model.maybeCurrentUser of 
+    Just _ -> Element.none 
+    Nothing ->
+      Element.column [padding 20, spacing 20] [
+          Element.el [] (text "Sign in")
+        , emailInput model
+        , passwordInput model
+        , Element.row [spacing 15] [
+              getTokenButton (px 66) model
+            , gotoRegistrationButton (px 66) model
+        ]
+      ]
+
+signupPanel : Model -> Element Msg 
+signupPanel model = 
+  case model.maybeCurrentUser of 
+    Just _ -> Element.none 
+    Nothing ->
+      Element.column [padding 20, spacing 20] [
+          Element.el [] (text "Sign up")
+        , emailInput model
+        , usernameInput model
+        , passwordInput model
+        , Element.row [spacing 15] [
+            registerUserButton (px 60) model
+          , cancelRegistrationButton (px 60) model
+        ]
+      ]
+
+
+
+
+
+logoutPanel : Model -> Element Msg 
+logoutPanel model = 
+  case model.maybeCurrentUser of 
+    Nothing -> Element.none 
+    Just _ ->
+      Element.column [padding 20, spacing 20] [
+         signoutButton (px 70) model
+      ]
+
 -- TOOLS
 
 toolsOrContents model = 
@@ -746,14 +832,6 @@ toolsPanel model = Element.column [ spacing 15, padding 10, height shrink, scrol
   , tagInputPane model (px 250) (px 140) "Tags"
   , versionsPanel model
   ]
-
--- masterDocPanel model = 
---   let  
---     headDocument = DocumentList.getFirst  model.documentList 
---   in 
---     case headDocument.docType of 
---       Master -> masterDocPanelWithMaster headDocument model  
---       Standard -> Element.none 
 
 masterDocPanel model = 
   Element.column [spacing 5] [ 
@@ -901,7 +979,8 @@ textArea model width_ windowHeight_ label_  =
 bodyRightColumn : Int -> Model -> Element Msg
 bodyRightColumn portion_ model = 
   Element.column [width (fillPortion portion_), height fill, Background.color Widget.lightBlue, centerX] [
-      Element.none
+      loginOrSignUpPanel model
+    , logoutPanel model
   ]
 
 docListTitle : Model -> String 
@@ -989,13 +1068,33 @@ label fontSize str =
 
 passwordInput : Model -> Element Msg
 passwordInput model =
-    Input.newPassword [width (px 100), height (px 30) , Font.color black] {
+    Input.newPassword [width (px 180), height (px 30) , Font.color black] {
         text = model.password 
       , placeholder = Nothing
       , show = False
       , onChange = Just(\str -> AcceptPassword str)
-      , label = Input.labelLeft [ Font.size 12, Font.bold, moveDown 10 ] (text "Password")
+      , label = Input.labelAbove [ Font.size 12, Font.bold, moveDown 0 ] (text "Password")
     }
+
+emailInput : Model -> Element Msg
+emailInput model =
+    Input.text [width (px 180), height (px 30) , Font.color black] {
+        text = model.email 
+      , placeholder = Nothing
+      , onChange = Just(\str -> AcceptEmail str)
+      , label = Input.labelAbove [ Font.size 12, Font.bold, moveDown 0 ] (text "Email")
+    }
+
+usernameInput : Model -> Element Msg
+usernameInput model =
+    Input.text [width (px 180), height (px 30) , Font.color black] {
+        text = model.email 
+      , placeholder = Nothing
+      , onChange = Just(\str -> AcceptUserName str)
+      , label = Input.labelAbove [ Font.size 12, Font.bold, moveDown 0 ] (text "Email")
+    }
+
+
 
 documentInfoInput : Model -> Element Msg
 documentInfoInput model =
@@ -1160,8 +1259,38 @@ toggleToolsTitle toolPanelState =
 getTokenButton : Length -> Model -> Element Msg    
 getTokenButton width_ model = 
   Input.button (buttonStyle width_) {
-    onPress =  Just GetToken
-  , label = Element.text "Get token"
+    onPress =  Just SignIn
+  , label = Element.text "Sign in"
+  } 
+
+registerUserButton : Length -> Model -> Element Msg    
+registerUserButton width_ model = 
+  Input.button (buttonStyle width_) {
+    onPress =  Just RegisterUser
+  , label = Element.text "Sign up"
+  } 
+
+cancelRegistrationButton : Length -> Model -> Element Msg    
+cancelRegistrationButton width_ model = 
+  Input.button (buttonStyle width_) {
+    onPress =  Just (SetSignupMode SigninMode)
+  , label = Element.text "Cancel"
+  } 
+
+
+gotoRegistrationButton : Length -> Model -> Element Msg    
+gotoRegistrationButton width_ model = 
+  Input.button (buttonStyle width_) {
+    onPress =  Just (SetSignupMode RegistrationMode)
+  , label = Element.text "Sign up"
+  }
+
+
+signoutButton : Length -> Model -> Element Msg    
+signoutButton width_ model = 
+  Input.button (buttonStyle width_) {
+    onPress =  Just SignOut
+  , label = Element.text "Sign out"
   } 
 
 

@@ -61,7 +61,7 @@ type Msg
     | AcceptPassword String
     | AcceptDocInfo String
     | ReverseText
-    | GetToken
+    | SignIn
     | GetDocumentById Int
     | GetPublicDocuments String
     | GetUserDocuments String
@@ -175,7 +175,7 @@ update msg model =
             Nothing -> (model, Cmd.none)
             Just user ->  (model, Cmd.map DocListMsg (DocumentList.loadMasterDocumentWithCurrentSelection user docId))
 
-        GetToken ->
+        SignIn ->
            (model, Cmd.map UserMsg (User.getTokenCmd "jxxcarlson@gmail.com" model.password)  )
 
         GetDocumentById id ->
@@ -319,7 +319,7 @@ documentInfoInput model =
 getTokenButton : Length -> Model -> Element Msg    
 getTokenButton width_ model = 
   Input.button (buttonStyle width_) {
-    onPress =  Just GetToken
+    onPress =  Just SignIn
   , label = Element.text "Get token"
   } 
 
