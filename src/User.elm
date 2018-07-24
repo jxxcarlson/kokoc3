@@ -1,6 +1,7 @@
 module User exposing(
      Token
    , invalidToken
+   , getTokenCmd
    , getToken
    , readToken
    , UserMsg(..)
@@ -12,7 +13,7 @@ module User exposing(
    , username
    , userId
    , encodeUserForOutside
-  
+   , decodeUserFromOutside
    ) 
 
 
@@ -58,6 +59,10 @@ getTokenString (User user) =
     (Token str) = user.token
   in
     str 
+
+getToken : User -> Token 
+getToken user = 
+  Token (getTokenString user)
 
 getTokenStringFromMaybeUser : Maybe User -> String 
 getTokenStringFromMaybeUser maybeUser = 
@@ -145,8 +150,9 @@ encodeUserForOutside user =
     ]
 
 
-decodeUserRecordFromOutside : Decoder UserRecord
-decodeUserRecordFromOutside =
+decodeUserFromOutside : Decoder User
+decodeUserFromOutside =
+  Decode.map User <|
     Decode.map4 UserRecord
        (field "email" string)
        (field "id" int)
@@ -170,6 +176,6 @@ tokenRequest email_ password =
     , withCredentials = False
     }
 
-getToken : String  -> String -> Cmd UserMsg 
-getToken email_ password =
+getTokenCmd : String  -> String -> Cmd UserMsg 
+getTokenCmd email_ password =
     Http.send ReceiveToken <| tokenRequest email_ password

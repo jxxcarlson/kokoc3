@@ -186,6 +186,7 @@ init flags =
         , Cmd.batch [ 
             focusSearchBox
           , sendInfoOutside (AskToReconnectDocument Encode.null)
+          , sendInfoOutside (AskToReconnectUser Encode.null)
         ])
 
 
@@ -236,10 +237,16 @@ update msg model =
         UserMsg (ReceiveToken result)->
           case result of 
             Ok token -> 
+              let 
+                maybeToken = Just token
+                maybeCurrentUser = User.maybeSetToken token (Just User.testUser)
+              in 
                ({ model | 
-                 maybeToken = Just token
-                 , maybeCurrentUser = User.maybeSetToken token (Just User.testUser)
-                 , message = "token OK"},   Cmd.none  )
+                    maybeToken = maybeToken
+                  , maybeCurrentUser = maybeCurrentUser
+                  , message = "token OK"
+                }
+                ,  sendMaybeUserDataToLocalStorage maybeCurrentUser ) -- ### XXX Needs work
             Err err -> 
                 ({model | message = "Token error"},   Cmd.none  )
 
@@ -372,7 +379,7 @@ update msg model =
          ({model | appMode = Reading, toolPanelState = HideToolPanel} , Cmd.map DocListMsg (DocumentList.loadMasterDocumentWithCurrentSelection model.maybeCurrentUser docId))
 
         GetToken ->
-           (model, Cmd.map UserMsg (User.getToken "jxxcarlson@gmail.com" model.password)  )
+           (model, Cmd.map UserMsg (User.getTokenCmd "jxxcarlson@gmail.com" model.password)  )
 
         GetDocumentById id ->
            (model, Cmd.map DocMsg (Document.getDocumentById id (readToken model.maybeToken)))
@@ -567,7 +574,8 @@ handleHttpError error =
 
 
 type InfoForElm = 
-  DocumentDataFromOutside Document
+   DocumentDataFromOutside Document
+ | UserDataFromOutside User 
 
 
 port infoForOutside : GenericOutsideData -> Cmd msg
@@ -577,8 +585,10 @@ port infoForElm : (GenericOutsideData -> msg) -> Sub msg
 
 type InfoForOutside =
     DocumentData Encode.Value
-  | UserData Encode.Value 
   | AskToReconnectDocument Encode.Value
+  | UserData Encode.Value 
+  | AskToReconnectUser Encode.Value
+  
 
 
 type alias GenericOutsideData =
@@ -591,12 +601,17 @@ sendInfoOutside info =
         DocumentData value ->
             infoForOutside { tag = "DocumentData", data = value }
 
+        AskToReconnectDocument value ->
+            infoForOutside { tag = "AskToReconnectDocument", data = Encode.null }
+
         UserData value ->
             infoForOutside { tag = "UserData", data = value }
 
+        AskToReconnectUser value ->
+            infoForOutside { tag = "AskToReconnectUser", data = Encode.null }
 
-        AskToReconnectDocument value ->
-            infoForOutside { tag = "AskToReconnectDocument", data = Encode.null }
+ 
+        
 
 
 getInfoFromOutside : (InfoForElm -> msg) -> (String -> msg) -> Sub msg
@@ -611,6 +626,14 @@ getInfoFromOutside tagger onError =
 
                         Err e ->(
                             onError <| "Bad decode (getInfoFromOutside)"  ++ (Decode.errorToString e))
+
+                "ReconnectUser" ->
+                    case Decode.decodeValue User.decodeUserFromOutside outsideInfo.data of
+                        Ok result ->
+                            tagger <| UserDataFromOutside result
+
+                        Err e ->(
+                            onError <| "Bad decode (getInfoFromOutside)"  ++ (Decode.errorToString e))
                 _ ->
                     onError <| "Unexpected info from outside"
         )
@@ -621,9 +644,11 @@ saveDocToLocalStorage : Document -> Cmd msg
 saveDocToLocalStorage document =
     sendInfoOutside (DocumentData (Document.encodeDocumentForOutside document))
 
-sendUserDataToLocalStorage : User -> Cmd msg
-sendUserDataToLocalStorage user =
-    sendInfoOutside (UserData (User.encodeUserForOutside user))
+sendMaybeUserDataToLocalStorage : Maybe User -> Cmd msg
+sendMaybeUserDataToLocalStorage maybeUser =
+  case maybeUser of 
+    Nothing -> Cmd.none 
+    Just user ->  sendInfoOutside (UserData (User.encodeUserForOutside user))
 
 
 processInfoForElm : Model -> InfoForElm -> (Model, Cmd Msg)
@@ -635,8 +660,16 @@ processInfoForElm model infoForElm_ =
                   , documentList = DocumentList.make document []
             }
             , Cmd.none
+          )  
+     UserDataFromOutside user -> 
+        ({model | message = "Outside infoForElm"
+                  , maybeCurrentUser = Just user 
+                  , maybeToken = Just (User.getToken user)
+            }
+            , Cmd.none
           )  -- ####
 
+-- UserDataFromOutside
 -- VIEW
 
 view  model =
@@ -928,7 +961,7 @@ currentUserName : Maybe User -> String
 currentUserName maybeCurrentUser =
   case maybeCurrentUser of 
     Nothing -> "User: NONE"
-    Just user -> "User: " ++ User.username user
+    Just user -> "User: " ++ User.username user ++ ", T: " ++ (String.left 10 <| User.getTokenString user)
 
 access : Document -> String 
 access doc = 
@@ -1327,4 +1360,4 @@ displayCurrentMasterDocument model =
 
 getViewPort = Task.perform GetViewport Dom.getViewport
 
--- ###
+ 

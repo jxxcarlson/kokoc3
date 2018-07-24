@@ -176,7 +176,7 @@ update msg model =
             Just user ->  (model, Cmd.map DocListMsg (DocumentList.loadMasterDocumentWithCurrentSelection user docId))
 
         GetToken ->
-           (model, Cmd.map UserMsg (User.getToken "jxxcarlson@gmail.com" model.password)  )
+           (model, Cmd.map UserMsg (User.getTokenCmd "jxxcarlson@gmail.com" model.password)  )
 
         GetDocumentById id ->
            (model, Cmd.map DocMsg (Document.getDocumentById id (readToken model.token)))
