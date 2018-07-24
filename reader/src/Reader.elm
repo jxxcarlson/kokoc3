@@ -938,9 +938,9 @@ footer model =
 
       , Element.el [] (text <| access model.currentDocument)
       , Element.el [] (text <| "Author: " ++ model.currentDocument.authorName )
-      , Element.el [] (text <| currentUserName model.maybeCurrentUser)
+      , currentUserNameElement model
       , Element.el [] (text <| (String.fromInt (Document.wordCount model.currentDocument)) ++ " words")
-      , Element.el [] (text <| deleteStateIndicator model)
+      , deleteStateIndicator model
 
     --  , Element.el [] (text ("keys: " ++ (showKeys model)))
     --  , Element.el [] (text <| displayCurrentMasterDocument model)
@@ -948,20 +948,24 @@ footer model =
   ] 
 
 deleteStateIndicator model = 
-  case model.deleteDocumentState of 
-    DeleteIsOnSafety -> "Safety ON"
-    DeleteIsArmed -> "ARMED"
+  case model.maybeCurrentUser of 
+    Nothing -> Element.none 
+    Just _ -> 
+      case model.deleteDocumentState of 
+        DeleteIsOnSafety -> Element.el [] (Element.text "Safety ON")
+        DeleteIsArmed -> Element.el [] (Element.text "ARMED")
 
 documentDirtyIndicator  model = 
   case model.currentDocumentDirty  of 
     False -> Background.color Widget.indicatorGood
     True -> Background.color Widget.indicatorBad
 
-currentUserName : Maybe User -> String  
-currentUserName maybeCurrentUser =
-  case maybeCurrentUser of 
-    Nothing -> "User: NONE"
-    Just user -> "User: " ++ User.username user ++ ", T: " ++ (String.left 10 <| User.getTokenString user)
+currentUserNameElement : Model -> Element msg 
+currentUserNameElement model = 
+  case model.maybeCurrentUser of 
+    Nothing -> Element.none 
+    Just user -> Element.el [] (Element.text <| "User: " ++ User.username user ++ ", T: " ++ (String.left 10 <| User.getTokenString user))
+
 
 access : Document -> String 
 access doc = 
@@ -1201,17 +1205,23 @@ getAuthorsDocumentsButton_ width_ model =
 
 saveCurrentDocumentButton : Length -> Model -> Element Msg    
 saveCurrentDocumentButton width_ model = 
-  Input.button (buttonStyle  width_) {
-    onPress =  Just (SaveCurrentDocument (Time.millisToPosix 10))
-  , label = Element.text "Save"
-  } 
+    case model.maybeCurrentUser of 
+    Nothing -> Element.none 
+    Just _ ->
+      Input.button (buttonStyle  width_) {
+        onPress =  Just (SaveCurrentDocument (Time.millisToPosix 10))
+      , label = Element.text "Save"
+      } 
 
 deleteCurrentDocumentButton : Length -> Model -> Element Msg    
 deleteCurrentDocumentButton width_ model = 
-  Input.button (buttonStyleWithColor (deleteButtonBackgroundColor model) width_ ) {
-    onPress =  Just (DeleteCurrentDocument)
-  , label = Element.text "Delete"
-  } 
+    case model.maybeCurrentUser of 
+    Nothing -> Element.none 
+    Just _ ->
+      Input.button (buttonStyleWithColor (deleteButtonBackgroundColor model) width_ ) {
+        onPress =  Just (DeleteCurrentDocument)
+      , label = Element.text "Delete"
+      } 
 
 
 cancelDeleteCurrentDocumentButton : Length -> Model -> Element Msg    
@@ -1243,10 +1253,13 @@ startButton width_ model =
 
 homeButton : Length -> Model -> Element Msg    
 homeButton width_ model = 
-  Input.button (buttonStyle  width_) {
-    onPress =  Just (GoHome)
-  , label = Element.text "Home"
-  } 
+    case model.maybeCurrentUser of 
+    Nothing -> Element.none 
+    Just _ ->
+      Input.button (buttonStyle  width_) {
+        onPress =  Just (GoHome)
+      , label = Element.text "Home"
+      } 
 
 readerModeButton : Length -> Model -> Element Msg    
 readerModeButton width_ model = 
@@ -1257,10 +1270,13 @@ readerModeButton width_ model =
 
 writerModeButton : Length -> Model -> Element Msg    
 writerModeButton width_ model = 
-  Input.button (modeButtonStyle model.appMode Writing  width_) {
-    onPress =  Just (ChangeMode Writing)
-  , label = Element.text "Write"
-  } 
+  case model.maybeCurrentUser of 
+    Nothing -> Element.none 
+    Just _ -> 
+      Input.button (modeButtonStyle model.appMode Writing  width_) {
+        onPress =  Just (ChangeMode Writing)
+      , label = Element.text "Write"
+      } 
 
 -- END: BUTTONS
 
