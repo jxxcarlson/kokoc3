@@ -160,14 +160,15 @@
 		})
 
 		var processDocumentData = function(documentData) {
-		console.log("I will put the currentDocument data in local storage" );
-		// console.log(JSON.stringify(documentData))
-		localStorage.setItem("currentDocument", documentData);
+		  console.log("I will put the currentDocument data in local storage" );
+		  console.log(JSON.stringify(documentData))
+		  localStorage.setItem("currentDocument", JSON.stringify(documentData));
 		}
 		
 		var askToReconnectDocument = function (str) {
 		  console.log("!!! askToReconnectDocument !!!" );
-		  app.ports.infoForElm.send({tag: "ReconnectDocument", data: localStorage})
+		  console.log( "doc to send: " + (JSON.stringify(localStorage.currentDocument)) )
+		  app.ports.infoForElm.send({tag: "ReconnectDocument", data: JSON.parse(localStorage.currentDocument)})
 		}
 
 	

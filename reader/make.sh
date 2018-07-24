@@ -4,9 +4,14 @@ reset=`tput setaf 7`
 
 echo
 echo "${color}Compile reader${reset}"
+if [ "$1" = "--debug" ]
+then
+/Users/carlson/Downloads/2/elm make ./src/Reader.elm --output /usr/local/var/www/Main.js
+else
 /Users/carlson/Downloads/2/elm make --optimize ./src/Reader.elm --output /usr/local/var/www/Main.js
+fi
 
-if [ "$1" = "-r" ]
+if [ "$1" = "--r666" ]
 then
 echo
 echo "${color}Start web server on port 8080${reset}"
@@ -15,14 +20,8 @@ fi
 
 
 
-if [ "$1" = "-i" ]
-then
-echo
-echo "${color}  -i: Compile app to Main.js, use index.html${reset}"
-/Users/carlson/Downloads/2/elm make --optimize ./src/Reader.elm --output Main.js
-echo
-echo "${color}Copy files to  /usr/local/var/www/ and restart nginx${reset}"
+echo "${color}Copy 'index.html' to /usr/local/var/www/ and restart nginx${reset}"
 nginx -s stop
 cp ./dist/index.html /usr/local/var/www/        
 nginx
-fi  
+  

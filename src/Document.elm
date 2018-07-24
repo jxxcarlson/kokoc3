@@ -312,8 +312,8 @@ encodeDocumentForOutside document =
         , ( "identifier", Encode.string <| document.identifier )
 
         , ( "authorId", Encode.int <| document.authorId )
-        , ( "authorIdentifier", Encode.int <| document.authorId )
-        , ( "author_name", Encode.string <| document.authorName )
+        , ( "authorIdentifier", Encode.string <| document.identifier )
+        , ( "authorName", Encode.string <| document.authorName )
 
         , ( "title", Encode.string <| document.title )
         , ( "content", Encode.string <| document.content )

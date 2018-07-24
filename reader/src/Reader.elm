@@ -612,8 +612,8 @@ getInfoFromOutside tagger onError =
                         Ok result ->
                             tagger <| DocumentDataFromOutside result
 
-                        Err e ->
-                            onError "Bad decode (getInfoFromOutside)"
+                        Err e ->(
+                            onError <| "Bad decode (getInfoFromOutside)"  ++ (Decode.errorToString e))
                 _ ->
                     onError <| "Unexpected info from outside"
         )
