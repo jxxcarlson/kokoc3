@@ -264,11 +264,11 @@ update msg model =
                ({ model | 
                     maybeToken = maybeToken
                   , maybeCurrentUser = maybeCurrentUser
-                  , message = "token OK"
+                  , message = "Authorized"
                 }
                 ,  sendMaybeUserDataToLocalStorage maybeCurrentUser ) -- ### XXX Needs work
             Err err -> 
-                ({model | message = "Token error"},   Cmd.none  )
+                ({model | message = "Not authorized"},   Cmd.none  )
 
         DocMsg (ReceiveDocument result) ->
           case result of 
@@ -405,9 +405,7 @@ update msg model =
 
 
         RegisterUser ->
-           (model, Cmd.none  ) 
-
-
+           (model, Cmd.map UserMsg (User.registerUser model.email model.username "anon" model.password)  )   
 
         SetSignupMode signupMode_  ->
            ({ model | signupMode = signupMode_}, Cmd.none )  
@@ -798,7 +796,7 @@ signupPanel model =
         , usernameInput model
         , passwordInput model
         , Element.row [spacing 15] [
-            registerUserButton (px 60) model
+            registerUserButton (px 65) model
           , cancelRegistrationButton (px 60) model
         ]
       ]
@@ -1085,13 +1083,14 @@ emailInput model =
       , label = Input.labelAbove [ Font.size 12, Font.bold, moveDown 0 ] (text "Email")
     }
 
+
 usernameInput : Model -> Element Msg
 usernameInput model =
     Input.text [width (px 180), height (px 30) , Font.color black] {
-        text = model.email 
+        text = model.username 
       , placeholder = Nothing
       , onChange = Just(\str -> AcceptUserName str)
-      , label = Input.labelAbove [ Font.size 12, Font.bold, moveDown 0 ] (text "Email")
+      , label = Input.labelAbove [ Font.size 12, Font.bold, moveDown 0 ] (text "User name")
     }
 
 

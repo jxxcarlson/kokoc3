@@ -15,6 +15,7 @@ module User exposing(
    , encodeUserForOutside
    , decodeUserFromOutside
    , maybeUserFromEmailAndToken
+   , registerUser
    ) 
 
 
@@ -40,6 +41,13 @@ type alias UserRecord = {
   , token : Token 
   , username : String 
   }
+
+type alias RegistrationUserRecord = {
+    email: String
+  , username : String 
+  , password : String 
+  
+  }  
 
 -- ACCESSORS
 
@@ -80,6 +88,8 @@ testUser = User {
   }
 
 
+-- TOKEN
+
 setToken : Token -> User -> User 
 setToken token_ (User user) = 
   User { user | token = token_ }
@@ -119,7 +129,7 @@ readToken maybeToken =
 -- MSG
 
 type UserMsg = 
-  ReceiveToken (Result Http.Error Token)
+    ReceiveToken (Result Http.Error Token)
 
 
 -- DECODERS
@@ -160,6 +170,20 @@ encodeUserForOutside user =
     ]
 
 
+registrationEncoder : String -> String -> String -> String -> Encode.Value
+registrationEncoder email_ username_ name_ password_  = 
+  Encode.object 
+   [ ("user", Encode.object 
+       [   ("username", Encode.string username_)
+         , ("name", Encode.string name_)
+         , ("email", Encode.string email_)
+         , ("password", Encode.string password_)
+      ])
+    ]
+
+-- DECODERS
+
+
 decodeUserFromOutside : Decoder User
 decodeUserFromOutside =
   Decode.map User <|
@@ -183,6 +207,26 @@ tokenRequest email_ password =
     , timeout = Just 5000
     , withCredentials = False
     }
+
+registerUserRequest : String -> String -> String -> String -> Http.Request Token
+registerUserRequest email_ username_ name_ password_ = 
+  Http.request
+    { method = "Post"
+    , headers = [Http.header "APIVersion" "V2"]
+    , url = Configuration.backend ++ "/api/users"
+    , body = Http.jsonBody (registrationEncoder email_ username_ name_ password_)
+    , expect = Http.expectJson tokenDecoder
+    , timeout = Just 5000
+    , withCredentials = False
+    }
+ 
+
+registerUser : String -> String -> String -> String -> Cmd UserMsg 
+registerUser email_ username_ name_ password_  = 
+  Http.send ReceiveToken <| registerUserRequest email_ username_ name_ password_
+
+
+-- TOKEN
 
 getTokenCmd : String  -> String -> Cmd UserMsg 
 getTokenCmd email_ password =
