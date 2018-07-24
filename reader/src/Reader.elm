@@ -24,7 +24,6 @@ import Element.Border as Border
 import Element.Lazy
 
 import Widget exposing(..)
-import Utility
 
 import Configuration
 import User exposing(Token, UserMsg(..), readToken, User)
@@ -274,7 +273,7 @@ update msg model =
                ({ model | message = "Document deleted: " ++ (String.fromInt indexOfDocumentToDelete) ++ ", Document selected: " ++ (String.fromInt documentSelectedId) 
                   , currentDocument = documentSelected 
                   , toolPanelState = HideToolPanel
-                  , documentList = deleteItemInDocumentListAt idOfDocumentToDelete nextDocumentList_
+                  , documentList = DocumentList.deleteItemInDocumentListAt idOfDocumentToDelete nextDocumentList_
               
                 },  Cmd.none)
             Err err -> 
@@ -289,7 +288,7 @@ update msg model =
                 nextDocument = documentRecord.document
                 selectedDocId_ = selectedDocId nextDocument
                 cmd = Cmd.map DocMsg (attachDocumentToMasterBelowCmd  (User.getTokenStringFromMaybeUser model.maybeCurrentUser) selectedDocId_ nextDocument model.maybeMasterDocument)
-                nextDocumentList_ = nextDocumentList selectedDocId_ nextDocument model.documentList  -- ###    
+                nextDocumentList_ = DocumentList.nextDocumentList selectedDocId_ nextDocument model.documentList  -- ###    
               in  
                ({ model | message = "selectedDocId = " ++ (String.fromInt selectedDocId_)
                          , currentDocument = nextDocument
@@ -1331,37 +1330,8 @@ displayCurrentMasterDocument model =
     Just doc -> "Master: " ++ (String.fromInt doc.id) 
 
 
-nextDocumentList1 : Int -> Document -> DocumentList -> DocumentList
-nextDocumentList1 docId document documentList =
-  DocumentList.prepend document documentList
 
-nextDocumentList : Int -> Document -> DocumentList -> DocumentList
-nextDocumentList targetDocId document documentList = 
-  case targetDocId == 0 of 
-    True ->  DocumentList.prepend document documentList
-    False ->
-      let  
-        maybeTargetIndex = List.Extra.findIndex (\doc -> doc.id ==  targetDocId) (DocumentList.documents documentList)
-      in  
-        case maybeTargetIndex of 
-          Nothing -> DocumentList.prepend document documentList
-          Just k -> 
-            DocumentList.setDocuments (Utility.listInsertAt (k+1) document (DocumentList.documents documentList)) documentList
-              |> DocumentList.select (Just document)
 
-deleteItemInDocumentListAt : Int -> DocumentList -> DocumentList
-deleteItemInDocumentListAt targetDocId documentList = 
-  case targetDocId == 0 of 
-    True ->  documentList
-    False ->
-      let  
-        maybeTargetIndex = List.Extra.findIndex (\doc -> doc.id ==  targetDocId) (DocumentList.documents documentList)
-      in  
-        case maybeTargetIndex of 
-          Nothing -> documentList
-          Just k -> 
-            DocumentList.setDocuments (Utility.listDeleteAt k (DocumentList.documents documentList)) documentList
-              
 
 getViewPort = Task.perform GetViewport Dom.getViewport
 

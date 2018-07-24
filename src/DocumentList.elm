@@ -13,12 +13,19 @@ module DocumentList exposing(
   , setDocuments
   , prepend
   , documentListLength
+  , nextDocumentList
+  , deleteItemInDocumentListAt
   )
 
 import Json.Encode as Encode    
 import Json.Decode as Decode exposing (at, int, list, string, decodeString, Decoder)
 import Json.Decode.Pipeline as JPipeline exposing (required, optional, hardcoded)
 import Http
+
+import List.Extra
+import Utility
+
+
 import Configuration
 import User exposing(User)
 
@@ -153,3 +160,33 @@ loadMasterDocumentRequest  maybeUser docId =
     , timeout = Just 5000
     , withCredentials = False
     }
+
+
+nextDocumentList : Int -> Document -> DocumentList -> DocumentList
+nextDocumentList targetDocId document documentList = 
+  case targetDocId == 0 of 
+    True ->  prepend document documentList
+    False ->
+      let  
+        maybeTargetIndex = List.Extra.findIndex (\doc -> doc.id ==  targetDocId) (documents documentList)
+      in  
+        case maybeTargetIndex of 
+          Nothing -> prepend document documentList
+          Just k -> 
+            setDocuments (Utility.listInsertAt (k+1) document (documents documentList)) documentList
+              |> select (Just document)
+
+
+deleteItemInDocumentListAt : Int -> DocumentList -> DocumentList
+deleteItemInDocumentListAt targetDocId documentList = 
+  case targetDocId == 0 of 
+    True ->  documentList
+    False ->
+      let  
+        maybeTargetIndex = List.Extra.findIndex (\doc -> doc.id ==  targetDocId) (documents documentList)
+      in  
+        case maybeTargetIndex of 
+          Nothing -> documentList
+          Just k -> 
+            setDocuments (Utility.listDeleteAt k (documents documentList)) documentList
+              
