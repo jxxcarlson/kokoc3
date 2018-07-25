@@ -635,7 +635,31 @@ attachDocumentToMasterBelowCmd_  tokenString selectedDocId_ childDocument master
 
 -- TEXT
 
-newDocumentText = "Replace this sentence by some really great prose ..."
+newDocumentText = 
+    """
+This is \\strong{knode.io}, ready to run MiniLatex,
+Asciidoc, Markdown, or just plain old text.
+
+$$\\int_0^1 x^n dx = \\frac{1}{n+1}$$
+
+Write formulas, place images, etc.
+Edit live and publish to the web in real time. Lecture notes, poetry, whatever.
+Click on \\strong{Home} to go to your home page.
+
+
+\\bigskip
+
+\\image{http://noteimages.s3.amazonaws.com/uploads/butterfly.jpg}{}{width: 450}
+
+\\bigskip
+
+Click on \\strong{Random} to explore.  To find things, type something in
+the search box, e.g., \\italic{matt}, \\italic{wave}, or \\italic{snow}.
+ 
+
+\\bigskip
+\\strong{knode.io} is made with \\href{http://elm-lang.org/}{Elm}.
+"""
 
 welcomeText = 
     """

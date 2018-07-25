@@ -164,12 +164,9 @@ updateEditorContentCmd str =
 
 -- INIT
 
-init : Flags -> ( Model, Cmd Msg )
-init flags =
-   let 
-        doc = Document.basicDocument 
-   in
-        ( {   message = "App started"
+initialModel : Int -> Int -> Document -> Model 
+initialModel windowWidth windowHeight document =
+    {   message = "App started"
             , password = ""
             , username = ""
             , email = ""
@@ -177,7 +174,7 @@ init flags =
             , docInfo = ""
             , maybeToken = Nothing
             , maybeCurrentUser = Nothing
-            , currentDocument = { doc | title = "Welcome!"}
+            , currentDocument = document
             , maybeMasterDocument = Nothing 
             , documentList = DocumentList.empty
             , documentIdList = DocumentList.emptyIntList  
@@ -192,11 +189,19 @@ init flags =
             , toolPanelState = HideToolPanel
             , documentTitle = ""
             , tagString = ""
-            , windowWidth = flags.width
-            , windowHeight = flags.height
+            , windowWidth = windowWidth
+            , windowHeight = windowHeight
             , maybeViewport = Nothing
             , deleteDocumentState = DeleteIsOnSafety
         }
+
+init : Flags -> ( Model, Cmd Msg )
+init flags =  
+   let 
+     basicDoc = Document.basicDocument 
+     startupDoc = { basicDoc | title = "Welcome!"}
+    in
+       ( initialModel flags.width flags.height  startupDoc
         , Cmd.batch [ 
             focusSearchBox
           , sendInfoOutside (AskToReconnectDocument Encode.null)
@@ -435,10 +440,20 @@ update msg model =
          ({model | appMode = Reading, toolPanelState = HideToolPanel} , Cmd.map DocListMsg (DocumentList.loadMasterDocumentWithCurrentSelection model.maybeCurrentUser docId))
 
         SignIn ->
-           (model, Cmd.map UserMsg (User.getTokenCmd model.email model.password)  ) 
+          let 
+              basicDoc = Document.basicDocument
+              startupDoc = { basicDoc | title = "Welcome!", content = "This is knode.io, ready to run MiniLatex.\n\n$$\\int_0^1 x^n dx = \\frac{1}{n+1}$$\n\nClick on \\strong{Home} to go to your home page"}
+              freshModel = initialModel model.windowWidth model.windowHeight  startupDoc
+          in 
+              (freshModel, Cmd.map UserMsg (User.getTokenCmd model.email model.password)  ) 
 
         SignOut ->
-           ({ model | maybeCurrentUser = Nothing, maybeToken = Nothing}, eraseLocalStorage  )  
+          let 
+              basicDoc = Document.basicDocument
+              startupDoc = { basicDoc | title = "Welcome!"}
+              freshModel = initialModel model.windowWidth model.windowHeight  startupDoc
+          in 
+           ({ freshModel | maybeCurrentUser = Nothing, maybeToken = Nothing}, eraseLocalStorage  )  
 
 
         RegisterUser ->
