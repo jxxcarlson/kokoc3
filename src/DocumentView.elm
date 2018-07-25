@@ -148,7 +148,7 @@ viewChild : Int -> Child -> Element DocViewMsg
 viewChild parentId child = 
   Element.el [] (
         Input.button (Widget.titleStyle) {
-            onPress =  Just (LoadMasterWithCurrentSelection parentId)
+            onPress =  Just (LoadMaster parentId)
         , label = Element.el [ moveUp 0, padding 5, Font.size 12, Font.bold] (text child.title)
         } 
     )
