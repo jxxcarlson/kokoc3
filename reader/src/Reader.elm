@@ -618,6 +618,7 @@ port infoForElm : (GenericOutsideData -> msg) -> Sub msg
 
 type InfoForOutside =
     DocumentData Encode.Value
+  | DocumentListData Encode.Value
   | AskToReconnectDocument Encode.Value
   | UserData Encode.Value 
   | AskToReconnectUser Encode.Value
@@ -634,6 +635,10 @@ sendInfoOutside info =
     case info of
         DocumentData value ->
             infoForOutside { tag = "DocumentData", data = value }
+
+        DocumentListData value ->
+            infoForOutside { tag = "DocumentListData", data = value }
+
 
         AskToReconnectDocument value ->
             infoForOutside { tag = "AskToReconnectDocument", data = Encode.null }
@@ -678,6 +683,11 @@ getInfoFromOutside tagger onError =
 saveDocToLocalStorage : Document -> Cmd msg
 saveDocToLocalStorage document =
     sendInfoOutside (DocumentData (Document.encodeDocumentForOutside document))
+
+saveDocumentListToLocalStorage : DocumentList -> Cmd msg
+saveDocumentListToLocalStorage documentList =
+    sendInfoOutside (DocumentListData (DocumentList.documentListEncoder documentList))
+
 
 sendMaybeUserDataToLocalStorage : Maybe User -> Cmd msg
 sendMaybeUserDataToLocalStorage maybeUser =

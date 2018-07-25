@@ -16,6 +16,7 @@ module DocumentList exposing(
   , nextDocumentList
   , deleteItemInDocumentListAt
   , make
+  , documentListEncoder
   )
 
 import Json.Encode as Encode    
@@ -70,6 +71,12 @@ setDocuments listOfDocuments (DocumentList documentListRecord)  =
 selected : DocumentList -> Maybe Document 
 selected (DocumentList docListRecord) =
  docListRecord.selected
+
+selectedId : DocumentList -> Int 
+selectedId documentList = 
+   case selected documentList of 
+     Nothing -> 0
+     Just document -> document.id 
 
 select : Maybe Document -> DocumentList -> DocumentList 
 select maybeSelectedDocument (DocumentList documentList) =
@@ -131,6 +138,20 @@ documentListRecordDecoder =
 documentListDecoder : Decoder DocumentList
 documentListDecoder = 
   Decode.map DocumentList documentListRecordDecoder
+
+-- ENCODERS
+
+documentListEncoder : DocumentList -> Encode.Value 
+documentListEncoder documentList = 
+  let 
+    documentIds = (documents documentList) |> List.map .id
+  in 
+  Encode.object [
+     ("selected", Encode.int (selectedId documentList))
+    , ("documentIds", Encode.list Encode.int documentIds)
+  ]
+
+-- REQUESTS
 
 findDocumentsRequest : Maybe User -> String -> Http.Request DocumentList
 findDocumentsRequest maybeUser queryString = 
