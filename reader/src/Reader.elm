@@ -198,6 +198,7 @@ init flags =
         , Cmd.batch [ 
             focusSearchBox
           , sendInfoOutside (AskToReconnectDocument Encode.null)
+          , sendInfoOutside (AskToReconnectDocumentList Encode.null)
           , sendInfoOutside (AskToReconnectUser Encode.null)
         ])
 
@@ -410,7 +411,7 @@ update msg model =
            (model, Cmd.map UserMsg (User.getTokenCmd model.email model.password)  ) 
 
         SignOut ->
-           ({ model | maybeCurrentUser = Nothing, maybeToken = Nothing}, eraseLocalStorage  )  -- ###
+           ({ model | maybeCurrentUser = Nothing, maybeToken = Nothing}, eraseLocalStorage  )  
 
 
         RegisterUser ->
@@ -594,6 +595,7 @@ update msg model =
 
         LogErr error ->
             ( { model | message = "Error: " ++ error }, Cmd.none )
+         
 -- UPDATE END
 
 
@@ -613,6 +615,7 @@ handleHttpError error =
 
 type InfoForElm = 
    DocumentDataFromOutside Document
+ | DocumentListDataFromOutside DocumentList.IntList
  | UserDataFromOutside User 
 
 
@@ -625,6 +628,7 @@ type InfoForOutside =
     DocumentData Encode.Value
   | DocumentListData Encode.Value
   | AskToReconnectDocument Encode.Value
+  | AskToReconnectDocumentList Encode.Value
   | UserData Encode.Value 
   | AskToReconnectUser Encode.Value
   | AskToEraseLocalStorage Encode.Value
@@ -644,11 +648,14 @@ sendInfoOutside info =
         DocumentListData value ->
             infoForOutside { tag = "DocumentListData", data = value }
 
+        UserData value ->
+            infoForOutside { tag = "UserData", data = value }
+
         AskToReconnectDocument value ->
             infoForOutside { tag = "AskToReconnectDocument", data = Encode.null }
 
-        UserData value ->
-            infoForOutside { tag = "UserData", data = value }
+        AskToReconnectDocumentList value ->
+            infoForOutside { tag = "AskToReconnectDocumentList", data = Encode.null }
 
         AskToReconnectUser value ->
             infoForOutside { tag = "AskToReconnectUser", data = Encode.null }
@@ -667,6 +674,14 @@ getInfoFromOutside tagger onError =
                     case Decode.decodeValue Document.decodeDocumentFromOutside outsideInfo.data of
                         Ok result ->
                             tagger <| DocumentDataFromOutside result
+
+                        Err e ->(
+                            onError <| "No doc to retrieve" )
+
+                "ReconnectDocumentList" ->
+                    case Decode.decodeValue DocumentList.intListDecoder outsideInfo.data of
+                        Ok result ->
+                            tagger <| DocumentListDataFromOutside result
 
                         Err e ->(
                             onError <| "No doc to retrieve" )
@@ -707,20 +722,27 @@ eraseLocalStorage =
 processInfoForElm : Model -> InfoForElm -> (Model, Cmd Msg)
 processInfoForElm model infoForElm_ =
   case infoForElm_ of 
-     DocumentDataFromOutside document -> 
+    DocumentDataFromOutside document -> 
        ({model | message = "Outside infoForElm"
                   , currentDocument = document  
                   , documentList = DocumentList.make document []
             }
             , Cmd.none
           )  
-     UserDataFromOutside user -> 
+    UserDataFromOutside user -> 
         ({model | message = "Outside infoForElm"
                   , maybeCurrentUser = Just user 
                   , maybeToken = Just (User.getToken user)
             }
             , Cmd.none
-          )  -- ####
+          ) 
+    DocumentListDataFromOutside intList ->
+      ({model | message = "intList: " ++ (String.fromInt (List.length intList.ints))}
+      , Cmd.map DocListMsg  (DocumentList.retrievDocumentsFromIntList model.maybeCurrentUser intList) )
+
+
+
+      -- ####
 
 -- UserDataFromOutside
 -- VIEW

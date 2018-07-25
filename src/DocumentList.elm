@@ -17,6 +17,9 @@ module DocumentList exposing(
   , deleteItemInDocumentListAt
   , make
   , documentListEncoder
+  , IntList
+  , intListDecoder
+  , retrievDocumentsFromIntList
   )
 
 import Json.Encode as Encode    
@@ -120,11 +123,19 @@ type DocListMsg =
   | ReceiveDocumentListAndPreserveCurrentSelection (Result Http.Error DocumentList)
 
 
---  REQUESTS
+--  CMDS
 
 findDocuments : Maybe User -> String -> Cmd DocListMsg
 findDocuments maybeUser queryString = 
   Http.send ReceiveDocumentList <| findDocumentsRequest maybeUser queryString
+
+retrievDocumentsFromIntList : Maybe User -> IntList ->  Cmd DocListMsg 
+retrievDocumentsFromIntList maybeUser intList =
+    let 
+      ids = intList.ints |> List.reverse |> List.map String.fromInt |> String.join ","
+      queryString = "idlist=" ++ ids
+    in
+      Http.send ReceiveDocumentList <| findDocumentsRequest maybeUser queryString
 
 
 loadMasterDocument : Maybe User -> Int -> Cmd DocListMsg 
@@ -171,6 +182,7 @@ documentListEncoder documentList =
      ]
 
 -- REQUESTS
+
 
 findDocumentsRequest : Maybe User -> String -> Http.Request DocumentList
 findDocumentsRequest maybeUser queryString = 

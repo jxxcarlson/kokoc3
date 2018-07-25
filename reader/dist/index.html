@@ -141,79 +141,53 @@
 
 		app.ports.infoForOutside.subscribe(msg => {
 
-			console.log("app.ports.infoForOutside")
-
 			switch(msg.tag) {
 
 			case "DocumentData":
-				console.log("DocumentData")
-					processDocumentData(msg.data)
-				break;
-
-			case "DocumentListData":
-				console.log("DocumentListData")
-					processDocumentListData(msg.data)
-				break;
-
-			case "AskToReconnectDocument":
-				console.log("AskToReconnectDocument")
-				askToReconnectDocument(msg.data)
-
-			case "UserData":
-				console.log("UserData")
-					processUserData(msg.data)
-				break;
-
-			case "AskToReconnectUser":
-				console.log("AskToReconnectUser")
-				askToReconnectUser(msg.data);
+			if (msg.data != null) {
+				localStorage.setItem("currentDocument", JSON.stringify(msg.data));
+			}	
 			break;
 
+			case "DocumentListData":
+			if (msg.data != null) {
+		    	localStorage.setItem("currentDocumentList", JSON.stringify(msg.data));
+		  	}
+			break;
+
+			case "AskToReconnectDocument":
+			if (localStorage.currentDocument != null) {
+		    	app.ports.infoForElm.send({tag: "ReconnectDocument", data: JSON.parse(localStorage.currentDocument)})
+		  	}
+			break;
+
+			case "AskToReconnectDocumentList":
+			if (localStorage.currentDocument != null) {
+		    	app.ports.infoForElm.send({tag: "ReconnectDocumentList", data: JSON.parse(localStorage.currentDocumentList)})
+		  	}
+			break;
+
+			case "UserData":
+			if (msg.data != null) {
+		      localStorage.setItem("currentUser", JSON.stringify(msg.data));
+		  	}
+			break;
+
+			case "AskToReconnectUser":
+			if (localStorage.currentUser != null) {
+		    	app.ports.infoForElm.send({tag: "ReconnectUser", data: JSON.parse(localStorage.currentUser)})
+		  	}
+			break;
 
 		    case "AskToEraseLocalStorage":
-				console.log("AskToEraseLocalStorage")
 				localStorage.setItem("currentUser", null);	
-				localStorage.setItem("currentDocument", null);	
+				localStorage.setItem("currentDocument", null);
+				localStorage.setItem("currentDocumentList", null);	
 			break;	
 
 			}
 
 		})
-
-
-		var processDocumentData = function(documentData) {
-		  // console.log(JSON.stringify(documentData))
-		  if (documentData != null) {
-		    localStorage.setItem("currentDocument", JSON.stringify(documentData));
-		  }
-		}
-
-		var processDocumentListData = function(documentListData) {
-		  // console.log(JSON.stringify(documentData))
-		  if (documentListData != null) {
-		    localStorage.setItem("currentDocumentList", JSON.stringify(documentListData));
-		  }
-		}
-
-        var askToReconnectDocument = function (str) {
-			console.log("askToReconnectDocument !!")
-		  if (localStorage.currentDocument != null) {
-		    app.ports.infoForElm.send({tag: "ReconnectDocument", data: JSON.parse(localStorage.currentDocument)})
-		  }
-		}
-
-		var processUserData = function(userData) {
-		  if (userData != null) {
-		      localStorage.setItem("currentUser", JSON.stringify(userData));
-		  }
-		}
-
-		var askToReconnectUser = function (str) {
-		  console.log("askToReconnectUsert !!")
-		  if (localStorage.currentUser != null) {
-		    app.ports.infoForElm.send({tag: "ReconnectUser", data: JSON.parse(localStorage.currentUser)})
-		  }
-		}
 		
 		
 	
