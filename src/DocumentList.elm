@@ -4,6 +4,7 @@ module DocumentList exposing(
   , findDocuments
   , loadMasterDocument
   , loadMasterDocumentWithCurrentSelection
+  , loadMasterDocumentAndSelect
   , empty
   , selected
   , select
@@ -130,6 +131,7 @@ documentListLength (DocumentList documentList) =
 
 type DocListMsg = 
   ReceiveDocumentList (Result Http.Error DocumentList)
+  | ReceiveDocumentListWithSelectedId (Result Http.Error DocumentList)
   | RestoreDocumentList (Result Http.Error DocumentList)
   | ReceiveDocumentListAndPreserveCurrentSelection (Result Http.Error DocumentList)
 
@@ -152,6 +154,12 @@ retrievDocumentsFromIntList maybeUser intList =
 loadMasterDocument : Maybe User -> Int -> Cmd DocListMsg 
 loadMasterDocument maybeUser docId = 
   Http.send ReceiveDocumentList <| loadMasterDocumentRequest maybeUser docId
+
+loadMasterDocumentAndSelect : Maybe User -> Int -> Cmd DocListMsg 
+loadMasterDocumentAndSelect maybeUser docId = 
+  Http.send ReceiveDocumentListWithSelectedId <| loadMasterDocumentRequest maybeUser docId
+
+
 
 loadMasterDocumentWithCurrentSelection : Maybe User -> Int -> Cmd DocListMsg 
 loadMasterDocumentWithCurrentSelection maybeUser docId = 

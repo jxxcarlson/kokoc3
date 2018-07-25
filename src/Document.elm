@@ -226,10 +226,11 @@ decodeChild : Decoder Child
 decodeChild =
     Decode.succeed Child
         |> JPipeline.required "title" (Decode.string)
-        |> JPipeline.required "level" (Decode.int)
-        |> JPipeline.required "doc_identifier" (Decode.string)
         |> JPipeline.required "doc_id" (Decode.int)
+        |> JPipeline.required "doc_identifier" (Decode.string)
+        |> JPipeline.required "level" (Decode.int)
         |> JPipeline.required "comment" (Decode.string)
+
 
 -- ENCODERS
 

@@ -70,6 +70,7 @@ type alias Model =
       , maybeCurrentUser : Maybe User
       , docInfo  : String
       , currentDocument : Document
+      , selectedDocumentId : Int
       , maybeMasterDocument : Maybe Document
       , documentList : DocumentList 
       , documentIdList : DocumentList.IntList
@@ -175,6 +176,7 @@ initialModel windowWidth windowHeight document =
             , maybeToken = Nothing
             , maybeCurrentUser = Nothing
             , currentDocument = document
+            , selectedDocumentId = 0
             , maybeMasterDocument = Nothing 
             , documentList = DocumentList.empty
             , documentIdList = DocumentList.emptyIntList  
@@ -387,6 +389,27 @@ update msg model =
             Err err -> 
                 ({model | message = handleHttpError err},   Cmd.none  )
 
+        DocListMsg (ReceiveDocumentListWithSelectedId result)->
+          case result of 
+            Ok documentList -> 
+              let 
+                idOfSelectedDocument = model.selectedDocumentId 
+                documents_  = DocumentList.documents documentList
+                indexOfSelectedDocument = List.Extra.findIndex (\doc -> doc.id == idOfSelectedDocument) documents_ |> Maybe.withDefault 0
+                selectedDocument = List.Extra.getAt indexOfSelectedDocument documents_ |> Maybe.withDefault Document.basicDocument
+              in
+               ({ model | 
+                   documentList = DocumentList.select (Just selectedDocument) documentList
+                 , currentDocument = selectedDocument  
+                 }
+                 ,  Cmd.batch [
+                        Cmd.map  DocDictMsg <| DocumentDictionary.loadTexMacros (readToken model.maybeToken) selectedDocument selectedDocument.tags model.documentDictionary 
+                      , saveDocumentListToLocalStorage documentList  
+                     ]
+                  )
+            Err err -> 
+                ({model | message = handleHttpError err},   Cmd.none  )
+
         DocListMsg (ReceiveDocumentList result)->
           case result of 
             Ok documentList -> 
@@ -455,6 +478,9 @@ update msg model =
 
         DocViewMsg (LoadMaster docId) ->
            (model, Cmd.map DocListMsg (DocumentList.loadMasterDocument model.maybeCurrentUser docId))
+
+        DocViewMsg (LoadMasterWithSelection childId docId) ->
+           ({ model | selectedDocumentId = childId },  Cmd.map DocListMsg (DocumentList.loadMasterDocumentAndSelect model.maybeCurrentUser docId))
 
         DocViewMsg (LoadMasterWithCurrentSelection docId) ->
          ({model | appMode = Reading, toolPanelState = HideToolPanel} , Cmd.map DocListMsg (DocumentList.loadMasterDocumentWithCurrentSelection model.maybeCurrentUser docId))

@@ -25,7 +25,8 @@ import Widget
 
 
 type DocViewMsg = 
-  LoadMaster Int
+    LoadMaster Int
+  | LoadMasterWithSelection Int Int 
   | LoadMasterWithCurrentSelection Int
 
 type alias DocumentView msg = 
@@ -148,7 +149,7 @@ viewChild : Int -> Child -> Element DocViewMsg
 viewChild parentId child = 
   Element.el [] (
         Input.button (Widget.titleStyle) {
-            onPress =  Just (LoadMaster parentId)
+            onPress =  Just (LoadMasterWithSelection child.docId parentId)
         , label = Element.el [ moveUp 0, padding 5, Font.size 12, Font.bold] (text child.title)
         } 
     )
