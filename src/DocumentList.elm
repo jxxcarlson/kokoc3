@@ -20,6 +20,8 @@ module DocumentList exposing(
   , IntList
   , intListDecoder
   , retrievDocumentsFromIntList
+  , emptyIntList
+  , intListFromDocumentList
   )
 
 import Json.Encode as Encode    
@@ -50,6 +52,12 @@ intListFromDocumentList : DocumentList -> IntList
 intListFromDocumentList documentList =
   {   ints = (documents documentList) |> List.map .id
     , selected = selectedId documentList
+  }
+
+emptyIntList : IntList 
+emptyIntList = 
+  {   ints = [0]
+    , selected = 0
   }
 
 type DocumentList = DocumentList DocumentListRecord
@@ -118,8 +126,11 @@ documentListLength : DocumentList -> Int
 documentListLength (DocumentList documentList) =
   List.length documentList.documents
 
+-- MSG 
+
 type DocListMsg = 
   ReceiveDocumentList (Result Http.Error DocumentList)
+  | RestoreDocumentList (Result Http.Error DocumentList)
   | ReceiveDocumentListAndPreserveCurrentSelection (Result Http.Error DocumentList)
 
 

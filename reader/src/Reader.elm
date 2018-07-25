@@ -72,6 +72,7 @@ type alias Model =
       , currentDocument : Document
       , maybeMasterDocument : Maybe Document
       , documentList : DocumentList 
+      , documentIdList : DocumentList.IntList
       , documentDictionary : DocumentDictionary
       , counter : Int
       , debounceCounter : Int 
@@ -179,6 +180,7 @@ init flags =
             , currentDocument = { doc | title = "Welcome!"}
             , maybeMasterDocument = Nothing 
             , documentList = DocumentList.empty
+            , documentIdList = DocumentList.emptyIntList  
             , documentDictionary = DocumentDictionary.empty
             , counter = 0
             , debounceCounter = 0
@@ -333,6 +335,29 @@ update msg model =
              Ok documentRecord -> 
                ({ model | message = "document saved: OK"},  Cmd.none)
              Err err -> 
+                ({model | message = handleHttpError err},   Cmd.none  )
+
+        DocListMsg (RestoreDocumentList result)->
+          case result of 
+            Ok documentList -> 
+              let 
+                currentDocument = DocumentList.getFirst documentList
+                nextMaybeMasterDocument = case currentDocument.docType of 
+                  Standard -> Nothing 
+                  Master -> Just currentDocument
+              in
+               ({ model | 
+                 message = "documentList: " ++ (String.fromInt <| documentListLength documentList)
+                 , documentList = DocumentList.selectFirst documentList
+                 , currentDocument = DocumentList.getFirst documentList
+                 , maybeMasterDocument = nextMaybeMasterDocument
+                 }
+                 ,  Cmd.batch [
+                        Cmd.map  DocDictMsg <| DocumentDictionary.loadTexMacros (readToken model.maybeToken) currentDocument currentDocument.tags model.documentDictionary 
+                      , saveDocumentListToLocalStorage documentList  
+                     ]
+                  )
+            Err err -> 
                 ({model | message = handleHttpError err},   Cmd.none  )
 
         DocListMsg (ReceiveDocumentList result)->
