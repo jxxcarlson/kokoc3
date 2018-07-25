@@ -349,7 +349,11 @@ update msg model =
                  , currentDocument = DocumentList.getFirst documentList
                  , maybeMasterDocument = nextMaybeMasterDocument
                  }
-                 ,  Cmd.map  DocDictMsg <| DocumentDictionary.loadTexMacros (readToken model.maybeToken) currentDocument currentDocument.tags model.documentDictionary   )
+                 ,  Cmd.batch [
+                        Cmd.map  DocDictMsg <| DocumentDictionary.loadTexMacros (readToken model.maybeToken) currentDocument currentDocument.tags model.documentDictionary 
+                      , saveDocumentListToLocalStorage documentList  
+                     ]
+                  )
             Err err -> 
                 ({model | message = handleHttpError err},   Cmd.none  )
 
@@ -368,13 +372,14 @@ update msg model =
                     , documentList = nextDocumentList_
                     , maybeMasterDocument = nextMaybeMasterDocument 
                     }
-                    ,   Cmd.none  )
+                    , saveDocumentListToLocalStorage documentList  )
             Err err -> 
                 ({model | message = handleHttpError err},   Cmd.none  )
 
 
         DocListViewMsg (SetCurrentDocument document) -> -- ###
             let  
+              documentList = DocumentList.select (Just document) model.documentList
               loadMasterCommand = case document.docType of 
                 Standard -> Cmd.none 
                 Master -> Cmd.map DocListMsg (DocumentList.loadMasterDocument model.maybeCurrentUser document.id)
@@ -383,13 +388,14 @@ update msg model =
                  message = "document: " ++ document.title
                  , currentDocument = document
                  , deleteDocumentState = DeleteIsOnSafety
-                 , documentList = DocumentList.select (Just document) model.documentList
+                 , documentList = documentList
                  , currentDocumentDirty = False
                  , counter = model.counter + 1
                  }
                  , Cmd.batch[
                         loadMasterCommand
                       , saveDocToLocalStorage document
+                      , saveDocumentListToLocalStorage documentList 
                       , Cmd.map  DocDictMsg <| DocumentDictionary.loadTexMacros (readToken model.maybeToken) document document.tags model.documentDictionary        
                  ]
                )
@@ -592,7 +598,6 @@ update msg model =
 
 
 
-
 handleHttpError : Http.Error -> String 
 handleHttpError error = 
   case error of 
@@ -638,7 +643,6 @@ sendInfoOutside info =
 
         DocumentListData value ->
             infoForOutside { tag = "DocumentListData", data = value }
-
 
         AskToReconnectDocument value ->
             infoForOutside { tag = "AskToReconnectDocument", data = Encode.null }

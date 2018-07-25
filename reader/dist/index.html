@@ -150,6 +150,11 @@
 					processDocumentData(msg.data)
 				break;
 
+			case "DocumentListData":
+				console.log("DocumentListData")
+					processDocumentListData(msg.data)
+				break;
+
 			case "AskToReconnectDocument":
 				console.log("AskToReconnectDocument")
 				askToReconnectDocument(msg.data)
@@ -180,6 +185,13 @@
 		  // console.log(JSON.stringify(documentData))
 		  if (documentData != null) {
 		    localStorage.setItem("currentDocument", JSON.stringify(documentData));
+		  }
+		}
+
+		var processDocumentListData = function(documentListData) {
+		  // console.log(JSON.stringify(documentData))
+		  if (documentListData != null) {
+		    localStorage.setItem("currentDocumentList", JSON.stringify(documentListData));
 		  }
 		}
 
