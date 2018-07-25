@@ -15,6 +15,7 @@ module Document exposing(
     , DocType(..)
     , TextType(..)
     , basicDocument
+    , newUserDocument
     , view
     , wordCount
     , selectedDocId
@@ -106,7 +107,12 @@ basicDocument = Document
     (Time.millisToPosix 0)
     (Time.millisToPosix 0)
 
-
+newUserDocument : Document 
+newUserDocument = 
+  let 
+    doc = basicDocument 
+  in 
+    { doc | content = newDocumentText }
 
 type alias Child =
     { title : String
@@ -590,7 +596,7 @@ viewChildren document =
   
 viewChild : Child -> Element msg 
 viewChild child = 
-  Element.el [] (Element.text <| child.title)
+  Element.el [] (Element.text <| child.title) -- ###
 
 
 -- HELPER
@@ -659,6 +665,20 @@ the search box, e.g., \\italic{matt}, \\italic{wave}, or \\italic{snow}.
 
 \\bigskip
 \\strong{knode.io} is made with \\href{http://elm-lang.org/}{Elm}.
+"""
+
+newUserText = 
+    """
+Welcome!
+Click on \\strong{Home} to go to your home page.
+
+Click on \\strong{Random} to explore.  To find things, type something in
+the search box, e.g., \\italic{matt}, \\italic{wave}, or \\italic{snow}.
+
+
+\\bigskip
+
+\\image{http://noteimages.s3.amazonaws.com/uploads/butterfly.jpg}{}{width: 450}
 """
 
 welcomeText = 

@@ -139,7 +139,8 @@ stringFromToken (Token str) =
 -- MSG
 
 type UserMsg = 
-    ReceiveToken (Result Http.Error Token)
+      ReceiveToken (Result Http.Error Token)
+    | RespondToNewUser (Result Http.Error Token)
 
 
 -- DECODERS
@@ -233,7 +234,7 @@ registerUserRequest email_ username_ name_ password_ =
 
 registerUser : String -> String -> String -> String -> Cmd UserMsg 
 registerUser email_ username_ name_ password_  = 
-  Http.send ReceiveToken <| registerUserRequest email_ username_ name_ password_
+  Http.send RespondToNewUser <| registerUserRequest email_ username_ name_ password_
 
 
 -- TOKEN

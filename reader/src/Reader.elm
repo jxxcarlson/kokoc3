@@ -281,6 +281,26 @@ update msg model =
             Err err -> 
                 ({model | message = "Not authorized"},   Cmd.none  )
 
+        UserMsg (RespondToNewUser result)->
+          case result of 
+            Ok token -> 
+              let 
+                maybeToken = Just token
+                maybeCurrentUser = User.maybeUserFromEmailAndToken model.email (User.stringFromToken token)
+              in 
+               ({ model | 
+                    maybeToken = maybeToken
+                  , maybeCurrentUser = maybeCurrentUser
+                  , message = "Authorized"
+                  , email = ""
+                  , password = ""
+                  , username = ""
+                  , currentDocument = Document.newUserDocument 
+                }
+                ,  sendMaybeUserDataToLocalStorage maybeCurrentUser ) -- ### XXX Needs work
+            Err err -> 
+                ({model | message = "Not authorized"},   Cmd.none  )
+
         DocMsg (ReceiveDocument result) ->
           case result of 
             Ok documentRecord -> 
