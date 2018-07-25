@@ -1,7 +1,6 @@
 module Document exposing(
       Document
     , DocumentRecord
-    , DocumentView
     , getDocumentById 
     , saveDocument
     , updateDocumentWithQueryString
@@ -11,12 +10,12 @@ module Document exposing(
     , documentDecoder
     , encodeDocumentForOutside
     , decodeDocumentFromOutside
+    , Child
     , DocMsg(..)
     , DocType(..)
     , TextType(..)
     , basicDocument
     , newUserDocument
-    , view
     , wordCount
     , selectedDocId
     , attachDocumentToMasterBelowCmd
@@ -32,11 +31,6 @@ import Element exposing(Element)
 import Element.Keyed as Keyed
 import Html exposing(Html)
 import Html.Attributes as HA 
-
-import MeenyLatex.Differ exposing (EditRecord)
-import MeenyLatex.MiniLatex as MiniLatex
-
-import MarkdownTools
 
 import Configuration
 import Utility
@@ -504,100 +498,6 @@ deleteDocument tokenString document =
     Http.send AcknowledgeDocumentDeleted <| deleteDocumentRequest tokenString document
 
 -- VIEW
-
-type alias DocumentView msg = 
-  {    title: String
-     , content: Element msg 
-   }
-
-view : Int -> String -> Document -> DocumentView msg
-view debounceCounter texMacros doc = 
-  { title = doc.title 
-    , content = documentContentView debounceCounter texMacros doc
-  }
-
-
-documentContentView : Int -> String -> Document -> Element msg 
-documentContentView debounceCounter texMacros document = 
-    case document.docType of 
-        Master -> viewChildren document 
-        Standard -> documentContentView_ debounceCounter texMacros document
-
-documentContentView_ : Int -> String -> Document -> Element msg 
-documentContentView_  debounceCounter texMacros document =    
-  case document.textType of
-    MiniLatex -> viewMiniLatex texMacros document 
-    Markdown -> viewMarkdown document 
-    Asciidoc -> viewAsciidoc debounceCounter document.content
-    AsciidocLatex -> viewAsciidoc debounceCounter document.content
-    PlainText -> viewPlainText document
-  
-normalize str = 
-  str |> String.lines |> List.filter (\x -> x /= "") |> String.join("\n") 
-
-   
-prependMacros macros_ sourceText = 
-  let
-    macros__ =  (macros_ |> normalize)
-  in
-    "$$\n" ++ macros__ ++ "\n$$\n\n" ++ sourceText 
-
-viewMiniLatex : String -> Document -> Element msg
-viewMiniLatex texMacros document =
-  let 
-    source = if texMacros == "" then 
-                document.content 
-             else 
-                prependMacros texMacros document.content
-    editRecord =
-        MiniLatex.initializeEditRecord 0 source 
-  in 
-    MiniLatex.getRenderedText editRecord
-        |> List.map (\x -> Element.paragraph [  ] [ Element.html x ])
-        |> Element.column []
-
-viewMarkdown : Document -> Element msg
-viewMarkdown document =
-  Element.el [ ] (Element.html <| MarkdownTools.view document.content)
-
-
--- YAY: https://ellie-test-19-cutover.now.sh/LGShLFZHvha1
--- https://ellie-test-19-cutover.now.sh/LGc6jCfs64a1
-
--- viewAsciidoc document = 
---   case document.docType of 
---     Master -> viewChildren document 
---     Standard -> viewAsciidoc_ document.content 
-
--- viewAsciidoc : Document -> Element msg
--- viewAsciidoc document =
---   Keyed.el [ ] ("foo", (Element.html <| asciidocText document.content))
-
-viewAsciidoc : Int -> String -> Element msg
-viewAsciidoc debounceCounter str =
-  Keyed.el [ ] (  ("Asciidoc." ++ String.fromInt debounceCounter)
-                  , (Element.html <| asciidocText str))
-
-
-asciidocText : String -> Html msg
-asciidocText str =
-    Html.node "asciidoc-text"
-        [ HA.property "content" (Encode.string str) ]
-        []
-
-viewPlainText : Document -> Element msg
-viewPlainText document =
-   Element.el [ ] (Element.html <| MarkdownTools.view document.content)
-
-
-viewChildren : Document -> Element msg 
-viewChildren document = 
-  Element.column [Element.spacing 10] (List.map viewChild document.children)
-  
-viewChild : Child -> Element msg 
-viewChild child = 
-  Element.el [] (Element.text <| child.title) -- ###
-
 
 -- HELPER
 
