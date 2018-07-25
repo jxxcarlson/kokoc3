@@ -38,6 +38,17 @@ type alias DocumentListRecord = {
     , selected: Maybe Document
   }
 
+type alias IntList = {
+      ints : List Int
+    , selected : Int
+  }
+
+intListFromDocumentList : DocumentList -> IntList 
+intListFromDocumentList documentList =
+  {   ints = (documents documentList) |> List.map .id
+    , selected = selectedId documentList
+  }
+
 type DocumentList = DocumentList DocumentListRecord
  
 
@@ -139,17 +150,25 @@ documentListDecoder : Decoder DocumentList
 documentListDecoder = 
   Decode.map DocumentList documentListRecordDecoder
 
+intListDecoder : Decoder IntList 
+intListDecoder = 
+  Decode.map2 IntList
+    (Decode.field "documentIds" (list int))
+    (Decode.field "selected" int)
+    
+
+
 -- ENCODERS
 
 documentListEncoder : DocumentList -> Encode.Value 
 documentListEncoder documentList = 
   let 
-    documentIds = (documents documentList) |> List.map .id
+    intList = intListFromDocumentList documentList 
   in 
   Encode.object [
-     ("selected", Encode.int (selectedId documentList))
-    , ("documentIds", Encode.list Encode.int documentIds)
-  ]
+          ("selected", Encode.int intList.selected)
+        , ("documentIds", Encode.list Encode.int intList.ints)
+     ]
 
 -- REQUESTS
 
