@@ -6,7 +6,7 @@ echo
 echo "${color}Compile reader${reset}"
 if [ "$1" = "--debug" ]
 then
-/Users/carlson/Downloads/2/elm make ./src/Reader.elm --output /usr/local/var/www/Main.js
+/Users/carlson/Downloads/2/elm make  ./src/Reader.elm --output /usr/local/var/www/Main.js
 else
 /Users/carlson/Downloads/2/elm make --optimize ./src/Reader.elm --output /usr/local/var/www/Main.js
 fi

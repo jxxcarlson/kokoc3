@@ -341,15 +341,17 @@ update msg model =
           case result of 
             Ok documentList -> 
               let 
-                currentDocument = DocumentList.getFirst documentList
+                currentDocumentId = model.documentIdList.selected
+                maybeCurrentDocument = List.Extra.find (\doc -> doc.id == currentDocumentId) (DocumentList.documents documentList)
+                currentDocument = maybeCurrentDocument |> Maybe.withDefault Document.basicDocument
                 nextMaybeMasterDocument = case currentDocument.docType of 
                   Standard -> Nothing 
                   Master -> Just currentDocument
               in
                ({ model | 
                  message = "documentList: " ++ (String.fromInt <| documentListLength documentList)
-                 , documentList = DocumentList.selectFirst documentList
-                 , currentDocument = DocumentList.getFirst documentList
+                 , documentList = DocumentList.select maybeCurrentDocument documentList
+                 , currentDocument = currentDocument
                  , maybeMasterDocument = nextMaybeMasterDocument
                  }
                  ,  Cmd.batch [

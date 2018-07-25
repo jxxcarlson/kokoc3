@@ -146,7 +146,7 @@ retrievDocumentsFromIntList maybeUser intList =
       ids = intList.ints |> List.reverse |> List.map String.fromInt |> String.join ","
       queryString = "idlist=" ++ ids
     in
-      Http.send ReceiveDocumentList <| findDocumentsRequest maybeUser queryString
+      Http.send RestoreDocumentList <| findDocumentsRequest maybeUser queryString
 
 
 loadMasterDocument : Maybe User -> Int -> Cmd DocListMsg 
