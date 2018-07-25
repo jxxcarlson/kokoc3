@@ -156,13 +156,13 @@
 			break;
 
 			case "AskToReconnectDocument":
-			if (localStorage.currentDocument != null) {
+			if (localStorage.currentDocument != null && localStorage.currentDocument[0] !='[') {
 		    	app.ports.infoForElm.send({tag: "ReconnectDocument", data: JSON.parse(localStorage.currentDocument)})
 		  	}
 			break;
 
 			case "AskToReconnectDocumentList":
-			if (localStorage.currentDocument != null) {
+			if (localStorage.currentDocumentList != null ) {
 		    	app.ports.infoForElm.send({tag: "ReconnectDocumentList", data: JSON.parse(localStorage.currentDocumentList)})
 		  	}
 			break;
