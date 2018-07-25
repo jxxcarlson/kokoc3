@@ -68,14 +68,14 @@ loadMasterDocumentButton  document =
 
 
 
-documentView : Int -> String -> Document -> DocumentView msg
+documentView : Int -> String -> Document -> DocumentView DocViewMsg
 documentView debounceCounter texMacros doc = 
   { title = doc.title 
     , content = documentContentView debounceCounter texMacros doc
   }
 
 
-documentContentView : Int -> String -> Document -> Element msg 
+documentContentView : Int -> String -> Document -> Element DocViewMsg 
 documentContentView debounceCounter texMacros document = 
     case document.docType of 
         Master -> viewChildren document 
@@ -122,14 +122,6 @@ viewMarkdown document =
 -- YAY: https://ellie-test-19-cutover.now.sh/LGShLFZHvha1
 -- https://ellie-test-19-cutover.now.sh/LGc6jCfs64a1
 
--- viewAsciidoc document = 
---   case document.docType of 
---     Master -> viewChildren document 
---     Standard -> viewAsciidoc_ document.content 
-
--- viewAsciidoc : Document -> Element msg
--- viewAsciidoc document =
---   Keyed.el [ ] ("foo", (Element.html <| asciidocText document.content))
 
 viewAsciidoc : Int -> String -> Element msg
 viewAsciidoc debounceCounter str =
@@ -148,11 +140,15 @@ viewPlainText document =
    Element.el [ ] (Element.html <| MarkdownTools.view document.content)
 
 
-viewChildren : Document -> Element msg 
+viewChildren : Document -> Element DocViewMsg 
 viewChildren document = 
-  Element.column [Element.spacing 10] (List.map viewChild document.children)
+  Element.column [Element.spacing 5] (List.map (viewChild document.id) document.children)
   
-viewChild : Child -> Element msg 
-viewChild child = 
-  Element.el [] (Element.text <| child.title) -- ###
-
+viewChild : Int -> Child -> Element DocViewMsg 
+viewChild parentId child = 
+  Element.el [] (
+        Input.button (Widget.titleStyle) {
+            onPress =  Just (LoadMasterWithCurrentSelection parentId)
+        , label = Element.el [ moveUp 0, padding 5, Font.size 12, Font.bold] (text child.title)
+        } 
+    )

@@ -27,10 +27,6 @@ import Json.Encode as Encode
 import Json.Decode as Decode exposing (at, int, list, string, decodeString, Decoder)
 import Json.Decode.Pipeline as JPipeline exposing (required, optional, hardcoded)
 import Http
-import Element exposing(Element)
-import Element.Keyed as Keyed
-import Html exposing(Html)
-import Html.Attributes as HA 
 
 import Configuration
 import Utility
