@@ -24,7 +24,6 @@ view height_ docList =
   Element.column [spacing 5, scrollbarY, height (px (height_ - 150)) ] 
     ( List.map (setCurrentDocumentButton <| DocumentList.selected  docList) (documents docList) )
 
-viewDocument :  Document -> Element msg 
 viewDocument doc =
     Element.el (Widget.listItemStyle  (px 140)) (text doc.title)
 

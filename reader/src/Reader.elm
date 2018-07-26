@@ -488,7 +488,7 @@ update msg model =
         SignIn ->
           let 
               basicDoc = Document.basicDocument
-              startupDoc = { basicDoc | title = "Welcome!", content = "This is knode.io, ready to run MiniLatex.\n\n$$\\int_0^1 x^n dx = \\frac{1}{n+1}$$\n\nClick on \\strong{Home} to go to your home page"}
+              startupDoc = { basicDoc | title = "You are signed in.", content = "This is knode.io, ready to run MiniLatex, Asciidoc, or Markdown.\n\n$$\\int_0^1 x^n dx = \\frac{1}{n+1}$$\n\nClick on \\strong{Home} to go to your home page"}
               freshModel = initialModel model.windowWidth model.windowHeight  startupDoc
           in 
               (freshModel, Cmd.map UserMsg (User.getTokenCmd model.email model.password)  ) 
