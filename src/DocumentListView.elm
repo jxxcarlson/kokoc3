@@ -6,7 +6,7 @@ import Element.Font as Font exposing(Font)
 import Widget
 
 import DocumentList exposing(DocumentList, documents)
-import Document exposing(Document)
+import Document exposing(Document, DocType(..))
 
 type DocListViewMsg = 
   SetCurrentDocument Document
@@ -28,13 +28,19 @@ viewDocument :  Document -> Element msg
 viewDocument doc =
     Element.el (Widget.listItemStyle  (px 140)) (text doc.title)
 
+transformedTitle : Document -> String
+transformedTitle doc = 
+  case doc.docType of 
+    Master -> String.toUpper doc.title
+    Standard -> doc.title
+
 
 setCurrentDocumentButton : Maybe Document -> Document -> Element DocListViewMsg    
 setCurrentDocumentButton  maybeSelectedDocument document = 
   Element.el [] (
         Input.button (Widget.listItemStyle  (px 190)) {
             onPress =  Just(SetCurrentDocument document)
-        , label = Element.el (selectedElementStyle maybeSelectedDocument document) (Element.text document.title)
+        , label = Element.el (selectedElementStyle maybeSelectedDocument document) (Element.text (transformedTitle document))
         } 
     )
 
