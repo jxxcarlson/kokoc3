@@ -6,6 +6,8 @@ import Browser.Navigation
 import Browser
 import Url
 import Browser.Navigation as Nav
+import AppParser
+import Parser
 import Browser.Dom as Dom
 import Task
 import Html
@@ -101,6 +103,7 @@ type alias Model =
       , windowHeight : Int  
       , maybeViewport : Maybe Dom.Viewport
       , deleteDocumentState : DeleteDocumentState
+      , key : Nav.key
     }
 
 type DeleteDocumentState = DeleteIsOnSafety | DeleteIsArmed
@@ -718,8 +721,8 @@ urlMessage url =
         Nothing -> url.path 
         Just query -> url.path ++ "?" ++ query
   in 
-    case (Parser.run urlPathParser pathAndQuery) of 
-      Ok urlResult -> urlDataString urlResult 
+    case (Parser.run AppParser.urlPathParser pathAndQuery) of 
+      Ok urlResult -> AppParser.urlResultString urlResult 
       Err _ -> "Nothing parseable in URL.  Try one of the links above"
 
 
