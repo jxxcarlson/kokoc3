@@ -2,7 +2,10 @@ port module Main exposing (main)
 
 {- This app retrieves and displays weather data from openweathermap.org. -}
 
+import Browser.Navigation
 import Browser
+import Url
+import Browser.Navigation as Nav
 import Browser.Dom as Dom
 import Task
 import Html
@@ -43,16 +46,25 @@ import Query
 
 
 main =
-    Browser.element
+    Browser.application
         { init = init
         , view = view
         , update = update
-        , subscriptions = subscriptions 
+        , subscriptions = subscriptions
+        , onUrlRequest = onUrlRequest
+        , onUrlChange = onUrlChange 
         }
 
 
 -- TYPES
+onUrlRequest : Browser.UrlRequest -> Msg
+onUrlRequest r =   
+    HandleUrlRequest r
 
+
+onUrlChange : Url.Url -> Msg
+onUrlChange u =
+   UrlChange u
 
 type alias Flags =
     {
@@ -145,6 +157,8 @@ type Msg
     | GetViewport Dom.Viewport
     | DeleteCurrentDocument
     | CancelDeleteCurrentDocument
+    | HandleUrlRequest Browser.UrlRequest
+    | UrlChange Url.Url
     
 
 
@@ -683,9 +697,40 @@ update msg model =
 
         LogErr error ->
             ( { model | message = "Error: " ++ error }, Cmd.none )
+
+        HandleUrlRequest r -> 
+          case r of 
+            Browser.Internal url -> 
+                ( {   model | message = internalUrlMessage url }
+                        , Nav.pushUrl model.key (Url.toString url)
+                )
+            Browser.External urlString -> ({model | message = externalUrlMessage urlString},  Nav.load urlString)
+
+        UrlChange url ->
+            ({model | message = changeUrlMessage url}, Nav.load (Url.toString url))
          
 -- UPDATE END
 
+urlMessage url = 
+  let 
+    pathAndQuery =
+      case url.query of 
+        Nothing -> url.path 
+        Just query -> url.path ++ "?" ++ query
+  in 
+    case (Parser.run urlPathParser pathAndQuery) of 
+      Ok urlResult -> urlDataString urlResult 
+      Err _ -> "Nothing parseable in URL.  Try one of the links above"
+
+
+internalUrlMessage url = 
+  urlMessage url
+
+externalUrlMessage urlString = 
+  "External: url = " ++ urlString
+
+changeUrlMessage url = 
+  urlMessage url
 
 
 handleHttpError : Http.Error -> String 
