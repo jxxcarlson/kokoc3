@@ -3,6 +3,11 @@
 	<head>
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width" />
+
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/custom-elements/1.1.1/custom-elements.min.js"></script>
+
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/asciidoctor.js/1.5.5-5/asciidoctor.js"></script>
+		
 		<title>Reader</title>
 	
 		
@@ -93,37 +98,37 @@
 		
 		// https://ellie-test-19-cutover.now.sh/LFVgrr8Cf2a1
 		
-		// var asciidoctor = Asciidoctor();
+		var asciidoctor = Asciidoctor();
 		
-		// customElements.define('asciidoc-text', class extends HTMLElement {
-		// 	constructor() {
-		// 		super()
-		// 		this._content = this.content
-		// 	}
+		customElements.define('asciidoc-text', class extends HTMLElement {
+			constructor() {
+				super()
+				this._content = this.content
+			}
 		  
-		// 	get content() {
-		// 		return this._content
-		// 	}
+			get content() {
+				return this._content
+			}
 		
-		// 	set content(value) {
-		// 		if (this._content === value) return
-		// 		this._content = value
+			set content(value) {
+				if (this._content === value) return
+				this._content = value
 
-		// 		var jaxScript = this.querySelector('script')
-		// 		if (!jaxScript) return
-		// 		jaxScript.textContent = this._content
-		// 		// enqueueUpdate(this)
-		// 	}
+				var jaxScript = this.querySelector('script')
+				if (!jaxScript) return
+				jaxScript.textContent = this._content
+				// enqueueUpdate(this)
+			}
 		
-		// 	connectedCallback() {
-		// 		this._connected = true
-		// 		this.style.opacity = 1
-		// 		this.style.display = 'inline'
-		// 		// enqueueTypeset(this)
+			connectedCallback() {
+				this._connected = true
+				this.style.opacity = 1
+				this.style.display = 'inline'
+				// enqueueTypeset(this)
 
-		// 		this.innerHTML = asciidoctor.convert(this._content, {safe: 'safe', attributes: 'icons=font'})
-		// 	}
-		// })
+				this.innerHTML = asciidoctor.convert(this._content, {safe: 'safe', attributes: 'icons=font'})
+			}
+		})
 
 		app.ports.infoForOutside.subscribe(msg => {
 
