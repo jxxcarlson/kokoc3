@@ -4,4 +4,5 @@ module Configuration exposing(backend)
 
 backend : String
 backend = 
-  "http://localhost:4000"
+   "https://nshost.herokuapp.com"
+   --- "http://localhost:4000"
