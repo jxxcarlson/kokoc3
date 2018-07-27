@@ -10,7 +10,7 @@ import AppParser
 import Parser
 import Browser.Dom as Dom
 import Task
-import Html
+import Html exposing(Html)
 import Html.Attributes
 import Http
 import Debounce exposing(Debounce)
@@ -103,7 +103,7 @@ type alias Model =
       , windowHeight : Int  
       , maybeViewport : Maybe Dom.Viewport
       , deleteDocumentState : DeleteDocumentState
-      , key : Nav.key
+      , key : Nav.Key
     }
 
 type DeleteDocumentState = DeleteIsOnSafety | DeleteIsArmed
@@ -182,8 +182,8 @@ updateEditorContentCmd str =
 
 -- INIT
 
-initialModel : Int -> Int -> Document -> Model 
-initialModel windowWidth windowHeight document =
+initialModel : Int -> Int -> Url.Url -> Nav.Key -> Document -> Model 
+initialModel windowWidth windowHeight url key document =
     {   message = "App started"
             , password = ""
             , username = ""
@@ -212,15 +212,43 @@ initialModel windowWidth windowHeight document =
             , windowHeight = windowHeight
             , maybeViewport = Nothing
             , deleteDocumentState = DeleteIsOnSafety
+            , key = key
         }
 
-init : Flags -> ( Model, Cmd Msg )
-init flags =  
+freshModel : Model -> Document -> Model 
+freshModel model document =
+  { model | password = ""
+          , username = ""
+            , email = ""
+            , signupMode = SigninMode
+            , docInfo = ""
+            , currentDocument = document
+            , selectedDocumentId = document.id
+            , maybeMasterDocument = Nothing 
+            , documentList = DocumentList.make document [document]
+            , documentIdList = DocumentList.emptyIntList  
+            , documentDictionary = DocumentDictionary.empty
+            , counter = 0
+            , debounceCounter = 0
+            , debounce = Debounce.init
+            , appMode = Reading 
+            , sourceText = ""
+            , currentDocumentDirty = False
+            , autosaveDuration = 10*1000
+            , toolPanelState = HideToolPanel
+            , documentTitle = ""
+            , tagString = ""
+            , maybeViewport = Nothing
+            , deleteDocumentState = DeleteIsOnSafety
+        }
+
+init : Flags -> Url.Url -> Nav.Key -> ( Model, Cmd Msg )
+init flags url key =  
    let 
      basicDoc = Document.basicDocument 
      startupDoc = { basicDoc | title = "Welcome!"}
     in
-       ( initialModel flags.width flags.height  startupDoc
+       ( initialModel flags.width flags.height  url key startupDoc
         , Cmd.batch [ 
             focusSearchBox
           , sendInfoOutside (AskToReconnectDocument Encode.null)
@@ -506,17 +534,17 @@ update msg model =
           let 
               basicDoc = Document.basicDocument
               startupDoc = { basicDoc | title = "You are signed in.", content = "This is knode.io, ready to run MiniLatex, Asciidoc, or Markdown.\n\n$$\\int_0^1 x^n dx = \\frac{1}{n+1}$$\n\nClick on \\strong{Home} to go to your home page"}
-              freshModel = initialModel model.windowWidth model.windowHeight  startupDoc
+              freshModel_ = freshModel model startupDoc
           in 
-              (freshModel, Cmd.map UserMsg (User.getTokenCmd model.email model.password)  ) 
+              (freshModel_, Cmd.map UserMsg (User.getTokenCmd model.email model.password)  ) 
 
         SignOut ->
           let 
               basicDoc = Document.basicDocument
               startupDoc = { basicDoc | title = "Welcome!"}
-              freshModel = initialModel model.windowWidth model.windowHeight  startupDoc
+              freshModel_ = freshModel model startupDoc
           in 
-           ({ freshModel | maybeCurrentUser = Nothing, maybeToken = Nothing}, eraseLocalStorage  )  
+           ({ freshModel_ | maybeCurrentUser = Nothing, maybeToken = Nothing}, eraseLocalStorage  )  
 
 
         RegisterUser ->
@@ -883,12 +911,20 @@ processInfoForElm model infoForElm_ =
 -- UserDataFromOutside
 -- VIEW
 
-view  model =
+view : Model -> Browser.Document Msg
+view model =
+  {   title = "Xnode Nav Test"
+    , body = [view_ model]
+  }
+
+view_ : Model -> Html Msg
+view_  model =
    Element.layout [Font.size 14, width fill, height fill, clipY] <|
         Element.column [ width fill, height (px model.windowHeight)] [
             header model
             , body model
             , footer model
+           --  , Element [] (text "I am here!")
         ]
         
 header : Model -> Element Msg
