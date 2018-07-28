@@ -1564,13 +1564,11 @@ newDocumentForUser user model =
 makeNewDocument : User -> Document
 makeNewDocument user =
     let
-        newDocument_ = Document.basicDocument
+        newDocument_ = SystemDocument.newDocument
     in
        { newDocument_ | 
-            title = "New Document"
-          , authorId =  User.userId user
+            authorId =  User.userId user
           , authorName = User.username user
-          , content = Configuration.newMiniLatexDocumentText
         }
   
 

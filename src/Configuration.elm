@@ -53,7 +53,7 @@ newMiniLatexDocumentText =
 \\section{New document}
 
 
-\\subsecton{A formula}
+\\subsection{A formula}
 
 $$\\int_0^1 x^n dx = \\frac{1}{n+1}$$
 
