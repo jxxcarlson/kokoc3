@@ -26,6 +26,7 @@ import Element.Lazy
 import Widget exposing(..)
 
 import Configuration
+import SystemDocument
 import User exposing(Token, UserMsg(..), readToken, User)
 import Document exposing(Document, DocType(..), DocMsg(..), TextType(..))
 import DocumentList exposing(
@@ -199,17 +200,13 @@ initialModel windowWidth windowHeight document =
 
 init : Flags -> ( Model, Cmd Msg )
 init flags =  
-   let 
-     basicDoc = Document.basicDocument 
-     startupDoc = { basicDoc | title = "Welcome!"}
-    in
-       ( initialModel flags.width flags.height  startupDoc
-        , Cmd.batch [ 
-            focusSearchBox
-          , sendInfoOutside (AskToReconnectDocument Encode.null)
-          , sendInfoOutside (AskToReconnectDocumentList Encode.null)
-          , sendInfoOutside (AskToReconnectUser Encode.null)
-        ])
+    ( initialModel flags.width flags.height  SystemDocument.welcome 
+    , Cmd.batch [ 
+        focusSearchBox
+      , sendInfoOutside (AskToReconnectDocument Encode.null)
+      , sendInfoOutside (AskToReconnectDocumentList Encode.null)
+      , sendInfoOutside (AskToReconnectUser Encode.null)
+    ])
 
 
 
@@ -297,7 +294,7 @@ update msg model =
                   , email = ""
                   , password = ""
                   , username = ""
-                  , currentDocument = Document.newUserDocument 
+                  , currentDocument = Document.basicDocument 
                 }
                 ,  sendMaybeUserDataToLocalStorage maybeCurrentUser ) -- ### XXX Needs work
             Err err -> 
@@ -488,18 +485,16 @@ update msg model =
         SignIn ->
           let 
               basicDoc = Document.basicDocument
-              startupDoc = { basicDoc | title = "You are signed in.", content = "This is knode.io, ready to run MiniLatex, Asciidoc, or Markdown.\n\n$$\\int_0^1 x^n dx = \\frac{1}{n+1}$$\n\nClick on \\strong{Home} to go to your home page"}
+              startupDoc = SystemDocument.signIn
               freshModel = initialModel model.windowWidth model.windowHeight  startupDoc
           in 
               (freshModel, Cmd.map UserMsg (User.getTokenCmd model.email model.password)  ) 
 
         SignOut ->
           let 
-              basicDoc = Document.basicDocument
-              startupDoc = { basicDoc | title = "Welcome!"}
-              freshModel = initialModel model.windowWidth model.windowHeight  startupDoc
+            freshModel = initialModel model.windowWidth model.windowHeight  SystemDocument.signedOut
           in 
-           ({ freshModel | maybeCurrentUser = Nothing, maybeToken = Nothing}, eraseLocalStorage  )  
+            ({ freshModel | maybeCurrentUser = Nothing, maybeToken = Nothing}, eraseLocalStorage  )  
 
 
         RegisterUser ->
@@ -938,7 +933,8 @@ logoutPanel model =
     Nothing -> Element.none 
     Just _ ->
       Element.column [padding 20, spacing 20] [
-         signoutButton (px 70) model
+          currentUserNameElement model
+        , signoutButton (px 70) model
       ]
 
 -- TOOLS
@@ -1142,9 +1138,9 @@ footer model =
 
       , Element.el [] (text <| access model.currentDocument)
       , Element.el [] (text <| "Author: " ++ model.currentDocument.authorName )
-      , currentUserNameElement model
+  -- , currentUserNameElement model
       , Element.el [] (text <| (String.fromInt (Document.wordCount model.currentDocument)) ++ " words")
-      , deleteStateIndicator model
+   -- , deleteStateIndicator model
 
     --  , Element.el [] (text ("keys: " ++ (showKeys model)))
     --  , Element.el [] (text <| displayCurrentMasterDocument model)
@@ -1168,7 +1164,7 @@ currentUserNameElement : Model -> Element msg
 currentUserNameElement model = 
   case model.maybeCurrentUser of 
     Nothing -> Element.none 
-    Just user -> Element.el [] (Element.text <| "User: " ++ User.username user ++ ", T: " ++ (String.left 10 <| User.getTokenString user))
+    Just user -> Element.el [] (Element.text <| "Signed in as " ++ User.username user)
 
 
 access : Document -> String 
@@ -1577,6 +1573,7 @@ makeNewDocument user =
             title = "New Document"
           , authorId =  User.userId user
           , authorName = User.username user
+          , content = Configuration.newMiniLatexDocumentText
         }
   
 
