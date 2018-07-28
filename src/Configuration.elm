@@ -50,8 +50,13 @@ Click on \\strong{Write} to create or edit a document.
 
 newMiniLatexDocumentText = 
     """
-\\section{New document}
+\\tableofcontents
 
+\\section{Examples}
+
+This is a sample document with a few MiniLatex examples.
+Click on \\strong{Edit attributes} to change the title
+and other document attributes.
 
 \\subsection{A formula}
 
@@ -62,7 +67,7 @@ $$\\int_0^1 x^n dx = \\frac{1}{n+1}$$
 
 \\image{http://noteimages.s3.amazonaws.com/uploads/butterfly.jpg}{}{width: 450}
 
-\\subsection{Hyperlinks}
+\\subsection{A hyperlink}
 
 \\href{\\https://nytimes.com}{The New York Times}
 """
