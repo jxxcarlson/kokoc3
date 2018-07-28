@@ -1,4 +1,6 @@
-module Configuration exposing(backend
+module Configuration exposing(
+    backend
+   , autosaveDuration
    , basicDocumentText
    , newMiniLatexDocumentText
    , newUserText
@@ -14,6 +16,9 @@ backend =
    -- "https://nshost.herokuapp.com"
     "http://localhost:4000"
 
+autosaveDuration : Float 
+autosaveDuration =
+  30*1000 -- in milliseconds
 
 -- TEXT
 
@@ -101,12 +106,14 @@ Welcome!
 \\item To find things, type something in
 the search box, e.g., \\italic{matt}, \\italic{wave}, or \\italic{snow}.
 
+\\item To create or edit a document, click on \\strong{Write}.
+
 \\end{itemize}
 
 
 \\bigskip
 
-\\image{http://noteimages.s3.amazonaws.com/uploads/butterfly.jpg}{}{width: 450}
+\\image{https://noteimages.s3.amazonaws.com/app_images/vintage-typewriter-in-black-and-white-lynn-langmade.jpg}{}{width: 450}
 """
 
 welcomeText = 
