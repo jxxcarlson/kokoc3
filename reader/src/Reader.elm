@@ -253,10 +253,19 @@ update msg model =
             ( { model | docInfo = str }, Cmd.none )
 
         AcceptDocumenTitle str ->
-            ( { model | documentTitle = str }, Cmd.none )
+          let 
+            currentDocument = model.currentDocument 
+            nextDocument = {currentDocument | title = str }
+          in
+            ( { model | documentTitle = str, currentDocument = nextDocument, currentDocumentDirty = True }, Cmd.none )
 
         AcceptDocumentTagString str ->
-            ( { model | tagString = str }, Cmd.none )
+          let 
+            currentDocument = model.currentDocument 
+            nextTags = str |> String.split "," |> List.map String.trim
+            nextDocument = {currentDocument | tags = nextTags  }
+          in 
+            ( { model | tagString = str, currentDocument = nextDocument, currentDocumentDirty = True }, Cmd.none )
 
         ReverseText ->
             ( { model | message = model.message |> String.reverse |> String.toLower }, Cmd.none )
@@ -649,14 +658,14 @@ update msg model =
             document = model.currentDocument 
             nextDocument = { document | textType = textType }
           in 
-           ( { model | currentDocument = nextDocument }, Cmd.none)
+           ( { model | currentDocument = nextDocument, currentDocumentDirty = True }, Cmd.none)
 
         SetDocumentType docType ->
            let  
             document = model.currentDocument 
             nextDocument = { document | docType = docType }
           in 
-           ( { model | currentDocument = nextDocument }, Cmd.none)
+           ( { model | currentDocument = nextDocument, currentDocumentDirty = True }, Cmd.none)
 
         GetViewport viewport -> 
            ({model | maybeViewport = Just viewport }, Cmd.none)
@@ -825,7 +834,7 @@ processInfoForElm model infoForElm_ =
 
 
 
-      -- ####
+   
 
 -- UserDataFromOutside
 -- VIEW
@@ -881,7 +890,7 @@ bodyLeftColumn : Int -> Model -> Element Msg
 bodyLeftColumn portion_ model = 
   Element.column [width (fillPortion portion_), height fill, 
     Background.color Widget.lightBlue, paddingXY 20 20, spacing 10] [ 
-        Element.row [spacing 10] [ toggleToolsButton (px 80) model, newDocumentButton model ]
+        Element.row [spacing 10] [ toggleToolsButton (px 105) model, newDocumentButton model ]
       , newChildButton model 
       , toolsOrContents model
   ]
@@ -946,7 +955,7 @@ toolsOrContents model =
 
 toolsPanel model = Element.column [ spacing 15, padding 10, height shrink, scrollbarY] [ 
   Element.el [Font.bold, Font.size 18] (text "Tools Panel")
-  , Element.row [spacing 10] [updateDocumentButton model, deleteCurrentDocumentButton (px 60) model, cancelDeleteCurrentDocumentButton (px 60) model]
+  , Element.row [spacing 10] [deleteCurrentDocumentButton (px 60) model, cancelDeleteCurrentDocumentButton (px 60) model]
   , masterDocPanel model
   , documentTitleInput model
   , documentPanels model
@@ -1318,14 +1327,12 @@ newDocumentButton :  Model -> Element Msg
 newDocumentButton model = 
   case model.appMode of 
     Reading -> Element.none 
-    Writing -> newDocumentButton_ model
+    Writing -> 
+      Input.button (buttonStyle (px 105)) {
+          onPress =  Just (NewDocument)
+        , label = Element.text ("New document")
+        }
 
-newDocumentButton_ :  Model -> Element Msg    
-newDocumentButton_ model = 
-  Input.button (buttonStyle (px 110)) {
-    onPress =  Just (NewDocument)
-  , label = Element.text ("New document")
-  }
 
 newChildButton :  Model -> Element Msg    
 newChildButton model = 
@@ -1349,32 +1356,22 @@ newChildButton__ model =
   , label = Element.text ("New subdocument")
   }
 
-updateDocumentButton :  Model -> Element Msg    
-updateDocumentButton model = 
-  Input.button (buttonStyle (px 130)) {
-    onPress =  Just (UpdateCurrentDocument)
-  , label = Element.text ("Update document")
-  }
-
 toggleToolsButton : Length -> Model -> Element Msg    
 toggleToolsButton width_ model = 
   case model.appMode  of 
-    Writing -> toggleToolsButton_ width_ model
     Reading -> Element.none
-
-
-toggleToolsButton_ : Length -> Model -> Element Msg    
-toggleToolsButton_ width_ model = 
-  Input.button (buttonStyle width_ ) {
-    onPress =  Just (ToggleToolPanelState)
-  , label = Element.text (toggleToolsTitle model.toolPanelState)
-  }
+    Writing -> 
+      Input.button (buttonStyle width_ ) {
+        onPress =  Just (ToggleToolPanelState)
+      , label = Element.text (toggleToolsTitle model.toolPanelState)
+      }
+   
 
 toggleToolsTitle : ToolPanelState -> String 
 toggleToolsTitle toolPanelState =
   case toolPanelState of 
-     ShowToolPanel -> "Hide tools"
-     HideToolPanel -> "Show tools"
+     ShowToolPanel -> "Hide attributes"
+     HideToolPanel -> "Edit attributes"
 
 
 
