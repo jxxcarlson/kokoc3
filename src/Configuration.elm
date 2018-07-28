@@ -91,6 +91,7 @@ the search box, e.g., \\italic{matt}, \\italic{wave}, or \\italic{snow}.
 newUserText = 
     """
 Welcome!
+
 Click on \\strong{Home} to go to your home page.
 
 Click on \\strong{Random} to explore.  To find things, type something in

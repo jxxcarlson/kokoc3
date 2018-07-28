@@ -1,5 +1,6 @@
 module SystemDocument exposing(
-      signIn
+      newUser
+    , signIn
     , signedUp
     , signedOut
     , welcome
@@ -7,6 +8,10 @@ module SystemDocument exposing(
 
 import Configuration 
 import Document  exposing(Document, basicDocument)
+
+newUser : Document 
+newUser = 
+  { basicDocument | title = "Welcome!", content = Configuration.newUserText }
 
 welcome : Document 
 welcome = 
