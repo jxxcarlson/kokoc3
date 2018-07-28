@@ -22,6 +22,6 @@ fi
 
 echo "${color}Copy 'index.html' to /usr/local/var/www/ and restart nginx${reset}"
 nginx -s stop
-cp ./dist/index.html /usr/local/var/www/      
+cp ./index.html /usr/local/var/www/      
 nginx
   
