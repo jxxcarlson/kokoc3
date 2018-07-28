@@ -294,7 +294,7 @@ update msg model =
                   , email = ""
                   , password = ""
                   , username = ""
-                  , currentDocument = Document.basicDocument 
+                  , currentDocument = SystemDocument.newUser 
                 }
                 ,  sendMaybeUserDataToLocalStorage maybeCurrentUser ) -- ### XXX Needs work
             Err err -> 

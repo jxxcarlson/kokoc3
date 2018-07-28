@@ -92,10 +92,16 @@ newUserText =
     """
 Welcome!
 
-Click on \\strong{Home} to go to your home page.
+\\begin{itemize}
 
-Click on \\strong{Random} to explore.  To find things, type something in
+\\item Click on \\strong{Home} to go to your home page.
+
+\\item Click on \\strong{Random} to explore.  
+
+\\item To find things, type something in
 the search box, e.g., \\italic{matt}, \\italic{wave}, or \\italic{snow}.
+
+\\end{itemize}
 
 
 \\bigskip
