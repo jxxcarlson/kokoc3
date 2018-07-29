@@ -11,6 +11,8 @@ import Http
 import Debounce exposing(Debounce)
 import Time exposing(Posix)
 import List.Extra
+import Keyboard exposing (Key(..))
+import Keyboard.Arrows
 
 import Json.Encode as Encode
 import Json.Decode as Decode
@@ -90,6 +92,7 @@ type alias Model =
       , windowHeight : Int  
       , maybeViewport : Maybe Dom.Viewport
       , deleteDocumentState : DeleteDocumentState
+      , pressedKeys : List Key
     }
 
 type DeleteDocumentState = DeleteIsOnSafety | DeleteIsArmed
@@ -146,6 +149,7 @@ type Msg
     | GetViewport Dom.Viewport
     | DeleteCurrentDocument
     | CancelDeleteCurrentDocument
+    | KeyMsg Keyboard.Msg
     
 
 
@@ -196,6 +200,7 @@ initialModel windowWidth windowHeight document =
             , windowHeight = windowHeight
             , maybeViewport = Nothing
             , deleteDocumentState = DeleteIsOnSafety
+            , pressedKeys = []
         }
 
 init : Flags -> ( Model, Cmd Msg )
@@ -229,6 +234,7 @@ subscriptions model =
     Sub.batch [
       autosaveSubscription model
       , getInfoFromOutside Outside LogErr
+      , Sub.map KeyMsg Keyboard.subscriptions
     ]
 
 
@@ -687,7 +693,12 @@ update msg model =
 
         LogErr error ->
             ( { model | message = "Error: " ++ error }, Cmd.none )
-         
+            
+        KeyMsg keyMsg ->
+            ( { model | pressedKeys = Keyboard.update keyMsg model.pressedKeys }
+            , Cmd.none
+            )
+            
 -- UPDATE END
 
 
