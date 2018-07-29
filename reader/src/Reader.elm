@@ -93,6 +93,7 @@ type alias Model =
       , maybeViewport : Maybe Dom.Viewport
       , deleteDocumentState : DeleteDocumentState
       , pressedKeys : List Key
+      , previousKey : Key
     }
 
 type DeleteDocumentState = DeleteIsOnSafety | DeleteIsArmed
@@ -201,6 +202,7 @@ initialModel windowWidth windowHeight document =
             , maybeViewport = Nothing
             , deleteDocumentState = DeleteIsOnSafety
             , pressedKeys = []
+            , previousKey = F20
         }
 
 init : Flags -> ( Model, Cmd Msg )
@@ -298,7 +300,7 @@ update msg model =
                   , password = ""
                   , username = ""
                 }
-                ,  sendMaybeUserDataToLocalStorage maybeCurrentUser ) -- ### XXX Needs work
+                ,  sendMaybeUserDataToLocalStorage maybeCurrentUser ) 
             Err err -> 
                 ({model | message = "Not authorized"},   Cmd.none  )
 
@@ -318,7 +320,7 @@ update msg model =
                   , username = ""
                   , currentDocument = SystemDocument.newUser 
                 }
-                ,  sendMaybeUserDataToLocalStorage maybeCurrentUser ) -- ### XXX Needs work
+                ,  sendMaybeUserDataToLocalStorage maybeCurrentUser ) 
             Err err -> 
                 ({model | message = "Not authorized"},   Cmd.none  )
 
@@ -472,7 +474,7 @@ update msg model =
                 ({model | message = handleHttpError err},   Cmd.none  )
 
 
-        DocListViewMsg (SetCurrentDocument document) -> -- ###
+        DocListViewMsg (SetCurrentDocument document) -> 
             let  
               documentList = DocumentList.select (Just document) model.documentList
               loadMasterCommand = case document.docType of 
@@ -702,13 +704,42 @@ update msg model =
             ( { model | message = "Error: " ++ error }, Cmd.none )
             
         KeyMsg keyMsg ->
-            ( { model | pressedKeys = Keyboard.update keyMsg model.pressedKeys }
-            , Cmd.none
-            )
+          let 
+            pressedKeys = Keyboard.update keyMsg model.pressedKeys
+          in 
+            keyGatweway model pressedKeys
+            
 
   
 -- UPDATE END
 
+keyGatweway : Model -> List Key -> ( Model, Cmd Msg )
+keyGatweway model pressedKeys =
+    if model.previousKey == Control then
+        respondToKeys model pressedKeys
+    else
+        ( { model | previousKey = headKey pressedKeys }, Cmd.none )
+
+
+respondToKeys : Model -> List Key -> ( Model, Cmd Msg )
+respondToKeys model pressedKeys =
+    let
+        newModel =
+            { model | previousKey = headKey pressedKeys }
+    in
+        handleKey newModel (headKey pressedKeys) 
+
+
+handleKey : Model -> Key -> (Model, Cmd Msg)
+handleKey model key = 
+  case key of 
+    Character "=" -> 
+      case model.appMode of 
+        Reading -> getPublicDocuments model model.searchQueryString 
+        Writing -> getUserDocuments model model.searchQueryString 
+    _ -> (model, Cmd.none)
+
+    
 
 
 handleHttpError : Http.Error -> String 
@@ -1560,6 +1591,24 @@ idFromDocInfo str =
   str |> String.toInt |> Maybe.withDefault 0
 
 -- HELPERS
+
+headKey : List Key -> Key
+headKey keyList =
+    List.head keyList |> Maybe.withDefault F20
+
+getPublicDocuments : Model -> String -> (Model, Cmd Msg)
+getPublicDocuments model queryString =
+     ({ model |  message = "query: " ++ queryString
+               , appMode = Reading
+               , toolPanelState = HideToolPanel
+            }
+            , Cmd.map DocListMsg (DocumentList.findDocuments Nothing (Query.parse queryString)))
+
+getUserDocuments : Model -> String -> (Model, Cmd Msg)   
+getUserDocuments model queryString =
+  ({ model | toolPanelState = HideToolPanel } 
+    , Cmd.map DocListMsg (DocumentList.findDocuments model.maybeCurrentUser (Query.parse queryString))
+  )
 
 
 newDocument : Model ->Cmd DocMsg
