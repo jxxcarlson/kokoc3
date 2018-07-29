@@ -718,13 +718,15 @@ update msg model =
 keyGatweway : Model -> List Key -> ( Model, Cmd Msg )
 keyGatweway model pressedKeys =
     if model.previousKey == Control then
-        respondToKeys model pressedKeys
+        respondToContolCommand model pressedKeys
     else
-        ( { model | previousKey = headKey pressedKeys }, Cmd.none )
+      case (headKey pressedKeys) of 
+        Alt ->  doSearch model
+        _ -> ( { model | previousKey = headKey pressedKeys }, Cmd.none )
 
 
-respondToKeys : Model -> List Key -> ( Model, Cmd Msg )
-respondToKeys model pressedKeys =
+respondToContolCommand : Model -> List Key -> ( Model, Cmd Msg )
+respondToContolCommand model pressedKeys =
     let
         newModel =
             { model | previousKey = headKey pressedKeys }
@@ -735,12 +737,14 @@ respondToKeys model pressedKeys =
 handleKey : Model -> Key -> (Model, Cmd Msg)
 handleKey model key = 
   case key of 
-    Enter -> 
-      case model.appMode of 
-        Reading -> getPublicDocuments model model.searchQueryString 
-        Writing -> getUserDocuments model model.searchQueryString 
+    Enter -> doSearch model
     _ -> (model, Cmd.none)
 
+
+doSearch model = 
+  case model.appMode of 
+        Reading -> getPublicDocuments model model.searchQueryString 
+        Writing -> getUserDocuments model model.searchQueryString 
     
 -- ERROR
 
