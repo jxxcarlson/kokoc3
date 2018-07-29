@@ -48,7 +48,7 @@ type alias Model =
       , password : String
       , token    : Token
       , maybeCurrentUser : Maybe User
-      , docInfo  : String
+      , searchQueryString  : String
       , currentDocument : Document
       , documentList : DocumentList 
       , documentDictionary : DocumentDictionary
@@ -59,7 +59,7 @@ type alias Model =
 type Msg
     = NoOp
     | AcceptPassword String
-    | AcceptDocInfo String
+    | AcceptSearchQuery String
     | ReverseText
     | SignIn
     | GetDocumentById Int
@@ -83,7 +83,7 @@ init flags =
    in
         ( {   message = "App started"
             , password = ""
-            , docInfo = "369"
+            , searchQueryString = "369"
             , token = User.invalidToken
             , maybeCurrentUser = Just User.testUser
             , currentDocument = { doc | title = "Welcome!"}
@@ -110,8 +110,8 @@ update msg model =
         AcceptPassword str ->
             ( { model | password = str }, Cmd.none )
 
-        AcceptDocInfo str ->
-            ( { model | docInfo = str }, Cmd.none )
+        AcceptSearchQuery str ->
+            ( { model | searchQueryString = str }, Cmd.none )
 
         ReverseText ->
             ( { model | message = model.message |> String.reverse |> String.toLower }, Cmd.none )
@@ -307,9 +307,9 @@ passwordInput model =
 searchInput : Model -> Element Msg
 searchInput model =
     Input.text [width (px 200), height (px 30) , Font.color black] {
-        text = model.docInfo 
+        text = model.searchQueryString 
       , placeholder = Nothing
-      , onChange = Just(\str -> AcceptDocInfo str)
+      , onChange = Just(\str -> AcceptSearchQuery str)
       , label = Input.labelAbove [ Font.size 14, Font.bold ] (text "Doc Info")
     }
 
@@ -326,28 +326,28 @@ getTokenButton width_ model =
 getDocumentButton : Length -> Model -> Element Msg    
 getDocumentButton width_ model = 
   Input.button (buttonStyle  width_) {
-    onPress =  Just (GetDocumentById <| idFromDocInfo model.docInfo)
+    onPress =  Just (GetDocumentById <| idFromDocInfo model.searchQueryString)
   , label = Element.text "Get document by id"
   } 
 
 getPublicDocumentsButton : Length -> Model -> Element Msg    
 getPublicDocumentsButton width_ model = 
   Input.button (buttonStyle  width_) {
-    onPress =  Just (GetPublicDocuments model.docInfo)
+    onPress =  Just (GetPublicDocuments model.searchQueryString)
   , label = Element.text "Get public docs"
   } 
 
 getUserDocumentsButton : Length -> Model -> Element Msg    
 getUserDocumentsButton width_ model = 
   Input.button (buttonStyle  width_) {
-    onPress =  Just (GetUserDocuments model.docInfo)
+    onPress =  Just (GetUserDocuments model.searchQueryString)
   , label = Element.text "Get user docs"
   } 
 
 loadMasterDocumentButton : Length -> Model -> Element Msg    
 loadMasterDocumentButton width_ model = 
   Input.button (buttonStyle  width_) {
-    onPress =  Just (LoadMasterDocument model.docInfo)
+    onPress =  Just (LoadMasterDocument model.searchQueryString)
   , label = Element.text "Load master doc"
   } 
 

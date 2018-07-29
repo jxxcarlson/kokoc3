@@ -71,7 +71,7 @@ type alias Model =
       , signupMode : SignupMode
       , maybeToken    : Maybe Token
       , maybeCurrentUser : Maybe User
-      , docInfo  : String
+      , searchQueryString  : String
       , currentDocument : Document
       , selectedDocumentId : Int
       , maybeMasterDocument : Maybe Document
@@ -112,7 +112,7 @@ type Msg
     | AcceptPassword String
     | AcceptEmail String
     | AcceptUserName String 
-    | AcceptDocInfo String
+    | AcceptSearchQuery String
     | AcceptDocumenTitle String
     | AcceptDocumentTagString String
     | ReverseText
@@ -177,7 +177,7 @@ initialModel windowWidth windowHeight document =
             , username = ""
             , email = ""
             , signupMode = SigninMode
-            , docInfo = ""
+            , searchQueryString = ""
             , maybeToken = Nothing
             , maybeCurrentUser = Nothing
             , currentDocument = document
@@ -255,8 +255,15 @@ update msg model =
         AcceptUserName str ->
             ( { model | username = str }, Cmd.none )
 
-        AcceptDocInfo str ->
-            ( { model | docInfo = str }, Cmd.none )
+        AcceptSearchQuery searchQueryString ->
+          let 
+            message = if String.endsWith "\r" searchQueryString
+              then 
+                "EOL"
+              else 
+                 "x"
+          in 
+            ( { model | message = message, searchQueryString = searchQueryString }, Cmd.none )
 
         AcceptDocumenTitle str ->
           let 
@@ -699,6 +706,7 @@ update msg model =
             , Cmd.none
             )
 
+  
 -- UPDATE END
 
 
@@ -1240,10 +1248,11 @@ usernameInput model =
 
 searchInput : Model -> Element Msg
 searchInput model =
-    Input.text [htmlAttribute (Html.Attributes.id "search-box"), width (px 400), height (px 30) , Font.color black] {
-        text = model.docInfo 
+    Input.text [htmlAttribute (Html.Attributes.id "search-box")
+       , width (px 400), height (px 30) , Font.color black] {
+        text = model.searchQueryString 
       , placeholder = Nothing
-      , onChange = Just(\str -> AcceptDocInfo str)
+      , onChange = Just(\str -> AcceptSearchQuery str)
       , label = Input.labelLeft [ Font.size 14, Font.bold ] (text "")
     }
 
@@ -1427,15 +1436,15 @@ signoutButton width_ model =
 getDocumentsButton : Length -> Model -> Element Msg    
 getDocumentsButton width_ model = 
   Input.button (buttonStyle  width_) {
-    onPress =  Just ((getDocumentMsg model.appMode model.docInfo))
+    onPress =  Just ((getDocumentMsg model.appMode model.searchQueryString))
   , label = Element.text "Search"
   } 
 
 getDocumentMsg : AppMode -> String -> Msg 
-getDocumentMsg appMode docInfo = 
+getDocumentMsg appMode searchQueryString = 
   case appMode of 
-    Reading -> GetPublicDocuments docInfo
-    Writing -> GetUserDocuments docInfo
+    Reading -> GetPublicDocuments searchQueryString
+    Writing -> GetUserDocuments searchQueryString
 
 getRandomDocumentsButton : Length -> Model -> Element Msg    
 getRandomDocumentsButton width_ model = 

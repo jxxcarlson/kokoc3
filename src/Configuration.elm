@@ -13,7 +13,7 @@ module Configuration exposing(
 
 backend : String
 backend = 
-    "https://nshost.herokuapp.com"
+        "https://nshost.herokuapp.com"
     -- "http://localhost:4000"
 
 autosaveDuration : Float 
