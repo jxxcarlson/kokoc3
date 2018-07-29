@@ -48,21 +48,32 @@ contentView windowHeight_ counter viewDoc =
 titleLine : Document -> Element DocViewMsg 
 titleLine document = 
   if document.parentId == 0 then 
-    Element.row titleLineStyle [Element.el [Font.size 18, Font.bold] (text document.title) ]
+    if document.docType == Standard then 
+       Element.row (titleLineStyle 36) [Element.el [Font.size 18, Font.bold] (text document.title) ]
+    else 
+       Element.row (titleLineStyle 36) [loadChildrenButton  document ]
   else 
-    Element.row titleLineStyle [loadMasterDocumentButton  document, Element.el [moveLeft 13, Font.size 18, Font.bold] (text document.title) ]
+    Element.column (titleLineStyle  64) [loadMasterDocumentButton  document, Element.el [moveRight 20, Font.size 18, Font.bold] (text document.title) ]
 
-titleLineStyle = [paddingXY 10 0, Background.color Widget.charcoal, Font.color Widget.white, width fill, height (px 36)] 
+titleLineStyle height_ = [paddingXY 10 0, Background.color Widget.charcoal, Font.color Widget.white, width fill, height (px height_)] 
 
 loadMasterDocumentButton : Document -> Element DocViewMsg    
 loadMasterDocumentButton  document = 
   Element.el [] (
         Input.button (Widget.titleStyleLight) {
             onPress =  Just (LoadMasterWithCurrentSelection document.parentId)
-        , label = Element.el [ moveUp 0, padding 5, Font.size 18, Font.bold] (text (document.parentTitle ++ " :: "))
+        , label = Element.el [ padding 10, Font.size 18, Font.bold] (text (document.parentTitle))
         } 
     )
-    
+
+loadChildrenButton : Document -> Element DocViewMsg    
+loadChildrenButton  document = 
+  Element.el [] (
+        Input.button (Widget.titleStyleLight) {
+          onPress =  Just (LoadMasterWithCurrentSelection document.id)
+        , label = Element.el [ moveUp 0, padding 5, Font.size 18, Font.bold] (text (document.title))
+        } 
+    )  
 
     {- #################################### -}
 
