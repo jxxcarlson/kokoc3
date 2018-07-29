@@ -713,6 +713,8 @@ update msg model =
   
 -- UPDATE END
 
+-- KEY COMMANDS
+
 keyGatweway : Model -> List Key -> ( Model, Cmd Msg )
 keyGatweway model pressedKeys =
     if model.previousKey == Control then
@@ -733,13 +735,14 @@ respondToKeys model pressedKeys =
 handleKey : Model -> Key -> (Model, Cmd Msg)
 handleKey model key = 
   case key of 
-    Character "=" -> 
+    Enter -> 
       case model.appMode of 
         Reading -> getPublicDocuments model model.searchQueryString 
         Writing -> getUserDocuments model model.searchQueryString 
     _ -> (model, Cmd.none)
 
     
+-- ERROR
 
 
 handleHttpError : Http.Error -> String 
@@ -902,7 +905,7 @@ header model =
   Element.row [width fill, Background.color Widget.grey, height (px 40), paddingXY 20 0, spacing 10, alignLeft] [
       Element.row [ spacing 20]  [
          searchInput model
-        , getDocumentsButton (px 60) model
+        -- , getDocumentsButton (px 60) model
         , getRandomDocumentsButton (px 70) model
         , Element.el [ Font.size 24] (text <| appTitle model.appMode)
         , startButton (px 55) model 
@@ -1282,7 +1285,7 @@ searchInput model =
     Input.text [htmlAttribute (Html.Attributes.id "search-box")
        , width (px 400), height (px 30) , Font.color black] {
         text = model.searchQueryString 
-      , placeholder = Nothing
+      , placeholder = Just (Input.placeholder [moveUp 5] (text "Search example: type 'quantum', then press ctrl-Enter"))
       , onChange = Just(\str -> AcceptSearchQuery str)
       , label = Input.labelLeft [ Font.size 14, Font.bold ] (text "")
     }
@@ -1464,12 +1467,12 @@ signoutButton width_ model =
   } 
 
 
-getDocumentsButton : Length -> Model -> Element Msg    
-getDocumentsButton width_ model = 
-  Input.button (buttonStyle  width_) {
-    onPress =  Just ((getDocumentMsg model.appMode model.searchQueryString))
-  , label = Element.text "Search"
-  } 
+-- getDocumentsButton : Length -> Model -> Element Msg    
+-- getDocumentsButton width_ model = 
+--   Input.button (buttonStyle  width_) {
+--     onPress =  Just ((getDocumentMsg model.appMode model.searchQueryString))
+--   , label = Element.text "Search"
+--   } 
 
 getDocumentMsg : AppMode -> String -> Msg 
 getDocumentMsg appMode searchQueryString = 
