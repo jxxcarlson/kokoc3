@@ -6,3 +6,5 @@ elm-package.json
 testApp/dist/Main.js
 reader/dist/Main.js
 reader/Main.js
+reader/resources/
+reader/dist/Main.min.js
