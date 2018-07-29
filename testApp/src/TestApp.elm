@@ -245,7 +245,7 @@ bodyLeftColumn : Model -> Element Msg
 bodyLeftColumn model = 
   Element.column [width (px 250), height fill, 
     Background.color Widget.lightBlue, paddingXY 20 20, spacing 10] [
-       documentInfoInput model
+       searchInput model
      , getDocumentButton (px 135) model
      , getPublicDocumentsButton (px 135) model
      , getUserDocumentsButton (px 135) model
@@ -304,8 +304,8 @@ passwordInput model =
       , label = Input.labelLeft [ Font.size 14, Font.bold, moveDown 10 ] (text "Password")
     }
 
-documentInfoInput : Model -> Element Msg
-documentInfoInput model =
+searchInput : Model -> Element Msg
+searchInput model =
     Input.text [width (px 200), height (px 30) , Font.color black] {
         text = model.docInfo 
       , placeholder = Nothing

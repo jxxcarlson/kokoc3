@@ -698,7 +698,7 @@ update msg model =
             ( { model | pressedKeys = Keyboard.update keyMsg model.pressedKeys }
             , Cmd.none
             )
-            
+
 -- UPDATE END
 
 
@@ -862,7 +862,7 @@ header : Model -> Element Msg
 header model = 
   Element.row [width fill, Background.color Widget.grey, height (px 40), paddingXY 20 0, spacing 10, alignLeft] [
       Element.row [ spacing 20]  [
-         documentInfoInput model
+         searchInput model
         , getDocumentsButton (px 60) model
         , getRandomDocumentsButton (px 70) model
         , Element.el [ Font.size 24] (text <| appTitle model.appMode)
@@ -1238,8 +1238,8 @@ usernameInput model =
 
 
 
-documentInfoInput : Model -> Element Msg
-documentInfoInput model =
+searchInput : Model -> Element Msg
+searchInput model =
     Input.text [htmlAttribute (Html.Attributes.id "search-box"), width (px 400), height (px 30) , Font.color black] {
         text = model.docInfo 
       , placeholder = Nothing
