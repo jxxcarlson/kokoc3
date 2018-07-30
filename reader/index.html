@@ -46,10 +46,22 @@
 		var global = document.getElementById('main');
 		var app = Elm.Main.init({node: global, flags:  {
 					width:  window.innerWidth,
-					height: window.innerHeight
+					height: window.innerHeight,
+					location: location.href
 				}
-		});		
+		});	
 		
+		// Inform app of browser navigation (the BACK and FORWARD buttons)
+		document.addEventListener('popstate', function () {
+			app.ports.onUrlChange.send(location.href);
+		});
+
+		// Change the URL upon request, inform app of the change.
+		// app.ports.pushUrl.subscribe(function(url) {
+		// 	history.pushState({}, '', url);
+		// 	app.ports.onUrlChange.send(location.href);
+		// });
+				
 		var typesetTimeout = null
 		var typesetQueue = []
 		function enqueueTypeset(el) {
@@ -145,15 +157,47 @@
 
 			switch(msg.tag) {
 
-			case "DocumentData":
-				console.log("DocumentData")
-					processDocumentData(msg.data)
+				case "DocumentData":
+				if (msg.data != null) {
+					localStorage.setItem("currentDocument", JSON.stringify(msg.data));
+				}	
 				break;
 
-			case "AskToReconnectDocument":
-				console.log("AskToReconnectDocument")
-				askToReconnectDocument(msg.data)
-			break;	
+				case "DocumentListData":
+				if (msg.data != null) {
+					localStorage.setItem("currentDocumentList", JSON.stringify(msg.data));
+				}
+				break;
+
+				case "AskToReconnectDocument":
+				if (localStorage.currentDocument != null && localStorage.currentDocument[0] !='[') {
+					app.ports.infoForElm.send({tag: "ReconnectDocument", data: JSON.parse(localStorage.currentDocument)})
+				}
+				break;
+
+				case "AskToReconnectDocumentList":
+				if (localStorage.currentDocumentList != null ) {
+					app.ports.infoForElm.send({tag: "ReconnectDocumentList", data: JSON.parse(localStorage.currentDocumentList)})
+				}
+				break;
+
+				case "UserData":
+				if (msg.data != null) {
+				localStorage.setItem("currentUser", JSON.stringify(msg.data));
+				}
+				break;
+
+				case "AskToReconnectUser":
+				if (localStorage.currentUser != null) {
+					app.ports.infoForElm.send({tag: "ReconnectUser", data: JSON.parse(localStorage.currentUser)})
+				}
+				break;
+
+				case "AskToEraseLocalStorage":
+					localStorage.setItem("currentUser", null);	
+					localStorage.setItem("currentDocument", null);
+					localStorage.setItem("currentDocumentList", null);	
+				break;
 
 			}
 

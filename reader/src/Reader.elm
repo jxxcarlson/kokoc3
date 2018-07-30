@@ -5,7 +5,7 @@ port module Main exposing (main)
 import Browser
 import Browser.Dom as Dom
 import Task
-import Html
+import Html exposing(Html)
 import Html.Attributes
 import Http
 import Debounce exposing(Debounce)
@@ -14,8 +14,12 @@ import List.Extra
 import Keyboard exposing (Key(..))
 import Keyboard.Arrows
 
+import Url
+import UrlAppParser exposing(Route(..))
+
 import Json.Encode as Encode
-import Json.Decode as Decode
+import Json.Decode as Decode exposing(Decoder)
+import VirtualDom exposing (Handler(..))
 
 import Element exposing (..)
 import Element.Background as Background
@@ -60,7 +64,8 @@ main =
 type alias Flags =
     {
       width : Int
-    , height : Int  
+    , height : Int
+    , location : String  
     }
 
 type alias Model =
@@ -94,6 +99,7 @@ type alias Model =
       , deleteDocumentState : DeleteDocumentState
       , pressedKeys : List Key
       , previousKey : Key
+      , locationHref : String
     }
 
 type DeleteDocumentState = DeleteIsOnSafety | DeleteIsArmed
@@ -152,10 +158,39 @@ type Msg
     | CancelDeleteCurrentDocument
     | KeyMsg Keyboard.Msg
     | GetUserManual
+    | UrlChanged String
     
 
+-- NAVIGATION
+
+port onUrlChange : (String -> msg) -> Sub msg
+
+port pushUrl : String -> Cmd msg
 
 
+-- link : msg -> List (Html.Attribute msg) -> List (Html msg) -> Html msg
+-- link href attrs children =
+--   Html.a (preventDefaultOn "click" (Decode.succeed (href, True)) :: attrs) children
+
+preventDefaultOn : String -> Decoder msg -> Html.Attribute msg
+preventDefaultOn string decoder =
+    VirtualDom.on string
+        (Custom
+            (decoder
+                |> Decode.map
+                    (\msg ->
+                        { message = msg
+                        , stopPropagation = True
+                        , preventDefault = True
+                        }
+                    )
+            )
+        )
+
+
+
+
+-- DEBOUNCE
 
 -- This defines how the debouncer should work.
 -- Choose the strategy for your use case.
@@ -172,8 +207,8 @@ updateEditorContentCmd str =
 
 -- INIT
 
-initialModel : Int -> Int -> Document -> Model 
-initialModel windowWidth windowHeight document =
+initialModel : String -> Int -> Int -> Document -> Model 
+initialModel locationHref windowWidth windowHeight document =
     {   message = "App started"
             , password = ""
             , username = ""
@@ -204,20 +239,34 @@ initialModel windowWidth windowHeight document =
             , deleteDocumentState = DeleteIsOnSafety
             , pressedKeys = []
             , previousKey = F20
+            , locationHref = locationHref
         }
 
 init : Flags -> ( Model, Cmd Msg )
-init flags =  
-    ( initialModel flags.width flags.height  SystemDocument.welcome 
+init flags = 
+    ( initialModel flags.location flags.width flags.height  SystemDocument.welcome 
     , Cmd.batch [ 
-        focusSearchBox
-      , sendInfoOutside (AskToReconnectDocument Encode.null)
-      , sendInfoOutside (AskToReconnectDocumentList Encode.null)
-      , sendInfoOutside (AskToReconnectUser Encode.null)
+        -- focusSearchBox
+       processUrl flags.location
+      
+      
     ])
 
-
-
+processUrl : String -> Cmd Msg 
+processUrl urlString = 
+    case UrlAppParser.toRoute urlString of 
+      NotFound -> 
+        Cmd.batch [
+            sendInfoOutside (AskToReconnectDocument Encode.null)
+          , sendInfoOutside (AskToReconnectDocumentList Encode.null)
+          , sendInfoOutside (AskToReconnectUser Encode.null)
+        ]
+        
+      DocumentIdRef docId -> 
+        Cmd.batch [
+            sendInfoOutside (AskToReconnectUser Encode.null)
+            , Cmd.map DocMsg (Document.getDocumentById docId Nothing)   
+        ]
 
 focusSearchBox : Cmd Msg
 focusSearchBox =
@@ -238,6 +287,7 @@ subscriptions model =
       autosaveSubscription model
       , getInfoFromOutside Outside LogErr
       , Sub.map KeyMsg Keyboard.subscriptions
+      , onUrlChange UrlChanged
     ]
 
 
@@ -511,13 +561,13 @@ update msg model =
           let 
               basicDoc = Document.basicDocument
               startupDoc = SystemDocument.signIn
-              freshModel = initialModel model.windowWidth model.windowHeight  startupDoc
+              freshModel = initialModel "" model.windowWidth model.windowHeight  startupDoc
           in 
               (freshModel, Cmd.map UserMsg (User.getTokenCmd model.email model.password)  ) 
 
         SignOut ->
           let 
-            freshModel = initialModel model.windowWidth model.windowHeight  SystemDocument.signedOut
+            freshModel = initialModel "" model.windowWidth model.windowHeight  SystemDocument.signedOut
           in 
             ({ freshModel | maybeCurrentUser = Nothing, maybeToken = Nothing}, eraseLocalStorage  )  
 
@@ -713,6 +763,9 @@ update msg model =
             
         GetUserManual ->
           (model, Cmd.map DocMsg (Document.getDocumentById Configuration.userManualId Nothing))
+
+        UrlChanged str ->
+          ({model | message = "Url: " ++ str}, Cmd.none)
   
 -- UPDATE END
 

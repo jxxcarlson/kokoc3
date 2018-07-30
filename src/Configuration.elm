@@ -105,6 +105,15 @@ then type Ctrl-ENTER or Ctrl-RETURN.
 
 \\bigskip
 \\strong{knode.io} is made with \\href{http://elm-lang.org/}{Elm}.
+
+\\bigskip
+\\href{https://xknode.tech}{Test link}
+
+\\href{http://localhost:8080/560}{Local test link}
+
+\\bigskip
+
+\\bigskip
 """
 
 newUserText = 
