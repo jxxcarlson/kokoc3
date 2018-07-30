@@ -640,16 +640,7 @@ update msg model =
                 , Cmd.map DocMsg <| Document.saveDocument tokenString model.currentDocument )
 
         UpdateCurrentDocument ->
-          let  
-              tokenString = User.getTokenStringFromMaybeUser model.maybeCurrentUser 
-              currentDocument = model.currentDocument 
-              tags = model.tagString |> String.split "," |> List.map String.trim
-              nextCurrentDocument = { currentDocument | title = model.documentTitle, tags = tags}
-          in 
-              ( { model | message = "Saved document: " ++ String.fromInt model.currentDocument.id
-                        , currentDocumentDirty = False 
-                        , currentDocument = nextCurrentDocument}
-                , Cmd.map DocMsg <| Document.saveDocument tokenString nextCurrentDocument )
+          saveCurrentDocument model
 
 
         Outside infoForElm_ ->
@@ -750,6 +741,7 @@ handleKey : Model -> Key -> (Model, Cmd Msg)
 handleKey model key = 
   case key of 
     Enter -> doSearch model
+    Character "s" -> saveCurrentDocument model
     _ -> (model, Cmd.none)
 
 
@@ -1718,4 +1710,15 @@ displayCurrentMasterDocument model =
 
 getViewPort = Task.perform GetViewport Dom.getViewport
 
- 
+saveCurrentDocument : Model -> (Model, Cmd Msg)
+saveCurrentDocument model = 
+  let  
+      tokenString = User.getTokenStringFromMaybeUser model.maybeCurrentUser 
+      currentDocument = model.currentDocument 
+      tags = model.tagString |> String.split "," |> List.map String.trim
+      nextCurrentDocument = { currentDocument | title = model.documentTitle, tags = tags}
+  in 
+      ( { model | message = "Saved document: " ++ String.fromInt model.currentDocument.id
+                , currentDocumentDirty = False 
+                , currentDocument = nextCurrentDocument}
+        , Cmd.map DocMsg <| Document.saveDocument tokenString nextCurrentDocument )
