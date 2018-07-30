@@ -16,13 +16,11 @@
 		</script>
 		
 		<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/MathJax.js?config=TeX-MML-AM_CHTML"></script>
-
-		<script src="https://cdnjs.cloudflare.com/ajax/libs/asciidoctor.js/1.5.5-5/asciidoctor.js"></script>
 		
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/asciidoctor.js/1.5.5-5/asciidoctor.js">
         </script>
 		
 		<script src="Main.min.js" charset="utf-8"></script>
-
 		<style>
 			 p, h2 {
 				padding: 5px;
@@ -45,13 +43,25 @@
 
  	<script>
 
-		var root = document.getElementById('main');
-		var app = Elm.Main.init({node: root, flags:  {
+		var global = document.getElementById('main');
+		var app = Elm.Main.init({node: global, flags:  {
 					width:  window.innerWidth,
-					height: window.innerHeight
+					height: window.innerHeight,
+					location: location.href
 				}
-		});		
+		});	
 		
+		// Inform app of browser navigation (the BACK and FORWARD buttons)
+		document.addEventListener('popstate', function () {
+			app.ports.onUrlChange.send(location.href);
+		});
+
+		// Change the URL upon request, inform app of the change.
+		// app.ports.pushUrl.subscribe(function(url) {
+		// 	history.pushState({}, '', url);
+		// 	app.ports.onUrlChange.send(location.href);
+		// });
+				
 		var typesetTimeout = null
 		var typesetQueue = []
 		function enqueueTypeset(el) {
@@ -143,55 +153,67 @@
 
 		app.ports.infoForOutside.subscribe(msg => {
 
+			console.log("app.ports.infoForOutside")
+
 			switch(msg.tag) {
 
-			case "DocumentData":
-			if (msg.data != null) {
-				localStorage.setItem("currentDocument", JSON.stringify(msg.data));
-			}	
-			break;
+				case "DocumentData":
+				if (msg.data != null) {
+					localStorage.setItem("currentDocument", JSON.stringify(msg.data));
+				}	
+				break;
 
-			case "DocumentListData":
-			if (msg.data != null) {
-		    	localStorage.setItem("currentDocumentList", JSON.stringify(msg.data));
-		  	}
-			break;
+				case "DocumentListData":
+				if (msg.data != null) {
+					localStorage.setItem("currentDocumentList", JSON.stringify(msg.data));
+				}
+				break;
 
-			case "AskToReconnectDocument":
-			if (localStorage.currentDocument != null && localStorage.currentDocument[0] !='[') {
-		    	app.ports.infoForElm.send({tag: "ReconnectDocument", data: JSON.parse(localStorage.currentDocument)})
-		  	}
-			break;
+				case "AskToReconnectDocument":
+				if (localStorage.currentDocument != null && localStorage.currentDocument[0] !='[') {
+					app.ports.infoForElm.send({tag: "ReconnectDocument", data: JSON.parse(localStorage.currentDocument)})
+				}
+				break;
 
-			case "AskToReconnectDocumentList":
-			if (localStorage.currentDocumentList != null ) {
-		    	app.ports.infoForElm.send({tag: "ReconnectDocumentList", data: JSON.parse(localStorage.currentDocumentList)})
-		  	}
-			break;
+				case "AskToReconnectDocumentList":
+				if (localStorage.currentDocumentList != null ) {
+					app.ports.infoForElm.send({tag: "ReconnectDocumentList", data: JSON.parse(localStorage.currentDocumentList)})
+				}
+				break;
 
-			case "UserData":
-			if (msg.data != null) {
-		      localStorage.setItem("currentUser", JSON.stringify(msg.data));
-		  	}
-			break;
+				case "UserData":
+				if (msg.data != null) {
+				localStorage.setItem("currentUser", JSON.stringify(msg.data));
+				}
+				break;
 
-			case "AskToReconnectUser":
-			if (localStorage.currentUser != null) {
-		    	app.ports.infoForElm.send({tag: "ReconnectUser", data: JSON.parse(localStorage.currentUser)})
-		  	}
-			break;
+				case "AskToReconnectUser":
+				if (localStorage.currentUser != null) {
+					app.ports.infoForElm.send({tag: "ReconnectUser", data: JSON.parse(localStorage.currentUser)})
+				}
+				break;
 
-		    case "AskToEraseLocalStorage":
-				localStorage.setItem("currentUser", null);	
-				localStorage.setItem("currentDocument", null);
-				localStorage.setItem("currentDocumentList", null);	
-			break;	
+				case "AskToEraseLocalStorage":
+					localStorage.setItem("currentUser", null);	
+					localStorage.setItem("currentDocument", null);
+					localStorage.setItem("currentDocumentList", null);	
+				break;
 
 			}
 
 		})
+
+		var processDocumentData = function(documentData) {
+		console.log("I will put the currentDocument data in local storage" );
+		// console.log(JSON.stringify(documentData))
+		localStorage.setItem("currentDocument", documentData);
+		}
 		
-		
+		var askToReconnectDocument = function (str) {
+		console.log("!!! askToReconnectDocument !!!" );
+		// app.ports.infoForElm.send({tag: "ReconnectDocument", data: localStorage})
+		}
+
 	
    
   </script>

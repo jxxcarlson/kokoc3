@@ -247,9 +247,8 @@ init flags =
     ( initialModel flags.location flags.width flags.height  SystemDocument.welcome 
     , Cmd.batch [ 
         -- focusSearchBox
-       processUrl flags.location
-      
-      
+       processUrl <| Debug.log "flags.location" flags.location
+
     ])
 
 processUrl : String -> Cmd Msg 

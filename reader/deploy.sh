@@ -2,9 +2,15 @@ color=`tput setaf 48`
 magenta=`tput setaf 5`
 reset=`tput setaf 7`
 
+
 echo
-echo "${color}Compile reader to ./dist/Main.js${reset}"
-/Users/carlson/Downloads/2/elm make  --optimize ./src/Reader.elm --output ./dist/Main.js
+echo "${color}v${reset}"
+if [ "$1" = "--debug" ]
+then
+/Users/carlson/Downloads/2/elm make  ./src/Reader.elm --output ./dist/Main.js
+else
+/Users/carlson/Downloads/2/elm make --optimize ./src/Reader.elm --output ./dist/Main.js
+fi
 
 echo
 echo "${color}Uglify ...${reset}"
