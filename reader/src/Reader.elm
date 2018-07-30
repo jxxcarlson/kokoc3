@@ -5,7 +5,7 @@ port module Main exposing (main)
 import Browser
 import Browser.Dom as Dom
 import Task
-import Html
+import Html exposing(Html)
 import Html.Attributes
 import Http
 import Debounce exposing(Debounce)
@@ -163,7 +163,7 @@ type Msg
 
 link : msg -> List (Attribute msg) -> List (Html msg) -> Html msg
 link href attrs children =
-  a (preventDefaultOn "click" (D.succeed (href, True)) :: attrs) children
+  Html.a (preventDefaultOn "click" (Decode.succeed (href, True)) :: attrs) children
 
 locationHrefToRoute : String -> Maybe Route
 locationHrefToRoute locationHref =
@@ -172,7 +172,12 @@ locationHrefToRoute locationHref =
     Just url -> Url.parse urlParser url
 
 
+type Route =
+  InternalDocument Int 
 
+urlParser : String -> Maybe Route
+urlParser url = 
+  InternalDocument 1
 
 -- DEBOUNCE
 
