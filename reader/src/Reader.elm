@@ -543,6 +543,10 @@ update msg model =
         GetPublicDocumentsRawQuery query ->
            ({ model | message = "query: " ++ query, appMode = Reading, toolPanelState = HideToolPanel}, 
              Cmd.map DocListMsg (DocumentList.findDocuments Nothing query))
+
+        DocViewMsg (GetPublicDocumentsRawQuery2 query) ->
+           ({ model | message = "query: " ++ query, appMode = Reading, toolPanelState = HideToolPanel}, 
+             Cmd.map DocListMsg (DocumentList.findDocuments Nothing query))
         
         GetUserDocuments query ->
           case model.maybeCurrentUser of 
@@ -1522,7 +1526,7 @@ getAuthorsDocumentsButton_ width_ model =
     Input.button (buttonStyle  width_) {
       onPress =  Just (GetPublicDocumentsRawQuery ("authorname=" ++ authorname))
     , label = Element.text "Author docs"
-    } 
+    }
 
 saveCurrentDocumentButton : Length -> Model -> Element Msg    
 saveCurrentDocumentButton width_ model = 

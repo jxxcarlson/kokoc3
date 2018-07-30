@@ -20,9 +20,19 @@ listItemStyle width_ = [
 
 
 listItemStyleBold width_ = [
-     Font.size 14 
+     Font.size 14
     , mouseDown [  Font.size 13, Background.color lightYellow]
     , Font.color blue
+    , Font.bold
+    , width width_
+    , height (px 24)
+    , clipX
+   ]
+
+listItemStyleBoldPale width_ = [
+     Font.size 14
+    , mouseDown [  Font.size 13, Background.color lightYellow]
+    , Font.color (Element.rgb 0.75 0.75 0.9)
     , Font.bold
     , width width_
     , height (px 24)

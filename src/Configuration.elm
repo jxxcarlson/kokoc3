@@ -99,7 +99,8 @@ Click on \\strong{Home} to go to your home page.
 \\bigskip
 
 Click on \\strong{Random} to explore.  To find things, type something in
-the search box, e.g., \\italic{matt}, \\italic{wave}, or \\italic{snow}.
+the search box, e.g., \\italic{matt}, \\italic{wave}, or \\italic{snow},
+then type Ctrl-ENTER or Ctrl-RETURN.
  
 
 \\bigskip

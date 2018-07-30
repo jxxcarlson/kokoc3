@@ -31,6 +31,7 @@ type DocViewMsg =
     LoadMaster Int
   | LoadMasterWithSelection Int Int 
   | LoadMasterWithCurrentSelection Int
+  | GetPublicDocumentsRawQuery2 String
 
 type alias DocumentView msg = 
   {    title: String
@@ -47,18 +48,28 @@ view windowHeight_ counter debounceCounter texMacros document =
 contentView windowHeight_ counter viewDoc = 
   Keyed.el [width (fill), height (px (windowHeight_ - 150)), scrollbarY] ((String.fromInt counter), viewDoc.content)
 
-
 titleLine : Document -> Element DocViewMsg 
 titleLine document = 
   if document.parentId == 0 then 
     if document.docType == Standard then 
-       Element.row (titleLineStyle 36) [Element.el [Font.size 18, Font.bold] (text document.title) ]
+       Element.column (titleLineStyle 56) [
+         Element.el [Font.size 18, Font.bold] (text document.title) 
+         , getAuthorsDocumentsTitleButton_ fill document
+         ]
     else 
-       Element.row (titleLineStyle 36) [loadChildrenButton  document ]
+       Element.column (titleLineStyle 76) [
+          loadChildrenButton  document
+          , Element.el [moveRight 20] (getAuthorsDocumentsTitleButton_ fill document) ]
   else 
-    Element.column (titleLineStyle  64) [loadMasterDocumentButton  document, Element.el [moveRight 20, Font.size 18, Font.bold] (text document.title) ]
+    Element.column (titleLineStyle  84) [
+        Element.row [spacing 10] [
+            loadMasterDocumentButton  document
+           , Element.el [moveRight 20] (getAuthorsDocumentsTitleButton2 fill document)
+        ]
+        , Element.el [moveRight 20, Font.size 18, Font.bold] (text document.title)
+      ]
 
-titleLineStyle height_ = [paddingXY 10 0, Background.color Widget.charcoal, Font.color Widget.white, width fill, height (px height_)] 
+titleLineStyle height_ = [paddingXY 10 10, spacing 5, Background.color Widget.charcoal, Font.color Widget.white, width fill, height (px height_)] 
 
 loadMasterDocumentButton : Document -> Element DocViewMsg    
 loadMasterDocumentButton  document = 
@@ -178,6 +189,25 @@ viewCoverArt document =
   in 
     Element.image [width fill] {src = coverArtUrl, description = "Cover Art"}
 
+getAuthorsDocumentsTitleButton_ : Length -> Document -> Element DocViewMsg    
+getAuthorsDocumentsTitleButton_ width_ document = 
+  let  
+    authorname = document.authorName 
+  in 
+    Input.button (Widget.listItemStyleBoldPale  width_) {
+      onPress =  Just (GetPublicDocumentsRawQuery2 ("authorname=" ++ authorname))
+    , label = (text authorname)
+    } 
+
+getAuthorsDocumentsTitleButton2 : Length -> Document -> Element DocViewMsg    
+getAuthorsDocumentsTitleButton2 width_ document = 
+  let  
+    authorname = document.authorName 
+  in 
+    Input.button (Widget.listItemStyleBoldPale  width_) {
+      onPress =  Just (GetPublicDocumentsRawQuery2 ("authorname=" ++ authorname))
+    , label = (text <| "(" ++ authorname ++ ")")
+    } 
 
 viewChild : Int -> Child -> Element DocViewMsg 
 viewChild parentId child = 
