@@ -587,7 +587,13 @@ update msg model =
                  (model, Cmd.map DocListMsg (DocumentList.findDocuments model.maybeCurrentUser queryString))
 
         ChangeMode nextAppMode ->
-          ({model | appMode = nextAppMode}, Cmd.none)
+         let 
+           nextToolPaneState = if nextAppMode == Reading then 
+                              HideToolPanel 
+                           else
+                              model.toolPanelState
+         in 
+          ({model | appMode = nextAppMode, toolPanelState = nextToolPaneState}, Cmd.none)
 
         DebounceMsg msg_ ->
             let
