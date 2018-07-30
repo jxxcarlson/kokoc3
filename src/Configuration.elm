@@ -2,6 +2,7 @@ module Configuration exposing(
     backend
    , autosaveDuration
    , coverArtUrl
+   , userManualId
    , basicDocumentText
    , newMiniLatexDocumentText
    , newUserText
@@ -23,6 +24,9 @@ autosaveDuration =
 
 coverArtUrl : String 
 coverArtUrl = "http://noteimages.s3.amazonaws.com/app_images/robin2.jpg"
+
+userManualId : Int  
+userManualId = 750
 
 -- TEXT
 

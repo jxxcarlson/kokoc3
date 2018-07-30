@@ -151,6 +151,7 @@ type Msg
     | DeleteCurrentDocument
     | CancelDeleteCurrentDocument
     | KeyMsg Keyboard.Msg
+    | GetUserManual
     
 
 
@@ -709,7 +710,8 @@ update msg model =
           in 
             keyGatweway model pressedKeys
             
-
+        GetUserManual ->
+          (model, Cmd.map DocMsg (Document.getDocumentById Configuration.userManualId Nothing))
   
 -- UPDATE END
 
@@ -1001,6 +1003,7 @@ logoutPanel model =
       Element.column [padding 20, spacing 20] [
           currentUserNameElement model
         , signoutButton (px 70) model
+        , viewUserManualButton (px 90) model
       ]
 
 -- TOOLS
@@ -1468,6 +1471,12 @@ signoutButton width_ model =
   Input.button (buttonStyle width_) {
     onPress =  Just SignOut
   , label = Element.text "Sign out"
+  } 
+
+viewUserManualButton width_ model = 
+  Input.button (listItemStyleBold width_) {
+    onPress =  Just GetUserManual
+  , label = Element.text "User manual"
   } 
 
 

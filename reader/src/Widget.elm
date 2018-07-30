@@ -18,6 +18,17 @@ listItemStyle width_ = [
     , clipX
    ]
 
+
+listItemStyleBold width_ = [
+     Font.size 14 
+    , mouseDown [  Font.size 13, Background.color lightYellow]
+    , Font.color blue
+    , Font.bold
+    , width width_
+    , height (px 24)
+    , clipX
+   ]
+
 listItemStyleNarrow width_ = [
      Font.size 13 
     , mouseDown [  Font.size 13, Background.color lightYellow]
