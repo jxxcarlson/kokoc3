@@ -14,6 +14,9 @@ import List.Extra
 import Keyboard exposing (Key(..))
 import Keyboard.Arrows
 
+import Url
+import Url.Parser as Url
+
 import Json.Encode as Encode
 import Json.Decode as Decode
 
@@ -94,6 +97,7 @@ type alias Model =
       , deleteDocumentState : DeleteDocumentState
       , pressedKeys : List Key
       , previousKey : Key
+      , locationHref : String
     }
 
 type DeleteDocumentState = DeleteIsOnSafety | DeleteIsArmed
@@ -152,10 +156,25 @@ type Msg
     | CancelDeleteCurrentDocument
     | KeyMsg Keyboard.Msg
     | GetUserManual
+    | UrlChanged (Maybe Route)
     
 
+-- NAVIGATION
+
+link : msg -> List (Attribute msg) -> List (Html msg) -> Html msg
+link href attrs children =
+  a (preventDefaultOn "click" (D.succeed (href, True)) :: attrs) children
+
+locationHrefToRoute : String -> Maybe Route
+locationHrefToRoute locationHref =
+  case Url.fromString locationHref of
+    Nothing -> Nothing
+    Just url -> Url.parse urlParser url
 
 
+
+
+-- DEBOUNCE
 
 -- This defines how the debouncer should work.
 -- Choose the strategy for your use case.
@@ -238,6 +257,7 @@ subscriptions model =
       autosaveSubscription model
       , getInfoFromOutside Outside LogErr
       , Sub.map KeyMsg Keyboard.subscriptions
+      , onUrlChange UrlChanged
     ]
 
 

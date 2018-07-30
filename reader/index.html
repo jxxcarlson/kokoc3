@@ -46,10 +46,22 @@
 		var global = document.getElementById('main');
 		var app = Elm.Main.init({node: global, flags:  {
 					width:  window.innerWidth,
-					height: window.innerHeight
+					height: window.innerHeight,
+					location: location.href
 				}
-		});		
+		});	
 		
+		// Inform app of browser navigation (the BACK and FORWARD buttons)
+		document.addEventListener('popstate', function () {
+			app.ports.onUrlChange.send(location.href);
+		});
+
+		// Change the URL upon request, inform app of the change.
+		app.ports.pushUrl.subscribe(function(url) {
+			history.pushState({}, '', url);
+			app.ports.onUrlChange.send(location.href);
+		});
+				
 		var typesetTimeout = null
 		var typesetQueue = []
 		function enqueueTypeset(el) {
