@@ -1289,7 +1289,7 @@ searchInput model =
     Input.text [htmlAttribute (Html.Attributes.id "search-box")
        , width (px 400), height (px 30) , Font.color black] {
         text = model.searchQueryString 
-      , placeholder = Just (Input.placeholder [moveUp 5] (text "Search example: type 'quantum', then press ctrl-Enter"))
+      , placeholder = Just (Input.placeholder [moveUp 5] (text "Search example: type 'quantum', then press Ctrl-Enter"))
       , onChange = Just(\str -> AcceptSearchQuery str)
       , label = Input.labelLeft [ Font.size 14, Font.bold ] (text "")
     }

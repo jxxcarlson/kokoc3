@@ -1,6 +1,7 @@
 module Configuration exposing(
     backend
    , autosaveDuration
+   , coverArtUrl
    , basicDocumentText
    , newMiniLatexDocumentText
    , newUserText
@@ -19,6 +20,9 @@ backend =
 autosaveDuration : Float 
 autosaveDuration =
   30*1000 -- in milliseconds
+
+coverArtUrl : String 
+coverArtUrl = "http://noteimages.s3.amazonaws.com/app_images/robin2.jpg"
 
 -- TEXT
 

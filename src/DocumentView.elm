@@ -13,6 +13,9 @@ import Element.Border as Border
 import Element.Lazy
 import Element.Keyed as Keyed
 
+import Configuration  
+import KVList 
+
 import MeenyLatex.Differ exposing (EditRecord)
 import MeenyLatex.MiniLatex as MiniLatex
 import MarkdownTools
@@ -90,7 +93,7 @@ documentView debounceCounter texMacros doc =
 documentContentView : Int -> String -> Document -> Element DocViewMsg 
 documentContentView debounceCounter texMacros document = 
     case document.docType of 
-        Master -> viewChildren document 
+        Master -> viewCoverArt document -- viewChildren document 
         Standard -> documentContentView_ debounceCounter texMacros document
 
 documentContentView_ : Int -> String -> Document -> Element msg 
@@ -115,16 +118,27 @@ prependMacros macros_ sourceText =
 viewMiniLatex : String -> Document -> Element msg
 viewMiniLatex texMacros document =
   let 
+    preamble = setCounterText document.tags 
     source = if texMacros == "" then 
                 document.content 
              else 
                 prependMacros texMacros document.content
     editRecord =
-        MiniLatex.initializeEditRecord 0 source 
+        MiniLatex.initializeEditRecord 0 (preamble ++ source) 
   in 
     MiniLatex.getRenderedText editRecord
         |> List.map (\x -> Element.paragraph [  ] [ Element.html x ])
         |> Element.column []
+
+setCounterText : List String -> String 
+setCounterText tags = 
+  let 
+    maybeSectionNumber = KVList.intValueForKey "sectionNumber" tags
+  in 
+    case maybeSectionNumber of 
+      Nothing -> ""
+      Just sectionNumber -> "\\setcounter{section}{" ++ String.fromInt sectionNumber ++ "}\n\n"
+
 
 viewMarkdown : Document -> Element msg
 viewMarkdown document =
@@ -156,6 +170,15 @@ viewChildren : Document -> Element DocViewMsg
 viewChildren document = 
   Element.column [Element.spacing 5] (List.map (viewChild document.id) document.children)
   
+
+viewCoverArt : Document -> Element DocViewMsg 
+viewCoverArt document = 
+  let 
+    coverArtUrl = KVList.stringValueForKey "coverArt" document.tags |> Maybe.withDefault Configuration.coverArtUrl
+  in 
+    Element.image [width fill] {src = coverArtUrl, description = "Cover Art"}
+
+
 viewChild : Int -> Child -> Element DocViewMsg 
 viewChild parentId child = 
   Element.el [] (

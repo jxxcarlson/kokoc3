@@ -1,7 +1,7 @@
 module KVList
     exposing
         ( intValueForKey
-        , stringValueForkey
+        , stringValueForKey
         , removeKey
         , setIntValueForKey
         )
@@ -33,8 +33,8 @@ intValueForKey key tags =
         value
 
 
-stringValueForkey : String -> List String -> Maybe String
-stringValueForkey key tags =
+stringValueForKey : String -> List String -> Maybe String
+stringValueForKey key tags =
     let
         maybeMacrotag =
             tags
@@ -59,7 +59,7 @@ removeKey key tags =
 
 setIntValueForKey : String -> Int -> List String -> List String
 setIntValueForKey key value tags =
-    tags |> removeKey key |> (\list -> list ++ [ key ++ ":" ++ toString value ])
+    tags |> removeKey key |> (\list -> list ++ [ key ++ ":" ++ String.fromInt value ])
 
 
 keyValueIntHelper : String -> Maybe Int
@@ -73,7 +73,7 @@ keyValueIntHelper tag =
                 Nothing
 
             Just idString ->
-                idString |> String.toInt |> Result.toMaybe
+                idString |> String.toInt 
 
 
 keyValueStringHelper : String -> Maybe String
@@ -81,4 +81,5 @@ keyValueStringHelper tag =
     tag
         |> String.split ":"
         |> List.drop 1
-        |> List.head
+        |> String.join ":"
+        |> Just
