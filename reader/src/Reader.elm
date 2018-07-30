@@ -15,10 +15,11 @@ import Keyboard exposing (Key(..))
 import Keyboard.Arrows
 
 import Url
-import Url.Parser as Url
+import Url.Parser
 
 import Json.Encode as Encode
-import Json.Decode as Decode
+import Json.Decode as Decode exposing(Decoder)
+import VirtualDom exposing (Handler(..))
 
 import Element exposing (..)
 import Element.Background as Background
@@ -63,7 +64,8 @@ main =
 type alias Flags =
     {
       width : Int
-    , height : Int  
+    , height : Int
+    , location : String  
     }
 
 type alias Model =
@@ -156,28 +158,56 @@ type Msg
     | CancelDeleteCurrentDocument
     | KeyMsg Keyboard.Msg
     | GetUserManual
-    | UrlChanged (Maybe Route)
+    | UrlChanged String
     
 
 -- NAVIGATION
 
-link : msg -> List (Attribute msg) -> List (Html msg) -> Html msg
-link href attrs children =
-  Html.a (preventDefaultOn "click" (Decode.succeed (href, True)) :: attrs) children
+port onUrlChange : (String -> msg) -> Sub msg
+
+port pushUrl : String -> Cmd msg
+
+
+-- link : msg -> List (Html.Attribute msg) -> List (Html msg) -> Html msg
+-- link href attrs children =
+--   Html.a (preventDefaultOn "click" (Decode.succeed (href, True)) :: attrs) children
+
+preventDefaultOn : String -> Decoder msg -> Html.Attribute msg
+preventDefaultOn string decoder =
+    VirtualDom.on string
+        (Custom
+            (decoder
+                |> Decode.map
+                    (\msg ->
+                        { message = msg
+                        , stopPropagation = True
+                        , preventDefault = True
+                        }
+                    )
+            )
+        )
+
 
 locationHrefToRoute : String -> Maybe Route
 locationHrefToRoute locationHref =
   case Url.fromString locationHref of
     Nothing -> Nothing
-    Just url -> Url.parse urlParser url
+    Just url -> Url.Parser.parse urlParser url
 
 
 type Route =
   InternalDocument Int 
 
-urlParser : String -> Maybe Route
-urlParser url = 
-  InternalDocument 1
+-- urlParser : String -> Maybe Route
+-- urlParser url = 
+--   Just (InternalDocument 1)
+
+
+urlParser : Url.Parser.Parser (Route -> a) a
+urlParser =
+  Url.Parser.oneOf
+    [ Url.Parser.map InternalDocument Url.Parser.int
+    ]
 
 -- DEBOUNCE
 
@@ -196,8 +226,8 @@ updateEditorContentCmd str =
 
 -- INIT
 
-initialModel : Int -> Int -> Document -> Model 
-initialModel windowWidth windowHeight document =
+initialModel : String -> Int -> Int -> Document -> Model 
+initialModel locationHref windowWidth windowHeight document =
     {   message = "App started"
             , password = ""
             , username = ""
@@ -228,11 +258,12 @@ initialModel windowWidth windowHeight document =
             , deleteDocumentState = DeleteIsOnSafety
             , pressedKeys = []
             , previousKey = F20
+            , locationHref = locationHref
         }
 
 init : Flags -> ( Model, Cmd Msg )
 init flags =  
-    ( initialModel flags.width flags.height  SystemDocument.welcome 
+    ( initialModel flags.location flags.width flags.height  SystemDocument.welcome 
     , Cmd.batch [ 
         focusSearchBox
       , sendInfoOutside (AskToReconnectDocument Encode.null)
@@ -536,13 +567,13 @@ update msg model =
           let 
               basicDoc = Document.basicDocument
               startupDoc = SystemDocument.signIn
-              freshModel = initialModel model.windowWidth model.windowHeight  startupDoc
+              freshModel = initialModel "" model.windowWidth model.windowHeight  startupDoc
           in 
               (freshModel, Cmd.map UserMsg (User.getTokenCmd model.email model.password)  ) 
 
         SignOut ->
           let 
-            freshModel = initialModel model.windowWidth model.windowHeight  SystemDocument.signedOut
+            freshModel = initialModel "" model.windowWidth model.windowHeight  SystemDocument.signedOut
           in 
             ({ freshModel | maybeCurrentUser = Nothing, maybeToken = Nothing}, eraseLocalStorage  )  
 
@@ -738,6 +769,9 @@ update msg model =
             
         GetUserManual ->
           (model, Cmd.map DocMsg (Document.getDocumentById Configuration.userManualId Nothing))
+
+        UrlChanged str ->
+          ({model | message = Debug.log "Change" ("Url: " ++ str)}, Cmd.none)
   
 -- UPDATE END
 
