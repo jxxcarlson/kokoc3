@@ -771,7 +771,7 @@ update msg model =
           (model, Cmd.map DocMsg (Document.getDocumentById Configuration.userManualId Nothing))
 
         UrlChanged str ->
-          ({model | message = Debug.log "Change" ("Url: " ++ str)}, Cmd.none)
+          ({model | message = "Url: " ++ str}, Cmd.none)
   
 -- UPDATE END
 
