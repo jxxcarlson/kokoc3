@@ -247,13 +247,13 @@ init flags =
     ( initialModel flags.location flags.width flags.height  SystemDocument.welcome 
     , Cmd.batch [ 
         -- focusSearchBox
-       processUrl <| Debug.log "flags.location" flags.location
+       processUrl flags.location
 
     ])
 
 processUrl : String -> Cmd Msg 
 processUrl urlString = 
-    case UrlAppParser.toRoute urlString of 
+    case  UrlAppParser.toRoute urlString of 
       NotFound -> 
         Cmd.batch [
             sendInfoOutside (AskToReconnectDocument Encode.null)
@@ -264,7 +264,13 @@ processUrl urlString =
       DocumentIdRef docId -> 
         Cmd.batch [
             sendInfoOutside (AskToReconnectUser Encode.null)
-            , Cmd.map DocMsg (Document.getDocumentById docId Nothing)   
+            , Cmd.map DocMsg (Document.getDocumentById docId Nothing)  
+        ]
+
+      HomeRef username -> 
+        Cmd.batch [
+            sendInfoOutside (AskToReconnectUser Encode.null)
+            , Cmd.map DocListMsg (DocumentList.findDocuments Nothing ("key=home&authorname=" ++ username))  
         ]
 
 focusSearchBox : Cmd Msg

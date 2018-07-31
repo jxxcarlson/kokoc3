@@ -20,6 +20,11 @@ echo
 echo "${color}Clean up${reset}"
 rm ./dist/Main.js
 
+# echo
+# echo "${color}Deploy to now ... ${reset}"
+# now --public ./dist
+
 echo
-echo "${color}Deploy to now ... ${reset}"
-now --public ./dist
+echo "${color}upload to cloud ...${reset}"
+scp -r ./dist/Main.min.js root@138.197.81.6:/var/www/html/
+scp -r ./dist/index.html root@138.197.81.6:/var/www/html/

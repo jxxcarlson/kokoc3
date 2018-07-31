@@ -1,12 +1,13 @@
 module UrlAppParser exposing(Route(..), toRoute)
 
 import Url exposing(Url, Protocol(..))
-import Url.Parser as Parser exposing(Parser, parse, int, map, oneOf, s, top)
+import Url.Parser as Parser exposing(Parser, parse, int, map, oneOf, s, top, string, (</>))
 
 
 type Route =
     NotFound
   | DocumentIdRef Int 
+  | HomeRef String
 
 
 -- -- parseDocId : Url -> Route
@@ -16,7 +17,9 @@ type Route =
 route : Parser (Route -> a) a
 route =
   oneOf
-    [ map DocumentIdRef int
+    [ 
+        map HomeRef (s "home" </> string)
+      , map DocumentIdRef int
     ]
 
 toRoute : String -> Route
