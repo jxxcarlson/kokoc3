@@ -4,7 +4,7 @@ reset=`tput setaf 7`
 
 
 echo
-echo "${color}v${reset}"
+echo "${color}Compile Reader.elm to ./dist/Main.js${reset}"
 if [ "$1" = "--debug" ]
 then
 /Users/carlson/Downloads/2/elm make  ./src/Reader.elm --output ./dist/Main.js
@@ -20,11 +20,11 @@ echo
 echo "${color}Clean up${reset}"
 rm ./dist/Main.js
 
-# echo
-# echo "${color}Deploy to now ... ${reset}"
-# now --public ./dist
-
 echo
-echo "${color}upload to cloud ...${reset}"
-scp -r ./dist/Main.min.js root@138.197.81.6:/var/www/html/
-scp -r ./dist/index.html root@138.197.81.6:/var/www/html/
+echo "${color}Upload to Zeit.co ... ${reset}"
+now --public ./dist
+
+# echo
+# echo "${color}Upload to Digital Ocean ...${reset}"
+# scp -r ./dist/Main.min.js root@138.197.81.6:/var/www/html/
+# scp -r ./dist/index.html root@138.197.81.6:/var/www/html/
