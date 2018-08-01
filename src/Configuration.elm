@@ -117,8 +117,9 @@ then type Ctrl-ENTER or Ctrl-RETURN.
 \\strong{Sample documents}
 \\begin{itemize} 
   \\item \\href{https://knode.io/424}{Quantum Field Theory Notes}
-  \\item  \\href{https://knode.io/365}{Visual Literacy}
+  \\item \\href{https://knode.io/365}{Visual Literacy}
   \\item \\href{https://knode.io/754}{Butterfly}
+  \\item \\href{https://knode.io/346}{Metal}
 \\end{itemize}
 
 
