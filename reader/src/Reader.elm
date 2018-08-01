@@ -550,6 +550,7 @@ update msg model =
                       , saveDocToLocalStorage document
                       , saveDocumentListToLocalStorage documentList 
                       , Cmd.map  DocDictMsg <| DocumentDictionary.loadTexMacros (readToken model.maybeToken) document document.tags model.documentDictionary        
+                      , pushUrl <| "/" ++ (String.fromInt document.id)
                  ]
                )
 
@@ -1267,7 +1268,7 @@ footer model =
 
       , Element.el [] (text <| "Author: " ++ model.currentDocument.authorName )
       , Element.el [] (text <| access model.currentDocument) 
-      , shareDocument model
+  -- , shareDocument model
   -- , currentUserNameElement model
       , Element.el [] (text <| (String.fromInt (Document.wordCount model.currentDocument)) ++ " words")
    -- , deleteStateIndicator model
