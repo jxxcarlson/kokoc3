@@ -1265,8 +1265,9 @@ footer model =
       , printDocument model 
       , getAuthorsDocumentsButton (px 90) model
 
-      , Element.el [] (text <| access model.currentDocument)
       , Element.el [] (text <| "Author: " ++ model.currentDocument.authorName )
+      , Element.el [] (text <| access model.currentDocument) 
+      , shareDocument model
   -- , currentUserNameElement model
       , Element.el [] (text <| (String.fromInt (Document.wordCount model.currentDocument)) ++ " words")
    -- , deleteStateIndicator model
@@ -1275,6 +1276,15 @@ footer model =
     --  , Element.el [] (text <| displayCurrentMasterDocument model)
     --  , Element.el [] (text <| "Window height: " ++ (String.fromInt model.windowHeight))
   ] 
+
+shareDocument : Model -> Element msg
+shareDocument model = 
+  case model.currentDocument.public of 
+    False -> Element.none
+    True -> Element.el [Font.color (Element.rgb 0.7 0.75 1.0)
+       , paddingXY 8 5 
+       , Background.color (Element.rgb 0.2 0.2 0.4)
+       ] (Element.text <| Configuration.client ++ "/" ++ (String.fromInt model.currentDocument.id))
 
 deleteStateIndicator model = 
   case model.maybeCurrentUser of 
