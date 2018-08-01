@@ -1,5 +1,6 @@
 module Configuration exposing(
     backend
+   , client
    , autosaveDuration
    , coverArtUrl
    , userManualId
@@ -17,6 +18,9 @@ backend : String
 backend = 
         "https://nshost.herokuapp.com"
     -- "http://localhost:4000"
+
+client : String 
+client = "https://knode.io"
 
 autosaveDuration : Float 
 autosaveDuration =
