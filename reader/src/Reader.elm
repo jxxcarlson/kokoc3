@@ -778,7 +778,6 @@ update msg model =
             case UrlAppParser.toRoute str of 
               DocumentIdRef id -> 
                 selectDocumentWithId id model
-                   -- ({model |  message = Debug.log "UrlChanged" <| "DocumentIdRef " ++ (String.fromInt id) }, Cmd.none)
               _ -> (model, Cmd.none)
   
 -- UPDATE END
@@ -1697,7 +1696,8 @@ selectDocumentWithId  id model =
     in
       ({ model | 
           documentList = DocumentList.select (Just selectedDocument) documents_
-        , currentDocument = selectedDocument  
+        , currentDocument = selectedDocument 
+        , counter = model.counter + 1 
         }
         ,  Cmd.batch [
               Cmd.map  DocDictMsg <| DocumentDictionary.loadTexMacros (readToken model.maybeToken) selectedDocument selectedDocument.tags model.documentDictionary 
