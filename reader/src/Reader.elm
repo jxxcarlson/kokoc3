@@ -775,8 +775,11 @@ update msg model =
           (model, Cmd.map DocMsg (Document.getDocumentById Configuration.userManualId Nothing))
 
         UrlChanged str ->
-          -- ({model | message = "Url: " ++ (Debug.log "UrlChange" str)}, Cmd.none)
-          ({model | message = "Url: " ++ str}, Cmd.none)
+            case UrlAppParser.toRoute str of 
+              DocumentIdRef id -> 
+                selectDocumentWithId id model
+                   -- ({model |  message = Debug.log "UrlChanged" <| "DocumentIdRef " ++ (String.fromInt id) }, Cmd.none)
+              _ -> (model, Cmd.none)
   
 -- UPDATE END
 
@@ -1683,6 +1686,25 @@ idFromDocInfo str =
   str |> String.toInt |> Maybe.withDefault 0
 
 -- HELPERS
+
+selectDocumentWithId : Int -> Model -> (Model, Cmd Msg)
+selectDocumentWithId  id model = 
+  let 
+      documents_  = model.documentList
+      documentList = DocumentList.documents documents_
+      indexOfSelectedDocument = List.Extra.findIndex (\doc -> doc.id == id) documentList |> Maybe.withDefault 0
+      selectedDocument = List.Extra.getAt indexOfSelectedDocument documentList |> Maybe.withDefault Document.basicDocument
+    in
+      ({ model | 
+          documentList = DocumentList.select (Just selectedDocument) documents_
+        , currentDocument = selectedDocument  
+        }
+        ,  Cmd.batch [
+              Cmd.map  DocDictMsg <| DocumentDictionary.loadTexMacros (readToken model.maybeToken) selectedDocument selectedDocument.tags model.documentDictionary 
+            , saveDocumentListToLocalStorage documents_  
+            ]
+        )
+
 
 pushDocument : Document -> Cmd Msg
 pushDocument document =
