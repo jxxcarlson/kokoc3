@@ -110,8 +110,6 @@ then type Ctrl-ENTER or Ctrl-RETURN.
 \\bigskip
 \\strong{knode.io} is made with \\href{http://elm-lang.org/}{Elm}.
 
-\\bigskip
-\\strong{knode.io} is made with \\href{http://elm-lang.org/}{Elm}.
 
 \\bigskip
 \\strong{Sample documents}
