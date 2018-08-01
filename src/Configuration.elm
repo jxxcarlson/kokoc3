@@ -111,8 +111,15 @@ then type Ctrl-ENTER or Ctrl-RETURN.
 \\strong{knode.io} is made with \\href{http://elm-lang.org/}{Elm}.
 
 \\bigskip
-Sample documents \\href{https://xknode.io/424}{Quantum Field Theory Notes}, 
-\\href{https://xknode.io/365}{Visual Literacy}, \\href{https://xknode.io/754}{Butterfly},
+\\strong{knode.io} is made with \\href{http://elm-lang.org/}{Elm}.
+
+\\bigskip
+\\strong{Sample documents}
+\\begin{itemize} 
+  \\item \\href{https://knode.io/424}{Quantum Field Theory Notes}
+  \\item  \\href{https://knode.io/365}{Visual Literacy}
+  \\item \\href{https://knode.io/754}{Butterfly}
+\\end{itemize}
 
 
 \\bigskip
