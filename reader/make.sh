@@ -11,15 +11,6 @@ else
 /Users/carlson/Downloads/2/elm make --optimize ./src/Reader.elm --output /usr/local/var/www/Main.js
 fi
 
-if [ "$1" = "--r666" ]
-then
-echo
-echo "${color}Start web server on port 8080${reset}"
-http-server ./dist
-fi
-
-
-
 echo "${color}Copy 'index.html' to /usr/local/var/www/ and restart nginx${reset}"
 cp ./index.html /usr/local/var/www/      
 nginx -s reload
