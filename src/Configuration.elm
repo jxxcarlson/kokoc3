@@ -111,9 +111,9 @@ then type Ctrl-ENTER or Ctrl-RETURN.
 \\strong{knode.io} is made with \\href{http://elm-lang.org/}{Elm}.
 
 \\bigskip
-\\href{https://xknode.tech}{Test link}
+Sample documents \\href{https://xknode.io/424}{Quantum Field Theory Notes}, 
+\\href{https://xknode.io/365}{Visual Literacy}, \\href{https://xknode.io/754}{Butterfly},
 
-\\href{http://localhost:8080/560}{Local test link}
 
 \\bigskip
 
