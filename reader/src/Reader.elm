@@ -484,7 +484,7 @@ update msg model =
                  ,  Cmd.batch [
                         Cmd.map  DocDictMsg <| DocumentDictionary.loadTexMacros (readToken model.maybeToken) selectedDocument selectedDocument.tags model.documentDictionary 
                       , saveDocumentListToLocalStorage documentList  
-                      , pushUrl <| "/" ++ (String.fromInt selectedDocument.id)
+                      , pushDocument selectedDocument
                      ]
                   )
             Err err -> 
@@ -508,7 +508,7 @@ update msg model =
                  ,  Cmd.batch [
                         Cmd.map  DocDictMsg <| DocumentDictionary.loadTexMacros (readToken model.maybeToken) currentDocument currentDocument.tags model.documentDictionary 
                       , saveDocumentListToLocalStorage documentList 
-                      , pushUrl <| "/" ++ (String.fromInt currentDocument.id) 
+                      , pushDocument currentDocument
                      ]
                   )
             Err err -> 
@@ -554,7 +554,7 @@ update msg model =
                       , saveDocToLocalStorage document
                       , saveDocumentListToLocalStorage documentList 
                       , Cmd.map  DocDictMsg <| DocumentDictionary.loadTexMacros (readToken model.maybeToken) document document.tags model.documentDictionary        
-                      , pushUrl <| "/" ++ (String.fromInt document.id)
+                      , pushDocument document
                  ]
                )
 
@@ -769,20 +769,21 @@ update msg model =
           let 
             pressedKeys = Keyboard.update keyMsg model.pressedKeys
           in 
-            keyGatweway model pressedKeys
+            keyGateway model pressedKeys
             
         GetUserManual ->
           (model, Cmd.map DocMsg (Document.getDocumentById Configuration.userManualId Nothing))
 
         UrlChanged str ->
+          -- ({model | message = "Url: " ++ (Debug.log "UrlChange" str)}, Cmd.none)
           ({model | message = "Url: " ++ str}, Cmd.none)
   
 -- UPDATE END
 
 -- KEY COMMANDS
 
-keyGatweway : Model -> List Key -> ( Model, Cmd Msg )
-keyGatweway model pressedKeys =
+keyGateway : Model -> List Key -> ( Model, Cmd Msg )
+keyGateway model pressedKeys =
     if model.previousKey == Control then
         respondToContolCommand model pressedKeys
     else
@@ -1682,6 +1683,11 @@ idFromDocInfo str =
   str |> String.toInt |> Maybe.withDefault 0
 
 -- HELPERS
+
+pushDocument : Document -> Cmd Msg
+pushDocument document =
+  pushUrl <| "/" ++ (String.fromInt document.id)
+
 
 headKey : List Key -> Key
 headKey keyList =
