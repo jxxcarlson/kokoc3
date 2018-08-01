@@ -383,7 +383,9 @@ update msg model =
         DocMsg (ReceiveDocument result) ->
           case result of 
             Ok documentRecord -> 
-               ({ model | message = "document OK", currentDocument = documentRecord.document},  Cmd.none)
+               ({ model | message = "document OK", currentDocument = documentRecord.document},  
+                Cmd.none
+                )
             Err err -> 
                 ({model | message = handleHttpError err},   Cmd.none  )
 
@@ -482,6 +484,7 @@ update msg model =
                  ,  Cmd.batch [
                         Cmd.map  DocDictMsg <| DocumentDictionary.loadTexMacros (readToken model.maybeToken) selectedDocument selectedDocument.tags model.documentDictionary 
                       , saveDocumentListToLocalStorage documentList  
+                      , pushUrl <| "/" ++ (String.fromInt selectedDocument.id)
                      ]
                   )
             Err err -> 
@@ -504,7 +507,8 @@ update msg model =
                  }
                  ,  Cmd.batch [
                         Cmd.map  DocDictMsg <| DocumentDictionary.loadTexMacros (readToken model.maybeToken) currentDocument currentDocument.tags model.documentDictionary 
-                      , saveDocumentListToLocalStorage documentList  
+                      , saveDocumentListToLocalStorage documentList 
+                      , pushUrl <| "/" ++ (String.fromInt currentDocument.id) 
                      ]
                   )
             Err err -> 

@@ -11,12 +11,13 @@ echo "${color}Uglify and upload to Digital Ocean${reset}"
 if [ "$1" = "--uglify" ]
 then
     uglifyjs ${NGINX_LOCAL}Main.js -mc 'pure_funcs="F2,F3,F4,F5,F6,F7,F8,F9"' -o ${NGINX_LOCAL}Main.min.js
-    scp -r ${NGINX_LOCAL}Main.min.js root@138.197.81.6:${NGINX_REMOTE}
-    scp -r ${DIST_LOCAL}index.html root@138.197.81.6:${NGINX_REMOTE}
+    # scp -r ${NGINX_LOCAL}Main.min.js root@138.197.81.6:${NGINX_REMOTE}
+    # scp -r index-remote.html root@138.197.81.6:${NGINX_REMOTE}index.html
+    cp index-remote.html ${NGINX_LOCAL}index.html
 else
     echo "${color}Upload to Digital Ocean${reset}"
     scp -r ${NGINX_LOCAL}Main.js root@138.197.81.6:${NGINX_REMOTE}
-    scp -r ${NGINX_LOCAL}index.html root@138.197.81.6:${NGINX_REMOTE}
+    scp -r index.html root@138.197.81.6:${NGINX_REMOTE}
 fi
 
 # echo
