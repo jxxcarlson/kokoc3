@@ -129,7 +129,13 @@ prependMacros macros_ sourceText =
 viewMiniLatex : String -> Document -> Element msg
 viewMiniLatex texMacros document =
   let 
-    preamble = setCounterText document.tags 
+    preamble = 
+      [  setCounterText document.tags 
+       , setDocId document.id 
+       , setClient
+       , ""
+      ] |> String.join("\n\n")
+
     source = if texMacros == "" then 
                 document.content 
              else 
@@ -150,6 +156,12 @@ setCounterText tags =
       Nothing -> ""
       Just sectionNumber -> "\\setcounter{section}{" ++ String.fromInt sectionNumber ++ "}\n\n"
 
+setDocId : Int -> String
+setDocId id = "\\setdocid{" ++ (String.fromInt id) ++ "}"
+
+setClient : String 
+setClient = 
+  "\\setclient{" ++ Configuration.client ++ "}"
 
 viewMarkdown : Document -> Element msg
 viewMarkdown document =

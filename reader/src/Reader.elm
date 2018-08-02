@@ -273,6 +273,9 @@ processUrl urlString =
             , Cmd.map DocListMsg (DocumentList.findDocuments Nothing ("key=home&authorname=" ++ username))  
         ]
 
+      InternalRef str ->
+          Cmd.none
+
 focusSearchBox : Cmd Msg
 focusSearchBox =
   Task.attempt (\_ -> NoOp) (Dom.focus "search-box")
@@ -384,7 +387,7 @@ update msg model =
           case result of 
             Ok documentRecord -> 
                ({ model | message = "document OK", currentDocument = documentRecord.document},  
-                Cmd.none
+                loadTexMacrosForDocument documentRecord.document model
                 )
             Err err -> 
                 ({model | message = handleHttpError err},   Cmd.none  )
@@ -461,7 +464,7 @@ update msg model =
                  , maybeMasterDocument = nextMaybeMasterDocument
                  }
                  ,  Cmd.batch [
-                        Cmd.map  DocDictMsg <| DocumentDictionary.loadTexMacros (readToken model.maybeToken) currentDocument currentDocument.tags model.documentDictionary 
+                       loadTexMacrosForDocument currentDocument model
                       , saveDocumentListToLocalStorage documentList  
                      ]
                   )
@@ -482,7 +485,7 @@ update msg model =
                  , currentDocument = selectedDocument  
                  }
                  ,  Cmd.batch [
-                        Cmd.map  DocDictMsg <| DocumentDictionary.loadTexMacros (readToken model.maybeToken) selectedDocument selectedDocument.tags model.documentDictionary 
+                       loadTexMacrosForDocument selectedDocument model
                       , saveDocumentListToLocalStorage documentList  
                       , pushDocument selectedDocument
                      ]
@@ -506,7 +509,7 @@ update msg model =
                  , maybeMasterDocument = nextMaybeMasterDocument
                  }
                  ,  Cmd.batch [
-                        Cmd.map  DocDictMsg <| DocumentDictionary.loadTexMacros (readToken model.maybeToken) currentDocument currentDocument.tags model.documentDictionary 
+                       loadTexMacrosForDocument currentDocument model
                       , saveDocumentListToLocalStorage documentList 
                       , pushDocument currentDocument
                      ]
@@ -553,7 +556,7 @@ update msg model =
                         loadMasterCommand
                       , saveDocToLocalStorage document
                       , saveDocumentListToLocalStorage documentList 
-                      , Cmd.map  DocDictMsg <| DocumentDictionary.loadTexMacros (readToken model.maybeToken) document document.tags model.documentDictionary        
+                      , loadTexMacrosForDocument document model
                       , pushDocument document
                  ]
                )
@@ -1686,6 +1689,11 @@ idFromDocInfo str =
 
 -- HELPERS
 
+loadTexMacrosForDocument : Document -> Model -> Cmd Msg 
+loadTexMacrosForDocument document model =
+  Cmd.map  DocDictMsg 
+     <| DocumentDictionary.loadTexMacros (readToken model.maybeToken) document document.tags model.documentDictionary 
+
 selectDocumentWithId : Int -> Model -> (Model, Cmd Msg)
 selectDocumentWithId  id model = 
   let 
@@ -1700,7 +1708,7 @@ selectDocumentWithId  id model =
         , counter = model.counter + 1 
         }
         ,  Cmd.batch [
-              Cmd.map  DocDictMsg <| DocumentDictionary.loadTexMacros (readToken model.maybeToken) selectedDocument selectedDocument.tags model.documentDictionary 
+              loadTexMacrosForDocument selectedDocument model
             , saveDocumentListToLocalStorage documents_  
             ]
         )

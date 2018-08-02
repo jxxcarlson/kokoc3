@@ -1,13 +1,14 @@
 module UrlAppParser exposing(Route(..), toRoute)
 
 import Url exposing(Url, Protocol(..))
-import Url.Parser as Parser exposing(Parser, parse, int, map, oneOf, s, top, string, (</>))
+import Url.Parser as Parser exposing(Parser, parse, int, map, oneOf, s, top, string, custom, (</>))
 
 
 type Route =
     NotFound
   | DocumentIdRef Int 
   | HomeRef String
+  | InternalRef String
 
 
 -- -- parseDocId : Url -> Route
@@ -17,10 +18,19 @@ type Route =
 route : Parser (Route -> a) a
 route =
   oneOf
-    [ 
+    [   
         map HomeRef (s "home" </> string)
       , map DocumentIdRef int
+      , map InternalRef internalRef
     ]
+
+internalRef : Parser (String -> a) a
+internalRef =
+  custom "INNER" <| \segment ->
+    if String.startsWith "#_" segment then
+      Just segment
+    else
+      Nothing
 
 toRoute : String -> Route
 toRoute string =
