@@ -386,8 +386,11 @@ update msg model =
         DocMsg (ReceiveDocument result) ->
           case result of 
             Ok documentRecord -> 
-               ({ model | message = "document OK", currentDocument = documentRecord.document},  
-                loadTexMacrosForDocument documentRecord.document model
+               ({ model | message = "document OK", currentDocument = documentRecord.document}, 
+                Cmd.batch [ 
+                   loadTexMacrosForDocument documentRecord.document model
+                   , pushDocument documentRecord.document
+                ]
                 )
             Err err -> 
                 ({model | message = handleHttpError err},   Cmd.none  )
