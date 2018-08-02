@@ -16,7 +16,7 @@ newUser =
 
 newDocument : Document 
 newDocument = 
-   { basicDocument | title = "New document", content = Configuration.newMiniLatexDocumentText }
+   { basicDocument | title = "New document", public = False, content = Configuration.newMiniLatexDocumentText }
 
 welcome : Document 
 welcome = 
