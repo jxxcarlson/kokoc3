@@ -159,6 +159,7 @@ type Msg
     | KeyMsg Keyboard.Msg
     | GetUserManual
     | UrlChanged String
+    | SetDocumentPublic Bool
     
 
 -- NAVIGATION
@@ -389,7 +390,7 @@ update msg model =
                ({ model | message = "document OK", currentDocument = documentRecord.document}, 
                 Cmd.batch [ 
                    loadTexMacrosForDocument documentRecord.document model
-                   , pushDocument documentRecord.document
+                   --, pushDocument documentRecord.document
                 ]
                 )
             Err err -> 
@@ -785,6 +786,14 @@ update msg model =
               DocumentIdRef id -> 
                 selectDocumentWithId id model
               _ -> (model, Cmd.none)
+
+        SetDocumentPublic value ->
+          let 
+            currentDocument = model.currentDocument 
+            nextCurrentDocument = {currentDocument | public = value }
+          in 
+            ( { model | currentDocument = nextCurrentDocument}, Cmd.none)
+
   
 -- UPDATE END
 
@@ -1088,14 +1097,29 @@ toolsOrContents model =
     HideToolPanel -> Element.map DocListViewMsg (DocumentListView.viewWithHeading model.windowHeight (docListTitle model) model.documentList)
 
 toolsPanel model = Element.column [ spacing 15, padding 10, height shrink, scrollbarY] [ 
-  Element.el [Font.bold, Font.size 18] (text "Tools Panel")
-  , Element.row [spacing 10] [deleteCurrentDocumentButton (px 60) model, cancelDeleteCurrentDocumentButton (px 60) model]
+   publicControls model
+  , deleteDocumentButton model
   , masterDocPanel model
   , documentTitleInput model
   , documentPanels model
   , tagInputPane model (px 250) (px 140) "Tags"
   , versionsPanel model
   ]
+
+publicControls : Model -> Element Msg 
+publicControls model = 
+  Element.row [spacing 5] [ publicButton model.currentDocument, privateButton model.currentDocument]
+
+
+  
+
+
+deleteDocumentButton : Model -> Element Msg
+deleteDocumentButton model =
+   Element.row [spacing 10] [
+        deleteCurrentDocumentButton (px 60) model
+      , cancelDeleteCurrentDocumentButton (px 60) model
+    ]
 
 masterDocPanel model = 
   Element.column [spacing 5] [ 
@@ -1392,6 +1416,27 @@ documentTitleInput model =
 
 
 -- BUTTONS
+
+publicButton : Document -> Element Msg 
+publicButton document = 
+  Input.button (Widget.buttonStyleWithColor (publicIndicatorColor document.public True) (px 60)) {
+    onPress =  Just (SetDocumentPublic True)
+  , label = Element.text ("Public")
+  }
+
+privateButton : Document -> Element Msg 
+privateButton document = 
+  Input.button (Widget.buttonStyleWithColor (publicIndicatorColor document.public False) (px 60)) {
+    onPress =  Just (SetDocumentPublic False)
+  , label = Element.text ("Private")
+  }  
+
+publicIndicatorColor : Bool -> Bool -> Color 
+publicIndicatorColor actual target = 
+  case actual == target of 
+     True -> Widget.darkRed 
+     False -> Widget.buttonColor
+
 
 miniLatexTypeButton : Model -> Element Msg 
 miniLatexTypeButton model = 
