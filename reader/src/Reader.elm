@@ -319,7 +319,7 @@ update msg model =
             ( { model | username = str }, Cmd.none )
 
         AcceptSearchQuery searchQueryString -> 
-            ( { model | searchQueryString = searchQueryString, masterDocLoaded = False }, Cmd.none )
+            ( { model | searchQueryString = searchQueryString }, Cmd.none )
 
         AcceptDocumenTitle str ->
           let 
@@ -1745,12 +1745,13 @@ getPublicDocuments : Model -> String -> (Model, Cmd Msg)
 getPublicDocuments model queryString =
      ({ model |  appMode = Reading
                , toolPanelState = HideToolPanel
+               ,  masterDocLoaded = False 
             }
             , Cmd.map DocListMsg (DocumentList.findDocuments Nothing (Query.parse queryString)))
 
 getUserDocuments : Model -> String -> (Model, Cmd Msg)   
 getUserDocuments model queryString =
-  ({ model | toolPanelState = HideToolPanel } 
+  ({ model | toolPanelState = HideToolPanel, masterDocLoaded = False  } 
     , Cmd.map DocListMsg (DocumentList.findDocuments model.maybeCurrentUser (Query.parse queryString))
   )
 
