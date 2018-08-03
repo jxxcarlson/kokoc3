@@ -490,9 +490,9 @@ update msg model =
             Ok documentList -> 
               let 
                 currentDocument = DocumentList.getFirst documentList
-                nextMaybeMasterDocument = case currentDocument.docType of 
-                  Standard -> Nothing 
-                  Master -> Just currentDocument
+                (nextMaybeMasterDocument, loadTexMacrosForMasterDocument) = case currentDocument.docType of 
+                  Standard -> (Nothing, Cmd.none) 
+                  Master -> (Just currentDocument, loadTexMacrosForDocument currentDocument model)
               in
                ({ model | 
                    documentList = DocumentList.selectFirst documentList
@@ -501,6 +501,7 @@ update msg model =
                  }
                  ,  Cmd.batch [
                        loadTexMacrosForDocument currentDocument model
+                      , loadTexMacrosForMasterDocument
                       , saveDocumentListToLocalStorage documentList 
                       , pushDocument currentDocument
                      ]
@@ -522,7 +523,11 @@ update msg model =
                       documentList = nextDocumentList_
                     , maybeMasterDocument = nextMaybeMasterDocument 
                     }
-                    , saveDocumentListToLocalStorage documentList  )
+                    , Cmd.batch [
+                          saveDocumentListToLocalStorage documentList
+                        , loadTexMacrosForDocument currentDocument model
+                      ]  
+                )
             Err err -> 
                 ({model | message = handleHttpError err},   Cmd.none  )
 
@@ -824,12 +829,17 @@ handleHttpError error =
     Http.BadUrl str -> str 
     Http.Timeout -> "timeout"
     Http.NetworkError -> "Network error"
-    Http.BadStatus resp -> "Bad status: " ++ "darn!"
+    Http.BadStatus resp -> "Bad status ("  ++ (String.fromInt resp.status.code)  ++ "): " ++ resp.status.message -- (decodeResponse resp) --  ++ "darn! " 
     Http.BadPayload str1 resp -> "Bad payload: " ++ str1  ++ ", payload = " ++ "bad payload"
       
 
--- OUTSIDE
+-- decodeResponse : Http.Response String -> String 
+-- decodeResponse resp = 
+--   case resp of 
+--     Http.Response str -> str 
 
+
+-- OUTSIDE
 
 type InfoForElm = 
    DocumentDataFromOutside Document
@@ -943,8 +953,9 @@ processInfoForElm model infoForElm_ =
     DocumentDataFromOutside document -> 
        ({model |    currentDocument = document  
                   , documentList = DocumentList.make document []
+                  , message = "!got doc from outside"
             }
-            , Cmd.none
+            , Cmd.none 
           )  
     UserDataFromOutside user -> 
         ({model |   maybeCurrentUser = Just user 
@@ -1290,11 +1301,21 @@ footer model =
   -- , currentUserNameElement model
       , Element.el [] (text <| (String.fromInt (Document.wordCount model.currentDocument)) ++ " words")
       , Element.el [] (text <| masterDocLoadedIndicator model)
+      , Element.el [] (text <| "DDict, keys & values: " ++ documentDictionaryInfo model)
 
     --  , Element.el [] (text ("keys: " ++ (showKeys model)))
     --  , Element.el [] (text <| displayCurrentMasterDocument model)
     --  , Element.el [] (text <| "Window height: " ++ (String.fromInt model.windowHeight))
   ] 
+
+documentDictionaryInfo : Model -> String 
+documentDictionaryInfo model = 
+  let 
+    k = model.documentDictionary |> DocumentDictionary.keys |> String.join ","
+    v = model.documentDictionary |> DocumentDictionary.values |> String.join ","
+  in  
+    k ++ ":: " ++ v
+
 
 masterDocLoadedIndicator model =
   case model.masterDocLoaded of 
@@ -1746,12 +1767,13 @@ getPublicDocuments model queryString =
      ({ model |  appMode = Reading
                , toolPanelState = HideToolPanel
                ,  masterDocLoaded = False 
+               ,  message = "gPD" 
             }
             , Cmd.map DocListMsg (DocumentList.findDocuments Nothing (Query.parse queryString)))
 
 getUserDocuments : Model -> String -> (Model, Cmd Msg)   
 getUserDocuments model queryString =
-  ({ model | toolPanelState = HideToolPanel, masterDocLoaded = False  } 
+  ({ model | toolPanelState = HideToolPanel, masterDocLoaded = False, message = "gUD" } 
     , Cmd.map DocListMsg (DocumentList.findDocuments model.maybeCurrentUser (Query.parse queryString))
   )
 

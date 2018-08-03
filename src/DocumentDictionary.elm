@@ -1,4 +1,4 @@
-module DocumentDictionary exposing(DocumentDictionary, empty, put, keys, 
+module DocumentDictionary exposing(DocumentDictionary, empty, put, keys, values,
   get, member, matchId, putTexMacroDocumentInDictionaryById, loadTexMacros, DocDictMsg(..)) 
 
 import Dict exposing(Dict)
@@ -21,7 +21,11 @@ empty = DocumentDictionary Dict.empty
 keys : DocumentDictionary -> List String 
 keys (DocumentDictionary dict) = 
   Dict.keys dict 
-  
+
+values : DocumentDictionary -> List String 
+values (DocumentDictionary dict) = 
+  Dict.values dict |> List.map .id |> List.map String.fromInt
+ 
 
 put : String -> Document -> DocumentDictionary -> DocumentDictionary 
 put key document (DocumentDictionary dict) = 
