@@ -535,12 +535,16 @@ update msg model =
         DocListViewMsg (SetCurrentDocument document) -> 
             let  
               documentList = DocumentList.select (Just document) model.documentList
+              masterDocLoaded = case document.docType of
+                Standard -> model.masterDocLoaded
+                Master -> True
               loadMasterCommand = case document.docType of 
                 Standard -> Cmd.none
                 Master ->   Cmd.map DocListMsg (DocumentList.loadMasterDocument model.maybeCurrentUser document.id)
             in
                ({ model | 
                    currentDocument = document
+                 , masterDocLoaded = masterDocLoaded
                  , deleteDocumentState = DeleteIsOnSafety
                  , documentList = documentList
                  , currentDocumentDirty = False
