@@ -123,7 +123,6 @@ type Msg
     | AcceptSearchQuery String
     | AcceptDocumenTitle String
     | AcceptDocumentTagString String
-    | ReverseText
     | SignIn
     | SignOut
     | RegisterUser
@@ -319,15 +318,8 @@ update msg model =
         AcceptUserName str ->
             ( { model | username = str }, Cmd.none )
 
-        AcceptSearchQuery searchQueryString ->
-          let 
-            message = if String.endsWith "\r" searchQueryString
-              then 
-                "EOL"
-              else 
-                 "x"
-          in 
-            ( { model | message = message, searchQueryString = searchQueryString, masterDocLoaded = False }, Cmd.none )
+        AcceptSearchQuery searchQueryString -> 
+            ( { model | searchQueryString = searchQueryString, masterDocLoaded = False }, Cmd.none )
 
         AcceptDocumenTitle str ->
           let 
@@ -343,9 +335,6 @@ update msg model =
             nextDocument = {currentDocument | tags = nextTags  }
           in 
             ( { model | tagString = str, currentDocument = nextDocument, currentDocumentDirty = True }, Cmd.none )
-
-        ReverseText ->
-            ( { model | message = model.message |> String.reverse |> String.toLower }, Cmd.none )
 
         UserMsg (ReceiveToken result)->
           case result of 
@@ -389,10 +378,9 @@ update msg model =
         DocMsg (ReceiveDocument result) ->
           case result of 
             Ok documentRecord -> 
-               ({ model | message = "document OK", currentDocument = documentRecord.document}, 
+               ({ model | currentDocument = documentRecord.document}, 
                 Cmd.batch [ 
                    loadTexMacrosForDocument documentRecord.document model
-                   --, pushDocument documentRecord.document
                 ]
                 )
             Err err -> 
@@ -438,8 +426,7 @@ update msg model =
                 cmd = Cmd.map DocMsg (Document.attachDocumentToMasterBelowCmd  (User.getTokenStringFromMaybeUser model.maybeCurrentUser) selectedDocId_ nextDocument model.maybeMasterDocument)
                 nextDocumentList_ = DocumentList.nextDocumentList selectedDocId_ nextDocument model.documentList    
               in  
-               ({ model | message = "selectedDocId = " ++ (String.fromInt selectedDocId_)
-                         , currentDocument = nextDocument
+               ({ model | currentDocument = nextDocument
                          , documentList = nextDocumentList_
                 },  cmd)
             Err err -> 
@@ -463,9 +450,8 @@ update msg model =
                   Standard -> Nothing 
                   Master -> Just currentDocument
               in
-               ({ model | 
-                 message = "documentList: " ++ (String.fromInt <| documentListLength documentList)
-                 , documentList = DocumentList.select maybeCurrentDocument documentList
+               ({ model |       
+                  documentList = DocumentList.select maybeCurrentDocument documentList
                  , currentDocument = currentDocument
                  , maybeMasterDocument = nextMaybeMasterDocument
                  }
@@ -509,8 +495,7 @@ update msg model =
                   Master -> Just currentDocument
               in
                ({ model | 
-                 message = "documentList: " ++ (String.fromInt <| documentListLength documentList)
-                 , documentList = DocumentList.selectFirst documentList
+                   documentList = DocumentList.selectFirst documentList
                  , currentDocument = DocumentList.getFirst documentList
                  , maybeMasterDocument = nextMaybeMasterDocument
                  }
@@ -534,8 +519,7 @@ update msg model =
                 nextDocumentList_ = DocumentList.select (Just model.currentDocument) documentList
               in
                 ({ model | 
-                    message = "documentList: " ++ (String.fromInt <| documentListLength documentList)
-                    , documentList = nextDocumentList_
+                      documentList = nextDocumentList_
                     , maybeMasterDocument = nextMaybeMasterDocument 
                     }
                     , saveDocumentListToLocalStorage documentList  )
@@ -551,8 +535,7 @@ update msg model =
                 Master -> (Cmd.map DocListMsg (DocumentList.loadMasterDocument model.maybeCurrentUser document.id), True) -- ####
             in
                ({ model | 
-                 message = "document: " ++ document.title
-                 , currentDocument = document
+                   currentDocument = document
                  , deleteDocumentState = DeleteIsOnSafety
                  , documentList = documentList
                  , currentDocumentDirty = False
@@ -604,25 +587,24 @@ update msg model =
 
         GetPublicDocuments query ->
            ({ model | 
-               message = "query: " ++ query
-             , appMode = Reading
+               appMode = Reading
              , toolPanelState = HideToolPanel
             }
             , Cmd.map DocListMsg (DocumentList.findDocuments Nothing (Query.parse query)))
 
         GetPublicDocumentsRawQuery query ->
-           ({ model | message = "query: " ++ query, appMode = Reading, toolPanelState = HideToolPanel}, 
+           ({ model | appMode = Reading, toolPanelState = HideToolPanel}, 
              Cmd.map DocListMsg (DocumentList.findDocuments Nothing query))
 
         DocViewMsg (GetPublicDocumentsRawQuery2 query) ->
-           ({ model | message = "query: " ++ query, appMode = Reading, toolPanelState = HideToolPanel}, 
+           ({ model | appMode = Reading, toolPanelState = HideToolPanel}, 
              Cmd.map DocListMsg (DocumentList.findDocuments Nothing query))
         
         GetUserDocuments query ->
           case model.maybeCurrentUser of 
             Nothing -> ( model, Cmd.none)
             Just user ->
-             ({ model | message = "query: " ++ query, toolPanelState = HideToolPanel }, Cmd.map DocListMsg (DocumentList.findDocuments (Just user) (Query.parse query)))
+             ({ model | toolPanelState = HideToolPanel }, Cmd.map DocListMsg (DocumentList.findDocuments (Just user) (Query.parse query)))
         
         LoadMasterDocument idString ->
               case String.toInt idString  of 
@@ -705,8 +687,7 @@ update msg model =
           let  
               tokenString = User.getTokenStringFromMaybeUser model.maybeCurrentUser 
           in 
-              ( { model | message = "Saved document: " ++ String.fromInt model.currentDocument.id
-                        , currentDocumentDirty = False }
+              ( { model | currentDocumentDirty = False }
                 , Cmd.map DocMsg <| Document.saveDocument tokenString model.currentDocument )
 
         UpdateCurrentDocument ->
@@ -960,15 +941,13 @@ processInfoForElm : Model -> InfoForElm -> (Model, Cmd Msg)
 processInfoForElm model infoForElm_ =
   case infoForElm_ of 
     DocumentDataFromOutside document -> 
-       ({model | message = "Outside infoForElm"
-                  , currentDocument = document  
+       ({model |    currentDocument = document  
                   , documentList = DocumentList.make document []
             }
             , Cmd.none
           )  
     UserDataFromOutside user -> 
-        ({model | message = "Outside infoForElm"
-                  , maybeCurrentUser = Just user 
+        ({model |   maybeCurrentUser = Just user 
                   , maybeToken = Just (User.getToken user)
             }
             , Cmd.none
@@ -1764,8 +1743,7 @@ headKey keyList =
 
 getPublicDocuments : Model -> String -> (Model, Cmd Msg)
 getPublicDocuments model queryString =
-     ({ model |  message = "query: " ++ queryString
-               , appMode = Reading
+     ({ model |  appMode = Reading
                , toolPanelState = HideToolPanel
             }
             , Cmd.map DocListMsg (DocumentList.findDocuments Nothing (Query.parse queryString)))
@@ -1866,7 +1844,6 @@ saveCurrentDocument model =
       tags = model.tagString |> String.split "," |> List.map String.trim
       nextCurrentDocument = { currentDocument | title = model.documentTitle, tags = tags}
   in 
-      ( { model | message = "Saved document: " ++ String.fromInt model.currentDocument.id
-                , currentDocumentDirty = False 
+      ( { model | currentDocumentDirty = False 
                 , currentDocument = nextCurrentDocument}
         , Cmd.map DocMsg <| Document.saveDocument tokenString nextCurrentDocument )
