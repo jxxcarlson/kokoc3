@@ -500,7 +500,7 @@ update msg model =
                  , maybeMasterDocument = nextMaybeMasterDocument
                  }
                  ,  Cmd.batch [
-                       loadTexMacrosForDocument currentDocument model
+                        loadTexMacrosForDocument currentDocument model
                       , loadTexMacrosForMasterDocument
                       , saveDocumentListToLocalStorage documentList 
                       , pushDocument currentDocument
