@@ -535,9 +535,9 @@ update msg model =
         DocListViewMsg (SetCurrentDocument document) -> 
             let  
               documentList = DocumentList.select (Just document) model.documentList
-              (loadMasterCommand, masterDocLoaded) = case document.docType of 
-                Standard -> (Cmd.none, False)
-                Master -> (Cmd.map DocListMsg (DocumentList.loadMasterDocument model.maybeCurrentUser document.id), True) -- ####
+              loadMasterCommand = case document.docType of 
+                Standard -> Cmd.none
+                Master ->   Cmd.map DocListMsg (DocumentList.loadMasterDocument model.maybeCurrentUser document.id)
             in
                ({ model | 
                    currentDocument = document
@@ -545,7 +545,7 @@ update msg model =
                  , documentList = documentList
                  , currentDocumentDirty = False
                  , counter = model.counter + 1
-                 , masterDocLoaded = masterDocLoaded
+
                  }
                  , Cmd.batch[
                         loadMasterCommand
@@ -598,7 +598,7 @@ update msg model =
             , Cmd.map DocListMsg (DocumentList.findDocuments Nothing (Query.parse query)))
 
         GetPublicDocumentsRawQuery query ->
-           ({ model | appMode = Reading, toolPanelState = HideToolPanel}, 
+           ({ model | appMode = Reading, toolPanelState = HideToolPanel, masterDocLoaded = False },  -- ####
              Cmd.map DocListMsg (DocumentList.findDocuments Nothing query))
 
         DocViewMsg (GetPublicDocumentsRawQuery2 query) ->
