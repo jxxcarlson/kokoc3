@@ -100,6 +100,7 @@ type alias Model =
       , pressedKeys : List Key
       , previousKey : Key
       , locationHref : String
+      , masterDocLoaded : Bool
     }
 
 type DeleteDocumentState = DeleteIsOnSafety | DeleteIsArmed
@@ -241,6 +242,7 @@ initialModel locationHref windowWidth windowHeight document =
             , pressedKeys = []
             , previousKey = F20
             , locationHref = locationHref
+            , masterDocLoaded = False
         }
 
 init : Flags -> ( Model, Cmd Msg )
@@ -325,7 +327,7 @@ update msg model =
               else 
                  "x"
           in 
-            ( { model | message = message, searchQueryString = searchQueryString }, Cmd.none )
+            ( { model | message = message, searchQueryString = searchQueryString, masterDocLoaded = False }, Cmd.none )
 
         AcceptDocumenTitle str ->
           let 
@@ -544,9 +546,9 @@ update msg model =
         DocListViewMsg (SetCurrentDocument document) -> 
             let  
               documentList = DocumentList.select (Just document) model.documentList
-              loadMasterCommand = case document.docType of 
-                Standard -> Cmd.none 
-                Master -> Cmd.map DocListMsg (DocumentList.loadMasterDocument model.maybeCurrentUser document.id)
+              (loadMasterCommand, masterDocLoaded) = case document.docType of 
+                Standard -> (Cmd.none, False)
+                Master -> (Cmd.map DocListMsg (DocumentList.loadMasterDocument model.maybeCurrentUser document.id), True) -- ####
             in
                ({ model | 
                  message = "document: " ++ document.title
@@ -555,6 +557,7 @@ update msg model =
                  , documentList = documentList
                  , currentDocumentDirty = False
                  , counter = model.counter + 1
+                 , masterDocLoaded = masterDocLoaded
                  }
                  , Cmd.batch[
                         loadMasterCommand
@@ -566,13 +569,13 @@ update msg model =
                )
 
         DocViewMsg (LoadMaster docId) ->
-           (model, Cmd.map DocListMsg (DocumentList.loadMasterDocument model.maybeCurrentUser docId))
+           ({model | masterDocLoaded = True}, Cmd.map DocListMsg (DocumentList.loadMasterDocument model.maybeCurrentUser docId))
 
         DocViewMsg (LoadMasterWithSelection childId docId) ->
-           ({ model | selectedDocumentId = childId },  Cmd.map DocListMsg (DocumentList.loadMasterDocumentAndSelect model.maybeCurrentUser docId))
+           ({ model | selectedDocumentId = childId, masterDocLoaded = True},  Cmd.map DocListMsg (DocumentList.loadMasterDocumentAndSelect model.maybeCurrentUser docId))
 
         DocViewMsg (LoadMasterWithCurrentSelection docId) ->
-         ({model | appMode = Reading, toolPanelState = HideToolPanel} , Cmd.map DocListMsg (DocumentList.loadMasterDocumentWithCurrentSelection model.maybeCurrentUser docId))
+         ({model | appMode = Reading, toolPanelState = HideToolPanel, masterDocLoaded = True} , Cmd.map DocListMsg (DocumentList.loadMasterDocumentWithCurrentSelection model.maybeCurrentUser docId))
 
         SignIn ->
           let 
@@ -625,7 +628,7 @@ update msg model =
               case String.toInt idString  of 
                 Nothing ->  ( model, Cmd.none)
                 Just id -> 
-                 ( model, Cmd.map DocListMsg (DocumentList.loadMasterDocument model.maybeCurrentUser id ))
+                 ( {model | masterDocLoaded = True}, Cmd.map DocListMsg (DocumentList.loadMasterDocument model.maybeCurrentUser id ))
 
         DocDictMsg (PutDocumentInDictionaryAsTexMacros result) -> 
           case result of 
@@ -1094,7 +1097,7 @@ logoutPanel model =
 toolsOrContents model = 
   case model.toolPanelState of 
     ShowToolPanel -> toolsPanel model
-    HideToolPanel -> Element.map DocListViewMsg (DocumentListView.viewWithHeading model.windowHeight (docListTitle model) model.documentList)
+    HideToolPanel -> Element.map DocListViewMsg (DocumentListView.viewWithHeading model.windowHeight model.masterDocLoaded (docListTitle model) model.documentList)
 
 toolsPanel model = Element.column [ spacing 15, padding 10, height shrink, scrollbarY] [ 
    publicControls model
@@ -1305,32 +1308,20 @@ footer model =
 
       , Element.el [] (text <| "Author: " ++ model.currentDocument.authorName )
       , Element.el [] (text <| access model.currentDocument) 
-  -- , shareDocument model
   -- , currentUserNameElement model
       , Element.el [] (text <| (String.fromInt (Document.wordCount model.currentDocument)) ++ " words")
-   -- , deleteStateIndicator model
+      , Element.el [] (text <| masterDocLoadedIndicator model)
 
     --  , Element.el [] (text ("keys: " ++ (showKeys model)))
     --  , Element.el [] (text <| displayCurrentMasterDocument model)
     --  , Element.el [] (text <| "Window height: " ++ (String.fromInt model.windowHeight))
   ] 
 
-shareDocument : Model -> Element msg
-shareDocument model = 
-  case model.currentDocument.public of 
-    False -> Element.none
-    True -> Element.el [Font.color (Element.rgb 0.7 0.75 1.0)
-       , paddingXY 8 5 
-       , Background.color (Element.rgb 0.2 0.2 0.4)
-       ] (Element.text <| Configuration.client ++ "/" ++ (String.fromInt model.currentDocument.id))
+masterDocLoadedIndicator model =
+  case model.masterDocLoaded of 
+    True -> "master: LOADED"
+    False -> "master: NOT loaded"
 
-deleteStateIndicator model = 
-  case model.maybeCurrentUser of 
-    Nothing -> Element.none 
-    Just _ -> 
-      case model.deleteDocumentState of 
-        DeleteIsOnSafety -> Element.el [] (Element.text "Safety ON")
-        DeleteIsArmed -> Element.el [] (Element.text "ARMED")
 
 documentDirtyIndicator  model = 
   case model.currentDocumentDirty  of 
