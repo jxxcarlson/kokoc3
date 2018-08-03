@@ -136,12 +136,14 @@ viewMiniLatex texMacros document =
        , ""
       ] |> String.join("\n\n")
 
+    postlude = "\n\n\\bigskip\n\\bigskip\n\\bigskip\n\\bigskip\n\n"
+
     source = if texMacros == "" then 
                 document.content 
              else 
                 prependMacros texMacros document.content
     editRecord =
-        MiniLatex.initializeEditRecord 0 (preamble ++ source) 
+        MiniLatex.initializeEditRecord 0 (preamble ++ source ++ postlude) 
   in 
     MiniLatex.getRenderedText editRecord
         |> List.map (\x -> Element.paragraph [  ] [ Element.html x ])
