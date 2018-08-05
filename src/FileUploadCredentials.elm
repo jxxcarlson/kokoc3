@@ -1,4 +1,10 @@
-module FileUploadCredentials exposing(..)
+module FileUploadCredentials exposing(
+      Credentials
+    , CredentialsWrapper
+    , FileMsg(..)
+    , getS3Credentials
+    , fileInfoTestRecord
+  )
 
 import Json.Encode as Encode
 import Json.Decode as Decode exposing(field, map2, map7)

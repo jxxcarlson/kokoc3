@@ -11,11 +11,13 @@ module User exposing(
    , getTokenString
    , getTokenStringFromMaybeUser
    , username
+   , usernameFromMaybeUser
    , userId
    , encodeUserForOutside
    , decodeUserFromOutside
    , maybeUserFromEmailAndToken
    , registerUser
+   , stringFromMaybeToken
    ) 
 
 
@@ -62,6 +64,12 @@ userId (User user) =
 username : User -> String
 username (User user) =
   user.username
+
+usernameFromMaybeUser : Maybe User -> String 
+usernameFromMaybeUser maybeUser = 
+  case maybeUser of 
+    Nothing -> ""
+    Just user -> username user  
 
 getTokenString : User -> String 
 getTokenString (User user) = 

@@ -33,7 +33,7 @@ import Widget exposing(..)
 
 import Configuration
 import SystemDocument
-import User exposing(Token, UserMsg(..), readToken, User)
+import User exposing(Token, UserMsg(..), readToken, stringFromMaybeToken, User)
 import Document exposing(Document, DocType(..), DocMsg(..), TextType(..))
 import DocumentList exposing(
      DocumentList
@@ -45,6 +45,7 @@ import DocumentView exposing(view, DocViewMsg(..))
 import DocumentListView exposing(DocListViewMsg(..))
 import DocumentDictionary exposing(DocumentDictionary, DocDictMsg(..))
 import Query 
+import FileUploadCredentials as Credentials
 
 
 
@@ -117,6 +118,7 @@ type SignupMode = RegistrationMode | SigninMode
 
 type Msg
     = NoOp
+    | Test
     | AcceptPassword String
     | AcceptEmail String
     | AcceptUserName String 
@@ -134,6 +136,7 @@ type Msg
     | LoadMasterDocument String
     | UserMsg User.UserMsg
     | DocMsg Document.DocMsg
+    | FileMsg Credentials.FileMsg
     | DocListMsg DocumentList.DocListMsg
     | DocListViewMsg DocumentListView.DocListViewMsg
     | DocViewMsg DocumentView.DocViewMsg
@@ -383,6 +386,13 @@ update msg model =
                    loadTexMacrosForDocument documentRecord.document model
                 ]
                 )
+            Err err -> 
+                ({model | message = handleHttpError err},   Cmd.none  )
+
+        FileMsg (Credentials.ReceiveFileCredentials result) ->
+          case result of 
+            Ok credentialsWrapper -> 
+               ({ model | message = "fileinfo OK" }, Cmd.none )
             Err err -> 
                 ({model | message = handleHttpError err},   Cmd.none  )
 
@@ -787,6 +797,11 @@ update msg model =
           in 
             ( { model | currentDocument = nextCurrentDocument}, Cmd.none)
 
+        Test ->
+          let 
+            cmd = Credentials.getS3Credentials (stringFromMaybeToken  model.maybeToken) Credentials.fileInfoTestRecord
+          in
+            ( model, Cmd.map FileMsg cmd )
   
 -- UPDATE END
 
@@ -1306,11 +1321,22 @@ footer model =
       , Element.el [] (text <| (String.fromInt (Document.wordCount model.currentDocument)) ++ " words")
       , Element.el [] (text <| masterDocLoadedIndicator model)
       , Element.el [] (text <| "DDict, keys & values: " ++ documentDictionaryInfo model)
+      , testButton model
 
     --  , Element.el [] (text ("keys: " ++ (showKeys model)))
     --  , Element.el [] (text <| displayCurrentMasterDocument model)
     --  , Element.el [] (text <| "Window height: " ++ (String.fromInt model.windowHeight))
   ] 
+
+testButton : Model -> Element Msg 
+testButton model = 
+  case User.usernameFromMaybeUser model.maybeCurrentUser of 
+    "jxxcarlson" ->
+        Input.button (Widget.buttonStyle  (px 45)) {
+          onPress =  Just Test
+        , label = Element.text ("Test")
+        }
+    _ -> Element.none 
 
 documentDictionaryInfo : Model -> String 
 documentDictionaryInfo model = 
