@@ -14,6 +14,8 @@ import Configuration
 type FileMsg = 
     ReceiveFileCredentials (Result Http.Error CredentialsWrapper)
   
+-- ELLIE ADAPTED FROM @ILIAS: https://ellie-test-19-cutover.now.sh/YmXW6MBCmBa1
+-- https://ellie-test-19-cutover.now.sh/Yn444vwKpFa1 (0.19 drag/drop)
 
 {-
    http://localhost:4000/api/credentials?filename=foo.jpg&mimetype=image/jpeg&bucket=noteimages&path=bar

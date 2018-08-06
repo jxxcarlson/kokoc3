@@ -6,7 +6,8 @@ import Browser
 import Browser.Dom as Dom
 import Task
 import Html exposing(Html)
-import Html.Attributes
+import Html.Attributes exposing(src, type_, value)
+import Html.Events exposing(on)
 import Http
 import Debounce exposing(Debounce)
 import Time exposing(Posix)
@@ -18,7 +19,7 @@ import Url
 import UrlAppParser exposing(Route(..))
 
 import Json.Encode as Encode
-import Json.Decode as Decode exposing(Decoder)
+import Json.Decode as Decode exposing(Decoder, Value)
 import VirtualDom exposing (Handler(..))
 
 import Element exposing (..)
@@ -102,6 +103,7 @@ type alias Model =
       , previousKey : Key
       , locationHref : String
       , masterDocLoaded : Bool
+      , maybeImageString : Maybe String
     }
 
 type DeleteDocumentState = DeleteIsOnSafety | DeleteIsArmed
@@ -163,6 +165,8 @@ type Msg
     | GetUserManual
     | UrlChanged String
     | SetDocumentPublic Bool
+    | ReadImage Value
+    | ImageRead Value
     
 
 -- NAVIGATION
@@ -245,6 +249,7 @@ initialModel locationHref windowWidth windowHeight document =
             , previousKey = F20
             , locationHref = locationHref
             , masterDocLoaded = False
+            , maybeImageString = Nothing
         }
 
 init : Flags -> ( Model, Cmd Msg )
@@ -302,7 +307,9 @@ subscriptions model =
       , getInfoFromOutside Outside LogErr
       , Sub.map KeyMsg Keyboard.subscriptions
       , onUrlChange UrlChanged
+      , imageRead ImageRead
     ]
+
 
 
 -- UPDATE
@@ -803,6 +810,16 @@ update msg model =
             cmd = Credentials.getS3Credentials (stringFromMaybeToken  model.maybeToken) Credentials.fileInfoTestRecord
           in
             ( model, Cmd.map FileMsg cmd )
+
+        ReadImage v ->
+            (model, readImage v )
+
+        ImageRead v ->
+          let 
+            nextImageString = Decode.decodeValue Decode.string v |> Result.toMaybe
+          in
+            ( { model | maybeImageString = nextImageString }, Cmd.none )
+
   
 -- UPDATE END
 
@@ -858,6 +875,43 @@ handleHttpError error =
 --   case resp of 
 --     Http.Response str -> str 
 
+
+-- IMAGE
+
+port readImage : Value -> Cmd msg
+
+
+port imageRead : (Value -> msg) -> Sub msg
+
+show : String -> Html msg
+show url =
+    Html.img [ src url ] []
+
+
+decodeDataTransferFile : (Value -> msg) -> Decoder msg
+decodeDataTransferFile toMsg =
+    Decode.map toMsg (Decode.at ["dataTransfer", "files", "0"] Decode.value)
+
+
+decodeNodeFile : (Value -> msg) -> Decoder msg
+decodeNodeFile toMsg =
+    Decode.map toMsg (Decode.at ["target", "files", "0"] Decode.value)
+
+viewImage_ : Model -> Html Msg
+viewImage_ model =
+    Html.div []
+        [ Html.input [ type_ "file", on "change" (decodeNodeFile ReadImage), value "" ] []
+        , Html.p [] [ Maybe.map show model.maybeImageString |> Maybe.withDefault (Html.text "") ]
+        , Html.pre [] [ Html.text <| ( model.maybeImageString |> Maybe.withDefault "")]
+        ]
+viewImage : Model -> Element Msg 
+viewImage model = 
+  case model.maybeCurrentUser of 
+    Nothing -> Element.none
+    Just user -> 
+      case (User.username user) == "jxxcarlson" of 
+        True -> Element.html (viewImage_ model)
+        False -> Element.none
 
 -- OUTSIDE
 
@@ -1282,6 +1336,7 @@ bodyRightColumn portion_ model =
   Element.column [width (fillPortion portion_), height fill, Background.color Widget.lightBlue, centerX] [
       loginOrSignUpPanel model
     , logoutPanel model
+    ,  viewImage model
   ]
 
 docListTitle : Model -> String 

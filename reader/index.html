@@ -53,8 +53,27 @@
 					height: window.innerHeight,
 					location: location.href
 				}
-		});	
+		});
 		
+		// Image stuff
+		var globalReader = function () {
+			var reader = new FileReader();
+
+			reader.onload = (function (event) {
+				elmApp.ports.imageRead.send(event.target.result)
+			});
+
+			return reader;
+	    }
+
+		app.ports.readImage.subscribe(function (file) {
+			console.log(file);
+			globalReader.readAsDataURL(file);
+		});
+
+
+	    // END Image stuff
+				
 		// Inform app of browser navigation (the BACK and FORWARD buttons)
 		window.addEventListener('popstate', function () {
 			app.ports.onUrlChange.send(location.href);
@@ -162,42 +181,49 @@
 			switch(msg.tag) {
 
 				case "DocumentData":
+				console.log("DocumentData")
 				if (msg.data != null) {
 					localStorage.setItem("currentDocument", JSON.stringify(msg.data));
 				}	
 				break;
 
 				case "DocumentListData":
+				console.log("DocumentListData")
 				if (msg.data != null) {
 					localStorage.setItem("currentDocumentList", JSON.stringify(msg.data));
 				}
 				break;
 
 				case "AskToReconnectDocument":
+				console.log("AskToReconnectDocument")
 				if (localStorage.currentDocument != null && localStorage.currentDocument[0] !='[') {
 					app.ports.infoForElm.send({tag: "ReconnectDocument", data: JSON.parse(localStorage.currentDocument)})
 				}
 				break;
 
 				case "AskToReconnectDocumentList":
+				console.log("AskToReconnectDocumentList")
 				if (localStorage.currentDocumentList != null ) {
 					app.ports.infoForElm.send({tag: "ReconnectDocumentList", data: JSON.parse(localStorage.currentDocumentList)})
 				}
 				break;
 
 				case "UserData":
+				console.log("UserData")
 				if (msg.data != null) {
 				localStorage.setItem("currentUser", JSON.stringify(msg.data));
 				}
 				break;
 
 				case "AskToReconnectUser":
+				console.log("AskToReconnectUser")
 				if (localStorage.currentUser != null) {
 					app.ports.infoForElm.send({tag: "ReconnectUser", data: JSON.parse(localStorage.currentUser)})
 				}
 				break;
 
 				case "AskToEraseLocalStorage":
+					console.log("AskToEraseLocalStorage")
 					localStorage.setItem("currentUser", null);	
 					localStorage.setItem("currentDocument", null);
 					localStorage.setItem("currentDocumentList", null);	
