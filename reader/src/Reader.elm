@@ -899,11 +899,32 @@ decodeNodeFile toMsg =
 
 viewImage_ : Model -> Html Msg
 viewImage_ model =
-    Html.div []
-        [ Html.input [ type_ "file", on "change" (decodeNodeFile ReadImage), value "" ] []
-        , Html.p [] [ Maybe.map show model.maybeImageString |> Maybe.withDefault (Html.text "") ]
-        , Html.pre [] [ Html.text <| ( model.maybeImageString |> Maybe.withDefault "")]
+    Html.div [ Html.Attributes.style "margin-left" "20px"
+             , Html.Attributes.style "margin-bottom" "25px"
+             , Html.Attributes.style "padding" "10px"
+             , Html.Attributes.style "background-color" "#eee"
+             , Html.Attributes.style "width" "170px"]
+        [ Html.strong [] [Html.text "Image loader"]
+        , Html.br [] []
+        , Html.br [][]
+        , Html.input [ type_ "file", on "change" (decodeNodeFile ReadImage), value "" ] []
+        , Html.pre [] [ Html.text <| imageType model]
+        , Html.pre [] [ Html.text <|  (\x -> x ++ " bytes") <| String.fromInt <| String.length <| ( model.maybeImageString |> Maybe.withDefault "")]
+        -- , Html.p [] [ Maybe.map show model.maybeImageString |> Maybe.withDefault (Html.text "") ]
         ]
+
+imageType : Model -> String
+imageType model = 
+  let 
+    imageString = ( model.maybeImageString |> Maybe.withDefault "- no image -" )
+    i = (String.indexes ";" imageString) |> List.head |> Maybe.withDefault 0
+    imageInfo = String.slice 0 i imageString
+  in 
+    case String.length imageInfo == 0 of 
+      True -> "No image"
+      False -> String.dropLeft 5 imageInfo
+
+  
 viewImage : Model -> Element Msg 
 viewImage model = 
   case model.maybeCurrentUser of 

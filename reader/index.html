@@ -57,19 +57,19 @@
 		
 		// Image stuff
 		var globalReader = function () {
-			var reader = new FileReader();
+		var reader = new FileReader();
 
-			reader.onload = (function (event) {
-				elmApp.ports.imageRead.send(event.target.result)
+		reader.onload = (function (event) {
+			app.ports.imageRead.send(event.target.result)
 			});
 
 			return reader;
-	    }
+			}();
 
-		app.ports.readImage.subscribe(function (file) {
+			app.ports.readImage.subscribe(function (file) {
 			console.log(file);
 			globalReader.readAsDataURL(file);
-		});
+			});
 
 
 	    // END Image stuff
