@@ -885,7 +885,7 @@ port imageRead : (Value -> msg) -> Sub msg
 
 show : String -> Html msg
 show url =
-    Html.img [ src url ] []
+    Html.img [ src url, Html.Attributes.width 160 ] []
 
 
 decodeDataTransferFile : (Value -> msg) -> Decoder msg
@@ -910,7 +910,7 @@ viewImage_ model =
         , Html.input [ type_ "file", on "change" (decodeNodeFile ReadImage), value "" ] []
         , Html.pre [] [ Html.text <| imageType model]
         , Html.pre [] [ Html.text <|  (\x -> x ++ " bytes") <| String.fromInt <| String.length <| ( model.maybeImageString |> Maybe.withDefault "")]
-        -- , Html.p [] [ Maybe.map show model.maybeImageString |> Maybe.withDefault (Html.text "") ]
+        , Html.p [] [ Maybe.map show model.maybeImageString |> Maybe.withDefault (Html.text "") ]
         ]
 
 imageType : Model -> String
