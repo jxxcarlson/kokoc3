@@ -79,7 +79,7 @@ basicDocument = Document
     "basicDocument123"
     0
     "author123"
-    "Phineas Phud"
+    "— kNode team"
     "Welcome to kNode Reader"
     Configuration.basicDocumentText
     1  
