@@ -269,6 +269,7 @@ processUrl urlString =
       DocumentIdRef docId -> 
         Cmd.batch [
             sendInfoOutside (AskToReconnectUser Encode.null)
+            , sendInfoOutside (AskToReconnectDocumentList Encode.null)
             , Cmd.map DocMsg (Document.getDocumentById docId Nothing)  
         ]
 
@@ -938,8 +939,8 @@ getInfoFromOutside tagger onError =
                         Ok result ->
                             tagger <| UserDataFromOutside result
 
-                        Err e ->(
-                            onError <| "Bad decode (getInfoFromOutside)"  ++ (Decode.errorToString e))
+                        Err e -> 
+                            onError <| ""  -- "Bad decode (getInfoFromOutside)"  ++ (Decode.errorToString e))
                 _ ->
                     onError <| "Unexpected info from outside"
         )
@@ -1313,14 +1314,14 @@ footer model =
       , Element.el [documentDirtyIndicator  model, padding 5] (text ("id " ++ (String.fromInt model.currentDocument.id )))
       , saveCurrentDocumentButton (px 50) model
       , printDocument model 
-      , getAuthorsDocumentsButton (px 90) model
+      , getAuthorsDocumentsButton (px 110) model
 
-      , Element.el [] (text <| "Author: " ++ model.currentDocument.authorName )
+      -- , Element.el [] (text <| "Author: " ++ model.currentDocument.authorName )
       , Element.el [] (text <| access model.currentDocument) 
   -- , currentUserNameElement model
       , Element.el [] (text <| (String.fromInt (Document.wordCount model.currentDocument)) ++ " words")
-      , Element.el [] (text <| masterDocLoadedIndicator model)
-      , Element.el [] (text <| "DDict, keys & values: " ++ documentDictionaryInfo model)
+      -- , Element.el [] (text <| masterDocLoadedIndicator model)
+      -- , Element.el [] (text <| "DDict, keys & values: " ++ documentDictionaryInfo model)
       , testButton model
 
     --  , Element.el [] (text ("keys: " ++ (showKeys model)))
@@ -1663,13 +1664,16 @@ getAuthorsDocumentsButton_ width_ model =
   let  
     authorname = model.currentDocument.authorName 
   in 
-    Input.button (buttonStyle  width_) {
-      onPress =  Just (GetPublicDocumentsRawQuery ("authorname=" ++ authorname))
-    , label = Element.text "Author docs"
-    }
+    case authorname == "" of 
+      True -> Element.none 
+      False ->
+        Input.button ((buttonStyle  width_) ++ [Font.center]) {
+          onPress =  Just (GetPublicDocumentsRawQuery ("authorname=" ++ authorname ++ "&sort=title"))
+        , label = Element.text authorname
+        }
 
 saveCurrentDocumentButton : Length -> Model -> Element Msg    
-saveCurrentDocumentButton width_ model = 
+saveCurrentDocumentButton width_ model =  
     case model.maybeCurrentUser of 
     Nothing -> Element.none 
     Just _ ->
