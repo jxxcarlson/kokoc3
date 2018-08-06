@@ -269,7 +269,7 @@ processUrl urlString =
       DocumentIdRef docId -> 
         Cmd.batch [
             sendInfoOutside (AskToReconnectUser Encode.null)
-            , sendInfoOutside (AskToReconnectDocumentList Encode.null)
+           -- , sendInfoOutside (AskToReconnectDocumentList Encode.null)
             , Cmd.map DocMsg (Document.getDocumentById docId Nothing)  
         ]
 
@@ -940,7 +940,7 @@ getInfoFromOutside tagger onError =
                             tagger <| UserDataFromOutside result
 
                         Err e -> 
-                            onError <| ""  -- "Bad decode (getInfoFromOutside)"  ++ (Decode.errorToString e))
+                            onError <| ""  --   "Bad decode (getInfoFromOutside)"  ++ (Decode.errorToString e))
                 _ ->
                     onError <| "Unexpected info from outside"
         )
