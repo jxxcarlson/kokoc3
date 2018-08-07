@@ -399,13 +399,6 @@ update msg model =
             Err err -> 
                 ({model | message = handleHttpError err},   Cmd.none  )
 
-        FileMsg (Credentials.ReceiveFileCredentials result) ->
-          case result of 
-            Ok credentialsWrapper -> 
-               ({ model | message = "fileinfo OK" }, Cmd.none )
-            Err err -> 
-                ({model | message = handleHttpError err},   Cmd.none  )
-
         DocMsg (AcknowledgeDocumentDeleted result) ->
           case result of 
             Ok reply -> 
@@ -823,6 +816,16 @@ update msg model =
               Just fileData -> fileData.name
           in
             ({model | message = fileName, maybeFileData = maybeFileData}, readImage v )
+
+        FileMsg (Credentials.ReceiveFileCredentials result) ->
+          case result of 
+            Ok credentialsWrapper -> 
+               ({ model | message = "fileinfo OK" }, Cmd.none )
+            Err err -> 
+                ({model | message = handleHttpError err},   Cmd.none  )
+
+        -- ReceivePresignedCredentials ->
+        --   (model, Cmd.none)
 
         ImageRead v ->
           let 

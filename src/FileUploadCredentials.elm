@@ -6,6 +6,7 @@ module FileUploadCredentials exposing(
     , fileInfoTestRecord
     , FileData 
     , decodeFileData
+    , encodeFileData
   )
 
 import Json.Encode as Encode
@@ -134,6 +135,18 @@ decodeFileData =
         (field "webkitRelativePath" Decode.string)
         (field "size" Decode.int)
         (field "type" Decode.string)
+
+encodeFileData : FileData -> Encode.Value
+encodeFileData fileData =
+    Encode.object
+        [ 
+          ( "name", Encode.string <| fileData.name )
+        , ( "lastModified", Encode.int <| fileData.lastModified )
+        , ( "webkitRelativePath", Encode.string <| fileData.webkitRelativePath )
+        , ( "size", Encode.int <| fileData.size )
+        , ( "type", Encode.string <| fileData.mimetype )
+        ]
+
 
 
 decodeCredentials : Decode.Decoder Credentials
