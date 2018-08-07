@@ -4,6 +4,8 @@ module FileUploadCredentials exposing(
     , FileMsg(..)
     , getS3Credentials
     , fileInfoTestRecord
+    , FileData 
+    , decodeFileData
   )
 
 import Json.Encode as Encode
@@ -114,6 +116,24 @@ type alias CredentialsWrapper =
     { credentials : Credentials
     , url : String
     }
+
+
+type alias FileData = 
+  {   name : String
+    , lastModified : Int  
+    , webkitRelativePath : String 
+    , size : Int  
+    , mimetype : String
+   }
+
+decodeFileData : Decode.Decoder FileData
+decodeFileData =
+    Decode.map5 FileData
+        (field "name" Decode.string)
+        (field "lastModified" Decode.int)
+        (field "webkitRelativePath" Decode.string)
+        (field "size" Decode.int)
+        (field "type" Decode.string)
 
 
 decodeCredentials : Decode.Decoder Credentials

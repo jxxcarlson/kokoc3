@@ -46,7 +46,7 @@ import DocumentView exposing(view, DocViewMsg(..))
 import DocumentListView exposing(DocListViewMsg(..))
 import DocumentDictionary exposing(DocumentDictionary, DocDictMsg(..))
 import Query 
-import FileUploadCredentials as Credentials
+import FileUploadCredentials as Credentials exposing(FileData)
 
 
 
@@ -104,6 +104,7 @@ type alias Model =
       , locationHref : String
       , masterDocLoaded : Bool
       , maybeImageString : Maybe String
+      , maybeFileData : Maybe FileData
     }
 
 type DeleteDocumentState = DeleteIsOnSafety | DeleteIsArmed
@@ -250,6 +251,7 @@ initialModel locationHref windowWidth windowHeight document =
             , locationHref = locationHref
             , masterDocLoaded = False
             , maybeImageString = Nothing
+            , maybeFileData = Nothing
         }
 
 init : Flags -> ( Model, Cmd Msg )
@@ -813,9 +815,14 @@ update msg model =
 
         ReadImage v ->
           let 
-            _ = Debug.log "ReadImage" v 
+            maybeFileData = case (Decode.decodeValue Credentials.decodeFileData v) of
+              Ok fileData -> Just fileData
+              Err _ -> Nothing
+            fileName = case maybeFileData of 
+              Nothing -> "No file"
+              Just fileData -> fileData.name
           in
-            ({model | message = "ReadImage"}, readImage v )
+            ({model | message = fileName, maybeFileData = maybeFileData}, readImage v )
 
         ImageRead v ->
           let 
