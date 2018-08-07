@@ -812,13 +812,17 @@ update msg model =
             ( model, Cmd.map FileMsg cmd )
 
         ReadImage v ->
-            (model, readImage v )
+          let 
+            _ = Debug.log "ReadImage" v 
+          in
+            ({model | message = "ReadImage"}, readImage v )
 
         ImageRead v ->
           let 
             nextImageString = Decode.decodeValue Decode.string v |> Result.toMaybe
+            cmd = Credentials.getS3Credentials (stringFromMaybeToken  model.maybeToken) Credentials.fileInfoTestRecord
           in
-            ( { model | maybeImageString = nextImageString }, Cmd.none )
+            ( { model | maybeImageString = nextImageString, message = "ImageRead" }, Cmd.map FileMsg cmd  )
 
   
 -- UPDATE END
