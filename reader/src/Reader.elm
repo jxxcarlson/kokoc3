@@ -109,7 +109,7 @@ type alias Model =
 type DeleteDocumentState = DeleteIsOnSafety | DeleteIsArmed
 
 type AppMode = 
-  Reading | Writing
+  Reading | Writing | ImageEditing
   
 type ToolPanelState = 
   ShowToolPanel | HideToolPanel
@@ -851,11 +851,12 @@ handleKey model key =
     Character "s" -> saveCurrentDocument model
     _ -> (model, Cmd.none)
 
-
+doSearch : Model -> (Model, Cmd Msg)
 doSearch model = 
   case model.appMode of 
         Reading -> getPublicDocuments model model.searchQueryString 
         Writing -> getUserDocuments model model.searchQueryString 
+        ImageEditing -> (model, Cmd.none)
     
 -- ERROR
 
@@ -1072,7 +1073,7 @@ processInfoForElm model infoForElm_ =
 view  model =
    Element.layout [Font.size 14, width fill, height fill, clipY] <|
         Element.column [ width fill, height (px model.windowHeight)] [
-            header model
+              header model
             , body model
             , footer model
         ]
@@ -1088,7 +1089,8 @@ header model =
         , startButton (px 55) model 
         , homeButton (px 55) model
         , readerModeButton (px 52) model
-        , writerModeButton (px 52) model]
+        , writerModeButton (px 52) model
+        , imageModeButton (px 52) model]
   ]
 
 appTitle : AppMode -> String 
@@ -1096,13 +1098,14 @@ appTitle appMode =
   case appMode of 
     Reading -> "kNode Reader"
     Writing -> "kNode Writer"
-  
+    ImageEditing -> "kNode Images"
 
 body : Model -> Element Msg 
 body model =
   case model.appMode of 
     Reading -> readerBody model 
-    Writing -> writerBody model  
+    Writing -> writerBody model 
+    ImageEditing -> imageBody model 
 
 
 readerBody : Model -> Element Msg
@@ -1110,6 +1113,7 @@ readerBody model =
   Element.row [width (fillPortion 4), height fill, Background.color Widget.white, centerX] [
      bodyLeftColumn 2 model,  bodyReaderColumn model.windowHeight 7 model, bodyRightColumn 2 model
   ]
+
 writerBody : Model -> Element Msg
 writerBody model = 
   Element.row [width fill, height (px (model.windowHeight - 70)), Background.color Widget.white, centerX] [
@@ -1125,6 +1129,36 @@ bodyLeftColumn portion_ model =
       , toolsOrContents model
   ]
 
+-- IMAGEBODY
+
+imageBody : Model -> Element Msg
+imageBody model = 
+  Element.row [width fill, height (px (model.windowHeight - 70)), Background.color Widget.white, centerX] [
+     imageLeftColumn 2 model,  imageCenterColumn model.windowHeight 7 model, imageRightColumn 2 model
+  ]
+
+imageLeftColumn : Int -> Model -> Element Msg
+imageLeftColumn portion_ model = 
+  Element.column [width (fillPortion portion_), height fill, 
+    Background.color Widget.lightBlue, paddingXY 20 20, spacing 10] [ 
+       
+  ]
+
+imageCenterColumn : Int -> Int -> Model -> Element Msg
+imageCenterColumn windowHeight_ portion_  model  = 
+  Element.column [width (fillPortion portion_), height (px (windowHeight_ - 73)), paddingXY 20 20
+    , Background.color Widget.lightGrey, centerX] [
+      
+  ]
+
+imageRightColumn : Int -> Model -> Element Msg
+imageRightColumn portion_ model = 
+  Element.column [width (fillPortion portion_), height fill, Background.color Widget.lightBlue, centerX] [
+      viewImage model
+  ]
+
+
+-- LOGIN, ETC
 
 loginOrSignUpPanel model = 
   case model.signupMode of
@@ -1357,7 +1391,6 @@ bodyRightColumn portion_ model =
   Element.column [width (fillPortion portion_), height fill, Background.color Widget.lightBlue, centerX] [
       loginOrSignUpPanel model
     , logoutPanel model
-    ,  viewImage model
   ]
 
 docListTitle : Model -> String 
@@ -1614,6 +1647,7 @@ highLightTextType textType1 textType2 =
 newDocumentButton :  Model -> Element Msg    
 newDocumentButton model = 
   case model.appMode of 
+    ImageEditing -> Element.none
     Reading -> Element.none 
     Writing -> 
       Input.button (buttonStyle (px 105)) {
@@ -1627,6 +1661,7 @@ newChildButton model =
   case model.appMode of 
     Reading -> Element.none 
     Writing -> newChildButton_ model
+    ImageEditing -> Element.none
 
 newChildButton_ :  Model -> Element Msg    
 newChildButton_ model = 
@@ -1647,6 +1682,7 @@ newChildButton__ model =
 toggleToolsButton : Length -> Model -> Element Msg    
 toggleToolsButton width_ model = 
   case model.appMode  of 
+    ImageEditing -> Element.none
     Reading -> Element.none
     Writing -> 
       Input.button (buttonStyle width_ ) {
@@ -1719,6 +1755,7 @@ getDocumentMsg appMode searchQueryString =
   case appMode of 
     Reading -> GetPublicDocuments searchQueryString
     Writing -> GetUserDocuments searchQueryString
+    ImageEditing -> NoOp
 
 getRandomDocumentsButton : Length -> Model -> Element Msg    
 getRandomDocumentsButton width_ model = 
@@ -1823,6 +1860,18 @@ writerModeButton width_ model =
       , label = Element.text "Write"
       } 
 
+imageModeButton : Length -> Model -> Element Msg    
+imageModeButton width_ model = 
+  case model.maybeCurrentUser of 
+    Nothing -> Element.none 
+    Just user -> 
+      case User.username user == "jxxcarlson" of 
+        False -> Element.none 
+        True -> 
+          Input.button (modeButtonStyle model.appMode ImageEditing  width_) {
+            onPress =  Just (ChangeMode ImageEditing)
+          , label = Element.text "Image"
+          } 
 -- END: BUTTONS
 
 

@@ -67,7 +67,9 @@
 			}();
 
 			app.ports.readImage.subscribe(function (file) {
+			console.log("File info following:")
 			console.log(file);
+			console.log("---------------------")
 			globalReader.readAsDataURL(file);
 			});
 
