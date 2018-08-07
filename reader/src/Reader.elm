@@ -105,6 +105,7 @@ type alias Model =
       , masterDocLoaded : Bool
       , maybeImageString : Maybe String
       , maybeFileData : Maybe FileData
+      , fileValue : Encode.Value
     }
 
 type DeleteDocumentState = DeleteIsOnSafety | DeleteIsArmed
@@ -252,6 +253,7 @@ initialModel locationHref windowWidth windowHeight document =
             , masterDocLoaded = False
             , maybeImageString = Nothing
             , maybeFileData = Nothing
+            , fileValue = Encode.null
         }
 
 init : Flags -> ( Model, Cmd Msg )
@@ -811,18 +813,33 @@ update msg model =
             maybeFileData = case (Decode.decodeValue Credentials.decodeFileData v) of
               Ok fileData -> Just fileData
               Err _ -> Nothing
-            fileName = case maybeFileData of 
-              Nothing -> "No file"
-              Just fileData -> fileData.name
+            fileInfo = case maybeFileData of 
+              Nothing ->  Credentials.fileInfoTestRecord
+              Just fileData -> 
+                { filename = fileData.name 
+                  , mimetype = fileData.mimetype
+                  , bucket = "noteimages"
+                  , path = (User.usernameFromMaybeUser model.maybeCurrentUser) -- ++ "/" ++ fileData.name
+                }
+            cmd = Credentials.getS3Credentials (stringFromMaybeToken  model.maybeToken) fileInfo
           in
-            ({model | message = fileName, maybeFileData = maybeFileData}, readImage v )
+            ({model | message = fileInfo.filename, maybeFileData = maybeFileData, fileValue = v }, Cmd.map FileMsg cmd )
+
+
+  
 
         FileMsg (Credentials.ReceiveFileCredentials result) ->
-          case result of 
-            Ok credentialsWrapper -> 
-               ({ model | message = "fileinfo OK" }, Cmd.none )
-            Err err -> 
-                ({model | message = handleHttpError err},   Cmd.none  )
+          let 
+            _ = Debug.log "Credentials" result
+            v = case model.maybeFileData of 
+              Nothing -> Encode.null
+              Just fileData -> Credentials.encodeFileData fileData
+          in 
+            case result of 
+              Ok credentialsWrapper -> 
+                ({ model | message = "fileinfo OK" }, readImage model.fileValue )
+              Err err -> 
+                  ({model | message = handleHttpError err}, Cmd.none  )
 
         -- ReceivePresignedCredentials ->
         --   (model, Cmd.none)
@@ -830,9 +847,8 @@ update msg model =
         ImageRead v ->
           let 
             nextImageString = Decode.decodeValue Decode.string v |> Result.toMaybe
-            cmd = Credentials.getS3Credentials (stringFromMaybeToken  model.maybeToken) Credentials.fileInfoTestRecord
           in
-            ( { model | maybeImageString = nextImageString, message = "ImageRead" }, Cmd.map FileMsg cmd  )
+            ( { model | maybeImageString = nextImageString, message = "ImageRead" }, Cmd.none  )
 
   
 -- UPDATE END
