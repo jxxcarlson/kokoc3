@@ -845,7 +845,6 @@ update msg model =
 
         FileMsg (Credentials.ReceivePresignedUrl result) ->
           let 
-            _ = Debug.log "result" result
             v = case model.maybeFileData of 
               Nothing -> Encode.null
               Just fileData -> Credentials.encodeFileData fileData
