@@ -67,10 +67,17 @@
 			}();
 
 			app.ports.readImage.subscribe(function (file) {
-			console.log("File info following:")
-			console.log(file);
-			console.log("---------------------")
-			globalReader.readAsDataURL(file);
+				console.log("File info following:")
+				console.log(file);
+				console.log("---------------------")
+				globalReader.readAsDataURL(file);
+
+				// $.ajax({
+				// 	url: presignedUrl, // the presigned URL
+				// 	type: 'PUT',
+				// 	data: 'data to upload into URL',
+				// 	success: function() { console.log('Uploaded data successfully.'); }
+				// 	});
 			});
 
 

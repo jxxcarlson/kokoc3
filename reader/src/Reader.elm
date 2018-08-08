@@ -106,6 +106,7 @@ type alias Model =
       , maybeImageString : Maybe String
       , maybeFileData : Maybe FileData
       , fileValue : Encode.Value
+      , psurl : String
     }
 
 type DeleteDocumentState = DeleteIsOnSafety | DeleteIsArmed
@@ -254,6 +255,7 @@ initialModel locationHref windowWidth windowHeight document =
             , maybeImageString = Nothing
             , maybeFileData = Nothing
             , fileValue = Encode.null
+            , psurl = ""
         }
 
 init : Flags -> ( Model, Cmd Msg )
@@ -851,7 +853,7 @@ update msg model =
           in 
             case result of 
               Ok url -> 
-                ({ model | message = "psurl: " ++ url }, readImage model.fileValue )
+                ({ model | message = "psurl: " ++ url, psurl = url }, readImage model.fileValue )
               Err err -> 
                   ({model | message = handleHttpError err}, Cmd.none  )
         -- ReceivePresignedCredentials ->
@@ -1487,7 +1489,7 @@ testButton model =
     "jxxcarlson" ->
         Input.button (Widget.buttonStyle  (px 45)) {
           onPress =  Just Test
-        , label = Element.text ("Test")
+        , label = Element.el [] (Element.text ("Test"))
         }
     _ -> Element.none 
 
@@ -1595,14 +1597,14 @@ publicButton : Document -> Element Msg
 publicButton document = 
   Input.button (Widget.buttonStyleWithColor (publicIndicatorColor document.public True) (px 60)) {
     onPress =  Just (SetDocumentPublic True)
-  , label = Element.text ("Public")
+  , label = Element.el [] (Element.text ("Public"))
   }
 
 privateButton : Document -> Element Msg 
 privateButton document = 
   Input.button (Widget.buttonStyleWithColor (publicIndicatorColor document.public False) (px 60)) {
     onPress =  Just (SetDocumentPublic False)
-  , label = Element.text ("Private")
+  , label = Element.el [] (Element.text ("Private"))
   }  
 
 publicIndicatorColor : Bool -> Bool -> Color 
@@ -1616,35 +1618,35 @@ miniLatexTypeButton : Model -> Element Msg
 miniLatexTypeButton model = 
   Input.button (textTypeButtonStyle model MiniLatex) {
     onPress =  Just (SetDocumentTextType MiniLatex)
-  , label = Element.text ("MiniLatex")
+  , label = Element.el [] (Element.text ("MiniLatex"))
   }
 
 asciidocTypeButton : Model -> Element Msg 
 asciidocTypeButton model = 
   Input.button (textTypeButtonStyle model Asciidoc) {
     onPress =  Just (SetDocumentTextType Asciidoc)
-  , label = Element.text ("Asciidoc")
+  , label = Element.el [] (Element.text ("Asciidoc"))
   }
 
 asciidocLatexTypeButton : Model -> Element Msg 
 asciidocLatexTypeButton model = 
   Input.button (textTypeButtonStyle model AsciidocLatex) {
     onPress =  Just (SetDocumentTextType AsciidocLatex)
-  , label = Element.text ("Asciidoc Latex")
+  , label = Element.el [] (Element.text ("Asciidoc Latex"))
   }
 
 markdownTypeButton : Model -> Element Msg 
 markdownTypeButton model = 
   Input.button (textTypeButtonStyle model Markdown) {
     onPress =  Just (SetDocumentTextType Markdown)
-  , label = Element.text ("Markdown")
+  , label = Element.el [] (Element.text ("Markdown"))
   }
 
 plainTextTypeButton : Model -> Element Msg 
 plainTextTypeButton model = 
   Input.button (textTypeButtonStyle model PlainText) {
     onPress =  Just (SetDocumentTextType PlainText)
-  , label = Element.text ("Plain Text")
+  , label = Element.el [] (Element.text ("Plain Text"))
   } 
 
 
@@ -1664,14 +1666,14 @@ standardDocumentButton : Model -> Element Msg
 standardDocumentButton model = 
   Input.button (documentTypeButtonStyle model Standard) {
     onPress =  Just (SetDocumentType Standard)
-  , label = Element.text ("Standard")
+  , label = Element.el [] (Element.text ("Standard"))
   }
 
 masterDocumentButton : Model -> Element Msg 
 masterDocumentButton model = 
   Input.button (documentTypeButtonStyle model Master) {
     onPress =  Just (SetDocumentType Master)
-  , label = Element.text ("Master")
+  , label = Element.el [] (Element.text ("Master"))
   }
 
 highLightDocumentType : DocType -> DocType  -> List (Attribute msg) 
@@ -1695,7 +1697,7 @@ newDocumentButton model =
     Writing -> 
       Input.button (buttonStyle (px 105)) {
           onPress =  Just (NewDocument)
-        , label = Element.text ("New document")
+        , label = Element.el [] (Element.text ("New document"))
         }
 
 
@@ -1719,7 +1721,7 @@ newChildButton__ :  Model -> Element Msg
 newChildButton__ model = 
   Input.button (buttonStyle (px 130)) {
     onPress =  Just (NewChildDocument) 
-  , label = Element.text ("New subdocument")
+  , label = Element.el [] (Element.text ("New subdocument"))
   }
 
 toggleToolsButton : Length -> Model -> Element Msg    
@@ -1730,7 +1732,7 @@ toggleToolsButton width_ model =
     Writing -> 
       Input.button (buttonStyle width_ ) {
         onPress =  Just (ToggleToolPanelState)
-      , label = Element.text (toggleToolsTitle model.toolPanelState)
+      , label = Element.el [] (Element.text (toggleToolsTitle model.toolPanelState))
       }
    
 
@@ -1746,21 +1748,21 @@ getTokenButton : Length -> Model -> Element Msg
 getTokenButton width_ model = 
   Input.button (buttonStyle width_) {
     onPress =  Just SignIn
-  , label = Element.text "Sign in"
+  , label = Element.el [] (Element.text "Sign in")
   } 
 
 registerUserButton : Length -> Model -> Element Msg    
 registerUserButton width_ model = 
   Input.button (buttonStyle width_) {
     onPress =  Just RegisterUser
-  , label = Element.text "Sign up"
+  , label = Element.el [] (Element.text "Sign up")
   } 
 
 cancelRegistrationButton : Length -> Model -> Element Msg    
 cancelRegistrationButton width_ model = 
   Input.button (buttonStyle width_) {
     onPress =  Just (SetSignupMode SigninMode)
-  , label = Element.text "Cancel"
+  , label = Element.el [] (Element.text "Cancel")
   } 
 
 
@@ -1768,7 +1770,7 @@ gotoRegistrationButton : Length -> Model -> Element Msg
 gotoRegistrationButton width_ model = 
   Input.button (buttonStyle width_) {
     onPress =  Just (SetSignupMode RegistrationMode)
-  , label = Element.text "Sign up"
+  , label = Element.el [] (Element.text "Sign up")
   }
 
 
@@ -1776,13 +1778,13 @@ signoutButton : Length -> Model -> Element Msg
 signoutButton width_ model = 
   Input.button (buttonStyle width_) {
     onPress =  Just SignOut
-  , label = Element.text "Sign out"
+  , label = Element.el [] (Element.text "Sign out")
   } 
 
 viewUserManualButton width_ model = 
   Input.button (listItemStyleBold width_) {
     onPress =  Just GetUserManual
-  , label = Element.text "User manual"
+  , label = Element.el [] (Element.text "User manual")
   } 
 
 
@@ -1804,7 +1806,7 @@ getRandomDocumentsButton : Length -> Model -> Element Msg
 getRandomDocumentsButton width_ model = 
   Input.button (buttonStyle  width_) {
     onPress =  Just (GetPublicDocumentsRawQuery "random=public")
-  , label = Element.text "Random"
+  , label = Element.el [] (Element.text "Random")
   } 
 
 
@@ -1825,18 +1827,12 @@ getAuthorsDocumentsButton_ width_ model =
       False ->
         Input.button ((buttonStyle  width_) ++ [Font.center]) {
           onPress =  Just (GetPublicDocumentsRawQuery ("authorname=" ++ authorname ++ "&sort=title"))
-        , label = Element.text authorname
+        , label = Element.el [] (Element.text authorname)
         }
 
 saveCurrentDocumentButton : Length -> Model -> Element Msg    
-saveCurrentDocumentButton width_ model =  
-    case model.maybeCurrentUser of 
-    Nothing -> Element.none 
-    Just _ ->
-      Input.button (buttonStyle  width_) {
-        onPress =  Just (SaveCurrentDocument (Time.millisToPosix 10))
-      , label = Element.text "Save"
-      } 
+saveCurrentDocumentButton width_ model =
+  xbutton model (buttonStyle  width_) "Save" (SaveCurrentDocument (Time.millisToPosix 10))  
 
 deleteCurrentDocumentButton : Length -> Model -> Element Msg    
 deleteCurrentDocumentButton width_ model = 
@@ -1845,7 +1841,7 @@ deleteCurrentDocumentButton width_ model =
     Just _ ->
       Input.button (buttonStyleWithColor (deleteButtonBackgroundColor model) width_ ) {
         onPress =  Just (DeleteCurrentDocument)
-      , label = Element.text "Delete"
+      , label = Element.el [] (Element.text "Delete")
       } 
 
 
@@ -1860,7 +1856,7 @@ cancelDeleteCurrentDocumentButton_ : Length -> Model -> Element Msg
 cancelDeleteCurrentDocumentButton_ width_ model = 
   Input.button (buttonStyle  width_) {
     onPress =  Just (CancelDeleteCurrentDocument)
-  , label = Element.text "Cancel"
+  , label = Element.el [] (Element.text "Cancel")
   }  
 
 deleteButtonBackgroundColor model =
@@ -1873,7 +1869,7 @@ startButton : Length -> Model -> Element Msg
 startButton width_ model = 
   Input.button (buttonStyle  width_) {
     onPress =  Just (GoToStart)
-  , label = Element.text "Start"
+  , label = Element.el [] (Element.text "Start")
   } 
 
 homeButton : Length -> Model -> Element Msg    
@@ -1883,14 +1879,14 @@ homeButton width_ model =
     Just _ ->
       Input.button (buttonStyle  width_) {
         onPress =  Just (GoHome)
-      , label = Element.text "Home"
+      , label =  Element.el [] (Element.text "Home")
       } 
 
 readerModeButton : Length -> Model -> Element Msg    
 readerModeButton width_ model = 
   Input.button (modeButtonStyle model.appMode Reading  width_) {
     onPress =  Just (ChangeMode Reading)
-  , label = Element.text "Read"
+  , label = Element.el [] (Element.text "Read")
   } 
 
 writerModeButton : Length -> Model -> Element Msg    
@@ -1900,7 +1896,7 @@ writerModeButton width_ model =
     Just _ -> 
       Input.button (modeButtonStyle model.appMode Writing  width_) {
         onPress =  Just (ChangeMode Writing)
-      , label = Element.text "Write"
+      , label = Element.el [] (Element.text "Write")
       } 
 
 imageModeButton : Length -> Model -> Element Msg    
@@ -1913,7 +1909,7 @@ imageModeButton width_ model =
         True -> 
           Input.button (modeButtonStyle model.appMode ImageEditing  width_) {
             onPress =  Just (ChangeMode ImageEditing)
-          , label = Element.text "Image"
+          , label = Element.el [] (Element.text "Image")
           } 
 -- END: BUTTONS
 
@@ -2072,3 +2068,23 @@ saveCurrentDocument model =
       ( { model | currentDocumentDirty = False 
                 , currentDocument = nextCurrentDocument}
         , Cmd.map DocMsg <| Document.saveDocument tokenString nextCurrentDocument )
+
+
+-- Widgets
+
+basicButton : List (Attribute msg) -> String -> msg -> Element msg
+basicButton style_ label_ msg =
+ Input.button style_ {
+        onPress =  Just msg
+      , label = Element.el [] (Element.text label_)
+      }
+
+xbutton : Model -> List (Attribute msg) -> String -> msg -> Element msg    
+xbutton model style_ label_ msg =  
+    case model.maybeCurrentUser of 
+    Nothing -> Element.none 
+    Just _ ->
+      Input.button style_ {
+        onPress =  Just msg
+      , label = Element.el [] (Element.text label_)
+      } 

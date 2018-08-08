@@ -210,7 +210,7 @@ getAuthorsDocumentsTitleButton_ width_ document =
   in 
     Input.button (Widget.listItemStyleBoldPale  width_) {
       onPress =  Just (GetPublicDocumentsRawQuery2 ("authorname=" ++ authorname))
-    , label = (text authorname)
+    , label = Element.el [] (text authorname)
     } 
 
 getAuthorsDocumentsTitleButton2 : Length -> Document -> Element DocViewMsg    
@@ -220,7 +220,7 @@ getAuthorsDocumentsTitleButton2 width_ document =
   in 
     Input.button (Widget.listItemStyleBoldPale  width_) {
       onPress =  Just (GetPublicDocumentsRawQuery2 ("authorname=" ++ authorname))
-    , label = (text <| "(" ++ authorname ++ ")")
+    , label = Element.el [] (text <| "(" ++ authorname ++ ")")
     } 
 
 viewChild : Int -> Child -> Element DocViewMsg 
