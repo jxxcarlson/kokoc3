@@ -42,10 +42,10 @@
 	</head>
 
 	<body>
-		<div id="main"></div>
+		
+		
+	<div id="main"></div>
 
-
-	
 
  	<script>
 
@@ -68,23 +68,30 @@
 			return reader;
 			}();
 
-			app.ports.readImage.subscribe(function (info) {
-				console.log(info.fileValue);
-				console.log("---------------------")
-				console.log("URL: " + info.url)
-				// globalReader.readAsDataURL(info.fileValue);
-				 globalReader.readAsBinaryString(info.fileValue);
+		var globalReader2 = function () {
+		var reader = new FileReader();
 
-				$.ajax({
-					url: info.url, // the presigned URL
-					headers: {
-						'Access-Control-Allow-Origin': '*'
-					},
-					type: 'PUT',
-					data: globalReader.result,
-					success: function() { console.log('Uploaded data successfully.'); }
-				});
+			return reader;
+			}();
+
+		app.ports.readImage.subscribe(function (info) {
+			globalReader.readAsDataURL(info.fileValue);
+	
+		});
+
+		app.ports.uploadImage.subscribe(function (info) {
+			globalReader2.readAsBinaryString(info.fileValue);
+
+			$.ajax({
+				url: info.url, // the presigned URL
+				headers: {
+					'Access-Control-Allow-Origin': '*'
+				},
+				type: 'PUT',
+				data: globalReader.result,
+				success: function() { console.log('Uploaded data successfully.'); }
 			});
+		});
 
 
 	    // END Image stuff

@@ -2,7 +2,6 @@ module FileUploadCredentials exposing(
       Credentials
     , CredentialsWrapper
     , FileMsg(..)
-    , getS3Credentials
     , getS3PresignedUrl
     , fileInfoTestRecord
     , FileData 
@@ -17,8 +16,8 @@ import Http
 import Configuration
 
 type FileMsg = 
-    ReceiveFileCredentials (Result Http.Error CredentialsWrapper)
-    | ReceivePresignedUrl (Result Http.Error String)
+    -- ReceiveFileCredentials (Result Http.Error CredentialsWrapper)
+     ReceivePresignedUrl (Result Http.Error String)
   
 -- ELLIE ADAPTED FROM @ILIAS: https://ellie-test-19-cutover.now.sh/YmXW6MBCmBa1
 -- https://ellie-test-19-cutover.now.sh/Yn444vwKpFa1 (0.19 drag/drop)
@@ -223,21 +222,21 @@ queryStringFromFileInfo fileInfo =
   ] |> String.join "&" |> (\x -> "?" ++ x)
 
 
-getS3CredentialsRequest : String -> FileInfo -> Http.Request CredentialsWrapper
-getS3CredentialsRequest tokenString fileInfo = 
-    Http.request
-        { method = "Get"
-        , headers = [Http.header "APIVersion" "V2", Http.header "Authorization" ("Bearer " ++ tokenString)]
-        , url = Configuration.backend ++ "/api/credentials" ++ (queryStringFromFileInfo fileInfo)
-        , body = Http.jsonBody Encode.null
-        , expect = Http.expectJson decodeCredentialsWrapper
-        , timeout = Just 5000
-        , withCredentials = False
-        }
+-- getS3CredentialsRequest : String -> FileInfo -> Http.Request CredentialsWrapper
+-- getS3CredentialsRequest tokenString fileInfo = 
+--     Http.request
+--         { method = "Get"
+--         , headers = [Http.header "APIVersion" "V2", Http.header "Authorization" ("Bearer " ++ tokenString)]
+--         , url = Configuration.backend ++ "/api/credentials" ++ (queryStringFromFileInfo fileInfo)
+--         , body = Http.jsonBody Encode.null
+--         , expect = Http.expectJson decodeCredentialsWrapper
+--         , timeout = Just 5000
+--         , withCredentials = False
+--         }
 
-getS3Credentials : String -> FileInfo -> Cmd FileMsg 
-getS3Credentials tokenString fileInfo =
-    Http.send ReceiveFileCredentials <| getS3CredentialsRequest tokenString fileInfo
+-- getS3Credentials : String -> FileInfo -> Cmd FileMsg 
+-- getS3Credentials tokenString fileInfo =
+--     Http.send ReceiveFileCredentials <| getS3CredentialsRequest tokenString fileInfo
 
 
 getS3PresignedUrlRequest : String -> String -> String -> Http.Request String

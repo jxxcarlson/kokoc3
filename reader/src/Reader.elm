@@ -806,7 +806,6 @@ update msg model =
 
         Test ->
           let 
-            cmd1 = Credentials.getS3Credentials (stringFromMaybeToken  model.maybeToken) Credentials.fileInfoTestRecord
             cmd2 = Credentials.getS3PresignedUrl (stringFromMaybeToken  model.maybeToken) "noteimages" "foo.jpg"
           in
             ( model, Cmd.map FileMsg cmd2 )
@@ -825,25 +824,11 @@ update msg model =
                   , path = (User.usernameFromMaybeUser model.maybeCurrentUser) -- ++ "/" ++ fileData.name
                 }
             path_ = (User.usernameFromMaybeUser model.maybeCurrentUser) ++ "/" ++ fileInfo.filename
-            cmd1 = Credentials.getS3Credentials (stringFromMaybeToken  model.maybeToken) fileInfo
             cmd2 = Credentials.getS3PresignedUrl (stringFromMaybeToken  model.maybeToken) "noteimages" path_
 
           in
             ({model | message = fileInfo.filename, maybeFileData = maybeFileData, fileValue = v }, Cmd.map FileMsg cmd2 )
 
-
-        FileMsg (Credentials.ReceiveFileCredentials result) ->
-          let 
-            v = case model.maybeFileData of 
-              Nothing -> Encode.null
-              Just fileData -> Credentials.encodeFileData fileData
-          in 
-            case result of 
-              Ok credentialsWrapper -> 
-                ({ model | message = "fileinfo OK" }, readImage model.fileValue )
-              Err err -> 
-                  ({model | message = handleHttpError err}, Cmd.none)  
-                
 
         FileMsg (Credentials.ReceivePresignedUrl result) ->
           let 
@@ -853,11 +838,13 @@ update msg model =
           in 
             case result of 
               Ok url -> 
-                ({ model | message = "psurl: " ++ url, psurl = url }, readImage (Credentials.encodeFileValueWithUrl model.fileValue url) )
+                ({ model | message = "psurl: " ++ url, psurl = url }, 
+                  Cmd.batch [  readImage (Credentials.encodeFileValueWithUrl model.fileValue url)
+                           , uploadImage (Credentials.encodeFileValueWithUrl model.fileValue url) 
+                          ]
+                )
               Err err -> 
-                  ({model | message = handleHttpError err}, Cmd.none  )
-        -- ReceivePresignedCredentials ->
-        --   (model, Cmd.none)
+                  ({model | message = handleHttpError err}, Cmd.none)
 
         ImageRead v ->
           let 
@@ -871,12 +858,9 @@ update msg model =
 
 -- IMAGE
 
- 
-  
 
 port readImage : Value -> Cmd msg
-
-
+port uploadImage : Value -> Cmd msg
 port imageRead : (Value -> msg) -> Sub msg
 
 show : String -> Html msg
