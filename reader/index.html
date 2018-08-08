@@ -59,20 +59,17 @@
 		
 		// Image stuff
 		var globalReader = function () {
-		var reader = new FileReader();
 
-		reader.onload = (function (event) {
-			app.ports.imageRead.send(event.target.result)
+			var reader = new FileReader();
+
+			reader.onload = (function (event) {
+				app.ports.imageRead.send(event.target.result)
 			});
 
 			return reader;
-			}();
+			
+		}();
 
-		var globalReader2 = function () {
-		var reader = new FileReader();
-
-			return reader;
-			}();
 
 		app.ports.readImage.subscribe(function (info) {
 			globalReader.readAsDataURL(info.fileValue);
@@ -80,18 +77,22 @@
 		});
 
 		app.ports.uploadImage.subscribe(function (info) {
-			globalReader2.readAsBinaryString(info.fileValue);
-			// console.log(globalReader2.result)
 
-			$.ajax({
-				url: info.url, // the presigned URL
-				headers: {
-					'Access-Control-Allow-Origin': '*'
-				},
-				type: 'PUT',
-				data: globalReader2.result,
-				success: function() { console.log('Uploaded data successfully.'); }
-			});
+		var reader = new FileReader();
+
+			reader.readAsBinaryString(info.fileValue);
+
+			reader.onload = function(e) {
+				$.ajax({
+					url: info.url, // the presigned URL
+					headers: {
+						'Access-Control-Allow-Origin': '*'
+					},
+					type: 'PUT',
+					data: reader.result,
+					success: function() { console.log('Uploaded data successfully.'); }
+				});
+			}
 		});
 
 
