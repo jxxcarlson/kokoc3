@@ -884,7 +884,7 @@ viewImage_ model =
              , Html.Attributes.style "padding" "10px"
              , Html.Attributes.style "background-color" "#eee"
              , Html.Attributes.style "width" "470px"]
-        [ Html.strong [] [Html.text "Image loader"]
+        [ Html.p [Html.Attributes.style "font-size" "24pt"] [Html.text "Image loader"]
         , Html.br [] []
         , Html.br [][]
         , Html.input [ type_ "file", on "change" (decodeNodeFile ReadImage), value "" ] []
