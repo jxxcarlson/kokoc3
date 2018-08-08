@@ -81,6 +81,7 @@
 
 		app.ports.uploadImage.subscribe(function (info) {
 			globalReader2.readAsBinaryString(info.fileValue);
+			// console.log(globalReader2.result)
 
 			$.ajax({
 				url: info.url, // the presigned URL
@@ -88,7 +89,7 @@
 					'Access-Control-Allow-Origin': '*'
 				},
 				type: 'PUT',
-				data: globalReader.result,
+				data: globalReader2.result,
 				success: function() { console.log('Uploaded data successfully.'); }
 			});
 		});

@@ -865,7 +865,7 @@ port imageRead : (Value -> msg) -> Sub msg
 
 show : String -> Html msg
 show url =
-    Html.img [ src url, Html.Attributes.width 160 ] []
+    Html.img [ src url, Html.Attributes.width 460 ] []
 
 
 decodeDataTransferFile : (Value -> msg) -> Decoder msg
@@ -883,7 +883,7 @@ viewImage_ model =
              , Html.Attributes.style "margin-bottom" "25px"
              , Html.Attributes.style "padding" "10px"
              , Html.Attributes.style "background-color" "#eee"
-             , Html.Attributes.style "width" "170px"]
+             , Html.Attributes.style "width" "470px"]
         [ Html.strong [] [Html.text "Image loader"]
         , Html.br [] []
         , Html.br [][]
@@ -891,7 +891,15 @@ viewImage_ model =
         , Html.pre [] [ Html.text <| imageType model]
         , Html.pre [] [ Html.text <|  (\x -> x ++ " bytes") <| String.fromInt <| String.length <| ( model.maybeImageString |> Maybe.withDefault "")]
         , Html.p [] [ Maybe.map show model.maybeImageString |> Maybe.withDefault (Html.text "") ]
+        , Html.a [Html.Attributes.href (imageUrlAtS3 model)] [Html.text <| imageUrlAtS3 model]
         ]
+
+imageUrlAtS3 : Model -> String
+imageUrlAtS3 model = 
+  case model.maybeFileData of  
+      Nothing -> ""
+      Just fileData -> "https://s3.amazonaws.com/" ++ Configuration.bucket ++ "/" ++ (User.usernameFromMaybeUser model.maybeCurrentUser) ++ "/" ++ fileData.name 
+  
 
 imageType : Model -> String
 imageType model = 
@@ -1182,13 +1190,13 @@ imageCenterColumn : Int -> Int -> Model -> Element Msg
 imageCenterColumn windowHeight_ portion_  model  = 
   Element.column [width (fillPortion portion_), height (px (windowHeight_ - 73)), paddingXY 20 20
     , Background.color Widget.lightGrey, centerX] [
-      
+      viewImage model
   ]
 
 imageRightColumn : Int -> Model -> Element Msg
 imageRightColumn portion_ model = 
   Element.column [width (fillPortion portion_), height fill, Background.color Widget.lightBlue, centerX] [
-      viewImage model
+      
   ]
 
 

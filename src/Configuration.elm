@@ -10,7 +10,8 @@ module Configuration exposing(
    , signInText
    , signedOutText
    , signedUpText 
-   , welcomeText)
+   , welcomeText
+   , bucket)
 
 
 
@@ -21,6 +22,9 @@ backend =
 
 client : String 
 client = "https://knode.io"
+
+bucket : String
+bucket = "noteimages"
 
 autosaveDuration : Float 
 autosaveDuration =
