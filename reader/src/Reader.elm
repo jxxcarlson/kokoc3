@@ -853,7 +853,7 @@ update msg model =
           in 
             case result of 
               Ok url -> 
-                ({ model | message = "psurl: " ++ url, psurl = url }, readImage model.fileValue )
+                ({ model | message = "psurl: " ++ url, psurl = url }, readImage (Credentials.encodeFileValueWithUrl model.fileValue url) )
               Err err -> 
                   ({model | message = handleHttpError err}, Cmd.none  )
         -- ReceivePresignedCredentials ->
@@ -868,61 +868,11 @@ update msg model =
   
 -- UPDATE END
 
--- KEY COMMANDS
-
-keyGateway : Model -> List Key -> ( Model, Cmd Msg )
-keyGateway model pressedKeys =
-    if model.previousKey == Control then
-        respondToContolCommand model pressedKeys
-    else
-      case (headKey pressedKeys) of 
-        Alt ->  doSearch model
-        _ -> ( { model | previousKey = headKey pressedKeys }, Cmd.none )
-
-
-respondToContolCommand : Model -> List Key -> ( Model, Cmd Msg )
-respondToContolCommand model pressedKeys =
-    let
-        newModel =
-            { model | previousKey = headKey pressedKeys }
-    in
-        handleKey newModel (headKey pressedKeys) 
-
-
-handleKey : Model -> Key -> (Model, Cmd Msg)
-handleKey model key = 
-  case key of 
-    Enter -> doSearch model
-    Character "s" -> saveCurrentDocument model
-    _ -> (model, Cmd.none)
-
-doSearch : Model -> (Model, Cmd Msg)
-doSearch model = 
-  case model.appMode of 
-        Reading -> getPublicDocuments model model.searchQueryString 
-        Writing -> getUserDocuments model model.searchQueryString 
-        ImageEditing -> (model, Cmd.none)
-    
--- ERROR
-
-
-handleHttpError : Http.Error -> String 
-handleHttpError error = 
-  case error of 
-    Http.BadUrl str -> str 
-    Http.Timeout -> "timeout"
-    Http.NetworkError -> "Network error"
-    Http.BadStatus resp -> "Bad status ("  ++ (String.fromInt resp.status.code)  ++ "): " ++ resp.status.message -- (decodeResponse resp) --  ++ "darn! " 
-    Http.BadPayload str1 resp -> "Bad payload: " ++ str1  ++ ", payload = " ++ "bad payload"
-      
-
--- decodeResponse : Http.Response String -> String 
--- decodeResponse resp = 
---   case resp of 
---     Http.Response str -> str 
-
 
 -- IMAGE
+
+ 
+  
 
 port readImage : Value -> Cmd msg
 
@@ -979,6 +929,61 @@ viewImage model =
       case (User.username user) == "jxxcarlson" of 
         True -> Element.html (viewImage_ model)
         False -> Element.none
+
+
+-- KEY COMMANDS
+
+keyGateway : Model -> List Key -> ( Model, Cmd Msg )
+keyGateway model pressedKeys =
+    if model.previousKey == Control then
+        respondToContolCommand model pressedKeys
+    else
+      case (headKey pressedKeys) of 
+        Alt ->  doSearch model
+        _ -> ( { model | previousKey = headKey pressedKeys }, Cmd.none )
+
+
+respondToContolCommand : Model -> List Key -> ( Model, Cmd Msg )
+respondToContolCommand model pressedKeys =
+    let
+        newModel =
+            { model | previousKey = headKey pressedKeys }
+    in
+        handleKey newModel (headKey pressedKeys) 
+
+
+handleKey : Model -> Key -> (Model, Cmd Msg)
+handleKey model key = 
+  case key of 
+    Enter -> doSearch model
+    Character "s" -> saveCurrentDocument model
+    _ -> (model, Cmd.none)
+
+doSearch : Model -> (Model, Cmd Msg)
+doSearch model = 
+  case model.appMode of 
+        Reading -> getPublicDocuments model model.searchQueryString 
+        Writing -> getUserDocuments model model.searchQueryString 
+        ImageEditing -> (model, Cmd.none)
+    
+-- ERROR
+
+
+handleHttpError : Http.Error -> String 
+handleHttpError error = 
+  case error of 
+    Http.BadUrl str -> str 
+    Http.Timeout -> "timeout"
+    Http.NetworkError -> "Network error"
+    Http.BadStatus resp -> "Bad status ("  ++ (String.fromInt resp.status.code)  ++ "): " ++ resp.status.message -- (decodeResponse resp) --  ++ "darn! " 
+    Http.BadPayload str1 resp -> "Bad payload: " ++ str1  ++ ", payload = " ++ "bad payload"
+      
+
+-- decodeResponse : Http.Response String -> String 
+-- decodeResponse resp = 
+--   case resp of 
+--     Http.Response str -> str 
+
 
 -- OUTSIDE
 

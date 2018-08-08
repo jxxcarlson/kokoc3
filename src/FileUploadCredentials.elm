@@ -8,6 +8,7 @@ module FileUploadCredentials exposing(
     , FileData 
     , decodeFileData
     , encodeFileData
+    , encodeFileValueWithUrl
   )
 
 import Json.Encode as Encode
@@ -169,7 +170,13 @@ encodeFileData fileData =
         , ( "type", Encode.string <| fileData.mimetype )
         ]
 
-
+encodeFileValueWithUrl : Encode.Value -> String -> Encode.Value 
+encodeFileValueWithUrl value url =
+    Encode.object
+        [ 
+          ( "fileValue", value )
+        , ( "url", Encode.string <| url )
+        ]
 
 decodeCredentials : Decode.Decoder Credentials
 decodeCredentials =
