@@ -16,8 +16,8 @@ module Configuration exposing(
 
 backend : String
 backend = 
-        "https://nshost.herokuapp.com"
-    -- "http://localhost:4000"
+      --  "https://nshost.herokuapp.com"
+    "http://localhost:4000"
 
 client : String 
 client = "https://knode.io"

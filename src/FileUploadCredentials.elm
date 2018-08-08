@@ -3,6 +3,7 @@ module FileUploadCredentials exposing(
     , CredentialsWrapper
     , FileMsg(..)
     , getS3Credentials
+    , getS3PresignedUrl
     , fileInfoTestRecord
     , FileData 
     , decodeFileData
@@ -16,14 +17,35 @@ import Configuration
 
 type FileMsg = 
     ReceiveFileCredentials (Result Http.Error CredentialsWrapper)
+    | ReceivePresignedUrl (Result Http.Error String)
   
 -- ELLIE ADAPTED FROM @ILIAS: https://ellie-test-19-cutover.now.sh/YmXW6MBCmBa1
 -- https://ellie-test-19-cutover.now.sh/Yn444vwKpFa1 (0.19 drag/drop)
 
+-- Maybe do more on the backend with this:  https://github.com/handnot2/sigaws
+--                                       :  https://hexdocs.pm/sigaws/Sigaws.html
+
 -- S3 uploads with JS:  https://chrisguitarguy.com/2018/06/16/s3-javascript-uploads/
 -- GITHUB REPO:         https://github.com/chrisguitarguy/s3-uploads-example
 
+-- AWS DOCS   :         https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/S3.html
+
 {-
+
+  ## Examples
+  ##  ExAws.S3.list_objects("noteimages")  |> ExAws.request(region: "us-east-1")
+
+  ## iex(3)> ExAws.Config.new(:s3) |> ExAws.S3.presigned_url(:put, "noteimages", "foo.jpg")
+  ## {:ok,
+  ## "https://s3.amazonaws.com/noteimages/foo.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAJQYJYCIAWH6DGHIQ%2F20180807%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20180807T232859Z&X-Amz-Expires=3600&X-Amz-SignedHeaders=host&X-Amz-Signature=14fcb5ef6f845ce95e3a22beb92a663e001c4bad698f41ecea1885360516adf2"}
+  
+
+$.ajax({
+  url: presignedUrl, // the presigned URL
+  type: 'PUT',
+  data: 'data to upload into URL',
+  success: function() { console.log('Uploaded data successfully.'); }
+});
 
 From koko_client, Image.Upload (using native file module)
 We will have to do this on the JS side.
@@ -209,3 +231,20 @@ getS3CredentialsRequest tokenString fileInfo =
 getS3Credentials : String -> FileInfo -> Cmd FileMsg 
 getS3Credentials tokenString fileInfo =
     Http.send ReceiveFileCredentials <| getS3CredentialsRequest tokenString fileInfo
+
+
+getS3PresignedUrlRequest : String -> String -> String -> Http.Request String
+getS3PresignedUrlRequest tokenString bucket path = 
+    Http.request
+        { method = "Get"
+        , headers = [Http.header "APIVersion" "V2", Http.header "Authorization" ("Bearer " ++ tokenString)]
+        , url = Configuration.backend ++ "/api/presigned" ++ "?bucket=" ++ bucket ++ "&path=" ++ path
+        , body = Http.jsonBody Encode.null
+        , expect = Http.expectJson Decode.string
+        , timeout = Just 5000
+        , withCredentials = False
+        }
+
+getS3PresignedUrl : String -> String -> String -> Cmd FileMsg 
+getS3PresignedUrl tokenString bucket path =
+    Http.send ReceivePresignedUrl <| getS3PresignedUrlRequest tokenString bucket path
