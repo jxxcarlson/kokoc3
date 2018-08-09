@@ -105,7 +105,7 @@
 				fetch(  info.url, {
 					method: 'PUT',
 					headers: {
-						'Content-Type': 'image/jpeg',
+						'Content-Type': info.fileValue.type,
 						'Access-Control-Allow-Origin': '*'
 					},
 					body: reader.result
