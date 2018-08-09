@@ -85,6 +85,25 @@
 	
 		});
 
+		// convert datURI to binary data
+		function dataURItoBlob(dataURI) {
+			// convert base64 to raw binary data held in a string
+			var byteString = atob(dataURI.split(',')[1]);
+			// separate out the mime component
+			var mimeString = dataURI.split(',')[0].split(':')[1].split(';')[0];
+			// write the bytes of the string to an ArrayBuffer
+			var arrayBuffer = new ArrayBuffer(byteString.length);
+
+			var _ia = new Uint8Array(arrayBuffer);
+			for (var i = 0; i < byteString.length; i++) {
+				_ia[i] = byteString.charCodeAt(i);
+			}
+
+			// var dataView = new DataView(arrayBuffer);
+			// var blob = new Blob([dataView], { type: mimeString });
+			return dataView;
+		}
+
 		// https://stackoverflow.com/questions/51758069/s3-jquery-upload-is-corrupted
 
 		app.ports.uploadImage.subscribe(function (info) {
@@ -93,40 +112,23 @@
 
 		var reader = new FileReader();
 
-			reader.readAsBinaryString(info.fileValue);
-
-			
+			reader.readAsDataURL(info.fileValue);
 
 			reader.onload = function(e) {
 
 				console.log("file size = " + reader.result.length)
 				console.log("mime type = " + info.fileValue.type)
+				
+				const blob = dataURItoBlob(reader.result);
 
-				fetch(  info.url, {
+				fetch(info.url, {
 					method: 'PUT',
-					headers: {
-						'Content-Type': info.fileValue.type,
-						'Access-Control-Allow-Origin': '*'
-					},
-					body: reader.result
-				})
-
-				// $.ajax({
-				// 	url: info.url, // the presigned URL
-				// 	headers: {
-				// 		'Access-Control-Allow-Origin': '*'
-				// 	},
-				// 	contentType: info.fileValue.type,
-				// 	processData: false,
-				// 	type: 'PUT',
-				// 	data: reader.result,
-				// 	success: function() { console.log('Uploaded data successfully.'); }
-				// });
-					
+					body: blob
+				});
+						
 			}
 
 		});
-
 
 	    // END Image stuff
 				
