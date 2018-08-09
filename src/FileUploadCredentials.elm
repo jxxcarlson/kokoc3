@@ -9,6 +9,7 @@ module FileUploadCredentials exposing(
     , decodeFileData
     , encodeFileData
     , encodeFileValueWithUrl
+    , encodeCredentialsWrapper
   )
 
 import Json.Encode as Encode
@@ -18,6 +19,7 @@ import Configuration
 
 type FileMsg = 
      ReceivePresignedUrl (Result Http.Error String)
+     | ReceiveFileCredentials (Result Http.Error CredentialsWrapper)
   
 
 type alias Credentials =
@@ -91,7 +93,67 @@ decodeCredentialsWrapper =
         (field "credentials" decodeCredentials)
         (field "url" Decode.string)
 
+encodeCredentials : Credentials -> Encode.Value
+encodeCredentials credentials =
+    Encode.object
+        [ 
+          ( "signature", Encode.string <| credentials.signature )
+        , ( "date", Encode.string <| credentials.date )
+        , ( "credential", Encode.string <| credentials.credential )
+        , ( "algorithm", Encode.string <| credentials.algorithm )
+        , ( "policy", Encode.string <| credentials.policy )
+        , ( "key", Encode.string <| credentials.key )
+        , ( "acl", Encode.string <| credentials.acl )
+        ]
 
+
+encodeCredentialsWrapper : CredentialsWrapper -> Encode.Value 
+encodeCredentialsWrapper credentialsWrapper =
+    Encode.object
+        [ 
+          ( "credentials", encodeCredentials credentialsWrapper.credentials )
+        , ( "url", Encode.string <| credentialsWrapper.url )
+        ]
+
+-- multiPartBody : Credentials -> FR.NativeFile -> Http.Body
+-- multiPartBody creds nf =
+--     Http.multipartBody
+--         [ stringPart "key" nf.name
+--         , stringPart "x-amz-algorithm" creds.algorithm
+--         , stringPart "x-amz-credential" creds.credential
+--         , stringPart "x-amz-date" creds.date
+--         , stringPart "policy" creds.policy
+--         , stringPart "x-amz-signature" creds.signature
+--         , FR.filePart "file" nf
+--         ]
+
+
+-- uploadRequest : Credentials -> NativeFile -> Request String
+-- uploadRequest creds file =
+--     Http.request
+--         { method = "POST"
+--         , headers = []
+--         , url = "https://noteimages.s3.amazonaws.com"
+--         , body = multiPartBody creds file
+--         , expect = Http.expectString
+--         , timeout = Nothing
+--         , withCredentials = False
+--         }
+
+-- request : Credentials -> Model -> (Model, Cmd Msg)
+-- request credentials model =
+--     let
+--         _ = Debug.log "Image.upload.request credentials (Yada yada)" credentials 
+--         cmd =
+--             model.fileToUpload
+--                 |> Maybe.map
+--                     (\file ->
+--                         uploadRequest credentials file
+--                             |> Http.send (ImageMsg << UploadComplete)
+--                     )
+--                 |> Maybe.withDefault Cmd.none
+--     in
+--     ( model, cmd )
 
 type alias FileInfo = 
   {   filename : String

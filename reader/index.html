@@ -78,6 +78,13 @@
 	
 		});
 
+		app.ports.sendCredentials.subscribe(function (credentialsWrapper) {
+
+			console.log("JS/url: " + credentialsWrapper.url)
+			console.log("JS/signature: " + credentialsWrapper.credentials.signature)
+	
+		});
+
 		// https://stackoverflow.com/questions/51758069/s3-jquery-upload-is-corrupted
 
 		app.ports.uploadImage.subscribe(function (info) {

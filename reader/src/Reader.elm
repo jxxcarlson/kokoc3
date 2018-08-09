@@ -806,11 +806,11 @@ update msg model =
 
         Test ->
           let 
-            fileInfo = {   filename : "carr_fire_2.jpg"
-              , mimetype : "image/jpeg"
-              , bucket : "noteimages"
-              , path : "jxxcarlson"
-            }
+            fileInfo = {   filename = "carr_fire_2.jpg"
+                , mimetype = "image/jpeg"
+                , bucket = "noteimages"
+                , path = "jxxcarlson"
+              }
             cmd = Credentials.getS3Credentials (stringFromMaybeToken  model.maybeToken) fileInfo
           in
             ( model, Cmd.map FileMsg cmd )
@@ -834,6 +834,16 @@ update msg model =
           in
             ({model | message = fileInfo.filename, maybeFileData = maybeFileData, fileValue = v }, Cmd.map FileMsg cmd )
 
+
+        FileMsg (Credentials.ReceiveFileCredentials result) -> 
+          let 
+            cmd = case result of 
+              Ok credentialsWrapper -> 
+                 sendCredentials (Credentials.encodeCredentialsWrapper credentialsWrapper)
+              Err _ ->
+                 Cmd.none
+          in
+            (model, cmd)
 
         FileMsg (Credentials.ReceivePresignedUrl result) ->
           let 
@@ -867,6 +877,7 @@ update msg model =
 port readImage : Value -> Cmd msg
 port uploadImage : Value -> Cmd msg
 port imageRead : (Value -> msg) -> Sub msg
+port sendCredentials : Value -> Cmd msg 
 
 show : String -> Html msg
 show url =
