@@ -821,13 +821,13 @@ update msg model =
                 { filename = fileData.name 
                   , mimetype = fileData.mimetype
                   , bucket = "noteimages"
-                  , path = (User.usernameFromMaybeUser model.maybeCurrentUser) -- ++ "/" ++ fileData.name
+                  , path = (User.usernameFromMaybeUser model.maybeCurrentUser) -- ++ "/" ++ fileData.name ###
                 }
             path_ = (User.usernameFromMaybeUser model.maybeCurrentUser) ++ "/" ++ fileInfo.filename
-            cmd2 = Credentials.getS3PresignedUrl (stringFromMaybeToken  model.maybeToken) "noteimages" path_
+            cmd = Credentials.getS3PresignedUrl (stringFromMaybeToken  model.maybeToken) "noteimages" path_
 
           in
-            ({model | message = fileInfo.filename, maybeFileData = maybeFileData, fileValue = v }, Cmd.map FileMsg cmd2 )
+            ({model | message = fileInfo.filename, maybeFileData = maybeFileData, fileValue = v }, Cmd.map FileMsg cmd )
 
 
         FileMsg (Credentials.ReceivePresignedUrl result) ->

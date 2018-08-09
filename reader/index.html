@@ -73,26 +73,42 @@
 
 		app.ports.readImage.subscribe(function (info) {
 			globalReader.readAsDataURL(info.fileValue);
+
+			console.log(info.fileValue)
 	
 		});
 
+		// https://stackoverflow.com/questions/51758069/s3-jquery-upload-is-corrupted
+
 		app.ports.uploadImage.subscribe(function (info) {
+
+			console.log("url = " + info.url)
 
 		var reader = new FileReader();
 
 			reader.readAsBinaryString(info.fileValue);
 
+			
+
 			reader.onload = function(e) {
+
+				console.log("file size = " + reader.result.length)
+				console.log("mime type = " + info.fileValue.type)
+
 				$.ajax({
 					url: info.url, // the presigned URL
 					headers: {
 						'Access-Control-Allow-Origin': '*'
 					},
+					contentType: info.fileValue.type,
+					processData: false,
 					type: 'PUT',
 					data: reader.result,
 					success: function() { console.log('Uploaded data successfully.'); }
 				});
+					
 			}
+			
 		});
 
 

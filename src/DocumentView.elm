@@ -167,7 +167,7 @@ setClient =
 
 viewMarkdown : Document -> Element msg
 viewMarkdown document =
-  Element.el [ ] (Element.html <| MarkdownTools.view document.content)
+  Element.el [ Element.paddingEach {top = 0, bottom = 120, left = 0, right = 0} ] (Element.html <| MarkdownTools.view document.content)
 
 
 -- YAY: https://ellie-test-19-cutover.now.sh/LGShLFZHvha1
@@ -176,7 +176,7 @@ viewMarkdown document =
 
 viewAsciidoc : Int -> String -> Element msg
 viewAsciidoc debounceCounter str =
-  Keyed.el [ ] (  ("Asciidoc." ++ String.fromInt debounceCounter)
+  Keyed.el [ Element.paddingEach {top = 0, bottom = 120, left = 0, right = 0}  ] (  ("Asciidoc." ++ String.fromInt debounceCounter)
                   , (Element.html <| asciidocText str))
 
 
@@ -188,7 +188,7 @@ asciidocText str =
 
 viewPlainText : Document -> Element msg
 viewPlainText document =
-   Element.el [ ] (Element.html <| MarkdownTools.view document.content)
+   Element.el [ Element.paddingEach {top = 0, bottom = 120, left = 0, right = 0} ] (Element.html <| MarkdownTools.view document.content)
 
 
 viewChildren : Document -> Element DocViewMsg 

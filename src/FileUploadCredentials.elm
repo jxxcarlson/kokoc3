@@ -16,9 +16,142 @@ import Http
 import Configuration
 
 type FileMsg = 
-    -- ReceiveFileCredentials (Result Http.Error CredentialsWrapper)
      ReceivePresignedUrl (Result Http.Error String)
   
+
+type alias Credentials =
+    { signature : String
+    , date : String
+    , credential : String
+    , algorithm : String
+    , policy : String
+    , key : String
+    , acl : String
+    }
+
+
+type alias CredentialsWrapper =
+    { credentials : Credentials
+    , url : String
+    }
+
+
+type alias FileData = 
+  {   name : String
+    , lastModified : Int  
+    , webkitRelativePath : String 
+    , size : Int  
+    , mimetype : String
+   }
+
+decodeFileData : Decode.Decoder FileData
+decodeFileData =
+    Decode.map5 FileData
+        (field "name" Decode.string)
+        (field "lastModified" Decode.int)
+        (field "webkitRelativePath" Decode.string)
+        (field "size" Decode.int)
+        (field "type" Decode.string)
+
+encodeFileData : FileData -> Encode.Value
+encodeFileData fileData =
+    Encode.object
+        [ 
+          ( "name", Encode.string <| fileData.name )
+        , ( "lastModified", Encode.int <| fileData.lastModified )
+        , ( "webkitRelativePath", Encode.string <| fileData.webkitRelativePath )
+        , ( "size", Encode.int <| fileData.size )
+        , ( "type", Encode.string <| fileData.mimetype )
+        ]
+
+encodeFileValueWithUrl : Encode.Value -> String -> Encode.Value 
+encodeFileValueWithUrl value url =
+    Encode.object
+        [ 
+          ( "fileValue", value )
+        , ( "url", Encode.string <| url )
+        ]
+
+decodeCredentials : Decode.Decoder Credentials
+decodeCredentials =
+    Decode.map7 Credentials
+        (field "x-amz-signature" Decode.string)
+        (field "x-amz-date" Decode.string)
+        (field "x-amz-credential" Decode.string)
+        (field "x-amz-algorithm" Decode.string)
+        (field "policy" Decode.string)
+        (field "key" Decode.string)
+        (field "acl" Decode.string)
+ 
+        
+decodeCredentialsWrapper : Decode.Decoder CredentialsWrapper
+decodeCredentialsWrapper =
+    Decode.map2 CredentialsWrapper
+        (field "credentials" decodeCredentials)
+        (field "url" Decode.string)
+
+
+
+type alias FileInfo = 
+  {   filename : String
+    , mimetype : String
+    , bucket : String
+    , path : String
+  }
+
+fileInfoTestRecord = 
+  {
+        filename = "foo.jpg"
+      , mimetype = "image/jpeg"
+      , bucket = "noteimages"
+      , path = "bar"
+  }
+
+queryStringFromFileInfo : FileInfo -> String 
+queryStringFromFileInfo fileInfo =
+  [    
+       "filename=" ++ fileInfo.filename
+        , "mimetype=" ++ fileInfo.mimetype
+        , "bucket=" ++ fileInfo.bucket
+        , "path=" ++ fileInfo.path
+  ] |> String.join "&" |> (\x -> "?" ++ x)
+
+
+
+getS3PresignedUrlRequest : String -> String -> String -> Http.Request String
+getS3PresignedUrlRequest tokenString bucket path = 
+    Http.request
+        { method = "Get"
+        , headers = [Http.header "APIVersion" "V2", Http.header "Authorization" ("Bearer " ++ tokenString)]
+        , url = Configuration.backend ++ "/api/presigned" ++ "?bucket=" ++ bucket ++ "&path=" ++ path
+        , body = Http.jsonBody Encode.null
+        , expect = Http.expectJson Decode.string
+        , timeout = Just 5000
+        , withCredentials = False
+        }
+
+getS3PresignedUrl : String -> String -> String -> Cmd FileMsg 
+getS3PresignedUrl tokenString bucket path =
+    Http.send ReceivePresignedUrl <| getS3PresignedUrlRequest tokenString bucket path
+
+
+-- getS3CredentialsRequest : String -> FileInfo -> Http.Request CredentialsWrapper
+-- getS3CredentialsRequest tokenString fileInfo = 
+--     Http.request
+--         { method = "Get"
+--         , headers = [Http.header "APIVersion" "V2", Http.header "Authorization" ("Bearer " ++ tokenString)]
+--         , url = Configuration.backend ++ "/api/credentials" ++ (queryStringFromFileInfo fileInfo)
+--         , body = Http.jsonBody Encode.null
+--         , expect = Http.expectJson decodeCredentialsWrapper
+--         , timeout = Just 5000
+--         , withCredentials = False
+--         }
+
+-- getS3Credentials : String -> FileInfo -> Cmd FileMsg 
+-- getS3Credentials tokenString fileInfo =
+--     Http.send ReceiveFileCredentials <| getS3CredentialsRequest tokenString fileInfo
+
+
 -- ELLIE ADAPTED FROM @ILIAS: https://ellie-test-19-cutover.now.sh/YmXW6MBCmBa1
 -- https://ellie-test-19-cutover.now.sh/Yn444vwKpFa1 (0.19 drag/drop)
 
@@ -123,134 +256,3 @@ RESPONSE TO: http://localhost:4000/api/credentials?filename=foo.jpg&mimetype=ima
     }
 }
 -}
-
-type alias Credentials =
-    { signature : String
-    , date : String
-    , credential : String
-    , algorithm : String
-    , policy : String
-    , key : String
-    , acl : String
-    }
-
-
-type alias CredentialsWrapper =
-    { credentials : Credentials
-    , url : String
-    }
-
-
-type alias FileData = 
-  {   name : String
-    , lastModified : Int  
-    , webkitRelativePath : String 
-    , size : Int  
-    , mimetype : String
-   }
-
-decodeFileData : Decode.Decoder FileData
-decodeFileData =
-    Decode.map5 FileData
-        (field "name" Decode.string)
-        (field "lastModified" Decode.int)
-        (field "webkitRelativePath" Decode.string)
-        (field "size" Decode.int)
-        (field "type" Decode.string)
-
-encodeFileData : FileData -> Encode.Value
-encodeFileData fileData =
-    Encode.object
-        [ 
-          ( "name", Encode.string <| fileData.name )
-        , ( "lastModified", Encode.int <| fileData.lastModified )
-        , ( "webkitRelativePath", Encode.string <| fileData.webkitRelativePath )
-        , ( "size", Encode.int <| fileData.size )
-        , ( "type", Encode.string <| fileData.mimetype )
-        ]
-
-encodeFileValueWithUrl : Encode.Value -> String -> Encode.Value 
-encodeFileValueWithUrl value url =
-    Encode.object
-        [ 
-          ( "fileValue", value )
-        , ( "url", Encode.string <| url )
-        ]
-
-decodeCredentials : Decode.Decoder Credentials
-decodeCredentials =
-    Decode.map7 Credentials
-        (field "x-amz-signature" Decode.string)
-        (field "x-amz-date" Decode.string)
-        (field "x-amz-credential" Decode.string)
-        (field "x-amz-algorithm" Decode.string)
-        (field "policy" Decode.string)
-        (field "key" Decode.string)
-        (field "acl" Decode.string)
- 
-        
-decodeCredentialsWrapper : Decode.Decoder CredentialsWrapper
-decodeCredentialsWrapper =
-    Decode.map2 CredentialsWrapper
-        (field "credentials" decodeCredentials)
-        (field "url" Decode.string)
-
-
-
-type alias FileInfo = 
-  {   filename : String
-    , mimetype : String
-    , bucket : String
-    , path : String
-  }
-
-fileInfoTestRecord = 
-  {
-        filename = "foo.jpg"
-      , mimetype = "image/jpeg"
-      , bucket = "noteimages"
-      , path = "bar"
-  }
-
-queryStringFromFileInfo : FileInfo -> String 
-queryStringFromFileInfo fileInfo =
-  [    
-       "filename=" ++ fileInfo.filename
-        , "mimetype=" ++ fileInfo.mimetype
-        , "bucket=" ++ fileInfo.bucket
-        , "path=" ++ fileInfo.path
-  ] |> String.join "&" |> (\x -> "?" ++ x)
-
-
--- getS3CredentialsRequest : String -> FileInfo -> Http.Request CredentialsWrapper
--- getS3CredentialsRequest tokenString fileInfo = 
---     Http.request
---         { method = "Get"
---         , headers = [Http.header "APIVersion" "V2", Http.header "Authorization" ("Bearer " ++ tokenString)]
---         , url = Configuration.backend ++ "/api/credentials" ++ (queryStringFromFileInfo fileInfo)
---         , body = Http.jsonBody Encode.null
---         , expect = Http.expectJson decodeCredentialsWrapper
---         , timeout = Just 5000
---         , withCredentials = False
---         }
-
--- getS3Credentials : String -> FileInfo -> Cmd FileMsg 
--- getS3Credentials tokenString fileInfo =
---     Http.send ReceiveFileCredentials <| getS3CredentialsRequest tokenString fileInfo
-
-
-getS3PresignedUrlRequest : String -> String -> String -> Http.Request String
-getS3PresignedUrlRequest tokenString bucket path = 
-    Http.request
-        { method = "Get"
-        , headers = [Http.header "APIVersion" "V2", Http.header "Authorization" ("Bearer " ++ tokenString)]
-        , url = Configuration.backend ++ "/api/presigned" ++ "?bucket=" ++ bucket ++ "&path=" ++ path
-        , body = Http.jsonBody Encode.null
-        , expect = Http.expectJson Decode.string
-        , timeout = Just 5000
-        , withCredentials = False
-        }
-
-getS3PresignedUrl : String -> String -> String -> Cmd FileMsg 
-getS3PresignedUrl tokenString bucket path =
-    Http.send ReceivePresignedUrl <| getS3PresignedUrlRequest tokenString bucket path
