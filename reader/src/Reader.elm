@@ -806,9 +806,14 @@ update msg model =
 
         Test ->
           let 
-            cmd2 = Credentials.getS3PresignedUrl (stringFromMaybeToken  model.maybeToken) "noteimages" "foo.jpg"
+            fileInfo = {   filename : "carr_fire_2.jpg"
+              , mimetype : "image/jpeg"
+              , bucket : "noteimages"
+              , path : "jxxcarlson"
+            }
+            cmd = Credentials.getS3Credentials (stringFromMaybeToken  model.maybeToken) fileInfo
           in
-            ( model, Cmd.map FileMsg cmd2 )
+            ( model, Cmd.map FileMsg cmd )
 
         ReadImage v ->
           let 

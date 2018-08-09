@@ -3,6 +3,7 @@ module FileUploadCredentials exposing(
     , CredentialsWrapper
     , FileMsg(..)
     , getS3PresignedUrl
+    , getS3Credentials
     , fileInfoTestRecord
     , FileData 
     , decodeFileData
@@ -135,21 +136,21 @@ getS3PresignedUrl tokenString bucket path =
     Http.send ReceivePresignedUrl <| getS3PresignedUrlRequest tokenString bucket path
 
 
--- getS3CredentialsRequest : String -> FileInfo -> Http.Request CredentialsWrapper
--- getS3CredentialsRequest tokenString fileInfo = 
---     Http.request
---         { method = "Get"
---         , headers = [Http.header "APIVersion" "V2", Http.header "Authorization" ("Bearer " ++ tokenString)]
---         , url = Configuration.backend ++ "/api/credentials" ++ (queryStringFromFileInfo fileInfo)
---         , body = Http.jsonBody Encode.null
---         , expect = Http.expectJson decodeCredentialsWrapper
---         , timeout = Just 5000
---         , withCredentials = False
---         }
+getS3CredentialsRequest : String -> FileInfo -> Http.Request CredentialsWrapper
+getS3CredentialsRequest tokenString fileInfo = 
+    Http.request
+        { method = "Get"
+        , headers = [Http.header "APIVersion" "V2", Http.header "Authorization" ("Bearer " ++ tokenString)]
+        , url = Configuration.backend ++ "/api/credentials" ++ (queryStringFromFileInfo fileInfo)
+        , body = Http.jsonBody Encode.null
+        , expect = Http.expectJson decodeCredentialsWrapper
+        , timeout = Just 5000
+        , withCredentials = False
+        }
 
--- getS3Credentials : String -> FileInfo -> Cmd FileMsg 
--- getS3Credentials tokenString fileInfo =
---     Http.send ReceiveFileCredentials <| getS3CredentialsRequest tokenString fileInfo
+getS3Credentials : String -> FileInfo -> Cmd FileMsg 
+getS3Credentials tokenString fileInfo =
+    Http.send ReceiveFileCredentials <| getS3CredentialsRequest tokenString fileInfo
 
 
 -- ELLIE ADAPTED FROM @ILIAS: https://ellie-test-19-cutover.now.sh/YmXW6MBCmBa1
