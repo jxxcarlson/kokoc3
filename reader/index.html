@@ -102,17 +102,26 @@
 				console.log("file size = " + reader.result.length)
 				console.log("mime type = " + info.fileValue.type)
 
-				$.ajax({
-					url: info.url, // the presigned URL
+				fetch(  info.url, {
+					method: 'PUT',
 					headers: {
+						'Content-Type': 'image/jpeg',
 						'Access-Control-Allow-Origin': '*'
 					},
-					contentType: info.fileValue.type,
-					processData: false,
-					type: 'PUT',
-					data: reader.result,
-					success: function() { console.log('Uploaded data successfully.'); }
-				});
+					body: reader.result
+				})
+
+				// $.ajax({
+				// 	url: info.url, // the presigned URL
+				// 	headers: {
+				// 		'Access-Control-Allow-Origin': '*'
+				// 	},
+				// 	contentType: info.fileValue.type,
+				// 	processData: false,
+				// 	type: 'PUT',
+				// 	data: reader.result,
+				// 	success: function() { console.log('Uploaded data successfully.'); }
+				// });
 					
 			}
 

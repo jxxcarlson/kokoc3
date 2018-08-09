@@ -907,7 +907,7 @@ viewImage_ model =
         , Html.pre [] [ Html.text <| imageType model]
         , Html.pre [] [ Html.text <|  (\x -> x ++ " bytes") <| String.fromInt <| String.length <| ( model.maybeImageString |> Maybe.withDefault "")]
         , Html.p [] [ Maybe.map show model.maybeImageString |> Maybe.withDefault (Html.text "") ]
-        , Html.a [Html.Attributes.href (imageUrlAtS3 model)] [Html.text <| imageUrlAtS3 model]
+        , Html.a [Html.Attributes.href (imageUrlAtS3 model), Html.Attributes.target "_blank"] [Html.text <| imageUrlAtS3 model]
         ]
 
 imageUrlAtS3 : Model -> String
