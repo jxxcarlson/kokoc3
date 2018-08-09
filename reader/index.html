@@ -99,7 +99,7 @@
 				_ia[i] = byteString.charCodeAt(i);
 			}
 
-			// var dataView = new DataView(arrayBuffer);
+			var dataView = new DataView(arrayBuffer);
 			// var blob = new Blob([dataView], { type: mimeString });
 			return dataView;
 		}
@@ -118,7 +118,7 @@
 
 				console.log("file size = " + reader.result.length)
 				console.log("mime type = " + info.fileValue.type)
-				
+
 				const blob = dataURItoBlob(reader.result);
 
 				fetch(info.url, {
