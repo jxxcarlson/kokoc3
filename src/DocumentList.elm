@@ -23,6 +23,7 @@ module DocumentList exposing(
   , retrievDocumentsFromIntList
   , emptyIntList
   , intListFromDocumentList
+  , updateDocument
   )
 
 import Json.Encode as Encode    
@@ -269,4 +270,16 @@ deleteItemInDocumentListAt targetDocId documentList =
           Nothing -> documentList
           Just k -> 
             setDocuments (Utility.listDeleteAt k (documents documentList)) documentList
-              
+
+
+{-| Replaece the element in `documentList` whose id is that of
+    of `document` by `document`.
+-}
+updateDocument : Document -> DocumentList -> DocumentList 
+updateDocument document documentList =
+  let 
+    docs_ = documents documentList 
+    newdocs_ = Utility.replaceIf (\doc -> doc.id == document.id) document docs_ 
+  in 
+    setDocuments newdocs_ documentList
+

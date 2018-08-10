@@ -725,25 +725,30 @@ update msg model =
            processInfoForElm model infoForElm_
            
 
-        ToggleToolPanelState ->
+        ToggleToolPanelState ->  
            let  
               nextToolPanelState = 
                 case model.toolPanelState of 
                   HideToolPanel -> ShowToolPanel
                   ShowToolPanel -> HideToolPanel
               nextModel = case nextToolPanelState of 
-                 HideToolPanel -> { model | toolPanelState = nextToolPanelState }
+                 HideToolPanel -> 
+                   let 
+                     docList_ = model.documentList
+                     nextDocList_ = DocumentList.updateDocument model.currentDocument docList_
+                   in
+                     { model | toolPanelState = nextToolPanelState, documentList = nextDocList_ }  -- ###
                  ShowToolPanel -> 
                    { model | 
                       documentTitle  = model.currentDocument.title
                     , toolPanelState = nextToolPanelState
                     , deleteDocumentState = DeleteIsOnSafety
-                    }             
+                    }
           in 
             ( nextModel , Cmd.none)
 
         NewDocument -> 
-          (model, Cmd.map DocMsg (newDocument model))
+          ({ model | toolPanelState = ShowToolPanel, documentTitle = "NEW DOCUMENT"}, Cmd.map DocMsg (newDocument model))
 
         NewChildDocument -> 
           (model, Cmd.map DocMsg (newChildDocument model))
@@ -2020,6 +2025,7 @@ makeNewDocument user =
        { newDocument_ | 
             authorId =  User.userId user
           , authorName = User.username user
+          , title = "NEW DOCUMENT"
         }
   
 

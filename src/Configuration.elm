@@ -67,6 +67,11 @@ Click on \\strong{Write} to create or edit a document.
 
 newMiniLatexDocumentText = 
     """
+    NEW DOCUMENT: WRITE YOUR TEXT HERE
+"""
+
+newMiniLatexDocumentText1 = 
+    """
 \\tableofcontents
 
 \\section{Examples}
