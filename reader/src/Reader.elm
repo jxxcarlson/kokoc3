@@ -912,10 +912,26 @@ viewImage_ model =
             , Html.br [][]
             , Html.input [ type_ "file", on "change" (decodeNodeFile ReadImage), value ""
                 , Html.Attributes.style "margin-left" "4px", Html.Attributes.style "margin-bottom" "10px" ] []
-            , Html.p [] [ Maybe.map show model.maybeImageString |> Maybe.withDefault (Html.text "") ]
+            , Html.pre [Html.Attributes.style "color" "white", Html.Attributes.style "margin-left" "4px"   ] [ Html.text <| imageType model]
+            , displayMedia (imageType model) model.maybeImageString
             , Html.p [Html.Attributes.style "color" "white"] [Html.text <| imageUrlAtS3 model]
         ]
-        
+
+displayMedia : String -> Maybe String -> Html Msg  
+displayMedia imageType_ maybeData = 
+  case maybeData of 
+    Nothing -> 
+      Html.p [Html.Attributes.style "color" "white", Html.Attributes.style "margin-left" "4px"   ] 
+        [ Html.text <| ""]
+    Just data -> 
+      case imageType_ of 
+        "application/pdf" -> displayPdf data 
+        _ -> Html.p [] [ Maybe.map show maybeData |> Maybe.withDefault (Html.text "") ]
+
+
+displayPdf data = 
+  Html.pre [Html.Attributes.style "color" "white", Html.Attributes.style "margin-left" "4px"   ] 
+     [ Html.text <| "PDF File"]
 
 imageUrlAtS3 : Model -> String
 imageUrlAtS3 model = 
