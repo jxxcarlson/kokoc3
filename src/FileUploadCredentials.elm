@@ -216,3 +216,16 @@ getS3Credentials tokenString fileInfo =
 --   ## {:ok,
 --   ## "https://s3.amazonaws.com/noteimages/foo.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAJQYJYCIAWH6DGHIQ%2F20180807%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20180807T232859Z&X-Amz-Expires=3600&X-Amz-SignedHeaders=host&X-Amz-Signature=14fcb5ef6f845ce95e3a22beb92a663e001c4bad698f41ecea1885360516adf2"}
   
+-- DATA URI: https://humanwhocodes.com/blog/2009/10/27/data-uris-explained/
+
+-- DATA URI TO BLOB: https://gist.github.com/davoclavo/4424731
+
+-- Leif Batterman: https://gist.github.com/battermann/dbef69061ec22f4063d0a7bb9f749fd9
+
+-- Fetch: https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API/Using_Fetch
+
+-- Filereader: http://blog.teamtreehouse.com/reading-files-using-the-html5-filereader-api
+
+-- Ports and files in Elm: https://www.paramander.com/blog/using-ports-to-deal-with-files-in-elm-0-17
+
+-- 0.19 DROP ZONE: https://ellie-test-19-cutover.now.sh/Yn444vwKpFa1

@@ -1139,24 +1139,35 @@ view  model =
 header : Model -> Element Msg
 header model = 
   Element.row [width fill, Background.color Widget.grey, height (px 40), paddingXY 20 0, spacing 10, alignLeft] [
-      Element.row [ spacing 20]  [
+      Element.row [ spacing 10]  [
          searchInput model
         -- , getDocumentsButton (px 60) model
         , getRandomDocumentsButton (px 70) model
+        , spacer 8
         , Element.el [ Font.size 24] (text <| appTitle model.appMode)
+        , spacer 8
         , startButton (px 55) model 
         , homeButton (px 55) model
+        , spacer 11
         , readerModeButton (px 52) model
         , writerModeButton (px 52) model
         , imageModeButton (px 52) model]
+        , spacer 10
+        , viewUserManualLink
+        , spacer 10
+        , signoutButton (px 70) model
   ]
+
+spacer : Int -> Element msg
+spacer width_ = 
+  Element.el [width (px width_)] (Element.text "")
 
 appTitle : AppMode -> String 
 appTitle appMode =
   case appMode of 
-    Reading -> "kNode Reader"
-    Writing -> "kNode Writer"
-    ImageEditing -> "kNode Images"
+    Reading -> "kNode"
+    Writing -> "kNode"
+    ImageEditing -> "kNode"
 
 body : Model -> Element Msg 
 body model =
@@ -1265,8 +1276,8 @@ logoutPanel model =
     Just _ ->
       Element.column [padding 20, spacing 20] [
           currentUserNameElement model
-        , signoutButton (px 70) model
-        , viewUserManualLink
+       
+        
       ]
 
 -- TOOLS
@@ -1587,7 +1598,7 @@ usernameInput model =
 searchInput : Model -> Element Msg
 searchInput model =
     Input.text [htmlAttribute (Html.Attributes.id "search-box")
-       , width (px 400), height (px 30) , Font.color black] {
+       , width (px 360), height (px 30) , Font.color black] {
         text = model.searchQueryString 
       , placeholder = Just (Input.placeholder [moveUp 5] (text "Search example: type 'quantum', then press Ctrl-Enter"))
       , onChange = Just(\str -> AcceptSearchQuery str)
