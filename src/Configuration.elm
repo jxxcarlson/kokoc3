@@ -126,6 +126,10 @@ then type Ctrl-ENTER or Ctrl-RETURN.
 \\end{itemize}
 
 
+Check out the \\href{https://jxxcarlson.github.io/app/miniLatexLive/index.html}{MiniLatex Live demo}
+\\mdash no login needed.
+
+
 \\bigskip
 
 \\bigskip
