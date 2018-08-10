@@ -107,6 +107,8 @@ grey = Element.rgb 0.8 0.8 0.8
 
 lightGrey = Element.rgb 0.95 0.95 0.95
 
+darkGrey = Element.rgb 0.45 0.45 0.45
+
 lightBlue = Element.rgb 0.85 0.85 0.9
 
 mediumLightBlue = Element.rgb 0.75 0.75 1.0

@@ -17,7 +17,7 @@ else
     echo "${color}Uglify and deploy to Digital Ocean${reset}"
     uglifyjs ${NGINX_LOCAL}Main.js -mc 'pure_funcs="F2,F3,F4,F5,F6,F7,F8,F9"' -o ${NGINX_LOCAL}Main.min.js
     scp -r ${NGINX_LOCAL}Main.min.js root@138.197.81.6:${NGINX_REMOTE}
-    sed 's/Main.js/Main.min.js/' >index.html ${NGINX_LOCAL}index.html
+    sed 's/Main.js/Main.min.js/' index.html > ${NGINX_LOCAL}index.html
     scp -r ${NGINX_LOCAL}index.html root@138.197.81.6:${NGINX_REMOTE}index.html
     cp  index.html ${NGINX_LOCAL}
 fi

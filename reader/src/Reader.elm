@@ -901,19 +901,21 @@ decodeNodeFile toMsg =
 
 viewImage_ : Model -> Html Msg
 viewImage_ model =
-    Html.div [ Html.Attributes.style "margin-left" "20px"
-             , Html.Attributes.style "margin-bottom" "25px"
-             , Html.Attributes.style "padding" "10px"
-             , Html.Attributes.style "background-color" "#eef"
-             , Html.Attributes.style "width" "470px"]
-        [ Html.p [Html.Attributes.style "font-size" "24pt"] [Html.text "Image loader"]
-        , Html.br [] []
-        , Html.br [][]
-        , Html.input [ type_ "file", on "change" (decodeNodeFile ReadImage), value "" ] []
-        -- , Html.pre [] [ Html.text <| imageType model]
-        , Html.p [] [ Maybe.map show model.maybeImageString |> Maybe.withDefault (Html.text "") ]
-        , Html.p [] [Html.text <| imageUrlAtS3 model]
+    Html.div [ 
+               Html.Attributes.style "padding" "30px"
+             , Html.Attributes.style "background-color" "#222"
+             , Html.Attributes.style "width" "100%"
+             , Html.Attributes.style "height" "100%"
+             ]
+        [    Html.p [Html.Attributes.style "color" "white", Html.Attributes.style "font-size" "24pt"] [Html.text "Image loader"]
+            , Html.br [] []
+            , Html.br [][]
+            , Html.input [ type_ "file", on "change" (decodeNodeFile ReadImage), value ""
+                , Html.Attributes.style "margin-left" "4px", Html.Attributes.style "margin-bottom" "10px" ] []
+            , Html.p [] [ Maybe.map show model.maybeImageString |> Maybe.withDefault (Html.text "") ]
+            , Html.p [Html.Attributes.style "color" "white"] [Html.text <| imageUrlAtS3 model]
         ]
+        
 
 imageUrlAtS3 : Model -> String
 imageUrlAtS3 model = 
@@ -1154,12 +1156,12 @@ header model =
         , spacer 8
         , Element.el [ Font.size 24] (text <| appTitle model.appMode)
         , spacer 8
-        , startButton (px 55) model 
+        , startButton (px 50) model 
         , homeButton (px 55) model
         , spacer 11
-        , readerModeButton (px 52) model
-        , writerModeButton (px 52) model
-        , imageModeButton (px 52) model]
+        , readerModeButton (px 50) model
+        , writerModeButton (px 48) model
+        , imageModeButton (px 56) model]
         , spacer 10
         , viewUserManualLink
         , spacer 10
@@ -1223,10 +1225,9 @@ imageLeftColumn portion_ model =
 
 imageCenterColumn : Int -> Int -> Model -> Element Msg
 imageCenterColumn windowHeight_ portion_  model  = 
-  Element.column [width (fillPortion portion_), height (px (windowHeight_ - 73)), paddingXY 20 20
-    , Background.color Widget.lightGrey, centerX] [
-      viewImage model
-  ]
+  Element.column [width (fillPortion portion_), height (px (windowHeight_ - 73))
+    , Background.color Widget.darkGrey 
+    ] [ viewImage model ]
 
 imageRightColumn : Int -> Model -> Element Msg
 imageRightColumn portion_ model = 
