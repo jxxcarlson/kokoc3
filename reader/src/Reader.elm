@@ -599,7 +599,7 @@ update msg model =
 
         -- Handler: RespondToNewUser
         RegisterUser ->
-          case String.length model.password < 9 of 
+          case String.length model.password < 8 of 
             True -> 
               ({model | message = "Password must have at least 8 characters"}, Cmd.none)
             False -> 
@@ -904,7 +904,7 @@ viewImage_ model =
     Html.div [ Html.Attributes.style "margin-left" "20px"
              , Html.Attributes.style "margin-bottom" "25px"
              , Html.Attributes.style "padding" "10px"
-             , Html.Attributes.style "background-color" "#eee"
+             , Html.Attributes.style "background-color" "#eef"
              , Html.Attributes.style "width" "470px"]
         [ Html.p [Html.Attributes.style "font-size" "24pt"] [Html.text "Image loader"]
         , Html.br [] []
@@ -1960,7 +1960,7 @@ idFromDocInfo str =
 -- HELPERS
 
 signIn model =
-  case String.length model.password < 9 of 
+  case String.length model.password < 8 of 
     True -> ({model | message = "Password must contain at least 8 characters"}, Cmd.none)
     False ->
       let 
