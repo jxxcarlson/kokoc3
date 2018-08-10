@@ -118,3 +118,16 @@ listInsertAt k item list =
 listDeleteAt : Int -> List a  -> List a
 listDeleteAt k list = 
   (List.take k list) ++ (List.drop (k+1) list)
+
+
+
+
+getEnclosedText : String -> String -> String -> String 
+getEnclosedText startDelimiter endDelimiter str = 
+  let 
+    firstIndex = String.indexes startDelimiter str |> List.head
+    lastIndex = String.indexes endDelimiter str |> List.head
+  in
+    case (firstIndex, lastIndex) of 
+      (Just i, Just j) -> String.slice (i+1) j str 
+      _ -> ""

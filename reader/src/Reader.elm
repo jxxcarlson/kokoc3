@@ -31,6 +31,7 @@ import Element.Border as Border
 import Element.Lazy
 
 import Widget exposing(..)
+import Utility
 
 import Configuration
 import SystemDocument
@@ -364,14 +365,14 @@ update msg model =
                ({ model | 
                     maybeToken = maybeToken
                   , maybeCurrentUser = maybeCurrentUser
-                  , message = "Authorized"
+                  , message = "Authorized (1)"
                   , email = ""
                   , password = ""
                   , username = ""
                 }
                 ,  sendMaybeUserDataToLocalStorage maybeCurrentUser ) 
             Err err -> 
-                ({model | message = "Not authorized"},   Cmd.none  )
+                ({model | message = "email/password not valid"},   Cmd.none  )
 
         UserMsg (RespondToNewUser result)->
           case result of 
@@ -383,7 +384,7 @@ update msg model =
                ({ model | 
                     maybeToken = maybeToken
                   , maybeCurrentUser = maybeCurrentUser
-                  , message = "Authorized"
+                  , message = "Authorized (2)"
                   , email = ""
                   , password = ""
                   , username = ""
@@ -391,7 +392,7 @@ update msg model =
                 }
                 ,  sendMaybeUserDataToLocalStorage maybeCurrentUser ) 
             Err err -> 
-                ({model | message = "Not authorized"},   Cmd.none  )
+                ({model | message = httpErrorHandler err },   Cmd.none  ) -- ###  "Not authorized (2)"
 
         DocMsg (ReceiveDocument result) ->
           case result of 
@@ -588,22 +589,21 @@ update msg model =
          ({model | appMode = Reading, toolPanelState = HideToolPanel, masterDocLoaded = True} , Cmd.map DocListMsg (DocumentList.loadMasterDocumentWithCurrentSelection model.maybeCurrentUser docId))
 
         SignIn ->
-          let 
-              basicDoc = Document.basicDocument
-              startupDoc = SystemDocument.signIn
-              freshModel = initialModel "" model.windowWidth model.windowHeight  startupDoc
-          in 
-              (freshModel, Cmd.map UserMsg (User.getTokenCmd model.email model.password)  ) 
+          signIn model
 
         SignOut ->
           let 
             freshModel = initialModel "" model.windowWidth model.windowHeight  SystemDocument.signedOut
           in 
-            ({ freshModel | maybeCurrentUser = Nothing, maybeToken = Nothing}, eraseLocalStorage  )  
+            ({ freshModel | maybeCurrentUser = Nothing, maybeToken = Nothing, message = "Signed out"}, eraseLocalStorage  )  
 
-
+        -- Handler: RespondToNewUser
         RegisterUser ->
-           (model, Cmd.map UserMsg (User.registerUser model.email model.username "anon" model.password)  )   
+          case String.length model.password < 9 of 
+            True -> 
+              ({model | message = "Password must have at least 8 characters"}, Cmd.none)
+            False -> 
+              (model, Cmd.map UserMsg (User.registerUser model.email model.username "anon" model.password)  )   
 
         SetSignupMode signupMode_  ->
            ({ model | signupMode = signupMode_}, Cmd.none )  
@@ -1254,8 +1254,18 @@ loginPanel model =
         , Element.row [spacing 15] [
               getTokenButton (px 66) model
             , gotoRegistrationButton (px 66) model
-        ]
+        ] 
+        , Element.paragraph [Font.color Widget.darkRed, width (px 160)] [text <| filterMessageForSignIn model.message]
       ]
+
+filterMessageForSignIn : String -> String
+filterMessageForSignIn str  =  
+  case String.startsWith "Error:" str of 
+    True -> ""
+    False -> str
+
+                
+
 
 signupPanel : Model -> Element Msg 
 signupPanel model = 
@@ -1271,6 +1281,7 @@ signupPanel model =
             registerUserButton (px 65) model
           , cancelRegistrationButton (px 60) model
         ]
+        , Element.paragraph [Font.color Widget.darkRed, width (px 160)] [text <| filterMessageForSignIn model.message]
       ]
 
 
@@ -1929,7 +1940,7 @@ imageModeButton width_ model =
     Just user -> 
         Input.button (modeButtonStyle model.appMode ImageEditing  width_) {
           onPress =  Just (ChangeMode ImageEditing)
-        , label = Element.el [] (Element.text "Image")
+        , label = Element.el [] (Element.text "Image ")
         } 
 
 
@@ -1947,6 +1958,17 @@ idFromDocInfo str =
   str |> String.toInt |> Maybe.withDefault 0
 
 -- HELPERS
+
+signIn model =
+  case String.length model.password < 9 of 
+    True -> ({model | message = "Password must contain at least 8 characters"}, Cmd.none)
+    False ->
+      let 
+          basicDoc = Document.basicDocument
+          startupDoc = SystemDocument.signIn
+          freshModel = initialModel "" model.windowWidth model.windowHeight  startupDoc
+      in 
+          (freshModel, Cmd.map UserMsg (User.getTokenCmd model.email model.password)  ) 
 
 loadTexMacrosForDocument : Document -> Model -> Cmd Msg 
 loadTexMacrosForDocument document model =
@@ -2092,6 +2114,26 @@ saveCurrentDocument model =
                 , currentDocument = nextCurrentDocument}
         , Cmd.map DocMsg <| Document.saveDocument tokenString nextCurrentDocument )
 
+-- ###
+httpErrorHandler : Http.Error -> String
+httpErrorHandler error = 
+  case error of 
+    Http.BadPayload errorString response ->
+      errorString  
+        |> Utility.getEnclosedText "{" "}"
+        |> String.split ":"
+        |> List.drop 1 
+        |> List.head
+        |> Maybe.withDefault ""
+        |> String.replace "\"" "" 
+      -- Debug.toString response
+    Http.BadUrl str -> str 
+    Http.Timeout -> "timeout"
+    Http.NetworkError -> "Network error"
+    Http.BadStatus resp -> "Bad status: " ++ "darn!"
+
+
+
 
 -- Widgets
 
@@ -2111,3 +2153,4 @@ xbutton model style_ label_ msg =
         onPress =  Just msg
       , label = Element.el [] (Element.text label_)
       } 
+
