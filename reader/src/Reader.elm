@@ -1800,10 +1800,13 @@ gotoRegistrationButton width_ model =
 
 signoutButton : Length -> Model -> Element Msg    
 signoutButton width_ model = 
-  Input.button (buttonStyle width_) {
-    onPress =  Just SignOut
-  , label = Element.el [] (Element.text "Sign out")
-  } 
+  case model.maybeCurrentUser of 
+    Nothing -> Element.none 
+    Just _ ->
+      Input.button (buttonStyle width_) {
+        onPress =  Just SignOut
+      , label = Element.el [] (Element.text "Sign out")
+      } 
 
 
 viewUserManualLink = 
