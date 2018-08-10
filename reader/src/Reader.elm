@@ -281,13 +281,14 @@ processUrl urlString =
         Cmd.batch [
             sendInfoOutside (AskToReconnectUser Encode.null)
            -- , sendInfoOutside (AskToReconnectDocumentList Encode.null)
-            , Cmd.map DocMsg (Document.getDocumentById docId Nothing)  
+            -- , Cmd.map DocMsg (Document.getDocumentById docId Nothing)
+            , Cmd.map DocListMsg (DocumentList.findDocuments Nothing <| "id=" ++ (String.fromInt docId))  
         ]
 
       HomeRef username -> 
         Cmd.batch [
             sendInfoOutside (AskToReconnectUser Encode.null)
-            , Cmd.map DocListMsg (DocumentList.findDocuments Nothing ("key=home&authorname=" ++ username))  
+            , Cmd.map DocListMsg (DocumentList.findDocuments Nothing ("key=home&authorname=" ++ username)) 
         ]
 
       InternalRef str ->
@@ -619,7 +620,7 @@ update msg model =
             , Cmd.map DocListMsg (DocumentList.findDocuments Nothing (Query.parse query)))
 
         GetPublicDocumentsRawQuery query ->
-           ({ model | appMode = Reading, toolPanelState = HideToolPanel, masterDocLoaded = False },  -- ####
+           ({ model | appMode = Reading, toolPanelState = HideToolPanel, masterDocLoaded = False },  
              Cmd.map DocListMsg (DocumentList.findDocuments Nothing query))
 
         DocViewMsg (GetPublicDocumentsRawQuery2 query) ->
@@ -826,7 +827,7 @@ update msg model =
                 { filename = fileData.name 
                   , mimetype = fileData.mimetype
                   , bucket = "noteimages"
-                  , path = (User.usernameFromMaybeUser model.maybeCurrentUser) -- ++ "/" ++ fileData.name ###
+                  , path = (User.usernameFromMaybeUser model.maybeCurrentUser) 
                 }
             path_ = (User.usernameFromMaybeUser model.maybeCurrentUser) ++ "/" ++ fileInfo.filename
             cmd = Credentials.getS3PresignedUrl (stringFromMaybeToken  model.maybeToken) "noteimages" path_
@@ -906,7 +907,7 @@ viewImage_ model =
         , Html.input [ type_ "file", on "change" (decodeNodeFile ReadImage), value "" ] []
         -- , Html.pre [] [ Html.text <| imageType model]
         , Html.p [] [ Maybe.map show model.maybeImageString |> Maybe.withDefault (Html.text "") ]
-        , Html.a [Html.Attributes.href (imageUrlAtS3 model), Html.Attributes.target "_blank"] [Html.text <| imageUrlAtS3 model]
+        , Html.p [] [Html.text <| imageUrlAtS3 model]
         ]
 
 imageUrlAtS3 : Model -> String
@@ -931,11 +932,11 @@ imageType model =
 viewImage : Model -> Element Msg 
 viewImage model = 
   case model.maybeCurrentUser of 
-    Nothing -> Element.none
+    Nothing -> 
+        Element.none
     Just user -> 
-      case (User.username user) == "jxxcarlson" of 
-        True -> Element.html (viewImage_ model)
-        False -> Element.none
+        Element.html (viewImage_ model)
+ 
 
 
 -- KEY COMMANDS
@@ -1265,7 +1266,7 @@ logoutPanel model =
       Element.column [padding 20, spacing 20] [
           currentUserNameElement model
         , signoutButton (px 70) model
-        , viewUserManualButton (px 90) model
+        , viewUserManualLink
       ]
 
 -- TOOLS
@@ -1793,19 +1794,13 @@ signoutButton width_ model =
   , label = Element.el [] (Element.text "Sign out")
   } 
 
-viewUserManualButton width_ model = 
-  Input.button (listItemStyleBold width_) {
-    onPress =  Just GetUserManual
-  , label = Element.el [] (Element.text "User manual")
-  } 
 
-
--- getDocumentsButton : Length -> Model -> Element Msg    
--- getDocumentsButton width_ model = 
---   Input.button (buttonStyle  width_) {
---     onPress =  Just ((getDocumentMsg model.appMode model.searchQueryString))
---   , label = Element.text "Search"
---   } 
+viewUserManualLink = 
+  Element.link [] { 
+       url = Configuration.client ++ "/750"
+     , label = Element.el [Font.bold] (text "User manual") 
+  }
+ 
 
 getDocumentMsg : AppMode -> String -> Msg 
 getDocumentMsg appMode searchQueryString = 
@@ -1916,13 +1911,12 @@ imageModeButton width_ model =
   case model.maybeCurrentUser of 
     Nothing -> Element.none 
     Just user -> 
-      case User.username user == "jxxcarlson" of 
-        False -> Element.none 
-        True -> 
-          Input.button (modeButtonStyle model.appMode ImageEditing  width_) {
-            onPress =  Just (ChangeMode ImageEditing)
-          , label = Element.el [] (Element.text "Image")
-          } 
+        Input.button (modeButtonStyle model.appMode ImageEditing  width_) {
+          onPress =  Just (ChangeMode ImageEditing)
+        , label = Element.el [] (Element.text "Image")
+        } 
+
+
 -- END: BUTTONS
 
 

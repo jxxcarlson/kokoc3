@@ -115,45 +115,6 @@ encodeCredentialsWrapper credentialsWrapper =
         , ( "url", Encode.string <| credentialsWrapper.url )
         ]
 
--- multiPartBody : Credentials -> FR.NativeFile -> Http.Body
--- multiPartBody creds nf =
---     Http.multipartBody
---         [ stringPart "key" nf.name
---         , stringPart "x-amz-algorithm" creds.algorithm
---         , stringPart "x-amz-credential" creds.credential
---         , stringPart "x-amz-date" creds.date
---         , stringPart "policy" creds.policy
---         , stringPart "x-amz-signature" creds.signature
---         , FR.filePart "file" nf
---         ]
-
-
--- uploadRequest : Credentials -> NativeFile -> Request String
--- uploadRequest creds file =
---     Http.request
---         { method = "POST"
---         , headers = []
---         , url = "https://noteimages.s3.amazonaws.com"
---         , body = multiPartBody creds file
---         , expect = Http.expectString
---         , timeout = Nothing
---         , withCredentials = False
---         }
-
--- request : Credentials -> Model -> (Model, Cmd Msg)
--- request credentials model =
---     let
---         _ = Debug.log "Image.upload.request credentials (Yada yada)" credentials 
---         cmd =
---             model.fileToUpload
---                 |> Maybe.map
---                     (\file ->
---                         uploadRequest credentials file
---                             |> Http.send (ImageMsg << UploadComplete)
---                     )
---                 |> Maybe.withDefault Cmd.none
---     in
---     ( model, cmd )
 
 type alias FileInfo = 
   {   filename : String
@@ -226,96 +187,32 @@ getS3Credentials tokenString fileInfo =
 
 -- AWS DOCS   :         https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/S3.html
 
-{-
 
-  ## Examples
-  ##  ExAws.S3.list_objects("noteimages")  |> ExAws.request(region: "us-east-1")
 
-  ## iex(3)> ExAws.Config.new(:s3) |> ExAws.S3.presigned_url(:put, "noteimages", "foo.jpg")
-  ## {:ok,
-  ## "https://s3.amazonaws.com/noteimages/foo.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAJQYJYCIAWH6DGHIQ%2F20180807%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20180807T232859Z&X-Amz-Expires=3600&X-Amz-SignedHeaders=host&X-Amz-Signature=14fcb5ef6f845ce95e3a22beb92a663e001c4bad698f41ecea1885360516adf2"}
+ -- ## BUCKET PERMISSIONS: https://docs.aws.amazon.com/AmazonS3/latest/dev/example-bucket-policies.html#example-bucket-policies-use-case-2
+
+
+ 
+--   ANOMYMOUS USER READ PERMISSION:
+
+--         {
+--             "Version":"2012-10-17",
+--             "Statement":[
+--                 {
+--                 "Sid":"AddPerm",
+--                 "Effect":"Allow",
+--                 "Principal": "*",
+--                 "Action":["s3:GetObject"],
+--                 "Resource":["arn:aws:s3:::examplebucket/*"]
+--                 }
+--             ]
+--         }
+ 
+ 
+--   ## Examples
+--   ##  ExAws.S3.list_objects("noteimages")  |> ExAws.request(region: "us-east-1")
+
+--   ## iex(3)> ExAws.Config.new(:s3) |> ExAws.S3.presigned_url(:put, "noteimages", "foo.jpg")
+--   ## {:ok,
+--   ## "https://s3.amazonaws.com/noteimages/foo.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAJQYJYCIAWH6DGHIQ%2F20180807%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20180807T232859Z&X-Amz-Expires=3600&X-Amz-SignedHeaders=host&X-Amz-Signature=14fcb5ef6f845ce95e3a22beb92a663e001c4bad698f41ecea1885360516adf2"}
   
-
-$.ajax({
-  url: presignedUrl, // the presigned URL
-  type: 'PUT',
-  data: 'data to upload into URL',
-  success: function() { console.log('Uploaded data successfully.'); }
-});
-
-From koko_client, Image.Upload (using native file module)
-We will have to do this on the JS side.
-
-PURE JS HTTP REQUESTS: https://www.kirupa.com/html5/making_http_requests_js.htm
-            EXCELLENT:  https://stackoverflow.com/questions/6396101/pure-javascript-send-post-data-without-a-form
-
-multiPartBody : Credentials -> FR.NativeFile -> Http.Body
-multiPartBody creds nf =
-    Http.multipartBody
-        [ stringPart "key" nf.name
-        , stringPart "x-amz-algorithm" creds.algorithm
-        , stringPart "x-amz-credential" creds.credential
-        , stringPart "x-amz-date" creds.date
-        , stringPart "policy" creds.policy
-        , stringPart "x-amz-signature" creds.signature
-        , FR.filePart "file" nf
-        ]
-
-
-uploadRequest : Credentials -> NativeFile -> Request String
-uploadRequest creds file =
-    Http.request
-        { method = "POST"
-        , headers = []
-        , url = "https://noteimages.s3.amazonaws.com"
-        , body = multiPartBody creds file
-        , expect = Http.expectString
-        , timeout = Nothing
-        , withCredentials = False
-        }
-
--}
-
-{-
-RESPONSE TO: http://localhost:4000/api/credentials?filename=foo.jpg&mimetype=image/jpeg&bucket=noteimages&path=bar
-
-    {
-        "url": "https://noteimages.s3.amazonaws.com",
-        "credentials": {
-            "x-amz-signature": "3b0297fefc1cad2481d62a3df0535bfca7e20074a3b7989126e3f47b3452a5e0",
-            "x-amz-date": "20180805T000000Z",
-            "x-amz-credential": "AKIAJQYJYCIAWH6DGHIQ/20180805/us-east-1/s3/aws4_request",
-            "x-amz-algorithm": "AWS4-HMAC-SHA256",
-            "policy": "eyJleHBpcmF0aW9uIjoiMjAxOC0wOC0wNVQxODowODoxNloiLCJjb25kaXRpb25zIjpbeyJidWNrZXQiOiJub3RlaW1hZ2VzIn0seyJhY2wiOiJwdWJsaWMtcmVhZCJ9LHsieC1hbXotYWxnb3JpdGhtIjoiQVdTNC1ITUFDLVNIQTI1NiJ9LHsieC1hbXotY3JlZGVudGlhbCI6IkFLSUFKUVlKWUNJQVdINkRHSElRLzIwMTgwODA1L3VzLWVhc3QtMS9zMy9hd3M0X3JlcXVlc3QifSx7IngtYW16LWRhdGUiOiIyMDE4MDgwNVQwMDAwMDBaIn0sWyJzdGFydHMtd2l0aCIsIiRDb250ZW50LVR5cGUiLCJpbWFnZS9qcGVnIl0sWyJzdGFydHMtd2l0aCIsIiRrZXkiLCIvanh4Il1dfQ==",
-            "key": "/jxx/foo.jpg",
-            "acl": "public-read"
-        }
-    }
-
--}
-
-{-
-    $.ajax({
-    url: presignedUrl, // the presigned URL
-    type: 'PUT',
-    data: 'data to upload into URL',
-    success: function() { console.log('Uploaded data successfully.'); }
-    });
--}
-
-{-
-   http://localhost:4000/api/credentials?filename=foo.jpg&mimetype=image/jpeg&bucket=noteimages&path=bar
-
-  {
-    "url": "https://noteimages.s3.amazonaws.com",
-    "credentials": {
-        "x-amz-signature": "3b0297fefc1cad2481d62a3df0535bfca7e20074a3b7989126e3f47b3452a5e0",
-        "x-amz-date": "20180805T000000Z",
-        "x-amz-credential": "AKIAJQYJYCIAWH6DGHIQ/20180805/us-east-1/s3/aws4_request",
-        "x-amz-algorithm": "AWS4-HMAC-SHA256",
-        "policy": "eyJleHBpcmF0aW9uIjoiMjAxOC0wOC0wNVQxODowODoxNloiLCJjb25kaXRpb25zIjpbeyJidWNrZXQiOiJub3RlaW1hZ2VzIn0seyJhY2wiOiJwdWJsaWMtcmVhZCJ9LHsieC1hbXotYWxnb3JpdGhtIjoiQVdTNC1ITUFDLVNIQTI1NiJ9LHsieC1hbXotY3JlZGVudGlhbCI6IkFLSUFKUVlKWUNJQVdINkRHSElRLzIwMTgwODA1L3VzLWVhc3QtMS9zMy9hd3M0X3JlcXVlc3QifSx7IngtYW16LWRhdGUiOiIyMDE4MDgwNVQwMDAwMDBaIn0sWyJzdGFydHMtd2l0aCIsIiRDb250ZW50LVR5cGUiLCJpbWFnZS9qcGVnIl0sWyJzdGFydHMtd2l0aCIsIiRrZXkiLCIvanh4Il1dfQ==",
-        "key": "/jxx/foo.jpg",
-        "acl": "public-read"
-    }
-}
--}
