@@ -970,7 +970,10 @@ handleKey model key =
 doSearch : Model -> (Model, Cmd Msg)
 doSearch model = 
   case model.appMode of 
-        Reading -> getPublicDocuments model model.searchQueryString 
+        Reading -> 
+          case model.maybeCurrentUser of 
+            Nothing -> getPublicDocuments model model.searchQueryString 
+            Just _ -> getUserDocuments model model.searchQueryString 
         Writing -> getUserDocuments model model.searchQueryString 
         ImageEditing -> (model, Cmd.none)
     
@@ -1816,12 +1819,6 @@ viewUserManualLink =
   }
  
 
-getDocumentMsg : AppMode -> String -> Msg 
-getDocumentMsg appMode searchQueryString = 
-  case appMode of 
-    Reading -> GetPublicDocuments searchQueryString
-    Writing -> GetUserDocuments searchQueryString
-    ImageEditing -> NoOp
 
 getRandomDocumentsButton : Length -> Model -> Element Msg    
 getRandomDocumentsButton width_ model = 
