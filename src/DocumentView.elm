@@ -52,7 +52,7 @@ titleLine : Document -> Element DocViewMsg
 titleLine document = 
   if document.parentId == 0 then 
     if document.docType == Standard then 
-       Element.column (titleLineStyle 56) [
+       Element.column (titleLineStyle 62) [
          Element.el [Font.size 18, Font.bold] (text document.title) 
          , getAuthorsDocumentsTitleButton_ fill document
          ]
