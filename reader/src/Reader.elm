@@ -926,7 +926,6 @@ port imageRead : (Value -> msg) -> Sub msg
 port sendCredentials : Value -> Cmd msg 
 
 
-
 decodeDataTransferFile : (Value -> msg) -> Decoder msg
 decodeDataTransferFile toMsg =
     Decode.map toMsg (Decode.at ["dataTransfer", "files", "0"] Decode.value)
@@ -940,7 +939,7 @@ viewImage_ : Model -> Html Msg
 viewImage_ model =
     Html.div [ 
                Html.Attributes.style "padding" "30px"
-             , Html.Attributes.style "background-color" "#999"
+             , Html.Attributes.style "background-color" "#333"
              , Html.Attributes.style "width" "100%"
              , Html.Attributes.style "height" "100%"
              ]
@@ -1285,6 +1284,7 @@ imageLeftColumn : Int -> Model -> Element Msg
 imageLeftColumn portion_ model = 
   Element.column [width (fillPortion portion_), height fill, 
     Background.color Widget.lightBlue, paddingXY 20 20, spacing 10] [ 
+        imageCatalogueLink model
        
   ]
 
@@ -1901,7 +1901,7 @@ viewUserManualLink =
      , label = Element.el [Font.bold] (text "User manual") 
   }
 
-exportDocumentlLink : Model -> Element msg   -- ###
+exportDocumentlLink : Model -> Element msg   
 exportDocumentlLink model = 
   case model.maybeCurrentUser of  
     Nothing -> Element.none 
@@ -1914,6 +1914,18 @@ exportDocumentlLink model =
             , label = Element.el [Font.bold] (text "Export") 
           }
  
+imageCatalogueLink : Model -> Element msg   
+imageCatalogueLink model = 
+  case model.maybeCurrentUser of  
+    Nothing -> Element.none 
+    Just user ->
+      case User.userId user == model.currentDocument.authorId of 
+        False -> Element.none 
+        True -> 
+          Element.newTabLink [] { 
+              url = Configuration.backend ++ "/imagecatalogue/documents/" ++ String.fromInt  model.currentDocument.id  
+            , label = Element.paragraph [Font.color Widget.blue, width (px 200)] [text <| "Images for " ++ model.currentDocument.title]
+          }
 
 getRandomDocumentsButton : Length -> Model -> Element Msg    
 getRandomDocumentsButton width_ model = 
@@ -2222,7 +2234,7 @@ saveCurrentDocument model =
                 , currentDocument = nextCurrentDocument}
         , Cmd.map DocMsg <| Document.saveDocument tokenString nextCurrentDocument )
 
--- ###
+ 
 httpErrorHandler : Http.Error -> String
 httpErrorHandler error = 
   case error of 
