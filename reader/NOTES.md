@@ -1,7 +1,7 @@
 
 ## Nginx
 
-The `nginx` configuraton file is `/usr/local/etc/nginx/nginx.conf`
+The `nginx` configuraton file on this is `/usr/local/etc/nginx/nginx.conf`
 
 ```
     location / {

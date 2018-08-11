@@ -885,9 +885,6 @@ port uploadImage : Value -> Cmd msg
 port imageRead : (Value -> msg) -> Sub msg
 port sendCredentials : Value -> Cmd msg 
 
-show : String -> Html msg
-show url =
-    Html.img [ src url, Html.Attributes.width 460 ] []
 
 
 decodeDataTransferFile : (Value -> msg) -> Decoder msg
@@ -903,7 +900,7 @@ viewImage_ : Model -> Html Msg
 viewImage_ model =
     Html.div [ 
                Html.Attributes.style "padding" "30px"
-             , Html.Attributes.style "background-color" "#222"
+             , Html.Attributes.style "background-color" "#999"
              , Html.Attributes.style "width" "100%"
              , Html.Attributes.style "height" "100%"
              ]
@@ -913,12 +910,12 @@ viewImage_ model =
             , Html.input [ type_ "file", on "change" (decodeNodeFile ReadImage), value ""
                 , Html.Attributes.style "margin-left" "4px", Html.Attributes.style "margin-bottom" "10px" ] []
             , Html.pre [Html.Attributes.style "color" "white", Html.Attributes.style "margin-left" "4px"   ] [ Html.text <| imageType model]
-            , displayMedia (imageType model) model.maybeImageString
+            , displayMedia (imageType model) model.maybeImageString (imageUrlAtS3 model)
             , Html.p [Html.Attributes.style "color" "white"] [Html.text <| imageUrlAtS3 model]
         ]
 
-displayMedia : String -> Maybe String -> Html Msg  
-displayMedia imageType_ maybeData = 
+displayMedia : String -> Maybe String -> String -> Html Msg  
+displayMedia imageType_ maybeData url = 
   case maybeData of 
     Nothing -> 
       Html.p [Html.Attributes.style "color" "white", Html.Attributes.style "margin-left" "4px"   ] 
@@ -926,12 +923,24 @@ displayMedia imageType_ maybeData =
     Just data -> 
       case imageType_ of 
         "application/pdf" -> displayPdf data 
-        _ -> Html.p [] [ Maybe.map show maybeData |> Maybe.withDefault (Html.text "") ]
+        "image/jpeg" -> Html.p [] [ Maybe.map displayImage maybeData |> Maybe.withDefault (Html.text "") ]
+        "image/png" -> Html.p [] [ Maybe.map displayImage maybeData |> Maybe.withDefault (Html.text "") ]
+        "audio/mpeg" -> displayMpegAudio url
+        _ -> Html.pre [] [Html.text "Unrecognized media format"]
 
 
-displayPdf data = 
-  Html.pre [Html.Attributes.style "color" "white", Html.Attributes.style "margin-left" "4px"   ] 
-     [ Html.text <| "PDF File"]
+displayImage : String -> Html msg
+displayImage url =
+    Html.img [ src url, Html.Attributes.width 460 ] []
+
+displayMpegAudio : String -> Html msg
+displayMpegAudio url =
+    Html.audio [ src url, Html.Attributes.controls True] []
+
+displayPdf : String -> Html msg
+displayPdf data =
+    Html.iframe [ src data, Html.Attributes.width 460, Html.Attributes.height 460 ] []
+
 
 imageUrlAtS3 : Model -> String
 imageUrlAtS3 model = 
@@ -996,7 +1005,7 @@ doSearch model =
         Reading -> 
           case model.maybeCurrentUser of 
             Nothing -> getPublicDocuments model model.searchQueryString 
-            Just _ -> getUserDocuments model model.searchQueryString 
+            Just _ -> getUserDocuments model (model.searchQueryString ++ ", docs=any")
         Writing -> getUserDocuments model model.searchQueryString 
         ImageEditing -> (model, Cmd.none)
     
