@@ -1938,10 +1938,17 @@ getAuthorsDocumentsButton_ width_ model =
     case authorname == "" of 
       True -> Element.none 
       False ->
-        Input.button ((buttonStyle  width_) ++ [Font.center]) {
-          onPress =  Just (GetPublicDocumentsRawQuery ("authorname=" ++ authorname ++ "&sort=title"))
-        , label = Element.el [] (Element.text authorname)
-        }
+        case authorname == User.usernameFromMaybeUser model.maybeCurrentUser  of 
+          False -> 
+            Input.button ((buttonStyle  width_) ++ [Font.center]) {
+              onPress =  Just (GetPublicDocumentsRawQuery ("authorname=" ++ authorname ++ "&sort=title"))
+            , label = Element.el [] (Element.text authorname)
+            }
+          True -> 
+            Input.button ((buttonStyle  width_) ++ [Font.center]) {
+              onPress =  Just (GetUserDocuments ("authorname=" ++ authorname ++ "&sort=title" ++ "&docs=any"))
+            , label = Element.el [] (Element.text authorname)
+            }
 
 saveCurrentDocumentButton : Length -> Model -> Element Msg    
 saveCurrentDocumentButton width_ model =
