@@ -29,7 +29,7 @@ bucket = "noteimages"
 
 autosaveDuration : Float 
 autosaveDuration =
-  30*1000 -- in milliseconds
+  8*1000 -- in milliseconds
 
 coverArtUrl : String 
 coverArtUrl = "http://noteimages.s3.amazonaws.com/app_images/robin2.jpg"
@@ -133,6 +133,11 @@ then type Ctrl-ENTER or Ctrl-RETURN.
 
 Check out the \\href{https://jxxcarlson.github.io/app/miniLatexLive/index.html}{MiniLatex Live demo}
 \\mdash no login needed.
+
+\\medskip
+
+If you have questions or comments about MiniLatex or knode.io, please contact
+Jim Carlson: jxxcarlson at gmail.
 
 
 \\bigskip

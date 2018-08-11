@@ -61,8 +61,6 @@ main =
         }
 
 
--- TYPES
-
 
 type alias Flags =
     {
@@ -70,6 +68,8 @@ type alias Flags =
     , height : Int
     , location : String  
     }
+
+-- MODEL
 
 type alias Model =
     {   message  : String
@@ -304,10 +304,8 @@ focusSearchBox =
 
 autosaveSubscription : Model -> Sub Msg
 autosaveSubscription model =
-    if model.currentDocumentDirty then
-        Time.every model.autosaveDuration SaveCurrentDocument
-    else
-        Sub.none
+   Time.every model.autosaveDuration SaveCurrentDocument
+
 
 subscriptions model =
     Sub.batch [
@@ -392,7 +390,7 @@ update msg model =
                 }
                 ,  sendMaybeUserDataToLocalStorage maybeCurrentUser ) 
             Err err -> 
-                ({model | message = httpErrorHandler err },   Cmd.none  ) -- ###  "Not authorized (2)"
+                ({model | message = httpErrorHandler err },   Cmd.none  ) 
 
         DocMsg (ReceiveDocument result) ->
           case result of 
@@ -595,7 +593,16 @@ update msg model =
           let 
             freshModel = initialModel "" model.windowWidth model.windowHeight  SystemDocument.signedOut
           in 
-            ({ freshModel | maybeCurrentUser = Nothing, maybeToken = Nothing, message = "Signed out"}, eraseLocalStorage  )  
+            ({ freshModel | maybeCurrentUser = Nothing
+                    , maybeToken = Nothing
+                    , message = "Signed out"
+                    , currentDocumentDirty = False}, 
+                Cmd.batch [
+                    eraseLocalStorage  
+                  , saveCurrentDocumentIfDirty model    
+                ]
+                    
+            )  
 
         -- Handler: RespondToNewUser
         RegisterUser ->
@@ -617,15 +624,32 @@ update msg model =
                appMode = Reading
              , toolPanelState = HideToolPanel
             }
-            , Cmd.map DocListMsg (DocumentList.findDocuments Nothing (Query.parse query)))
+            , Cmd.batch [
+                  Cmd.map DocListMsg (DocumentList.findDocuments Nothing (Query.parse query))
+                , saveCurrentDocumentIfDirty model
+            ]
+            )
 
         GetPublicDocumentsRawQuery query ->
-           ({ model | appMode = Reading, toolPanelState = HideToolPanel, masterDocLoaded = False },  
-             Cmd.map DocListMsg (DocumentList.findDocuments Nothing query))
+           ({ model | appMode = Reading
+                , toolPanelState = HideToolPanel
+                , masterDocLoaded = False
+                , currentDocumentDirty = False 
+              }, 
+              Cmd.batch [ 
+                  Cmd.map DocListMsg (DocumentList.findDocuments Nothing query)
+                , saveCurrentDocumentIfDirty model
+              ]
+             
+             )
 
         DocViewMsg (GetPublicDocumentsRawQuery2 query) ->
-           ({ model | appMode = Reading, toolPanelState = HideToolPanel}, 
-             Cmd.map DocListMsg (DocumentList.findDocuments Nothing query))
+           ({ model | appMode = Reading, toolPanelState = HideToolPanel, currentDocumentDirty = False}, 
+             Cmd.batch [
+                 Cmd.map DocListMsg (DocumentList.findDocuments Nothing query)
+               , saveCurrentDocumentIfDirty model
+             ]
+            )
         
         GetUserDocuments query ->
           case model.maybeCurrentUser of 
@@ -654,7 +678,11 @@ update msg model =
           let  
             doc = Document.basicDocument  
           in 
-           ({model | currentDocument = { doc | title = "Welcome!" }}, Cmd.none)
+           ({model | currentDocument = { doc | title = "Welcome!" }
+                 , currentDocumentDirty = False
+              }
+              , saveCurrentDocumentIfDirty model  
+           )
 
         GoHome ->
           case model.maybeCurrentUser of 
@@ -662,7 +690,11 @@ update msg model =
                let 
                  doc = Document.basicDocument  
                in 
-                 ({model | currentDocument = { doc | title = "Welcome!" }}, Cmd.none)
+                 ( { model | currentDocument = { doc | title = "Welcome!" }
+                      , currentDocumentDirty = False
+                   }
+                   , saveCurrentDocumentIfDirty model
+                 )
             Just user -> 
                let 
                  queryString = "authorname=" ++ User.username user ++ "&key=home"
@@ -715,7 +747,8 @@ update msg model =
               tokenString = User.getTokenStringFromMaybeUser model.maybeCurrentUser 
           in 
               ( { model | currentDocumentDirty = False }
-                , Cmd.map DocMsg <| Document.saveDocument tokenString model.currentDocument )
+                , saveCurrentDocumentIfDirty model )
+                -- , Cmd.map DocMsg <| Document.saveDocument tokenString model.currentDocument )
 
         UpdateCurrentDocument ->
           saveCurrentDocument model
@@ -737,7 +770,7 @@ update msg model =
                      docList_ = model.documentList
                      nextDocList_ = DocumentList.updateDocument model.currentDocument docList_
                    in
-                     { model | toolPanelState = nextToolPanelState, documentList = nextDocList_ }  -- ###
+                     { model | toolPanelState = nextToolPanelState, documentList = nextDocList_ }  
                  ShowToolPanel -> 
                    { model | 
                       documentTitle  = model.currentDocument.title
@@ -748,7 +781,14 @@ update msg model =
             ( nextModel , Cmd.none)
 
         NewDocument -> 
-          ({ model | toolPanelState = ShowToolPanel, documentTitle = "NEW DOCUMENT"}, Cmd.map DocMsg (newDocument model))
+          ({ model | toolPanelState = ShowToolPanel
+                  , documentTitle = "NEW DOCUMENT"
+                  , currentDocumentDirty = False}, 
+              Cmd.batch[ 
+                  Cmd.map DocMsg (newDocument model)
+                , saveCurrentDocumentIfDirty model
+              ] 
+          )
 
         NewChildDocument -> 
           (model, Cmd.map DocMsg (newChildDocument model))
@@ -1537,6 +1577,7 @@ footer model =
       , Element.el [documentDirtyIndicator  model, padding 5] (text ("id " ++ (String.fromInt model.currentDocument.id )))
       , saveCurrentDocumentButton (px 50) model
       , printDocument model 
+      , exportDocumentlLink model
       , getAuthorsDocumentsButton (px 110) model
 
       -- , Element.el [] (text <| "Author: " ++ model.currentDocument.authorName )
@@ -1856,11 +1897,23 @@ signoutButton width_ model =
 
 viewUserManualLink = 
   Element.link [] { 
-       url = Configuration.client ++ "/750"
+       url = Configuration.client ++ "/" ++ String.fromInt Configuration.userManualId
      , label = Element.el [Font.bold] (text "User manual") 
   }
- 
 
+exportDocumentlLink : Model -> Element msg   -- ###
+exportDocumentlLink model = 
+  case model.maybeCurrentUser of  
+    Nothing -> Element.none 
+    Just user ->
+      case User.userId user == model.currentDocument.authorId of 
+        False -> Element.none 
+        True -> 
+          Element.newTabLink [] { 
+              url = Configuration.backend ++ "/export/documents/" ++ String.fromInt  model.currentDocument.id  
+            , label = Element.el [Font.bold] (text "Export") 
+          }
+ 
 
 getRandomDocumentsButton : Length -> Model -> Element Msg    
 getRandomDocumentsButton width_ model = 
@@ -1985,6 +2038,17 @@ idFromDocInfo str =
 
 -- HELPERS
 
+saveCurrentDocumentIfDirty : Model -> Cmd Msg
+saveCurrentDocumentIfDirty model = 
+  case model.currentDocumentDirty of 
+    False ->  Cmd.none
+    True -> 
+      let 
+        token = User.getTokenStringFromMaybeUser model.maybeCurrentUser 
+      in
+         Cmd.map DocMsg <| Document.saveDocument token model.currentDocument 
+        
+
 signIn model =
   case String.length model.password < 8 of 
     True -> ({model | message = "Password must contain at least 8 characters"}, Cmd.none)
@@ -2035,14 +2099,25 @@ getPublicDocuments model queryString =
      ({ model |  appMode = Reading
                , toolPanelState = HideToolPanel
                ,  masterDocLoaded = False 
-               ,  message = "gPD" 
+               , currentDocumentDirty = False
             }
-            , Cmd.map DocListMsg (DocumentList.findDocuments Nothing (Query.parse queryString)))
+            , Cmd.batch [
+                Cmd.map DocListMsg (DocumentList.findDocuments Nothing (Query.parse queryString))
+              , saveCurrentDocumentIfDirty model
+            ]
+      )
+
+            
 
 getUserDocuments : Model -> String -> (Model, Cmd Msg)   
 getUserDocuments model queryString =
-  ({ model | toolPanelState = HideToolPanel, masterDocLoaded = False, message = "gUD" } 
-    , Cmd.map DocListMsg (DocumentList.findDocuments model.maybeCurrentUser (Query.parse queryString))
+  ({ model | toolPanelState = HideToolPanel
+       , masterDocLoaded = False
+       , currentDocumentDirty = False } 
+    , Cmd.batch [
+        Cmd.map DocListMsg (DocumentList.findDocuments model.maybeCurrentUser (Query.parse queryString))
+      , saveCurrentDocumentIfDirty model
+    ]
   )
 
 

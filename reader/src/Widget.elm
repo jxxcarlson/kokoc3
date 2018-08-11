@@ -127,9 +127,9 @@ darkRed = Element.rgb 0.45 0.0 0.0
 
 white = Element.rgb 1.0 1.0 1.0
 
-indicatorBad = Element.rgb 1.0 0.9 0.0
+indicatorBad = Element.rgb 0.9 0.9 0.0
 
-indicatorGood = Element.rgb 0.0 0.9 0.0
+indicatorGood = Element.rgb 0.1 0.9 0.0
 
 linkButton url label_ width_ =
   newTabLink (listItemStyleNarrow2 width_)
