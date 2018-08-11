@@ -56,7 +56,12 @@ transformItem item =
             transformQualifiedItem item
 
         ( False, True ) ->
-            item
+            case String.split "=" item of 
+              [a,b] ->
+                    case a of 
+                    "home" -> "authorname=" ++ b ++ "&key=home"
+                    _ -> item
+              _ -> item
 
         ( False, False ) ->
             "title=" ++ item
