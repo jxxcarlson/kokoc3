@@ -19,6 +19,7 @@ module Document exposing(
     , wordCount
     , selectedDocId
     , attachDocumentToMasterBelowCmd
+    , sendToWorker
   )
 
 import Dict exposing(Dict)
@@ -135,6 +136,7 @@ type DocMsg =
   | NewDocumentCreated (Result Http.Error DocumentRecord)
   | AcknowledgeUpdateOfDocument (Result Http.Error DocumentRecord)
   | AcknowledgeDocumentDeleted (Result Http.Error String)
+  | ReceiveWorkerReply (Result Http.Error String)
 
   
 
@@ -533,4 +535,31 @@ attachDocumentToMasterBelowCmd_  tokenString selectedDocId_ childDocument master
       False -> Cmd.none 
       True ->  (updateDocumentWithQueryString tokenString query masterDocument)   
 
+
+sendToWorkerRequest : String -> Http.Request String
+sendToWorkerRequest content = 
+  Http.request
+        { method = "Post"
+        , headers = []
+        , url = "https://knode.work/save.php"
+        , body = Http.jsonBody (encodeString content)
+        , expect = Http.expectJson stringDecoder
+        , timeout = Just 5000
+        , withCredentials = False
+        }
+
+sendToWorker : String -> Cmd DocMsg 
+sendToWorker content =
+    Http.send ReceiveWorkerReply <| sendToWorkerRequest content
+
+
+encodeString : String -> Encode.Value
+encodeString content =
+    Encode.object
+        [ ( "data", Encode.string  content ) ]
+
+
+stringDecoder : Decoder String
+stringDecoder =
+    Decode.string
 

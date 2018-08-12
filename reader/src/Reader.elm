@@ -851,15 +851,7 @@ update msg model =
             ( { model | currentDocument = nextCurrentDocument}, Cmd.none)
 
         Test ->
-          let 
-            fileInfo = {   filename = "carr_fire_2.jpg"
-                , mimetype = "image/jpeg"
-                , bucket = "noteimages"
-                , path = "jxxcarlson"
-              }
-            cmd = Credentials.getS3Credentials (stringFromMaybeToken  model.maybeToken) fileInfo
-          in
-            ( model, Cmd.map FileMsg cmd )
+          (model, Cmd.map DocMsg <| Document.sendToWorker "This is a test -- sent by kNode")
 
         ReadImage v ->
           let 
@@ -913,7 +905,11 @@ update msg model =
           in
             ( { model | maybeImageString = nextImageString, message = "ImageRead" }, Cmd.none  )
 
-  
+        DocMsg (ReceiveWorkerReply result) ->
+          case result of 
+            Ok str -> ( { model | message = "Worker: " ++ str }, Cmd.none )
+            Err err -> ( { model | message = httpErrorHandler err }, Cmd.none )
+       
 -- UPDATE END
 
 
