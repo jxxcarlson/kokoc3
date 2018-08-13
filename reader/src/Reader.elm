@@ -1013,9 +1013,7 @@ keyGateway model pressedKeys =
     if model.previousKey == Control then
         respondToContolCommand model pressedKeys
     else
-      case (headKey pressedKeys) of 
-        Alt ->  doSearch model
-        _ -> ( { model | previousKey = headKey pressedKeys }, Cmd.none )
+       ( { model | previousKey = headKey pressedKeys }, Cmd.none )
 
 
 respondToContolCommand : Model -> List Key -> ( Model, Cmd Msg )

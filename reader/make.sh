@@ -21,6 +21,7 @@ fi
 
 echo "${color}Copy 'index.html' to /usr/local/var/www/ and restart nginx${reset}"
 cp ./index.html ${NGINX_LOCAL} 
+ 
 
 nginx -s reload
 

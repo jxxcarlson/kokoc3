@@ -540,7 +540,7 @@ sendToWorkerRequest : String -> Http.Request String
 sendToWorkerRequest content = 
   Http.request
         { method = "Post"
-        , headers = []
+        , headers =  [Http.header "Access-Control-Allow-Origin" "*"]   -- 
         , url = "https://knode.work/save.php"
         , body = Http.jsonBody (encodeString content)
         , expect = Http.expectJson stringDecoder
