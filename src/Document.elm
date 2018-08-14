@@ -561,7 +561,6 @@ encodeString content =
     Encode.object
         [ ( "data", Encode.string content ) ]
 
-
 stringDecoder : Decoder String
 stringDecoder =
     Decode.string

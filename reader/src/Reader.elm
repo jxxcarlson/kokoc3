@@ -172,6 +172,7 @@ type Msg
     | ReadImage Value
     | ImageRead Value
     | SessionStatus Posix
+    | PrintLatex 
     
 
 -- NAVIGATION
@@ -898,12 +899,12 @@ update msg model =
 
         DocMsg (ReceiveWorkerReply result) ->
           case result of 
-            Ok str -> ( { model | message = "Worker: " ++ str }, Cmd.none )
-            Err err -> ( { model | message = httpErrorHandler err }, Cmd.none )
+            Ok pdfFileName -> ( { model | message = pdfFileName }, sendPdfFileName (Document.encodeString pdfFileName)  )
+            Err err -> ( { model | message = httpErrorHandler err }, Cmd.none)
        
         DocMsg (ReceiveLatexExportText result) ->
             case result of 
-            Ok str -> ( { model | message = "Export text: " ++ (String.fromInt (String.length str)) }, Cmd.map DocMsg <| Document.sendToWorker str )
+            Ok str -> ( { model | message = "Export file: " ++ (String.fromInt (String.length str)) }, Cmd.map DocMsg <| Document.sendToWorker str )
             Err err -> ( { model | message = httpErrorHandler err }, Cmd.none )
 
         SessionStatus t ->
@@ -921,6 +922,8 @@ update msg model =
                 (True, Just _) -> signOutCurrentUser model 
                 (_, _) -> ( {model | message = sessionExpiredString ++ " at UTC " ++ toUtcString t}, Cmd.none)
 
+        PrintLatex ->
+            (model, Cmd.map DocMsg <| Document.getExportLatex model.currentDocument)
 
 -- UPDATE END
 
@@ -932,6 +935,7 @@ port readImage : Value -> Cmd msg
 port uploadImage : Value -> Cmd msg
 port imageRead : (Value -> msg) -> Sub msg
 port sendCredentials : Value -> Cmd msg 
+port sendPdfFileName : Value -> Cmd msg
 
 
 decodeDataTransferFile : (Value -> msg) -> Decoder msg
@@ -1420,15 +1424,24 @@ versionsPanel model =
 
 printDocument model =
   case model.currentDocument.id > 0 of 
-    True -> printDocument_ model  
+    True -> printButton model 
     False -> Element.none  
 
 
-printDocument_ model =
-    printButton model.currentDocument
+printButton model =
+  case model.currentDocument.textType of 
+    MiniLatex -> 
+      printLatexButton model
+    _ ->
+      Widget.linkButtonFat (printUrl model.currentDocument) "Print" (px 45)
 
-printButton document =
-    Widget.linkButtonFat (printUrl document) "Print" (px 45)
+printLatexButton : Model -> Element Msg 
+printLatexButton model = 
+    Input.button (Widget.buttonStyle  (px 45)) {
+      onPress =  Just PrintLatex
+    , label = Element.el [] (Element.text ("Print"))
+    }
+
 
 
 printUrl : Document -> String

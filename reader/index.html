@@ -75,6 +75,14 @@
 	
 		});
 
+		app.ports.sendPdfFileName.subscribe(function (info) {
+
+			console.log(info.data)
+			var url = "https://knode.work/files/" + info.data
+			window.open(url,'_blank');
+	
+		});
+
 		app.ports.sendCredentials.subscribe(function (credentialsWrapper) {
 
 			console.log("JS/url: " + credentialsWrapper.url)
