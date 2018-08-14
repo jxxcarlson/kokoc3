@@ -265,7 +265,7 @@ init flags =
     ( initialModel flags.location flags.width flags.height  SystemDocument.welcome 
     , Cmd.batch [ 
         -- focusSearchBox
-       processUrl flags.location
+        processUrl flags.location
 
     ])
 
@@ -841,8 +841,8 @@ update msg model =
 
         Test ->
           -- (model, Cmd.map DocMsg <| Document.sendToWorker model.currentDocument.content)
-          -- (model, Cmd.map DocMsg <| Document.getExportLatex model.currentDocument)
-          (model, getTime)
+           (model, Cmd.map DocMsg <| Document.getExportLatex model.currentDocument)
+          -- (model, getTime)
 
         ReadImage v ->
           let 
@@ -910,7 +910,7 @@ update msg model =
           let 
             sessionExpired = 
               case model.maybeCurrentUser of 
-                Nothing -> False 
+                Nothing -> True 
                 Just user -> User.sessionIsExpired t user
             sessionExpiredString =
               case sessionExpired of 
