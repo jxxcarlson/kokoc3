@@ -18,6 +18,7 @@ module User exposing(
    , maybeUserFromEmailAndToken
    , registerUser
    , stringFromMaybeToken
+   , sessionIsExpired
    ) 
 
 
@@ -26,6 +27,7 @@ import Json.Decode as Decode exposing (field, at, int, list, string, decodeStrin
 import Json.Decode.Pipeline as JPipeline exposing (required, optional, hardcoded)
 import Http 
 import Jwt exposing(decodeToken)
+import Time exposing(Posix)
 
 import Configuration
 
@@ -264,3 +266,10 @@ maybeUserFromEmailAndToken email_ token =
         Err error ->
             Nothing
 
+
+sessionIsExpired : Posix -> User -> Bool
+sessionIsExpired currentTime user =
+  case  Jwt.isExpired currentTime (getTokenString user) of 
+    (Ok value) -> value 
+    _ -> False
+  

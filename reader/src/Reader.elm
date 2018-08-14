@@ -171,6 +171,7 @@ type Msg
     | SetDocumentPublic Bool
     | ReadImage Value
     | ImageRead Value
+    | SessionStatus Posix
     
 
 -- NAVIGATION
@@ -590,19 +591,7 @@ update msg model =
           signIn model
 
         SignOut ->
-          let 
-            freshModel = initialModel "" model.windowWidth model.windowHeight  SystemDocument.signedOut
-          in 
-            ({ freshModel | maybeCurrentUser = Nothing
-                    , maybeToken = Nothing
-                    , message = "Signed out"
-                    , currentDocumentDirty = False}, 
-                Cmd.batch [
-                    eraseLocalStorage  
-                  , saveCurrentDocumentIfDirty model    
-                ]
-                    
-            )  
+          signOutCurrentUser model  
 
         -- Handler: RespondToNewUser
         RegisterUser ->
@@ -747,7 +736,7 @@ update msg model =
               tokenString = User.getTokenStringFromMaybeUser model.maybeCurrentUser 
           in 
               ( { model | currentDocumentDirty = False }
-                , saveCurrentDocumentIfDirty model )
+                , Cmd.batch [saveCurrentDocumentIfDirty model, getTime ])
                 -- , Cmd.map DocMsg <| Document.saveDocument tokenString model.currentDocument )
 
         UpdateCurrentDocument ->
@@ -852,7 +841,8 @@ update msg model =
 
         Test ->
           -- (model, Cmd.map DocMsg <| Document.sendToWorker model.currentDocument.content)
-          (model, Cmd.map DocMsg <| Document.getExportLatex model.currentDocument)
+          -- (model, Cmd.map DocMsg <| Document.getExportLatex model.currentDocument)
+          (model, getTime)
 
         ReadImage v ->
           let 
@@ -915,6 +905,22 @@ update msg model =
             case result of 
             Ok str -> ( { model | message = "Export text: " ++ (String.fromInt (String.length str)) }, Cmd.map DocMsg <| Document.sendToWorker str )
             Err err -> ( { model | message = httpErrorHandler err }, Cmd.none )
+
+        SessionStatus t ->
+          let 
+            sessionExpired = 
+              case model.maybeCurrentUser of 
+                Nothing -> False 
+                Just user -> User.sessionIsExpired t user
+            sessionExpiredString =
+              case sessionExpired of 
+                True -> "Session expired"
+                False -> "Session OK"          
+          in 
+            case sessionExpired of 
+                True -> signOutCurrentUser model 
+                False -> ( {model | message = sessionExpiredString ++ " at UTC " ++ toUtcString t}, Cmd.none)
+
 
 -- UPDATE END
 
@@ -1573,7 +1579,7 @@ texMacros model =
 footer : Model -> Element Msg
 footer model = 
   Element.row [moveUp 8, spacing 15, width fill, Background.color Widget.grey, height (px 40), paddingXY 20 0] [
-        Element.el [] (text model.message)
+        Element.el [Font.family [Font.typeface "Courier", Font.monospace]] (text model.message)
       , Element.el [documentDirtyIndicator  model, padding 5] (text ("id " ++ (String.fromInt model.currentDocument.id )))
       , saveCurrentDocumentButton (px 50) model
       , printDocument model 
@@ -2056,6 +2062,36 @@ idFromDocInfo str =
   str |> String.toInt |> Maybe.withDefault 0
 
 -- HELPERS
+
+signOutCurrentUser : Model -> (Model, Cmd Msg)
+signOutCurrentUser model = 
+  let 
+    freshModel = initialModel "" model.windowWidth model.windowHeight  SystemDocument.signedOut
+  in 
+    ({ freshModel | maybeCurrentUser = Nothing
+            , maybeToken = Nothing
+            , message = "Signed out"
+            , currentDocumentDirty = False}, 
+        Cmd.batch [
+            eraseLocalStorage  
+          , saveCurrentDocumentIfDirty model    
+        ]
+            
+    ) 
+
+getTime = 
+    Time.now 
+        |> Task.perform SessionStatus
+
+toUtcString : Time.Posix -> String
+toUtcString time =
+  String.fromInt (Time.toHour Time.utc time)
+  ++ ":" ++
+  String.fromInt (Time.toMinute Time.utc time)
+  ++ ":" ++
+  String.fromInt (Time.toSecond Time.utc time)
+  |> String.padRight 8 ' '
+  
 
 saveCurrentDocumentIfDirty : Model -> Cmd Msg
 saveCurrentDocumentIfDirty model = 
