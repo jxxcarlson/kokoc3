@@ -20,6 +20,8 @@ module Document exposing(
     , selectedDocId
     , attachDocumentToMasterBelowCmd
     , sendToWorker
+    , getExportLatex
+    , encodeString
   )
 
 import Dict exposing(Dict)
@@ -137,6 +139,7 @@ type DocMsg =
   | AcknowledgeUpdateOfDocument (Result Http.Error DocumentRecord)
   | AcknowledgeDocumentDeleted (Result Http.Error String)
   | ReceiveWorkerReply (Result Http.Error String)
+  | ReceiveLatexExportText (Result Http.Error String)
 
   
 
@@ -540,9 +543,9 @@ sendToWorkerRequest : String -> Http.Request String
 sendToWorkerRequest content = 
   Http.request
         { method = "Post"
-        , headers =  [Http.header "Access-Control-Allow-Origin" "*"]   -- 
-        , url = "https://knode.work/save.php"
-        , body = Http.jsonBody (encodeString content)
+        , headers =  []    
+        , url = "https://knode.work/processLatex.php"
+        , body = Http.multipartBody [Http.stringPart "data" content] 
         , expect = Http.expectJson stringDecoder
         , timeout = Just 5000
         , withCredentials = False
@@ -556,10 +559,29 @@ sendToWorker content =
 encodeString : String -> Encode.Value
 encodeString content =
     Encode.object
-        [ ( "data", Encode.string  content ) ]
+        [ ( "data", Encode.string content ) ]
 
 
 stringDecoder : Decoder String
 stringDecoder =
     Decode.string
 
+dataStringDecoder : Decoder String
+dataStringDecoder =
+    Decode.field "data" Decode.string
+
+getExportLatexRequest : Document -> Http.Request String
+getExportLatexRequest document = 
+  Http.request
+        { method = "Get"
+        , headers =  []  
+        , url = Configuration.backend ++ "/api/export/" ++ String.fromInt document.id 
+        , body = Http.jsonBody Encode.null
+        , expect = Http.expectJson dataStringDecoder
+        , timeout = Just 5000
+        , withCredentials = False
+        }
+
+getExportLatex : Document -> Cmd DocMsg 
+getExportLatex document =
+    Http.send ReceiveLatexExportText <| getExportLatexRequest document

@@ -851,7 +851,8 @@ update msg model =
             ( { model | currentDocument = nextCurrentDocument}, Cmd.none)
 
         Test ->
-          (model, Cmd.map DocMsg <| Document.sendToWorker "This is a test -- sent by kNode")
+          -- (model, Cmd.map DocMsg <| Document.sendToWorker model.currentDocument.content)
+          (model, Cmd.map DocMsg <| Document.getExportLatex model.currentDocument)
 
         ReadImage v ->
           let 
@@ -910,6 +911,11 @@ update msg model =
             Ok str -> ( { model | message = "Worker: " ++ str }, Cmd.none )
             Err err -> ( { model | message = httpErrorHandler err }, Cmd.none )
        
+        DocMsg (ReceiveLatexExportText result) ->
+            case result of 
+            Ok str -> ( { model | message = "Export text: " ++ (String.fromInt (String.length str)) }, Cmd.map DocMsg <| Document.sendToWorker str )
+            Err err -> ( { model | message = httpErrorHandler err }, Cmd.none )
+
 -- UPDATE END
 
 
