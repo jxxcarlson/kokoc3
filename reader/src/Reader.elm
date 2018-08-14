@@ -1581,15 +1581,16 @@ footer model =
   Element.row [moveUp 8, spacing 15, width fill, Background.color Widget.grey, height (px 40), paddingXY 20 0] [
         Element.el [Font.family [Font.typeface "Courier", Font.monospace]] (text model.message)
       , Element.el [documentDirtyIndicator  model, padding 5] (text ("id " ++ (String.fromInt model.currentDocument.id )))
-      , saveCurrentDocumentButton (px 50) model
+      , Element.el [] (text <| docInfo model.currentDocument) 
+     --  , saveCurrentDocumentButton (px 50) model
       , printDocument model 
       , exportDocumentlLink model
       , getAuthorsDocumentsButton (px 110) model
 
       -- , Element.el [] (text <| "Author: " ++ model.currentDocument.authorName )
-      , Element.el [] (text <| access model.currentDocument) 
+      
   -- , currentUserNameElement model
-      , Element.el [] (text <| (String.fromInt (Document.wordCount model.currentDocument)) ++ " words")
+  --    , Element.el [] (text <| (String.fromInt (Document.wordCount model.currentDocument)) ++ " words")
       -- , Element.el [] (text <| masterDocLoadedIndicator model)
       -- , Element.el [] (text <| "DDict, keys & values: " ++ documentDictionaryInfo model)
       , testButton model
@@ -1639,8 +1640,16 @@ currentUserNameElement model =
 access : Document -> String 
 access doc = 
   case doc.public of 
-    True -> "Public document"
-    False -> "Private document"
+    True -> "public"
+    False -> "private"
+
+docInfo : Document -> String 
+docInfo document = 
+  let 
+    wordCount = (String.fromInt (Document.wordCount document)) ++ " words"
+    access_ = access document
+  in 
+    "(" ++ access_ ++ ", " ++ wordCount ++ ")"
 
 showKeys : Model -> String 
 showKeys model = 
