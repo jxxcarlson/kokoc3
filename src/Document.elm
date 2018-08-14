@@ -22,6 +22,7 @@ module Document exposing(
     , sendToWorker
     , getExportLatex
     , encodeString
+    , getImageList
   )
 
 import Dict exposing(Dict)
@@ -140,6 +141,7 @@ type DocMsg =
   | AcknowledgeDocumentDeleted (Result Http.Error String)
   | ReceiveWorkerReply (Result Http.Error String)
   | ReceiveLatexExportText (Result Http.Error String)
+  | ReceiveImageList (Result Http.Error (List String))
 
   
 
@@ -584,3 +586,27 @@ getExportLatexRequest document =
 getExportLatex : Document -> Cmd DocMsg 
 getExportLatex document =
     Http.send ReceiveLatexExportText <| getExportLatexRequest document
+
+-- IMAGE LIST
+
+
+dataStringListDecoder : Decoder (List String)
+dataStringListDecoder =
+    Decode.field "data" (Decode.list Decode.string)
+
+
+getImageListRequest : Document -> Http.Request (List String)
+getImageListRequest document = 
+  Http.request
+        { method = "Get"
+        , headers =  []  
+        , url = Configuration.backend ++ "/api/image_list/" ++ String.fromInt document.id 
+        , body = Http.jsonBody Encode.null
+        , expect = Http.expectJson dataStringListDecoder
+        , timeout = Just 5000
+        , withCredentials = False
+        }
+
+getImageList : Document -> Cmd DocMsg 
+getImageList document =
+    Http.send ReceiveImageList <| getImageListRequest document

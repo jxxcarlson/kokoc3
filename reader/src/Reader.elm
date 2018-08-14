@@ -841,9 +841,7 @@ update msg model =
             ( { model | currentDocument = nextCurrentDocument}, Cmd.none)
 
         Test ->
-          -- (model, Cmd.map DocMsg <| Document.sendToWorker model.currentDocument.content)
-           (model, Cmd.map DocMsg <| Document.getExportLatex model.currentDocument)
-          -- (model, getTime)
+           (model, Cmd.map DocMsg <| Document.getImageList model.currentDocument)
 
         ReadImage v ->
           let 
@@ -924,6 +922,12 @@ update msg model =
 
         PrintLatex ->
             (model, Cmd.map DocMsg <| Document.getExportLatex model.currentDocument)
+
+
+        DocMsg (ReceiveImageList result) ->
+            case result of 
+            Ok imageList -> ( { model | message = "Image: " ++ (String.fromInt (List.length imageList)) }, Cmd.none )
+            Err err -> ( { model | message = httpErrorHandler err }, Cmd.none )
 
 -- UPDATE END
 
