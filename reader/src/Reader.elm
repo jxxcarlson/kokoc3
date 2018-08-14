@@ -917,9 +917,9 @@ update msg model =
                 True -> "Session expired"
                 False -> "Session OK"          
           in 
-            case sessionExpired of 
-                True -> signOutCurrentUser model 
-                False -> ( {model | message = sessionExpiredString ++ " at UTC " ++ toUtcString t}, Cmd.none)
+            case (sessionExpired, model.maybeCurrentUser) of 
+                (True, Just _) -> signOutCurrentUser model 
+                (_, _) -> ( {model | message = sessionExpiredString ++ " at UTC " ++ toUtcString t}, Cmd.none)
 
 
 -- UPDATE END
@@ -1428,14 +1428,16 @@ printDocument_ model =
     printButton model.currentDocument
 
 printButton document =
-    Widget.linkButtonFat (printUrl document) "Print" (px 50)
+    Widget.linkButtonFat (printUrl document) "Print" (px 45)
 
 
 printUrl : Document -> String
 printUrl document =
     Configuration.backend ++ "/print/documents" ++ "/" ++ (String.fromInt document.id) ++ "?" ++ printTypeString document
 
-
+exportUrl : Document -> String 
+exportUrl document = 
+  Configuration.backend ++ "/export/documents/" ++ String.fromInt  document.id
 
 printTypeString : Document -> String
 printTypeString document =
@@ -1922,12 +1924,12 @@ exportDocumentlLink model =
     Nothing -> Element.none 
     Just user ->
       case User.userId user == model.currentDocument.authorId of 
-        False -> Element.none 
+        False -> 
+          Element.none 
         True -> 
-          Element.newTabLink [] { 
-              url = Configuration.backend ++ "/export/documents/" ++ String.fromInt  model.currentDocument.id  
-            , label = Element.el [Font.bold] (text "Export") 
-          }
+          Widget.linkButtonFat (exportUrl model.currentDocument) "Export" (px 60) -- ###
+  
+          
  
 imageCatalogueLink : Model -> Element msg   
 imageCatalogueLink model = 
