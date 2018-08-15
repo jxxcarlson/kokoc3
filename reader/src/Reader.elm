@@ -720,36 +720,10 @@ update msg model =
            
 
         ToggleToolPanelState ->  
-           let  
-              nextToolPanelState = 
-                case model.toolPanelState of 
-                  HideToolPanel -> ShowToolPanel
-                  ShowToolPanel -> HideToolPanel
-              nextModel = case nextToolPanelState of 
-                 HideToolPanel -> 
-                   let 
-                     docList_ = model.documentList
-                     nextDocList_ = DocumentList.updateDocument model.currentDocument docList_
-                   in
-                     { model | toolPanelState = nextToolPanelState, documentList = nextDocList_ }  
-                 ShowToolPanel -> 
-                   { model | 
-                      documentTitle  = model.currentDocument.title
-                    , toolPanelState = nextToolPanelState
-                    , deleteDocumentState = DeleteIsOnSafety
-                    }
-          in 
-            ( nextModel , Cmd.none)
+           toggleToolPanelState model 
 
         NewDocument -> 
-          ({ model | toolPanelState = ShowToolPanel
-                  , documentTitle = "NEW DOCUMENT"
-                  , currentDocumentDirty = False}, 
-              Cmd.batch[ 
-                  Cmd.map DocMsg (newDocument model)
-                , saveCurrentDocumentIfDirty model
-              ] 
-          )
+          doNewDocument model
 
         NewChildDocument -> 
           (model, Cmd.map DocMsg (newChildDocument model))
@@ -892,13 +866,7 @@ update msg model =
                 (_, _) -> ( {model | message = sessionExpiredString ++ " at UTC " ++ toUtcString t}, Cmd.none)
 
         PrintLatex ->
-            (model, 
-              Cmd.batch [
-                  Cmd.map DocMsg <| Document.getExportLatex model.currentDocument
-                , Cmd.map DocMsg <| Document.getImageList model.currentDocument
-              ]
-            )
-
+            printLatex model 
 
         DocMsg (ReceiveImageList result) ->
             case result of 
@@ -1012,18 +980,7 @@ viewImage model =
 
 -- KEY COMMANDS
 
-getPublicDocumentsRawQuery model query = 
-  ({ model | appMode = Reading
-      , toolPanelState = HideToolPanel
-      , masterDocLoaded = False
-      , currentDocumentDirty = False 
-    }, 
-    Cmd.batch [ 
-        Cmd.map DocListMsg (DocumentList.findDocuments Nothing query)
-      , saveCurrentDocumentIfDirty model
-    ]
-             
-  )
+
 
 keyGateway : Model -> List Key -> ( Model, Cmd Msg )
 keyGateway model pressedKeys =
@@ -1052,6 +1009,10 @@ handleKey model key =
     Character "r" -> changeMode model Reading
     Character "i" -> changeMode model ImageEditing
     Character "h" -> goHome model
+    Character "/" -> getPublicDocumentsRawQuery model "random=public"
+    Character "e" -> toggleToolPanelState model
+    Character "n" -> doNewDocument model
+    Character "p" -> printLatex model
 
     _ -> (model, Cmd.none)
 
@@ -2094,6 +2055,63 @@ idFromDocInfo str =
   str |> String.toInt |> Maybe.withDefault 0
 
 -- HELPERS
+
+printLatex : Model -> (Model, Cmd Msg)
+printLatex model = 
+  (model, 
+      Cmd.batch [
+          Cmd.map DocMsg <| Document.getExportLatex model.currentDocument
+        , Cmd.map DocMsg <| Document.getImageList model.currentDocument
+      ]
+  )
+
+
+doNewDocument : Model -> (Model, Cmd Msg)
+doNewDocument model = 
+    ({ model | toolPanelState = ShowToolPanel
+            , documentTitle = "NEW DOCUMENT"
+            , currentDocumentDirty = False}, 
+        Cmd.batch[ 
+            Cmd.map DocMsg (newDocument model)
+          , saveCurrentDocumentIfDirty model
+        ] 
+    )
+toggleToolPanelState : Model -> (Model, Cmd Msg)
+toggleToolPanelState model = 
+  let  
+      nextToolPanelState = 
+        case model.toolPanelState of 
+          HideToolPanel -> ShowToolPanel
+          ShowToolPanel -> HideToolPanel
+      nextModel = case nextToolPanelState of 
+          HideToolPanel -> 
+            let 
+              docList_ = model.documentList
+              nextDocList_ = DocumentList.updateDocument model.currentDocument docList_
+            in
+              { model | toolPanelState = nextToolPanelState, documentList = nextDocList_ }  
+          ShowToolPanel -> 
+            { model | 
+              documentTitle  = model.currentDocument.title
+            , toolPanelState = nextToolPanelState
+            , deleteDocumentState = DeleteIsOnSafety
+            }
+  in 
+    ( nextModel , Cmd.none)
+
+getPublicDocumentsRawQuery : Model -> String -> (Model, Cmd Msg)
+getPublicDocumentsRawQuery model query = 
+  ({ model | appMode = Reading
+      , toolPanelState = HideToolPanel
+      , masterDocLoaded = False
+      , currentDocumentDirty = False 
+    }, 
+    Cmd.batch [ 
+        Cmd.map DocListMsg (DocumentList.findDocuments Nothing query)
+      , saveCurrentDocumentIfDirty model
+    ]
+             
+  )
 
 goHome : Model -> (Model, Cmd Msg)
 goHome model = 
