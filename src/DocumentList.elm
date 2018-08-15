@@ -219,7 +219,7 @@ findDocumentsRequest maybeUser queryString =
     , url = Configuration.backend ++ route
     , body = Http.jsonBody Encode.null
     , expect = Http.expectJson documentListDecoder
-    , timeout = Just 5000
+    , timeout = Just Configuration.timeout
     , withCredentials = False
     }
 
@@ -238,7 +238,7 @@ loadMasterDocumentRequest  maybeUser docId =
     , url = Configuration.backend ++ route
     , body = Http.jsonBody Encode.null
     , expect = Http.expectJson documentListDecoder
-    , timeout = Just 5000
+    , timeout = Just Configuration.timeout
     , withCredentials = False
     }
 

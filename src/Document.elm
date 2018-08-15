@@ -1,30 +1,31 @@
-module Document exposing(
-      Document
-    , DocumentRecord
-    , getDocumentById 
-    , saveDocument
-    , updateDocumentWithQueryString
-    , createDocument
-    , deleteDocument
-    , getDocumentByIdRequest
-    , documentDecoder
-    , encodeDocumentForOutside
-    , decodeDocumentFromOutside
-    , Child
-    , DocMsg(..)
-    , DocType(..)
-    , TextType(..)
-    , basicDocument
-    , newDocument
-    , wordCount
-    , selectedDocId
-    , attachDocumentToMasterBelowCmd
-    , sendToWorker
-    , getExportLatex
-    , encodeString
-    , getImageList
-    , processImageList
-  )
+module Document exposing(..)
+
+--       Document
+--     , DocumentRecord
+--     , getDocumentById 
+--     , saveDocument
+--     , updateDocumentWithQueryString
+--     , createDocument
+--     , deleteDocument
+--     , getDocumentByIdRequest
+--     , documentDecoder
+--     , encodeDocumentForOutside
+--     , decodeDocumentFromOutside
+--     , Child
+--     , DocMsg(..)
+--     , DocType(..)
+--     , TextType(..)
+--     , basicDocument
+--     , newDocument
+--     , wordCount
+--     , selectedDocId
+--     , attachDocumentToMasterBelowCmd
+--     , sendToWorker
+--     , getExportLatex
+--     , encodeString
+--     , getImageList
+--     , processImageList
+--   )
 
 import Dict exposing(Dict)
 import Time exposing(Posix)
@@ -425,7 +426,7 @@ getDocumentByIdRequest id maybeTokenString =
         , url = Configuration.backend ++ route
         , body = Http.jsonBody Encode.null
         , expect = Http.expectJson documentRecordDecoder
-        , timeout = Just 5000
+        , timeout = Just Configuration.timeout
         , withCredentials = False
         }
 
@@ -442,7 +443,7 @@ saveDocumentRequest tokenString document =
         , url = Configuration.backend ++ "/api/documents/" ++ (String.fromInt document.id)
         , body = Http.jsonBody (encodeDocumentRecord document)
         , expect = Http.expectJson documentRecordDecoder
-        , timeout = Just 5000
+        , timeout = Just Configuration.timeout
         , withCredentials = False
         }
 
@@ -460,7 +461,7 @@ updateDocumentWithQueryStringRequest tokenString queryString document =
         , url = Configuration.backend ++ "/api/documents/" ++ (String.fromInt document.id) ++ "?" ++ queryString
         , body = Http.jsonBody (encodeDocumentRecord document)
         , expect = Http.expectJson documentRecordDecoder
-        , timeout = Just 5000
+        , timeout = Just Configuration.timeout
         , withCredentials = False
         }
 
@@ -478,7 +479,7 @@ createDocumentRequest tokenString document =
         , url = Configuration.backend ++ "/api/documents/"
         , body = Http.jsonBody (encodeDocumentRecord document)
         , expect = Http.expectJson documentRecordDecoder
-        , timeout = Just 5000
+        , timeout = Just Configuration.timeout
         , withCredentials = False
         }
 
@@ -494,7 +495,7 @@ deleteDocumentRequest tokenString document =
         , url = Configuration.backend ++ "/api/documents/" ++ (String.fromInt document.id)
         , body = Http.jsonBody (encodeDocumentRecord document)
         , expect = Http.expectJson replyDecoder
-        , timeout = Just 5000
+        , timeout = Just Configuration.timeout
         , withCredentials = False
         }
 
@@ -551,7 +552,7 @@ sendToWorkerRequest content =
         , url = "https://knode.work/processLatex.php"
         , body = Http.multipartBody [Http.stringPart "data" content] 
         , expect = Http.expectJson stringDecoder
-        , timeout = Just 5000
+        , timeout = Just Configuration.timeout
         , withCredentials = False
         }
 
@@ -581,7 +582,7 @@ getExportLatexRequest document =
         , url = Configuration.backend ++ "/api/export/" ++ String.fromInt document.id 
         , body = Http.jsonBody Encode.null
         , expect = Http.expectJson dataStringDecoder
-        , timeout = Just 5000
+        , timeout = Just Configuration.timeout
         , withCredentials = False
         }
 
@@ -605,7 +606,7 @@ getImageListRequest document =
         , url = Configuration.backend ++ "/api/image_list/" ++ String.fromInt document.id 
         , body = Http.jsonBody Encode.null
         , expect = Http.expectJson dataStringListDecoder
-        , timeout = Just 5000
+        , timeout = Just Configuration.timeout
         , withCredentials = False
         }
 
@@ -620,9 +621,9 @@ processImageListRequest imageList =
         { method = "Post"
         , headers =  []    
         , url = "https://knode.work/processImageList.php"
-        , body = Http.jsonBody (encodeImageList imageList)
+        , body = Http.multipartBody [Http.stringPart "data" (imageListToString imageList)]
         , expect = Http.expectJson stringDecoder
-        , timeout = Just 5000
+        , timeout = Just Configuration.timeout
         , withCredentials = False
         }
 
@@ -636,4 +637,10 @@ encodeImageList imageList =
        ("data", Encode.list Encode.string imageList)
   ]
    
+testData = ["https://psurl.s3.amazonaws.com/images/jc/sinc2-bcbf.png","https://psurl.s3.amazonaws.com/images/jc/beats-eca1.png"]
+
+imageListToString : List String -> String 
+imageListToString imageList =
+  imageList 
+    |> String.join(",")
         

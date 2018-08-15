@@ -225,7 +225,7 @@ tokenRequest email_ password =
     , url = Configuration.backend ++ "/api/authentication/"
     , body = Http.jsonBody (authenticationEncoder email_ password)
     , expect = Http.expectJson tokenDecoder
-    , timeout = Just 5000
+    , timeout = Just Configuration.timeout
     , withCredentials = False
     }
 
@@ -237,7 +237,7 @@ registerUserRequest email_ username_ name_ password_ =
     , url = Configuration.backend ++ "/api/users"
     , body = Http.jsonBody (registrationEncoder email_ username_ name_ password_)
     , expect = Http.expectJson tokenDecoder
-    , timeout = Just 5000
+    , timeout = Just Configuration.timeout
     , withCredentials = False
     }
  

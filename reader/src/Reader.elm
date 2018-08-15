@@ -921,7 +921,12 @@ update msg model =
                 (_, _) -> ( {model | message = sessionExpiredString ++ " at UTC " ++ toUtcString t}, Cmd.none)
 
         PrintLatex ->
-            (model, Cmd.map DocMsg <| Document.getExportLatex model.currentDocument)
+            (model, 
+              Cmd.batch [
+                  Cmd.map DocMsg <| Document.getExportLatex model.currentDocument
+                , Cmd.map DocMsg <| Document.getImageList model.currentDocument
+              ]
+            )
 
 
         DocMsg (ReceiveImageList result) ->
@@ -933,8 +938,9 @@ update msg model =
 
         DocMsg (ReceiveImageListReply result) ->
             case result of 
-            Ok str -> ( { model | message = str},  Cmd.none )
-            Err err -> ( { model | message = httpErrorHandler err }, Cmd.none )
+            Ok str -> ( { model | message = "RIL: " ++ str},  Cmd.none )
+            -- Err err -> ( { model | message = httpErrorHandler err }, Cmd.none )
+            Err err -> ( { model | message = "RIL Error" }, Cmd.none )
 
 -- UPDATE END
 
@@ -1609,6 +1615,7 @@ footer model =
       , Element.el [documentDirtyIndicator  model, padding 5] (text ("id " ++ (String.fromInt model.currentDocument.id )))
       , Element.el [] (text <| docInfo model.currentDocument) 
      --  , saveCurrentDocumentButton (px 50) model
+      , testButton model
       , printDocument model 
       , exportDocumentlLink model
       , getAuthorsDocumentsButton (px 110) model
@@ -1619,7 +1626,7 @@ footer model =
   --    , Element.el [] (text <| (String.fromInt (Document.wordCount model.currentDocument)) ++ " words")
       -- , Element.el [] (text <| masterDocLoadedIndicator model)
       -- , Element.el [] (text <| "DDict, keys & values: " ++ documentDictionaryInfo model)
-      , testButton model
+      
 
     --  , Element.el [] (text ("keys: " ++ (showKeys model)))
     --  , Element.el [] (text <| displayCurrentMasterDocument model)
@@ -1630,9 +1637,9 @@ testButton : Model -> Element Msg
 testButton model = 
   case User.usernameFromMaybeUser model.maybeCurrentUser of 
     "jxxcarlson" ->
-        Input.button (Widget.buttonStyle  (px 45)) {
+        Input.button (Widget.buttonStyle  (px 115)) {
           onPress =  Just Test
-        , label = Element.el [] (Element.text ("Test"))
+        , label = Element.el [] (Element.text ("Prepare Images"))
         }
     _ -> Element.none 
 

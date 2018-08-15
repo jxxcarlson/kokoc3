@@ -11,9 +11,12 @@ module Configuration exposing(
    , signedOutText
    , signedUpText 
    , welcomeText
-   , bucket)
+   , bucket
+   , timeout)
 
 
+timeout : Float 
+timeout = 20000
 
 backend : String
 backend = 

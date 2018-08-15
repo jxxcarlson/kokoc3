@@ -150,7 +150,7 @@ getS3PresignedUrlRequest tokenString bucket path =
         , url = Configuration.backend ++ "/api/presigned" ++ "?bucket=" ++ bucket ++ "&path=" ++ path
         , body = Http.jsonBody Encode.null
         , expect = Http.expectJson Decode.string
-        , timeout = Just 5000
+        , timeout = Just Configuration.timeout
         , withCredentials = False
         }
 
@@ -167,7 +167,7 @@ getS3CredentialsRequest tokenString fileInfo =
         , url = Configuration.backend ++ "/api/credentials" ++ (queryStringFromFileInfo fileInfo)
         , body = Http.jsonBody Encode.null
         , expect = Http.expectJson decodeCredentialsWrapper
-        , timeout = Just 5000
+        , timeout = Just Configuration.timeout
         , withCredentials = False
         }
 
