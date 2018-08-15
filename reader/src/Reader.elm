@@ -852,11 +852,11 @@ update msg model =
             sessionExpiredString =
               case sessionExpired of 
                 True -> "Session expired"
-                False -> "Session OK"          
+                False -> ""          
           in 
             case (sessionExpired, model.maybeCurrentUser) of 
                 (True, Just _) -> signOutCurrentUser model 
-                (_, _) -> ( {model | message = sessionExpiredString ++ " at UTC " ++ toUtcString t}, Cmd.none)
+                (_, _) -> ( {model | message = sessionExpiredString ++ "UTC " ++ toUtcString t}, Cmd.none)
 
       
         PrintDocument -> 
@@ -1560,7 +1560,7 @@ texMacros model =
 footer : Model -> Element Msg
 footer model = 
   Element.row [moveUp 8, spacing 15, width fill, Background.color Widget.grey, height (px 40), paddingXY 20 0] [
-        Element.el [Font.family [Font.typeface "Courier", Font.monospace]] (text model.message)
+        Element.el [width (px 240), Font.family [Font.typeface "Courier", Font.monospace]] (text model.message)
       , Element.el [documentDirtyIndicator  model, padding 5] (text ("id " ++ (String.fromInt model.currentDocument.id )))
       , Element.el [] (text <| docInfo model.currentDocument) 
      --  , saveCurrentDocumentButton (px 50) model
