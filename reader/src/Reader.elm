@@ -926,7 +926,14 @@ update msg model =
 
         DocMsg (ReceiveImageList result) ->
             case result of 
-            Ok imageList -> ( { model | message = "Image: " ++ (String.fromInt (List.length imageList)) }, Cmd.none )
+            Ok imageList -> ( { model | message = "Images: " ++ (String.fromInt (List.length imageList)) }
+                   , Cmd.map DocMsg (Document.processImageList imageList))
+            Err err -> ( { model | message = httpErrorHandler err }, Cmd.none )
+            
+
+        DocMsg (ReceiveImageListReply result) ->
+            case result of 
+            Ok str -> ( { model | message = str},  Cmd.none )
             Err err -> ( { model | message = httpErrorHandler err }, Cmd.none )
 
 -- UPDATE END

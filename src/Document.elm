@@ -23,6 +23,7 @@ module Document exposing(
     , getExportLatex
     , encodeString
     , getImageList
+    , processImageList
   )
 
 import Dict exposing(Dict)
@@ -142,6 +143,7 @@ type DocMsg =
   | ReceiveWorkerReply (Result Http.Error String)
   | ReceiveLatexExportText (Result Http.Error String)
   | ReceiveImageList (Result Http.Error (List String))
+  | ReceiveImageListReply (Result Http.Error String)
 
   
 
@@ -610,3 +612,28 @@ getImageListRequest document =
 getImageList : Document -> Cmd DocMsg 
 getImageList document =
     Http.send ReceiveImageList <| getImageListRequest document
+
+
+processImageListRequest : List String -> Http.Request String
+processImageListRequest imageList = 
+  Http.request
+        { method = "Post"
+        , headers =  []    
+        , url = "https://knode.work/processImageList.php"
+        , body = Http.jsonBody (encodeImageList imageList)
+        , expect = Http.expectJson stringDecoder
+        , timeout = Just 5000
+        , withCredentials = False
+        }
+
+processImageList : List String -> Cmd DocMsg 
+processImageList imageList =
+    Http.send ReceiveImageListReply <| processImageListRequest imageList
+
+encodeImageList : List String -> Encode.Value 
+encodeImageList imageList = 
+  Encode.object [
+       ("data", Encode.list Encode.string imageList)
+  ]
+   
+        
