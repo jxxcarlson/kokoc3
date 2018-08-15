@@ -83,6 +83,15 @@
 	
 		});
 
+
+		app.ports.sendDocumentForPrinting.subscribe(function (info) {
+
+			var url = info.data
+			console.log(url)
+			window.open(url,'_blank');
+
+		});
+
 		app.ports.sendCredentials.subscribe(function (credentialsWrapper) {
 
 			console.log("JS/url: " + credentialsWrapper.url)

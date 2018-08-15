@@ -172,7 +172,7 @@ type Msg
     | ReadImage Value
     | ImageRead Value
     | SessionStatus Posix
-    | PrintLatex 
+    | PrintDocument 
     
 
 -- NAVIGATION
@@ -865,8 +865,12 @@ update msg model =
                 (True, Just _) -> signOutCurrentUser model 
                 (_, _) -> ( {model | message = sessionExpiredString ++ " at UTC " ++ toUtcString t}, Cmd.none)
 
-        PrintLatex ->
-            printLatex model 
+      
+        PrintDocument -> 
+          case model.currentDocument.textType of 
+            MiniLatex ->  printLatex model 
+            _ -> 
+              (model, sendDocumentForPrinting (Document.encodeString (printUrl model.currentDocument)))
 
         DocMsg (ReceiveImageList result) ->
             case result of 
@@ -892,7 +896,7 @@ port uploadImage : Value -> Cmd msg
 port imageRead : (Value -> msg) -> Sub msg
 port sendCredentials : Value -> Cmd msg 
 port sendPdfFileName : Value -> Cmd msg
-
+port sendDocumentForPrinting : Value -> Cmd msg
 
 decodeDataTransferFile : (Value -> msg) -> Decoder msg
 decodeDataTransferFile toMsg =
@@ -1012,7 +1016,7 @@ handleKey model key =
     Character "/" -> getPublicDocumentsRawQuery model "random=public"
     Character "e" -> toggleToolPanelState model
     Character "n" -> doNewDocument model
-    Character "p" -> printLatex model
+    Character "p" -> printDocument model
 
     _ -> (model, Cmd.none)
 
@@ -1390,7 +1394,7 @@ versionsPanel model =
        ]
   ]
 
-printDocument model =
+printDocumentButton model =
   case model.currentDocument.id > 0 of 
     True -> printButton model 
     False -> Element.none  
@@ -1400,13 +1404,13 @@ printButton model =
   case model.currentDocument.textType of 
     MiniLatex -> 
       printLatexButton model
-    _ ->
+    _ -> 
       Widget.linkButtonFat (printUrl model.currentDocument) "Print" (px 45)
 
 printLatexButton : Model -> Element Msg 
 printLatexButton model = 
     Input.button (Widget.buttonStyle  (px 45)) {
-      onPress =  Just PrintLatex
+      onPress =  Just PrintDocument
     , label = Element.el [] (Element.text ("Print"))
     }
 
@@ -1567,7 +1571,7 @@ footer model =
       , Element.el [] (text <| docInfo model.currentDocument) 
      --  , saveCurrentDocumentButton (px 50) model
       , testButton model
-      , printDocument model 
+      , printDocumentButton model 
       , exportDocumentlLink model
       , getAuthorsDocumentsButton (px 110) model
 
@@ -2056,6 +2060,12 @@ idFromDocInfo str =
 
 -- HELPERS
 
+printDocument : Model -> (Model, Cmd Msg)
+printDocument model = 
+  case model.currentDocument.textType of 
+    MiniLatex -> printLatex model
+    _ -> (model, sendDocumentForPrinting (Document.encodeString (printUrl model.currentDocument))) 
+
 printLatex : Model -> (Model, Cmd Msg)
 printLatex model = 
   (model, 
@@ -2129,7 +2139,11 @@ goHome model =
         let 
           queryString = "authorname=" ++ User.username user ++ "&key=home"
         in 
-          (model, Cmd.map DocListMsg (DocumentList.findDocuments model.maybeCurrentUser queryString))
+          ( {model | appMode = Reading
+                  , toolPanelState = HideToolPanel
+            }
+            , Cmd.map DocListMsg (DocumentList.findDocuments model.maybeCurrentUser queryString)
+          )
 
 changeMode : Model -> AppMode -> (Model, Cmd Msg)
 changeMode model nextAppMode = 
