@@ -621,17 +621,7 @@ update msg model =
             )
 
         GetPublicDocumentsRawQuery query ->
-           ({ model | appMode = Reading
-                , toolPanelState = HideToolPanel
-                , masterDocLoaded = False
-                , currentDocumentDirty = False 
-              }, 
-              Cmd.batch [ 
-                  Cmd.map DocListMsg (DocumentList.findDocuments Nothing query)
-                , saveCurrentDocumentIfDirty model
-              ]
-             
-             )
+           getPublicDocumentsRawQuery model query 
 
         DocViewMsg (GetPublicDocumentsRawQuery2 query) ->
            ({ model | appMode = Reading, toolPanelState = HideToolPanel, currentDocumentDirty = False}, 
@@ -675,30 +665,11 @@ update msg model =
            )
 
         GoHome ->
-          case model.maybeCurrentUser of 
-            Nothing -> 
-               let 
-                 doc = Document.basicDocument  
-               in 
-                 ( { model | currentDocument = { doc | title = "Welcome!" }
-                      , currentDocumentDirty = False
-                   }
-                   , saveCurrentDocumentIfDirty model
-                 )
-            Just user -> 
-               let 
-                 queryString = "authorname=" ++ User.username user ++ "&key=home"
-               in 
-                 (model, Cmd.map DocListMsg (DocumentList.findDocuments model.maybeCurrentUser queryString))
+          goHome model
 
         ChangeMode nextAppMode ->
-         let 
-           nextToolPaneState = if nextAppMode == Reading then 
-                              HideToolPanel 
-                           else
-                              model.toolPanelState
-         in 
-          ({model | appMode = nextAppMode, toolPanelState = nextToolPaneState}, Cmd.none)
+          changeMode model nextAppMode
+         
 
         DebounceMsg msg_ ->
             let
@@ -1041,6 +1012,19 @@ viewImage model =
 
 -- KEY COMMANDS
 
+getPublicDocumentsRawQuery model query = 
+  ({ model | appMode = Reading
+      , toolPanelState = HideToolPanel
+      , masterDocLoaded = False
+      , currentDocumentDirty = False 
+    }, 
+    Cmd.batch [ 
+        Cmd.map DocListMsg (DocumentList.findDocuments Nothing query)
+      , saveCurrentDocumentIfDirty model
+    ]
+             
+  )
+
 keyGateway : Model -> List Key -> ( Model, Cmd Msg )
 keyGateway model pressedKeys =
     if model.previousKey == Control then
@@ -1063,6 +1047,12 @@ handleKey model key =
   case key of 
     Enter -> doSearch model
     Character "s" -> saveCurrentDocument model
+    Character "=" -> saveCurrentDocument model
+    Character "w" -> changeMode model Writing
+    Character "r" -> changeMode model Reading
+    Character "i" -> changeMode model ImageEditing
+    Character "h" -> goHome model
+
     _ -> (model, Cmd.none)
 
 doSearch : Model -> (Model, Cmd Msg)
@@ -2104,6 +2094,34 @@ idFromDocInfo str =
   str |> String.toInt |> Maybe.withDefault 0
 
 -- HELPERS
+
+goHome : Model -> (Model, Cmd Msg)
+goHome model = 
+  case model.maybeCurrentUser of 
+    Nothing -> 
+        let 
+          doc = Document.basicDocument  
+        in 
+          ( { model | currentDocument = { doc | title = "Welcome!" }
+              , currentDocumentDirty = False
+            }
+            , saveCurrentDocumentIfDirty model
+          )
+    Just user -> 
+        let 
+          queryString = "authorname=" ++ User.username user ++ "&key=home"
+        in 
+          (model, Cmd.map DocListMsg (DocumentList.findDocuments model.maybeCurrentUser queryString))
+
+changeMode : Model -> AppMode -> (Model, Cmd Msg)
+changeMode model nextAppMode = 
+  let 
+           nextToolPaneState = if nextAppMode == Reading then 
+                              HideToolPanel 
+                           else
+                              model.toolPanelState
+  in 
+  ({model | appMode = nextAppMode, toolPanelState = nextToolPaneState}, Cmd.none)
 
 signOutCurrentUser : Model -> (Model, Cmd Msg)
 signOutCurrentUser model = 
