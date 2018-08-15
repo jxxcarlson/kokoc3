@@ -655,14 +655,7 @@ update msg model =
             Err err -> 
                 ({model | message = handleHttpError err},   Cmd.none  )
         GoToStart ->
-          let  
-            doc = Document.basicDocument  
-          in 
-           ({model | currentDocument = { doc | title = "Welcome!" }
-                 , currentDocumentDirty = False
-              }
-              , saveCurrentDocumentIfDirty model  
-           )
+          goToStart model  
 
         GoHome ->
           goHome model
@@ -1017,6 +1010,7 @@ handleKey model key =
     Character "e" -> toggleToolPanelState model
     Character "n" -> doNewDocument model
     Character "p" -> printDocument model
+    Character "0" -> goToStart model
 
     _ -> (model, Cmd.none)
 
@@ -2059,6 +2053,16 @@ idFromDocInfo str =
   str |> String.toInt |> Maybe.withDefault 0
 
 -- HELPERS
+
+goToStart model = 
+  let  
+    doc = Document.basicDocument  
+  in 
+    ({model | currentDocument = { doc | title = "Welcome!" }
+          , currentDocumentDirty = False
+      }
+      , saveCurrentDocumentIfDirty model  
+    )
 
 printDocument : Model -> (Model, Cmd Msg)
 printDocument model = 
