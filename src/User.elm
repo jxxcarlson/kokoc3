@@ -6,6 +6,7 @@ module User exposing(
    , readToken
    , UserMsg(..)
    , User
+   , BigUser
    , maybeSetToken
    , stringFromToken
    , getTokenString
@@ -19,6 +20,7 @@ module User exposing(
    , registerUser
    , stringFromMaybeToken
    , sessionIsExpired
+   , getUsers
    ) 
 
 
@@ -151,6 +153,7 @@ stringFromToken (Token str) =
 type UserMsg = 
       ReceiveToken (Result Http.Error Token)
     | RespondToNewUser (Result Http.Error Token)
+    | ListUsers (Result Http.Error (List BigUser))
 
 
 -- DECODERS
@@ -202,8 +205,21 @@ registrationEncoder email_ username_ name_ password_  =
       ])
     ]
 
--- DECODERS
 
+-- DECODERS
+-- {
+--     "user": {
+--         "username": "jxxcarlson",
+--         "token": "-",
+--         "password": "-",
+--         "name": "James Carlson",
+--         "id": 1,
+--         "email": "jxxcarlson@gmail.com",
+--         "blurb": "math, physics, code, music",
+--         "admin": true,
+--         "active": true
+--     }
+-- }
 
 decodeUserFromOutside : Decoder User
 decodeUserFromOutside =
@@ -273,3 +289,55 @@ sessionIsExpired currentTime user =
     (Ok value) -> value 
     _ -> False
   
+
+
+-- ADMIN
+
+
+bigUserDecoder : Decoder BigUser
+bigUserDecoder =
+    Decode.succeed BigUser
+        |> JPipeline.required "username" Decode.string
+        |> JPipeline.required "name" Decode.string
+        |> JPipeline.required "id" Decode.int
+        |> JPipeline.required "email" Decode.string
+        |> JPipeline.required "blurb" Decode.string
+        |> JPipeline.required "admin" Decode.bool
+        |> JPipeline.required "active" Decode.bool
+
+type alias BigUser = {
+      username : String     
+    , name : String
+    , userId : Int
+    , email : String 
+    , blurb : String 
+    , admin : Bool 
+    , active : Bool
+  }
+
+
+userListDecoder : Decoder (List BigUser)
+userListDecoder = 
+  Decode.field "users" (Decode.list bigUserDecoder)  
+
+getUsersRequest : String -> Http.Request (List BigUser)
+getUsersRequest query = 
+  let 
+    queryString = case query == "" of 
+      True -> ""
+      False -> "?" ++ query
+  in 
+    Http.request
+      { method = "Get"
+      , headers = [Http.header "APIVersion" "V2"]
+      , url = Configuration.backend ++ "/api/users" ++ queryString
+      , body = Http.emptyBody
+      , expect = Http.expectJson userListDecoder
+      , timeout = Just Configuration.timeout
+      , withCredentials = False
+      }
+ 
+
+getUsers : String -> Cmd UserMsg 
+getUsers query  = 
+  Http.send ListUsers <| getUsersRequest query

@@ -35,7 +35,7 @@ import Utility
 
 import Configuration
 import SystemDocument
-import User exposing(Token, UserMsg(..), readToken, stringFromMaybeToken, User)
+import User exposing(Token, UserMsg(..), readToken, stringFromMaybeToken, User, BigUser)
 import Document exposing(Document, DocType(..), DocMsg(..), TextType(..))
 import DocumentList exposing(
      DocumentList
@@ -48,6 +48,7 @@ import DocumentListView exposing(DocListViewMsg(..))
 import DocumentDictionary exposing(DocumentDictionary, DocDictMsg(..))
 import Query 
 import FileUploadCredentials as Credentials exposing(FileData)
+
 
 
 
@@ -108,12 +109,13 @@ type alias Model =
       , maybeFileData : Maybe FileData
       , fileValue : Encode.Value
       , psurl : String
+      , userList : List BigUser
     }
 
 type DeleteDocumentState = DeleteIsOnSafety | DeleteIsArmed
 
 type AppMode = 
-  Reading | Writing | ImageEditing
+  Reading | Writing | ImageEditing | Admin  
   
 type ToolPanelState = 
   ShowToolPanel | HideToolPanel
@@ -173,6 +175,7 @@ type Msg
     | ImageRead Value
     | SessionStatus Posix
     | PrintDocument 
+    | GetUsers
     
 
 -- NAVIGATION
@@ -259,6 +262,7 @@ initialModel locationHref windowWidth windowHeight document =
             , maybeFileData = Nothing
             , fileValue = Encode.null
             , psurl = ""
+            , userList = []
         }
 
 init : Flags -> ( Model, Cmd Msg )
@@ -875,8 +879,16 @@ update msg model =
         DocMsg (ReceiveImageListReply result) ->
             case result of 
             Ok str -> ( { model | message = "RIL: " ++ str},  Cmd.none )
-            -- Err err -> ( { model | message = httpErrorHandler err }, Cmd.none )
-            Err err -> ( { model | message = "RIL Error" }, Cmd.none )
+            Err err -> ( { model | message = httpErrorHandler err }, Cmd.none )
+            -- Err err -> ( { model | message = "RIL Error" }, Cmd.none )
+
+        UserMsg (ListUsers result) ->
+          case result of 
+              Ok userList -> ({model | userList = userList, message = "Users: " ++ (String.fromInt <| List.length userList)}, Cmd.none)
+              Err error -> ({model | message =  httpErrorHandler error}, Cmd.none)
+
+        GetUsers -> 
+          (model, Cmd.map UserMsg (User.getUsers "jxx"))
 
 -- UPDATE END
 
@@ -1023,6 +1035,7 @@ doSearch model =
             Just _ -> getUserDocuments model (model.searchQueryString ++ ", docs=any")
         Writing -> getUserDocuments model model.searchQueryString 
         ImageEditing -> (model, Cmd.none)
+        Admin -> (model, Cmd.none)
     
 -- ERROR
 
@@ -1206,6 +1219,7 @@ header model =
         , viewUserManualLink
         , spacer 10
         , signoutButton (px 70) model
+        , adminModeButton (px 70) model
   ]
 
 spacer : Int -> Element msg
@@ -1218,6 +1232,7 @@ appTitle appMode =
     Reading -> "kNode"
     Writing -> "kNode"
     ImageEditing -> "kNode"
+    Admin -> "Admin"
 
 body : Model -> Element Msg 
 body model =
@@ -1225,7 +1240,38 @@ body model =
     Reading -> readerBody model 
     Writing -> writerBody model 
     ImageEditing -> imageBody model 
+    Admin -> adminBody model
 
+-- ADMIN
+
+-- ADMIN
+
+adminBody : Model -> Element Msg
+adminBody model = 
+  Element.row [width (fillPortion 4), height fill, Background.color Widget.white, centerX] [
+     adminBodyLeftColumn 2 model,  adminCenterColumn model.windowHeight 7 model, adminRightColumn 2 model
+  ]
+
+adminBodyLeftColumn : Int -> Model -> Element Msg
+adminBodyLeftColumn portion_ model = 
+  Element.column [width (fillPortion portion_), height fill, 
+    Background.color Widget.lightBlue, paddingXY 20 20, spacing 10] [ 
+      listUsersButton  model   
+  ]
+
+adminCenterColumn : Int -> Int -> Model -> Element Msg
+adminCenterColumn windowHeight_ portion_  model  = 
+  Element.column [width (fillPortion portion_), height (px (windowHeight_ - 73))
+    , Background.color Widget.darkGrey 
+    ] [  ]
+
+adminRightColumn : Int -> Model -> Element Msg
+adminRightColumn portion_ model = 
+  Element.column [width (fillPortion portion_), height fill, Background.color Widget.lightBlue, centerX] [
+      
+  ]
+
+-- READER
 
 readerBody : Model -> Element Msg
 readerBody model = 
@@ -1584,13 +1630,18 @@ footer model =
 
 testButton : Model -> Element Msg 
 testButton model = 
-  case User.usernameFromMaybeUser model.maybeCurrentUser of 
-    "jxxcarlson" ->
-        Input.button (Widget.buttonStyle  (px 115)) {
-          onPress =  Just Test
-        , label = Element.el [] (Element.text ("Prepare Images"))
-        }
-    _ -> Element.none 
+    Input.button (Widget.buttonStyle  (px 115)) {
+      onPress =  Just Test
+    , label = Element.el [] (Element.text ("Prepare Images"))
+    }
+
+
+listUsersButton : Model -> Element Msg 
+listUsersButton model = 
+    Input.button (Widget.buttonStyle  (px 115)) {
+      onPress =  Just GetUsers
+    , label = Element.el [] (Element.text ("List users"))
+    }
 
 documentDictionaryInfo : Model -> String 
 documentDictionaryInfo model = 
@@ -1805,7 +1856,8 @@ newDocumentButton model =
       Input.button (buttonStyle (px 105)) {
           onPress =  Just (NewDocument)
         , label = Element.el [] (Element.text ("New document"))
-        }
+      }
+    Admin -> Element.none
 
 
 newChildButton :  Model -> Element Msg    
@@ -1814,6 +1866,7 @@ newChildButton model =
     Reading -> Element.none 
     Writing -> newChildButton_ model
     ImageEditing -> Element.none
+    Admin -> Element.none
 
 newChildButton_ :  Model -> Element Msg    
 newChildButton_ model = 
@@ -1841,6 +1894,7 @@ toggleToolsButton width_ model =
         onPress =  Just (ToggleToolPanelState)
       , label = Element.el [] (Element.text (toggleToolsTitle model.toolPanelState))
       }
+    Admin -> Element.none
    
 
 toggleToolsTitle : ToolPanelState -> String 
@@ -2028,6 +2082,19 @@ writerModeButton width_ model =
       , label = Element.el [] (Element.text "Write")
       } 
 
+adminModeButton : Length -> Model -> Element Msg    
+adminModeButton width_ model = 
+  case model.maybeCurrentUser of 
+    Nothing -> Element.none 
+    Just user -> 
+      case User.username user == Configuration.adminUsername of 
+        False -> Element.none 
+        True -> 
+          Input.button (modeButtonStyle model.appMode Admin  width_) {
+            onPress =  Just (ChangeMode Admin)
+          , label = Element.el [] (Element.text "Admin")
+          } 
+
 imageModeButton : Length -> Model -> Element Msg    
 imageModeButton width_ model = 
   case model.maybeCurrentUser of 
@@ -2181,12 +2248,11 @@ getTime =
 
 toUtcString : Time.Posix -> String
 toUtcString time =
-  String.fromInt (Time.toHour Time.utc time)
+  (String.fromInt (Time.toHour Time.utc time) |> String.padLeft 2 '0')
   ++ ":" ++
-  String.fromInt (Time.toMinute Time.utc time)
+  (String.fromInt (Time.toMinute Time.utc time) |> String.padLeft 2 '0')
   ++ ":" ++
-  String.fromInt (Time.toSecond Time.utc time)
-  |> String.padRight 8 ' '
+  (String.fromInt (Time.toSecond Time.utc time) |> String.padLeft 2 '0')
   
 
 saveCurrentDocumentIfDirty : Model -> Cmd Msg
@@ -2378,8 +2444,9 @@ httpErrorHandler error =
         |> List.head
         |> Maybe.withDefault ""
         |> String.replace "\"" "" 
+        -- |> (\x -> "Bad payload: " ++ x)
       -- Debug.toString response
-    Http.BadUrl str -> str 
+    Http.BadUrl str -> "Bad url: " ++ str 
     Http.Timeout -> "timeout"
     Http.NetworkError -> "Network error"
     Http.BadStatus resp -> "Bad status: " ++ "darn!"

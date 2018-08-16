@@ -12,8 +12,12 @@ module Configuration exposing(
    , signedUpText 
    , welcomeText
    , bucket
-   , timeout)
+   , timeout
+   , adminUsername)
 
+
+adminUsername : String 
+adminUsername = "jxxcarlson"
 
 timeout : Float 
 timeout = 20000
