@@ -308,7 +308,7 @@ bigUserDecoder =
 type alias BigUser = {
       username : String     
     , name : String
-    , userId : Int
+    , id : Int
     , email : String 
     , blurb : String 
     , admin : Bool 

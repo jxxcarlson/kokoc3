@@ -1286,12 +1286,19 @@ viewUsers userList =
     { data = userList
     , columns =
         [ 
-          { header = Element.el [Font.bold] (Element.text "Username")
-          , width = fill
+          { header = Element.el [Font.bold] (Element.text "ID")
+          , width = (px 80)
           , view =
                 (\user ->
-                    Element.text user.username
+                    Element.text (String.fromInt user.id)
                 )
+          }
+        , { header = Element.el [Font.bold] (Element.text "Username")
+          , width = fill
+          , view =
+                 (\user ->
+                    Element.text user.username
+                 )
           }
         , { header = Element.el [Font.bold] (Element.text "Email")
           , width = fill
