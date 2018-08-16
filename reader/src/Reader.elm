@@ -888,7 +888,8 @@ update msg model =
               Err error -> ({model | message =  httpErrorHandler error}, Cmd.none)
 
         GetUsers -> 
-          (model, Cmd.map UserMsg (User.getUsers "jxx"))
+          searchForUsers model -- ###
+          
 
 -- UPDATE END
 
@@ -1035,7 +1036,7 @@ doSearch model =
             Just _ -> getUserDocuments model (model.searchQueryString ++ ", docs=any")
         Writing -> getUserDocuments model model.searchQueryString 
         ImageEditing -> (model, Cmd.none)
-        Admin -> (model, Cmd.none)
+        Admin -> searchForUsers model -- ###
     
 -- ERROR
 
@@ -1244,7 +1245,6 @@ body model =
 
 -- ADMIN
 
--- ADMIN
 
 adminBody : Model -> Element Msg
 adminBody model = 
@@ -1256,20 +1256,60 @@ adminBodyLeftColumn : Int -> Model -> Element Msg
 adminBodyLeftColumn portion_ model = 
   Element.column [width (fillPortion portion_), height fill, 
     Background.color Widget.lightBlue, paddingXY 20 20, spacing 10] [ 
-      listUsersButton  model   
+        showUserCount model
+      , listUsersButton  model   
   ]
+
+showUserCount : Model -> Element msg 
+showUserCount model = 
+  let 
+    n = List.length model.userList
+  in 
+    case n == 0 of 
+      True -> Element.none 
+      False -> Element.el [] (Element.text <| "Users: " ++ String.fromInt n)
+
 
 adminCenterColumn : Int -> Int -> Model -> Element Msg
 adminCenterColumn windowHeight_ portion_  model  = 
-  Element.column [width (fillPortion portion_), height (px (windowHeight_ - 73))
-    , Background.color Widget.darkGrey 
-    ] [  ]
+  Element.column [width (fillPortion portion_), height (px (windowHeight_ - 73)), scrollbarY] [ viewUsers model.userList ]
 
 adminRightColumn : Int -> Model -> Element Msg
 adminRightColumn portion_ model = 
   Element.column [width (fillPortion portion_), height fill, Background.color Widget.lightBlue, centerX] [
       
   ]
+
+viewUsers : List BigUser -> Element msg 
+viewUsers userList =  
+  Element.table [spacing 10, padding 30]
+    { data = userList
+    , columns =
+        [ 
+          { header = Element.el [Font.bold] (Element.text "Username")
+          , width = fill
+          , view =
+                (\user ->
+                    Element.text user.username
+                )
+          }
+        , { header = Element.el [Font.bold] (Element.text "Email")
+          , width = fill
+          , view =
+                 (\user ->
+                    Element.text user.email
+                 )
+          }
+        , { header = Element.el [Font.bold] (Element.text "Blurb")
+          , width = fill
+          , view =
+                 (\user ->
+                    Element.text user.blurb
+                 )
+          }
+        ]
+    }
+  
 
 -- READER
 
@@ -2120,6 +2160,10 @@ idFromDocInfo str =
   str |> String.toInt |> Maybe.withDefault 0
 
 -- HELPERS
+
+searchForUsers : Model -> (Model, Cmd Msg)
+searchForUsers model = 
+  ( model, Cmd.map UserMsg (User.getUsers <| "is_user=" ++ model.searchQueryString)) -- ###
 
 goToStart model = 
   let  
