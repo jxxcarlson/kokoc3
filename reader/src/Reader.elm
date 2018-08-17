@@ -243,7 +243,7 @@ updateEditorContentCmd str =
 
 initialModel : String -> Int -> Int -> Document -> Model 
 initialModel locationHref windowWidth windowHeight document =
-    {   message = "App started"
+    {   message = "Not signed in"
             , password = ""
             , username = ""
             , email = ""
@@ -292,7 +292,8 @@ init flags =
     ( initialModel flags.location flags.width flags.height  SystemDocument.welcome 
     , Cmd.batch [ 
         -- focusSearchBox
-        processUrl flags.location
+          processUrl flags.location
+        -- , getTime
 
     ])
 
@@ -301,15 +302,15 @@ processUrl urlString =
     case  UrlAppParser.toRoute urlString of 
       NotFound -> 
         Cmd.batch [
-            sendInfoOutside (AskToReconnectDocument Encode.null)
-          , sendInfoOutside (AskToReconnectDocumentList Encode.null)
-          , sendInfoOutside (AskToReconnectUser Encode.null)
+           -- sendInfoOutside (AskToReconnectDocument Encode.null)
+           -- , sendInfoOutside (AskToReconnectDocumentList Encode.null)
+           sendInfoOutside (AskToReconnectUser Encode.null)
         ]
         
       DocumentIdRef docId -> 
         Cmd.batch [
             sendInfoOutside (AskToReconnectUser Encode.null)
-           -- , sendInfoOutside (AskToReconnectDocumentList Encode.null)
+            -- , sendInfoOutside (AskToReconnectDocumentList Encode.null)
             -- , Cmd.map DocMsg (Document.getDocumentById docId Nothing)
             , Cmd.map DocListMsg (DocumentList.findDocuments Nothing <| "id=" ++ (String.fromInt docId))  
         ]
@@ -394,7 +395,7 @@ update msg model =
                ({ model | 
                     maybeToken = maybeToken
                   , maybeCurrentUser = maybeCurrentUser
-                  , message = "Authorized (1)"
+                  , message = "Signed in"
                   , email = ""
                   , password = ""
                   , username = ""
@@ -413,7 +414,7 @@ update msg model =
                ({ model | 
                     maybeToken = maybeToken
                   , maybeCurrentUser = maybeCurrentUser
-                  , message = "Authorized (2)"
+                  , message = "Signed up"
                   , email = ""
                   , password = ""
                   , username = ""
@@ -682,8 +683,7 @@ update msg model =
                 dict = model.documentDictionary
                 doc = documentRecord.document
               in
-                 ({ model | message = "Put texmacros: " ++ (String.fromInt doc.id) 
-                 , documentDictionary = DocumentDictionary.put "texmacros" doc dict },   Cmd.none  )
+                 ({ model | documentDictionary = DocumentDictionary.put "texmacros" doc dict },   Cmd.none  )
             Err err -> 
                 ({model | message = handleHttpError err},   Cmd.none  )
         GoToStart ->
@@ -786,7 +786,7 @@ update msg model =
           ({model | deleteDocumentState = DeleteIsOnSafety}, Cmd.none )
 
         LogErr error ->
-            ( { model | message = "Error: " ++ error }, Cmd.none )
+            ( model, Cmd.none ) -- ## startup errors
             
         KeyMsg keyMsg ->
           let 
@@ -881,14 +881,14 @@ update msg model =
               case model.maybeCurrentUser of 
                 Nothing -> True 
                 Just user -> User.sessionIsExpired t user
-            sessionExpiredString =
+            sessionString =
               case sessionExpired of 
-                True -> "Session expired "
-                False -> ""          
+                True -> "Not signed in"
+                False ->  "UTC " ++ toUtcString t         
           in 
             case (sessionExpired, model.maybeCurrentUser) of 
                 (True, Just _) -> signOutCurrentUser model 
-                (_, _) -> ( {model | message = sessionExpiredString ++ "UTC " ++ toUtcString t}, Cmd.none)
+                (_, _) -> ( {model | message = sessionString}, Cmd.none)
 
       
         PrintDocument -> 
@@ -1301,6 +1301,7 @@ processInfoForElm model infoForElm_ =
     UserDataFromOutside user -> 
         ({model |   maybeCurrentUser = Just user 
                   , maybeToken = Just (User.getToken user)
+                  , message = "You are reconnected"
             }
             , Cmd.none
           ) 
@@ -2512,6 +2513,7 @@ signOutCurrentUser model =
             
     ) 
 
+getTime : Cmd Msg
 getTime = 
     Time.now 
         |> Task.perform SessionStatus
