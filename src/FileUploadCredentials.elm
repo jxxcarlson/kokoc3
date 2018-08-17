@@ -11,17 +11,23 @@ module FileUploadCredentials exposing(
     , encodeFileValueWithUrl
     , encodeCredentialsWrapper
     , makeImage
+    , getImages
+    , Image
   )
 
 import Json.Encode as Encode
 import Json.Decode as Decode exposing(field, map2, map7)
+import Json.Decode.Pipeline as JPipeline exposing (required, optional, hardcoded)
 import Http 
 import Configuration
+
+-- MSG
 
 type FileMsg = 
      ReceivePresignedUrl (Result Http.Error String)
      | ReceiveFileCredentials (Result Http.Error CredentialsWrapper)
      | ReceiveMakeImageAcknowledgement (Result Http.Error String)
+     | ReceiveImageList (Result Http.Error (List Image))
   
 
 type alias Credentials =
@@ -53,7 +59,7 @@ decodeReply : Decode.Decoder String
 decodeReply =
   Decode.field "reply" Decode.string 
 
-  
+
 decodeFileData : Decode.Decoder FileData
 decodeFileData =
     Decode.map5 FileData
@@ -206,6 +212,42 @@ encodeImageData name url userId =
     , ("url", Encode.string url)
     , ("user_id", Encode.int userId)
   ]
+
+type alias Image =  {
+     name : String
+   , url : String
+  }
+
+decodeImage : Decode.Decoder Image  
+decodeImage = 
+  Decode.succeed  Image
+     |> JPipeline.required "name" Decode.string
+     |> JPipeline.required "url" Decode.string
+
+decodeImageList : Decode.Decoder (List Image)
+decodeImageList = 
+  Decode.field "images" (Decode.list decodeImage)
+
+getImagesRequest : String -> String -> Http.Request (List Image)
+getImagesRequest tokenString queryString =
+   let 
+     route = case queryString == "" of 
+       True ->  "/api/images"
+       False ->  "/api/images?" ++ queryString 
+   in 
+      Http.request
+        { method = "Get"
+        , headers = [Http.header "Authorization" ("Bearer " ++ tokenString)]
+        , url = Configuration.backend ++ route
+        , body = Http.emptyBody
+        , expect = Http.expectJson decodeImageList
+        , timeout = Just Configuration.timeout
+        , withCredentials = False
+        }
+
+getImages : String -> String -> Cmd FileMsg 
+getImages tokenString queryString =
+    Http.send ReceiveImageList <| getImagesRequest tokenString queryString
 
 
 -- ELLIE ADAPTED FROM @ILIAS: https://ellie-test-19-cutover.now.sh/YmXW6MBCmBa1

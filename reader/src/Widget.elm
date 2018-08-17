@@ -86,6 +86,26 @@ buttonStyle width_ = [
     , Border.rounded 8
    ]
 
+whiteButtonStyle width_ = [
+     Font.size 13 
+    , mouseDown [  Font.size 13, Background.color mouseDownColor]
+    , Background.color white, Font.color charcoal
+    , width width_
+    , height (px 24)
+    , paddingXY 10 0
+    , Border.rounded 8
+   ]
+
+
+squareButtonStyle width_ = [
+     Font.size 13 
+    , mouseDown [  Font.size 13, Background.color mouseDownColor]
+    , Background.color charcoal, Font.color white
+    , width width_
+    , height (px 24)
+    , paddingXY 10 0
+   ]
+
 buttonStyleWithColor backgroundColor width_  = [
      Font.size 13 
     , mouseDown [  Font.size 13, Background.color mouseDownColor]
@@ -101,13 +121,16 @@ mouseDownColor =
 
 buttonColor = Element.rgb 0.3 0.3 0.3
 
-charcoal = Element.rgb 0.4 0.4 0.4
+
+charcoal = Element.rgb 0.3 0.3 0.3
 
 grey = Element.rgb 0.8 0.8 0.8
 
 lightGrey = Element.rgb 0.95 0.95 0.95
 
 darkGrey = Element.rgb 0.45 0.45 0.45
+
+veryDarkGrey = Element.rgb 0.2 0.2 0.2
 
 lightBlue = Element.rgb 0.85 0.85 0.9
 

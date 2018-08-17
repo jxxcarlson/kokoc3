@@ -47,7 +47,7 @@ import DocumentView exposing(view, DocViewMsg(..))
 import DocumentListView exposing(DocListViewMsg(..))
 import DocumentDictionary exposing(DocumentDictionary, DocDictMsg(..))
 import Query 
-import FileUploadCredentials as Credentials exposing(FileData)
+import FileUploadCredentials as Credentials exposing(FileData, Image)
 
 
 
@@ -111,12 +111,18 @@ type alias Model =
       , psurl : String
       , userList : List BigUser
       , imageName : String
+      , imageList : List Image
+      , imageMode : ImageMode
+      , maybeCurrentImage : Maybe Image
     }
 
 type DeleteDocumentState = DeleteIsOnSafety | DeleteIsArmed
 
 type AppMode = 
-  Reading | Writing | ImageEditing | Admin  
+  Reading | Writing | ImageEditing | Admin 
+
+type ImageMode = 
+  LoadImage | ViewImage 
   
 type ToolPanelState = 
   ShowToolPanel | HideToolPanel
@@ -179,6 +185,8 @@ type Msg
     | PrintDocument 
     | GetUsers
     | MakeImage
+    | SelectImage Image
+    | SelectImageLoader
     
 
 -- NAVIGATION
@@ -267,6 +275,9 @@ initialModel locationHref windowWidth windowHeight document =
             , psurl = ""
             , userList = []
             , imageName = ""
+            , imageList = []
+            , imageMode = LoadImage
+            , maybeCurrentImage = Nothing
         }
 
 init : Flags -> ( Model, Cmd Msg )
@@ -902,7 +913,7 @@ update msg model =
             Ok reply -> ({model | message = reply}, Cmd.none )
             Err error -> ({model | message = httpErrorHandler error }, Cmd.none )
 
-        MakeImage ->  -- ###
+        MakeImage -> 
           case model.maybeCurrentUser of 
             Nothing -> (model, Cmd.none)
             Just user -> (model, 
@@ -912,6 +923,18 @@ update msg model =
           case result of 
             Ok reply -> ({model | message = reply}, Cmd.none)
             Err error -> ({model | message = handleHttpError error}, Cmd.none)
+
+        FileMsg (Credentials.ReceiveImageList result) ->
+          case result of 
+            Ok imageList -> ({model | imageList = imageList, message = "Images: " ++ (String.fromInt <| List.length imageList)}, Cmd.none)
+            Err error -> ({model | message = handleHttpError error}, Cmd.none)
+
+        SelectImage image ->
+          ({model | message = "Image: " ++ image.name, maybeCurrentImage = Just image, imageMode = ViewImage}, Cmd.none)
+          
+        SelectImageLoader -> 
+         ({model | imageMode = LoadImage}, Cmd.none)
+
 -- UPDATE END
 
 
@@ -934,11 +957,11 @@ decodeNodeFile : (Value -> msg) -> Decoder msg
 decodeNodeFile toMsg =
     Decode.map toMsg (Decode.at ["target", "files", "0"] Decode.value)
 
-viewImage_ : Model -> Html Msg
-viewImage_ model =
+viewImageToUpload_ : Model -> Html Msg
+viewImageToUpload_ model =
     Html.div [ 
                Html.Attributes.style "padding" "30px"
-             , Html.Attributes.style "background-color" "#333"
+             , Html.Attributes.style "background-color" "303030"
              , Html.Attributes.style "width" "100%"
              , Html.Attributes.style "height" "100%"
              ]
@@ -951,8 +974,26 @@ viewImage_ model =
             , displayMedia (imageType model) model.maybeImageString (imageUrlAtS3 model)
             , Html.p [Html.Attributes.style "color" "white"] [Html.text <| imageUrlAtS3 model]
             , imageNameInput model
+            , Html.br [ ] [ ]
+            , Html.br [ ] [ ]
             , makeImageButton (px 90) model
         ]
+
+viewLargeImage : Model -> Element Msg
+viewLargeImage model =  
+  case 
+    model.maybeCurrentImage of 
+      Nothing -> Element.none 
+      Just image -> 
+          Element.column [spacing 10, padding 40, Background.color Widget.veryDarkGrey] [
+              Element.image  [width (px 500)] { 
+                src = image.url
+              , description = image.name
+              }
+            , Element.el [Font.color Widget.white] (Element.text image.url)
+            , Element.el [Font.color Widget.white] (Element.text image.name)
+            , Element.el [moveDown 30] (selectImagerLoaderButton model)
+          ]
 
 displayMedia : String -> Maybe String -> String -> Html Msg  
 displayMedia imageType_ maybeData url = 
@@ -1001,26 +1042,26 @@ imageType model =
       False -> String.dropLeft 5 imageInfo
 
   
-viewImage : Model -> Element Msg 
-viewImage model = 
+viewImageToUpload : Model -> Element Msg 
+viewImageToUpload model = 
   case model.maybeCurrentUser of 
     Nothing -> 
         Element.none
     Just user -> 
-        Element.html (viewImage_ model)
+        Element.html (viewImageToUpload_ model)
 
 
 imageNameInput model = 
   Html.input [ Html.Attributes.placeholder "Image name"
      , Html.Attributes.style "background-color" "white"
      , Html.Attributes.style "color" "#333"
+     , Html.Attributes.style "width" "200px"
      , Html.Events.onInput AcceptImageName ] []
 
 makeImageButton : Length -> Model -> Html Msg    
 makeImageButton width_ model = 
-    Html.button [ Html.Events.onClick MakeImage ] [ Html.text "Make image" ]
-      
--- ###
+    Html.button [ Html.Events.onClick MakeImage ] [ Html.text "Save image data" ]
+       
 -- KEY COMMANDS
 
 
@@ -1068,7 +1109,7 @@ doSearch model =
             Nothing -> getPublicDocuments model model.searchQueryString 
             Just _ -> getUserDocuments model (model.searchQueryString ++ ", docs=any")
         Writing -> getUserDocuments model model.searchQueryString 
-        ImageEditing -> (model, Cmd.none)
+        ImageEditing -> searchForImages model
         Admin -> searchForUsers model 
     
 -- ERROR
@@ -1402,20 +1443,53 @@ imageLeftColumn portion_ model =
   Element.column [width (fillPortion portion_), height fill, 
     Background.color Widget.lightBlue, paddingXY 20 20, spacing 10] [ 
         imageCatalogueLink model
+      , viewImages model.imageList
        
   ]
 
 imageCenterColumn : Int -> Int -> Model -> Element Msg
 imageCenterColumn windowHeight_ portion_  model  = 
   Element.column [width (fillPortion portion_), height (px (windowHeight_ - 73))
-    , Background.color Widget.darkGrey 
-    ] [ viewImage model ]
+    , Background.color Widget.veryDarkGrey 
+    , centerX, centerY
+    ] [ loadOrViewImage model ]
+
+loadOrViewImage : Model -> Element Msg
+loadOrViewImage model = 
+  case model.imageMode of 
+    LoadImage ->  viewImageToUpload model
+    ViewImage -> viewLargeImage model 
+
+
 
 imageRightColumn : Int -> Model -> Element Msg
 imageRightColumn portion_ model = 
   Element.column [width (fillPortion portion_), height fill, Background.color Widget.lightBlue, centerX] [
       
   ]
+
+viewImages : List Image -> Element Msg 
+viewImages imageList = 
+  Element.column [spacing 20, scrollbarY] (List.map viewImage imageList)
+
+viewImage : Image -> Element Msg 
+viewImage image = 
+  Element.column [spacing 5] [
+    Element.image  [width (px 250)] {
+      src = image.url
+    , description = image.name
+    }
+    -- , Element.el [] (Element.text image.url)
+    -- , Element.el [Font.bold] (Element.text image.name)
+    , selectImageButton image
+  ]
+
+selectImageButton : Image -> Element Msg 
+selectImageButton image = 
+    Input.button (Widget.squareButtonStyle  (px 250)) {
+      onPress =  Just (SelectImage image)
+    , label = Element.el [] (Element.text image.name)
+    }
 
 
 -- LOGIN, ETC
@@ -1846,6 +1920,13 @@ documentTitleInput model =
 
 -- BUTTONS
 
+selectImagerLoaderButton : Model -> Element Msg 
+selectImagerLoaderButton model = 
+  Input.button (Widget.whiteButtonStyle (px 160)) {
+    onPress =  Just SelectImageLoader
+  , label = Element.el [] (Element.text ("Image Loader"))
+  }
+
 publicButton : Document -> Element Msg 
 publicButton document = 
   Input.button (Widget.buttonStyleWithColor (publicIndicatorColor document.public True) (px 60)) {
@@ -2197,7 +2278,7 @@ imageModeButton width_ model =
     Just user -> 
         Input.button (modeButtonStyle model.appMode ImageEditing  width_) {
           onPress =  Just (ChangeMode ImageEditing)
-        , label = Element.el [] (Element.text "Image ")
+        , label = Element.el [] (Element.text "Image")
         } 
 
 
@@ -2219,6 +2300,15 @@ idFromDocInfo str =
 searchForUsers : Model -> (Model, Cmd Msg)
 searchForUsers model = 
   ( model, Cmd.map UserMsg (User.getUsers <| "is_user=" ++ model.searchQueryString)) 
+
+searchForImages : Model -> (Model, Cmd Msg)
+searchForImages model = 
+  let 
+    queryString = case model.searchQueryString == "" of 
+      True -> ""
+      False -> model.searchQueryString
+  in
+  ( model, Cmd.map FileMsg (Credentials.getImages "" queryString)) 
 
 goToStart model = 
   let  
@@ -2318,12 +2408,15 @@ goHome model =
 changeMode : Model -> AppMode -> (Model, Cmd Msg)
 changeMode model nextAppMode = 
   let 
-           nextToolPaneState = if nextAppMode == Reading then 
-                              HideToolPanel 
-                           else
-                              model.toolPanelState
+    nextToolPaneState = if nextAppMode == Reading then 
+                      HideToolPanel 
+                    else
+                      model.toolPanelState
+    cmd = case nextAppMode of 
+      ImageEditing -> Cmd.map FileMsg (Credentials.getImages "" "")
+      _ -> Cmd.none
   in 
-  ({model | appMode = nextAppMode, toolPanelState = nextToolPaneState}, Cmd.none)
+    ({model | appMode = nextAppMode, toolPanelState = nextToolPaneState}, cmd)
 
 signOutCurrentUser : Model -> (Model, Cmd Msg)
 signOutCurrentUser model = 
