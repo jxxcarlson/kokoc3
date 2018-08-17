@@ -130,7 +130,7 @@ stringToQueryString prefix input =
      separators : Regex.Regex
      separators =
         Maybe.withDefault Regex.never <|
-        Regex.fromString ", "
+        Regex.fromString "[, ]"
   in
     input
         |> Regex.split separators
