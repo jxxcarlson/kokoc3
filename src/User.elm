@@ -21,6 +21,7 @@ module User exposing(
    , stringFromMaybeToken
    , sessionIsExpired
    , getUsers
+   , incrementMediaCountForMaybeUser
    ) 
 
 
@@ -154,6 +155,7 @@ type UserMsg =
       ReceiveToken (Result Http.Error Token)
     | RespondToNewUser (Result Http.Error Token)
     | ListUsers (Result Http.Error (List BigUser))
+    | AcknowledgeMediaCountIncrement (Result Http.Error String)
 
 
 -- DECODERS
@@ -169,6 +171,9 @@ jwtDecoder =
         |> JPipeline.required "username" Decode.string
         |> JPipeline.required "user_id" Decode.int
 
+replyDecoder : Decoder String 
+replyDecoder = 
+  Decode.field "reply" Decode.string
 
 -- ENCODERS
 
@@ -304,6 +309,8 @@ bigUserDecoder =
         |> JPipeline.required "blurb" Decode.string
         |> JPipeline.required "admin" Decode.bool
         |> JPipeline.required "active" Decode.bool
+        |> JPipeline.required "documentCount" Decode.int
+        |> JPipeline.required "mediaCount" Decode.int
 
 type alias BigUser = {
       username : String     
@@ -313,6 +320,8 @@ type alias BigUser = {
     , blurb : String 
     , admin : Bool 
     , active : Bool
+    , documentCount : Int
+    , mediaCount : Int 
   }
 
 
@@ -341,3 +350,25 @@ getUsersRequest query =
 getUsers : String -> Cmd UserMsg 
 getUsers query  = 
   Http.send ListUsers <| getUsersRequest query
+
+incrementMediaCountForMaybeUser : Maybe User -> Cmd UserMsg
+incrementMediaCountForMaybeUser maybeUser =
+  case maybeUser of 
+    Nothing -> Cmd.none 
+    Just user -> incrementMediaCountForUser user 
+
+incrementMediaCountForUser : User -> Cmd UserMsg 
+incrementMediaCountForUser user = 
+  Http.send AcknowledgeMediaCountIncrement <| incrementMediaCountRequest user 
+
+incrementMediaCountRequest : User -> Http.Request String 
+incrementMediaCountRequest user = 
+   Http.request
+      { method = "Post"
+      , headers = [Http.header "APIVersion" "V2"]
+      , url = Configuration.backend ++ "/api/users/increment_media_count/" ++ (String.fromInt <| userId user)
+      , body = Http.emptyBody
+      , expect = Http.expectJson replyDecoder
+      , timeout = Just Configuration.timeout
+      , withCredentials = False
+      }

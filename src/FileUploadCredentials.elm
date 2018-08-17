@@ -10,6 +10,7 @@ module FileUploadCredentials exposing(
     , encodeFileData
     , encodeFileValueWithUrl
     , encodeCredentialsWrapper
+    , makeImage
   )
 
 import Json.Encode as Encode
@@ -20,6 +21,7 @@ import Configuration
 type FileMsg = 
      ReceivePresignedUrl (Result Http.Error String)
      | ReceiveFileCredentials (Result Http.Error CredentialsWrapper)
+     | ReceiveMakeImageAcknowledgement (Result Http.Error String)
   
 
 type alias Credentials =
@@ -47,6 +49,11 @@ type alias FileData =
     , mimetype : String
    }
 
+decodeReply : Decode.Decoder String 
+decodeReply =
+  Decode.field "reply" Decode.string 
+
+  
 decodeFileData : Decode.Decoder FileData
 decodeFileData =
     Decode.map5 FileData
@@ -174,6 +181,31 @@ getS3CredentialsRequest tokenString fileInfo =
 getS3Credentials : String -> FileInfo -> Cmd FileMsg 
 getS3Credentials tokenString fileInfo =
     Http.send ReceiveFileCredentials <| getS3CredentialsRequest tokenString fileInfo
+
+
+makeImageRequest : String -> String -> String -> Int -> Http.Request String
+makeImageRequest tokenString name url userId  = 
+    Http.request
+        { method = "Post"
+        , headers = [Http.header "APIVersion" "V2", Http.header "Authorization" ("Bearer " ++ tokenString)]
+        , url = Configuration.backend ++ "/api/image" 
+        , body = Http.jsonBody <| encodeImageData name url userId
+        , expect = Http.expectJson decodeReply
+        , timeout = Just Configuration.timeout
+        , withCredentials = False
+        }
+
+makeImage : String -> String -> String -> Int -> Cmd FileMsg 
+makeImage tokenString name url userId =
+    Http.send ReceiveMakeImageAcknowledgement <| makeImageRequest tokenString name url userId 
+
+encodeImageData : String -> String -> Int -> Encode.Value 
+encodeImageData name url userId = 
+  Encode.object [
+      ("name", Encode.string name)
+    , ("url", Encode.string url)
+    , ("user_id", Encode.int userId)
+  ]
 
 
 -- ELLIE ADAPTED FROM @ILIAS: https://ellie-test-19-cutover.now.sh/YmXW6MBCmBa1

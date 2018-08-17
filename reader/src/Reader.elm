@@ -110,6 +110,7 @@ type alias Model =
       , fileValue : Encode.Value
       , psurl : String
       , userList : List BigUser
+      , imageName : String
     }
 
 type DeleteDocumentState = DeleteIsOnSafety | DeleteIsArmed
@@ -133,6 +134,7 @@ type Msg
     | AcceptSearchQuery String
     | AcceptDocumenTitle String
     | AcceptDocumentTagString String
+    | AcceptImageName String
     | SignIn
     | SignOut
     | RegisterUser
@@ -176,6 +178,7 @@ type Msg
     | SessionStatus Posix
     | PrintDocument 
     | GetUsers
+    | MakeImage
     
 
 -- NAVIGATION
@@ -263,6 +266,7 @@ initialModel locationHref windowWidth windowHeight document =
             , fileValue = Encode.null
             , psurl = ""
             , userList = []
+            , imageName = ""
         }
 
 init : Flags -> ( Model, Cmd Msg )
@@ -358,6 +362,9 @@ update msg model =
             nextDocument = {currentDocument | tags = nextTags  }
           in 
             ( { model | tagString = str, currentDocument = nextDocument, currentDocumentDirty = True }, Cmd.none )
+
+        AcceptImageName str -> 
+            ( { model | imageName = str }, Cmd.none )
 
         UserMsg (ReceiveToken result)->
           case result of 
@@ -825,7 +832,7 @@ update msg model =
               Ok url -> 
                 ({ model | message = "psurl: " ++ url, psurl = url }, 
                   Cmd.batch [  readImage (Credentials.encodeFileValueWithUrl model.fileValue url)
-                           , uploadImage (Credentials.encodeFileValueWithUrl model.fileValue url) 
+                           , uploadImage (Credentials.encodeFileValueWithUrl model.fileValue url)
                           ]
                 )
               Err err -> 
@@ -834,8 +841,8 @@ update msg model =
         ImageRead v ->
           let 
             nextImageString = Decode.decodeValue Decode.string v |> Result.toMaybe
-          in
-            ( { model | maybeImageString = nextImageString, message = "ImageRead" }, Cmd.none  )
+          in 
+            ( { model | maybeImageString = nextImageString, message = "ImageRead" }, Cmd.map UserMsg <| User.incrementMediaCountForMaybeUser model.maybeCurrentUser   )
 
         DocMsg (ReceiveWorkerReply result) ->
           case result of 
@@ -855,7 +862,7 @@ update msg model =
                 Just user -> User.sessionIsExpired t user
             sessionExpiredString =
               case sessionExpired of 
-                True -> "Session expired"
+                True -> "Session expired "
                 False -> ""          
           in 
             case (sessionExpired, model.maybeCurrentUser) of 
@@ -888,9 +895,23 @@ update msg model =
               Err error -> ({model | message =  httpErrorHandler error}, Cmd.none)
 
         GetUsers -> 
-          searchForUsers model -- ###
-          
+          searchForUsers model
 
+        UserMsg (AcknowledgeMediaCountIncrement result) -> 
+          case result of 
+            Ok reply -> ({model | message = reply}, Cmd.none )
+            Err error -> ({model | message = httpErrorHandler error }, Cmd.none )
+
+        MakeImage ->  -- ###
+          case model.maybeCurrentUser of 
+            Nothing -> (model, Cmd.none)
+            Just user -> (model, 
+              Cmd.map FileMsg <| Credentials.makeImage (User.getTokenString user) model.imageName (imageUrlAtS3 model) (User.userId user) )
+          
+        FileMsg (Credentials.ReceiveMakeImageAcknowledgement result) -> 
+          case result of 
+            Ok reply -> ({model | message = reply}, Cmd.none)
+            Err error -> ({model | message = handleHttpError error}, Cmd.none)
 -- UPDATE END
 
 
@@ -929,6 +950,8 @@ viewImage_ model =
             , Html.pre [Html.Attributes.style "color" "white", Html.Attributes.style "margin-left" "4px"   ] [ Html.text <| imageType model]
             , displayMedia (imageType model) model.maybeImageString (imageUrlAtS3 model)
             , Html.p [Html.Attributes.style "color" "white"] [Html.text <| imageUrlAtS3 model]
+            , imageNameInput model
+            , makeImageButton (px 90) model
         ]
 
 displayMedia : String -> Maybe String -> String -> Html Msg  
@@ -985,9 +1008,19 @@ viewImage model =
         Element.none
     Just user -> 
         Element.html (viewImage_ model)
- 
 
 
+imageNameInput model = 
+  Html.input [ Html.Attributes.placeholder "Image name"
+     , Html.Attributes.style "background-color" "white"
+     , Html.Attributes.style "color" "#333"
+     , Html.Events.onInput AcceptImageName ] []
+
+makeImageButton : Length -> Model -> Html Msg    
+makeImageButton width_ model = 
+    Html.button [ Html.Events.onClick MakeImage ] [ Html.text "Make image" ]
+      
+-- ###
 -- KEY COMMANDS
 
 
@@ -1036,7 +1069,7 @@ doSearch model =
             Just _ -> getUserDocuments model (model.searchQueryString ++ ", docs=any")
         Writing -> getUserDocuments model model.searchQueryString 
         ImageEditing -> (model, Cmd.none)
-        Admin -> searchForUsers model -- ###
+        Admin -> searchForUsers model 
     
 -- ERROR
 
@@ -1287,14 +1320,14 @@ viewUsers userList =
     , columns =
         [ 
           { header = Element.el [Font.bold] (Element.text "ID")
-          , width = (px 80)
+          , width = (px 60)
           , view =
                 (\user ->
-                    Element.text (String.fromInt user.id)
+                    Element.el [alignRight] (Element.text (String.fromInt user.id))
                 )
           }
         , { header = Element.el [Font.bold] (Element.text "Username")
-          , width = fill
+          , width = (px 110)
           , view =
                  (\user ->
                     Element.text user.username
@@ -1314,6 +1347,21 @@ viewUsers userList =
                     Element.text user.blurb
                  )
           }
+        , { header = Element.el [Font.bold] (Element.text "Docs")
+          , width = (px 60)
+          , view =
+                 (\user ->
+                    Element.el [alignRight] (Element.text (String.fromInt (user.documentCount)))
+                 )
+          }
+        , { header = Element.el [Font.bold] (Element.text "Media")
+          , width = (px 60)
+          , view =
+                 (\user ->
+                    Element.el [alignRight] (Element.text (String.fromInt (user.mediaCount)))
+                 )
+          }
+        
         ]
     }
   
@@ -2008,7 +2056,7 @@ exportDocumentlLink model =
         False -> 
           Element.none 
         True -> 
-          Widget.linkButtonFat (exportUrl model.currentDocument) "Export" (px 60) -- ###
+          Widget.linkButtonFat (exportUrl model.currentDocument) "Export" (px 60) 
   
           
  
@@ -2170,7 +2218,7 @@ idFromDocInfo str =
 
 searchForUsers : Model -> (Model, Cmd Msg)
 searchForUsers model = 
-  ( model, Cmd.map UserMsg (User.getUsers <| "is_user=" ++ model.searchQueryString)) -- ###
+  ( model, Cmd.map UserMsg (User.getUsers <| "is_user=" ++ model.searchQueryString)) 
 
 goToStart model = 
   let  
