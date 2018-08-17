@@ -214,15 +214,19 @@ encodeImageData name url userId =
   ]
 
 type alias Image =  {
-     name : String
+     id : Int
+   , name : String
    , url : String
+  
   }
 
 decodeImage : Decode.Decoder Image  
 decodeImage = 
   Decode.succeed  Image
+     |> JPipeline.required "id" Decode.int
      |> JPipeline.required "name" Decode.string
      |> JPipeline.required "url" Decode.string
+
 
 decodeImageList : Decode.Decoder (List Image)
 decodeImageList = 

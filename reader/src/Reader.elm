@@ -964,6 +964,8 @@ viewImageToUpload_ model =
              , Html.Attributes.style "background-color" "303030"
              , Html.Attributes.style "width" "100%"
              , Html.Attributes.style "height" "100%"
+             , Html.Attributes.style "overflow" "scroll"
+             , Html.Attributes.style "padding-bottom" "50px"
              ]
         [    Html.p [Html.Attributes.style "color" "white", Html.Attributes.style "font-size" "24pt"] [Html.text "Image loader"]
             , Html.br [] []
@@ -977,6 +979,8 @@ viewImageToUpload_ model =
             , Html.br [ ] [ ]
             , Html.br [ ] [ ]
             , makeImageButton (px 90) model
+            , Html.br [ ] [ ]
+            , Html.br [ ] [ ]
         ]
 
 viewLargeImage : Model -> Element Msg
@@ -985,14 +989,17 @@ viewLargeImage model =
     model.maybeCurrentImage of 
       Nothing -> Element.none 
       Just image -> 
-          Element.column [spacing 10, padding 40, Background.color Widget.veryDarkGrey] [
+          Element.column [spacing 10, padding 40, Background.color Widget.veryDarkGrey, scrollbarY] [
               Element.image  [width (px 500)] { 
                 src = image.url
               , description = image.name
               }
             , Element.el [Font.color Widget.white] (Element.text image.url)
             , Element.el [Font.color Widget.white] (Element.text image.name)
+            , Element.el [Font.color Widget.white] (Element.text <| "id: " ++ (String.fromInt image.id))
             , Element.el [moveDown 30] (selectImagerLoaderButton model)
+            , Element.el [height (px 60), moveDown 50] (Element.text "--")
+          
           ]
 
 displayMedia : String -> Maybe String -> String -> Html Msg  
@@ -1443,6 +1450,7 @@ imageLeftColumn portion_ model =
   Element.column [width (fillPortion portion_), height fill, 
     Background.color Widget.lightBlue, paddingXY 20 20, spacing 10] [ 
         imageCatalogueLink model
+      , Element.el [] (Element.text <| "Images: " ++ (String.fromInt <| List.length model.imageList))
       , viewImages model.imageList
        
   ]
@@ -2297,6 +2305,15 @@ idFromDocInfo str =
 
 -- HELPERS
 
+imageQuery : Model -> String -> String 
+imageQuery model basicQuery = 
+  case model.maybeCurrentUser of 
+    Nothing -> "123XY.uuk#m!!t"
+    Just user -> 
+      case basicQuery == "" of 
+        True -> "user_id=" ++ (String.fromInt <| User.userId user)
+        False -> "user_id=" ++ (String.fromInt <| User.userId user) ++ "&name=" ++ basicQuery
+
 searchForUsers : Model -> (Model, Cmd Msg)
 searchForUsers model = 
   ( model, Cmd.map UserMsg (User.getUsers <| "is_user=" ++ model.searchQueryString)) 
@@ -2308,7 +2325,7 @@ searchForImages model =
       True -> ""
       False -> model.searchQueryString
   in
-  ( model, Cmd.map FileMsg (Credentials.getImages "" queryString)) 
+  ( model, Cmd.map FileMsg (Credentials.getImages "" (imageQuery model queryString)))
 
 goToStart model = 
   let  
@@ -2413,7 +2430,7 @@ changeMode model nextAppMode =
                     else
                       model.toolPanelState
     cmd = case nextAppMode of 
-      ImageEditing -> Cmd.map FileMsg (Credentials.getImages "" "")
+      ImageEditing -> Cmd.map FileMsg (Credentials.getImages "" (imageQuery model ""))
       _ -> Cmd.none
   in 
     ({model | appMode = nextAppMode, toolPanelState = nextToolPaneState}, cmd)
