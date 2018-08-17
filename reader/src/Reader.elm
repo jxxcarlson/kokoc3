@@ -302,16 +302,16 @@ processUrl urlString =
     case  UrlAppParser.toRoute urlString of 
       NotFound -> 
         Cmd.batch [
-           -- sendInfoOutside (AskToReconnectDocument Encode.null)
-           -- , sendInfoOutside (AskToReconnectDocumentList Encode.null)
-           sendInfoOutside (AskToReconnectUser Encode.null)
+            sendInfoOutside (AskToReconnectDocument Encode.null)
+            , sendInfoOutside (AskToReconnectDocumentList Encode.null)
+            ,  sendInfoOutside (AskToReconnectUser Encode.null)
         ]
         
       DocumentIdRef docId -> 
         Cmd.batch [
             sendInfoOutside (AskToReconnectUser Encode.null)
-            -- , sendInfoOutside (AskToReconnectDocumentList Encode.null)
-            -- , Cmd.map DocMsg (Document.getDocumentById docId Nothing)
+            --, sendInfoOutside (AskToReconnectDocumentList Encode.null)
+            , Cmd.map DocMsg (Document.getDocumentById docId Nothing)
             , Cmd.map DocListMsg (DocumentList.findDocuments Nothing <| "id=" ++ (String.fromInt docId))  
         ]
 
@@ -1013,7 +1013,7 @@ viewLargeImage model =
       Nothing -> Element.none 
       Just image -> 
           Element.column [spacing 10, padding 40, Background.color Widget.veryDarkGrey, scrollbarY] [
-              Element.image  [width (px 500)] { 
+              Element.image  [width (fill)] { 
                 src = image.url
               , description = image.name
               }
