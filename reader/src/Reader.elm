@@ -115,9 +115,12 @@ type alias Model =
       , imageList : List Image
       , imageMode : ImageMode
       , maybeCurrentImage : Maybe Image
+      , imageAccessibility : ImageAccessibility
     }
 
 type DeleteDocumentState = DeleteIsOnSafety | DeleteIsArmed
+
+type ImageAccessibility = PublicImage | PrivateImage
 
 type AppMode = 
   Reading | Writing | ImageEditing | Admin 
@@ -149,6 +152,7 @@ type Msg
     | GetDocumentById Int
     | GetPublicDocuments String
     | GetPublicDocumentsRawQuery String
+    | GetImages String
     | GetUserDocuments String
     | LoadMasterDocument String
     | UserMsg User.UserMsg
@@ -188,6 +192,7 @@ type Msg
     | MakeImage
     | SelectImage Image
     | SelectImageLoader
+    | ToggleImageAccessibility
     
 
 -- NAVIGATION
@@ -279,6 +284,7 @@ initialModel locationHref windowWidth windowHeight document =
             , imageList = []
             , imageMode = LoadImage
             , maybeCurrentImage = Nothing
+            , imageAccessibility = PrivateImage
         }
 
 init : Flags -> ( Model, Cmd Msg )
@@ -646,6 +652,9 @@ update msg model =
         GetPublicDocumentsRawQuery query ->
            getPublicDocumentsRawQuery model query 
 
+        GetImages query ->
+          (model, Cmd.map FileMsg <| Credentials.getImages "" query)
+
         DocViewMsg (GetPublicDocumentsRawQuery2 query) ->
            ({ model | appMode = Reading, toolPanelState = HideToolPanel, currentDocumentDirty = False}, 
              Cmd.batch [
@@ -918,7 +927,12 @@ update msg model =
           case model.maybeCurrentUser of 
             Nothing -> (model, Cmd.none)
             Just user -> (model, 
-              Cmd.map FileMsg <| Credentials.makeImage (User.getTokenString user) model.imageName (imageUrlAtS3 model) (User.userId user) )
+              Cmd.map FileMsg <| Credentials.makeImage 
+                 (User.getTokenString user) 
+                 model.imageName (imageUrlAtS3 model) 
+                 (imageAccessbilityToBool model.imageAccessibility)
+                 (User.userId user) 
+              )
           
         FileMsg (Credentials.ReceiveMakeImageAcknowledgement result) -> 
           case result of 
@@ -935,6 +949,11 @@ update msg model =
           
         SelectImageLoader -> 
          ({model | imageMode = LoadImage}, Cmd.none)
+        
+        ToggleImageAccessibility ->
+          case model.imageAccessibility of 
+            PublicImage ->  ({model | imageAccessibility = PrivateImage}, Cmd.none)
+            PrivateImage ->  ({model | imageAccessibility = PublicImage}, Cmd.none)
 
 -- UPDATE END
 
@@ -979,6 +998,9 @@ viewImageToUpload_ model =
             , imageNameInput model
             , Html.br [ ] [ ]
             , Html.br [ ] [ ]
+            , toggleImageAccessibilityButton (px 100) model
+            , Html.br [ ] [ ]
+            , Html.br [ ] [ ]
             , makeImageButton (px 90) model
             , Html.br [ ] [ ]
             , Html.br [ ] [ ]
@@ -998,10 +1020,18 @@ viewLargeImage model =
             , Element.el [Font.color Widget.white] (Element.text image.url)
             , Element.el [Font.color Widget.white] (Element.text image.name)
             , Element.el [Font.color Widget.white] (Element.text <| "id: " ++ (String.fromInt image.id))
+            , Element.el [Font.color Widget.white] (Element.text <| "public: " ++ (stringFromBool image.public))
             , Element.el [moveDown 30] (selectImagerLoaderButton model)
             , Element.el [height (px 60), moveDown 50] (Element.text "--")
           
           ]
+
+stringFromBool : Bool -> String 
+stringFromBool bool =
+  case bool of 
+    True -> "yes"
+    False -> "no"
+
 
 displayMedia : String -> Maybe String -> String -> Html Msg  
 displayMedia imageType_ maybeData url = 
@@ -1069,7 +1099,18 @@ imageNameInput model =
 makeImageButton : Length -> Model -> Html Msg    
 makeImageButton width_ model = 
     Html.button [ Html.Events.onClick MakeImage ] [ Html.text "Save image data" ]
-       
+
+toggleImageAccessibilityButton : Length -> Model -> Html Msg    
+toggleImageAccessibilityButton width_ model = 
+    Html.button [ Html.Events.onClick ToggleImageAccessibility ] [ Html.text (imageAccessibilityButtonTitle model) ]
+
+imageAccessibilityButtonTitle : Model -> String 
+imageAccessibilityButtonTitle model = 
+  case model.imageAccessibility of 
+     PublicImage -> "Public image"
+     PrivateImage -> "Private image"
+
+
 -- KEY COMMANDS
 
 
@@ -2166,9 +2207,16 @@ imageCatalogueLink model =
 getRandomDocumentsButton : Length -> Model -> Element Msg    
 getRandomDocumentsButton width_ model = 
   Input.button (buttonStyle  width_) {
-    onPress =  Just (GetPublicDocumentsRawQuery "random=public")
+    onPress =  Just (randomItemMsg model)
   , label = Element.el [] (Element.text "Random")
   } 
+
+
+randomItemMsg : Model -> Msg
+randomItemMsg model =
+  case model.appMode of 
+    ImageEditing -> GetImages "random=yes" 
+    _ -> GetPublicDocumentsRawQuery "random=public"
 
 
 getAuthorsDocumentsButton : Length -> Model -> Element Msg  
@@ -2306,6 +2354,12 @@ idFromDocInfo str =
 
 -- HELPERS
 
+imageAccessbilityToBool : ImageAccessibility -> Bool 
+imageAccessbilityToBool imageAccessibility = 
+  case imageAccessibility of 
+    PublicImage -> True 
+    PrivateImage -> False
+
 imageQuery : Model -> String -> String 
 imageQuery model basicQuery = 
   case model.maybeCurrentUser of 
@@ -2313,7 +2367,10 @@ imageQuery model basicQuery =
     Just user -> 
       case basicQuery == "" of 
         True -> Query.parse <| "user_id=" ++ (String.fromInt <| User.userId user)
-        False -> Query.parse <| "user_id=" ++ (String.fromInt <| User.userId user) ++ "&" ++ (Query.stringToQueryString "name" basicQuery)
+        False -> 
+          case basicQuery == "random" of 
+            True -> Query.parse <| "random=yes"
+            False -> Query.parse <| "user_id=" ++ (String.fromInt <| User.userId user) ++ "&" ++ (Query.stringToQueryString "name" basicQuery)
 
 
 

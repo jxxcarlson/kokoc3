@@ -189,27 +189,28 @@ getS3Credentials tokenString fileInfo =
     Http.send ReceiveFileCredentials <| getS3CredentialsRequest tokenString fileInfo
 
 
-makeImageRequest : String -> String -> String -> Int -> Http.Request String
-makeImageRequest tokenString name url userId  = 
+makeImageRequest : String -> String -> String -> Bool -> Int -> Http.Request String
+makeImageRequest tokenString name url public userId  = 
     Http.request
         { method = "Post"
         , headers = [Http.header "APIVersion" "V2", Http.header "Authorization" ("Bearer " ++ tokenString)]
         , url = Configuration.backend ++ "/api/image" 
-        , body = Http.jsonBody <| encodeImageData name url userId
+        , body = Http.jsonBody <| encodeImageData name url public userId
         , expect = Http.expectJson decodeReply
         , timeout = Just Configuration.timeout
         , withCredentials = False
         }
 
-makeImage : String -> String -> String -> Int -> Cmd FileMsg 
-makeImage tokenString name url userId =
-    Http.send ReceiveMakeImageAcknowledgement <| makeImageRequest tokenString name url userId 
+makeImage : String -> String -> String -> Bool -> Int -> Cmd FileMsg 
+makeImage tokenString name url public userId =
+    Http.send ReceiveMakeImageAcknowledgement <| makeImageRequest tokenString name url public userId 
 
-encodeImageData : String -> String -> Int -> Encode.Value 
-encodeImageData name url userId = 
+encodeImageData : String -> String -> Bool -> Int -> Encode.Value 
+encodeImageData name url public userId = 
   Encode.object [
       ("name", Encode.string name)
     , ("url", Encode.string url)
+    , ("public", Encode.bool public)
     , ("user_id", Encode.int userId)
   ]
 
@@ -217,6 +218,7 @@ type alias Image =  {
      id : Int
    , name : String
    , url : String
+   , public : Bool
   
   }
 
@@ -226,6 +228,8 @@ decodeImage =
      |> JPipeline.required "id" Decode.int
      |> JPipeline.required "name" Decode.string
      |> JPipeline.required "url" Decode.string
+     |> JPipeline.required "public" Decode.bool
+
 
 
 decodeImageList : Decode.Decoder (List Image)
