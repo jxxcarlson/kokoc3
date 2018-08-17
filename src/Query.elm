@@ -1,4 +1,4 @@
-module Query exposing (parse)
+module Query exposing (parse, stringToQueryString)
 
 import Regex
 
@@ -18,6 +18,9 @@ parse input_ =
         else
             parseQueryHelper input
 
+{-| If the inpute is INT, map it to id=INT, otherwise
+    pass it on unchanged.
+-}
 parseQueryHelper : String -> String
 parseQueryHelper input = 
   let 
@@ -120,3 +123,24 @@ transformQualifiedItem item =
 
         _ ->
             ""
+
+stringToQueryString : String -> String -> String
+stringToQueryString prefix input =
+  let 
+     separators : Regex.Regex
+     separators =
+        Maybe.withDefault Regex.never <|
+        Regex.fromString ", "
+  in
+    input
+        |> Regex.split separators
+        |> List.map String.trim
+        |> List.filter (\item -> item /= "")
+        |> List.map (\item -> addPrefix prefix item)
+        |> String.join ("&")
+
+addPrefix : String -> String -> String 
+addPrefix prefix item =
+  case String.contains "=" item of 
+    True -> item 
+    False -> prefix ++ "=" ++ item

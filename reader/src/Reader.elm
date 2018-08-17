@@ -53,6 +53,7 @@ import FileUploadCredentials as Credentials exposing(FileData, Image)
 
 
 
+
 main =
     Browser.element
         { init = init
@@ -2311,8 +2312,11 @@ imageQuery model basicQuery =
     Nothing -> "123XY.uuk#m!!t"
     Just user -> 
       case basicQuery == "" of 
-        True -> "user_id=" ++ (String.fromInt <| User.userId user)
-        False -> "user_id=" ++ (String.fromInt <| User.userId user) ++ "&name=" ++ basicQuery
+        True -> Query.parse <| "user_id=" ++ (String.fromInt <| User.userId user)
+        False -> Query.parse <| "user_id=" ++ (String.fromInt <| User.userId user) ++ "&" ++ (Query.stringToQueryString "name" basicQuery)
+
+
+
 
 searchForUsers : Model -> (Model, Cmd Msg)
 searchForUsers model = 
