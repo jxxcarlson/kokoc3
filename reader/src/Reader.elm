@@ -10,7 +10,14 @@ import Keyboard
 import SystemDocument
 import View.View exposing(view)
 import Model exposing(Msg(..), Model, initialModel)
-import Update exposing(update, processUrl, imageRead, onUrlChange, getInfoFromOutside)
+import Update exposing(
+      update
+    , processUrl
+    , imageRead
+    , onUrlChange
+    , getInfoFromOutside
+    , getTimeInOneSecond
+   )
 
 
 main =
@@ -37,6 +44,7 @@ init flags =
     ( initialModel flags.location flags.width flags.height  SystemDocument.welcome 
     , Cmd.batch [ 
           processUrl flags.location
+        , getTimeInOneSecond
     ])
 
 focusSearchBox : Cmd Msg

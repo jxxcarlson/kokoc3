@@ -1,4 +1,10 @@
-port module Update exposing(update, processUrl, imageRead, onUrlChange, getInfoFromOutside)
+port module Update exposing(
+      update, processUrl
+    , imageRead
+    , onUrlChange
+    , getInfoFromOutside
+    , getTimeInOneSecond
+  )
 
 import Json.Encode as Encode
 import Json.Decode as Decode exposing(Decoder, Value)
@@ -13,6 +19,9 @@ import List.Extra
 import Time
 import Browser.Dom as Dom
 import Http
+import Process
+
+
 import Utility
 
 import FileUploadCredentials as Credentials exposing(FileData, Image)
@@ -1102,6 +1111,12 @@ getTime =
     Time.now 
         |> Task.perform SessionStatus
 
+getTimeInOneSecond =
+  Process.sleep (1000)
+    |> Task.andThen (\_ -> Time.now)
+    |> Task.perform (\time -> SessionStatus time)
+
+ 
 toUtcString : Time.Posix -> String
 toUtcString time =
   (String.fromInt (Time.toHour Time.utc time) |> String.padLeft 2 '0')
