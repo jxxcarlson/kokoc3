@@ -484,7 +484,7 @@ update msg model =
         DocMsg (AcknowledgeUpdateOfDocument result) -> 
            case result of 
              Ok documentRecord -> 
-               ({ model | message = "document saved: OK"},  Cmd.none)
+               (model ,  Cmd.none)
              Err err -> 
                 ({model | message = handleHttpError err},   Cmd.none  )
 
