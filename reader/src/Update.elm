@@ -1087,7 +1087,10 @@ changeMode model nextAppMode =
                     else
                       model.toolPanelState
     cmd = case nextAppMode of 
-      ImageEditing -> Cmd.map FileMsg (Credentials.getImages "" (imageQuery model ""))
+      ImageEditing ->
+        case model.imageList == [] of 
+          True ->  Cmd.map FileMsg (Credentials.getImages "" (imageQuery model ""))
+          False -> Cmd.none
       _ -> Cmd.none
   in 
     ({model | appMode = nextAppMode, toolPanelState = nextToolPaneState}, cmd)
