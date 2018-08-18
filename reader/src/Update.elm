@@ -32,12 +32,14 @@ import Model exposing(
     , InfoForElm(..)
     , initialModel
   )
+
 import User exposing(
    Token
    , UserMsg(..)
    , User
    , BigUser
    )
+
 import UrlAppParser exposing(Route(..))
 
 import Configuration

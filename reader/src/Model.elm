@@ -18,8 +18,6 @@ import Browser.Dom as Dom
 import Debounce exposing(Debounce)
 import Json.Encode as Encode
 
-
-
 import FileUploadCredentials as Credentials exposing(FileData, Image)
 import Document exposing(Document, DocType(..), DocMsg(..), TextType(..))
 import User exposing(Token, UserMsg(..), User, BigUser)
@@ -28,7 +26,6 @@ import DocumentDictionary exposing(DocumentDictionary, DocDictMsg(..))
 import DocumentView exposing(view, DocViewMsg(..))
 import DocumentListView exposing(DocListViewMsg(..))
 import Configuration
-
 
 type InfoForElm = 
    DocumentDataFromOutside Document

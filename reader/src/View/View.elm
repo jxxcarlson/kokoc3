@@ -1,4 +1,4 @@
-module View exposing(view)
+module View.View exposing(view)
 
 import Element exposing (..)
 import Element.Background as Background
@@ -36,9 +36,9 @@ import DocumentList
 import DocumentDictionary
 import Configuration
 import AppUtility
-
-
 import Widget exposing(..)
+
+import View.Admin as Admin
 
 
 view  model =
@@ -90,97 +90,8 @@ body model =
     Reading -> readerBody model 
     Writing -> writerBody model 
     ImageEditing -> imageBody model 
-    Admin -> adminBody model
+    Admin -> Admin.view model
 
--- ADMIN
-
-
-adminBody : Model -> Element Msg
-adminBody model = 
-  Element.row [width (fillPortion 4), height fill, Background.color Widget.white, centerX] [
-     adminBodyLeftColumn 2 model,  adminCenterColumn model.windowHeight 7 model, adminRightColumn 2 model
-  ]
-
-adminBodyLeftColumn : Int -> Model -> Element Msg
-adminBodyLeftColumn portion_ model = 
-  Element.column [width (fillPortion portion_), height fill, 
-    Background.color Widget.lightBlue, paddingXY 20 20, spacing 10] [ 
-        showUserCount model
-      , listUsersButton  model   
-  ]
-
-showUserCount : Model -> Element msg 
-showUserCount model = 
-  let 
-    n = List.length model.userList
-  in 
-    case n == 0 of 
-      True -> Element.none 
-      False -> Element.el [] (Element.text <| "Users: " ++ String.fromInt n)
-
-
-adminCenterColumn : Int -> Int -> Model -> Element Msg
-adminCenterColumn windowHeight_ portion_  model  = 
-  Element.column [width (fillPortion portion_), height (px (windowHeight_ - 73)), scrollbarY] [ viewUsers model.userList ]
-
-adminRightColumn : Int -> Model -> Element Msg
-adminRightColumn portion_ model = 
-  Element.column [width (fillPortion portion_), height fill, Background.color Widget.lightBlue, centerX] [
-      
-  ]
-
-viewUsers : List BigUser -> Element msg 
-viewUsers userList =  
-  Element.table [spacing 10, padding 30]
-    { data = userList
-    , columns =
-        [ 
-          { header = Element.el [Font.bold] (Element.text "ID")
-          , width = (px 60)
-          , view =
-                (\user ->
-                    Element.el [alignRight] (Element.text (String.fromInt user.id))
-                )
-          }
-        , { header = Element.el [Font.bold] (Element.text "Username")
-          , width = (px 110)
-          , view =
-                 (\user ->
-                    Element.text user.username
-                 )
-          }
-        , { header = Element.el [Font.bold] (Element.text "Email")
-          , width = fill
-          , view =
-                 (\user ->
-                    Element.text user.email
-                 )
-          }
-        , { header = Element.el [Font.bold] (Element.text "Blurb")
-          , width = fill
-          , view =
-                 (\user ->
-                    Element.text user.blurb
-                 )
-          }
-        , { header = Element.el [Font.bold] (Element.text "Docs")
-          , width = (px 60)
-          , view =
-                 (\user ->
-                    Element.el [alignRight] (Element.text (String.fromInt (user.documentCount)))
-                 )
-          }
-        , { header = Element.el [Font.bold] (Element.text "Media")
-          , width = (px 60)
-          , view =
-                 (\user ->
-                    Element.el [alignRight] (Element.text (String.fromInt (user.mediaCount)))
-                 )
-          }
-        
-        ]
-    }
-  
 
 -- READER
 
@@ -540,17 +451,6 @@ footer model =
       , exportDocumentlLink model
       , getAuthorsDocumentsButton (px 110) model
 
-      -- , Element.el [] (text <| "Author: " ++ model.currentDocument.authorName )
-      
-  -- , currentUserNameElement model
-  --    , Element.el [] (text <| (String.fromInt (Document.wordCount model.currentDocument)) ++ " words")
-      -- , Element.el [] (text <| masterDocLoadedIndicator model)
-      -- , Element.el [] (text <| "DDict, keys & values: " ++ documentDictionaryInfo model)
-      
-
-    --  , Element.el [] (text ("keys: " ++ (showKeys model)))
-    --  , Element.el [] (text <| displayCurrentMasterDocument model)
-    --  , Element.el [] (text <| "Window height: " ++ (String.fromInt model.windowHeight))
   ] 
 
 testButton : Model -> Element Msg 
@@ -560,13 +460,6 @@ testButton model =
     , label = Element.el [] (Element.text ("Prepare Images"))
     }
 
-
-listUsersButton : Model -> Element Msg 
-listUsersButton model = 
-    Input.button (Widget.buttonStyle  (px 115)) {
-      onPress =  Just GetUsers
-    , label = Element.el [] (Element.text ("List users"))
-    }
 
 documentDictionaryInfo : Model -> String 
 documentDictionaryInfo model = 
