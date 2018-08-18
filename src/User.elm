@@ -93,13 +93,6 @@ getTokenStringFromMaybeUser maybeUser =
     Nothing -> "invalidTokenString"
     Just user -> getTokenString user
 
--- testUser = User {
---     email = "jxxcarlson@gmail.com"
---   , id = 1
---   , token =  Token "fake"
---   , username = "jxxcarlson"
---   }
-
 
 -- TOKEN
 

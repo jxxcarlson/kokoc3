@@ -942,13 +942,11 @@ update msg model =
             PublicImage ->  ({model | imageAccessibility = PrivateImage}, Cmd.none)
             PrivateImage ->  ({model | imageAccessibility = PublicImage}, Cmd.none)
 
+
+  
 -- UPDATE END
 
 -- HELPERS
-
-
-
- 
 
 imageAccessbilityToBool : ImageAccessibility -> Bool 
 imageAccessbilityToBool imageAccessibility = 

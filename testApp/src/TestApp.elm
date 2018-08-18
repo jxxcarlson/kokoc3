@@ -232,7 +232,7 @@ view  model =
 header : Model -> Element Msg
 header model = 
   Element.row [width fill, Background.color Widget.grey, height (px 40), paddingXY 20 0, spacing 10] [
-      passwordInput model, getTokenButton (px 75) model
+      passwordInput model, signInButton (px 75) model
   ]
 
 body : Model -> Element Msg
@@ -316,8 +316,8 @@ searchInput model =
 -- CONTROLS
 
 
-getTokenButton : Length -> Model -> Element Msg    
-getTokenButton width_ model = 
+signInButton : Length -> Model -> Element Msg    
+signInButton width_ model = 
   Input.button (buttonStyle width_) {
     onPress =  Just SignIn
   , label = Element.text "Get token"

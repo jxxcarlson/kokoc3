@@ -88,10 +88,11 @@ loginPanel model =
         , emailInput model
         , passwordInput model
         , Element.row [spacing 15] [
-              getTokenButton (px 66) model
+              signInButton (px 66) model
             , gotoRegistrationButton (px 66) model
         ] 
         , Element.paragraph [Font.color Widget.darkRed, width (px 160)] [text <| filterMessageForSignIn model.message]
+        , resetPasswordLink
       ]
 
 filterMessageForSignIn : String -> String
@@ -138,12 +139,20 @@ logoutPanel model =
 
 
 
-getTokenButton : Length -> Model -> Element Msg    
-getTokenButton width_ model = 
+signInButton : Length -> Model -> Element Msg    
+signInButton width_ model = 
   Input.button (buttonStyle width_) {
     onPress =  Just SignIn
   , label = Element.el [] (Element.text "Sign in")
   } 
+
+resetPasswordLink :  Element Msg    
+resetPasswordLink  = 
+  newTabLink []
+    { url = Configuration.backend ++ "/api/password/request"
+    , label = text "Reset password"
+    }
+ 
 
 registerUserButton : Length -> Model -> Element Msg    
 registerUserButton width_ model = 
