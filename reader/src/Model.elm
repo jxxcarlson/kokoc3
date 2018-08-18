@@ -26,6 +26,7 @@ import DocumentDictionary exposing(DocumentDictionary, DocDictMsg(..))
 import DocumentView exposing(view, DocViewMsg(..))
 import DocumentListView exposing(DocListViewMsg(..))
 import Configuration
+import ImageManager exposing(ImageMsg(..))
 
 type InfoForElm = 
    DocumentDataFromOutside Document
@@ -117,6 +118,7 @@ type Msg
     | LoadMasterDocument String
     | UserMsg User.UserMsg
     | DocMsg Document.DocMsg
+    | ImageMsg ImageManager.ImageMsg
     | FileMsg Credentials.FileMsg
     | DocListMsg DocumentList.DocListMsg
     | DocListViewMsg DocumentListView.DocListViewMsg
