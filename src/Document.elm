@@ -147,6 +147,32 @@ type DocMsg =
   | ReceiveImageListReply (Result Http.Error String)
 
   
+-- HELPERS
+
+
+printUrl : Document -> String
+printUrl document =
+    Configuration.backend ++ "/print/documents" ++ "/" ++ (String.fromInt document.id) ++ "?" ++ printTypeString document
+
+
+printTypeString : Document -> String
+printTypeString document =
+    case document.textType of
+        Asciidoc ->
+            "text=adoc"
+
+        AsciidocLatex ->
+            "text=adoc_latex"
+
+        MiniLatex ->
+            "text=latex"
+
+        PlainText ->
+            "text=latex"
+
+        Markdown ->
+            "text=markdown"
+
 
 -- DECODERS
 
