@@ -26,7 +26,9 @@ import Utility
 
 import FileUploadCredentials as Credentials exposing(FileData, Image)
 import User exposing(Token, UserMsg(..), readToken, stringFromMaybeToken, User, BigUser)
+import ImageManager
 import AppUtility
+import ImageManager
 
 
 import Model exposing(
@@ -796,7 +798,7 @@ update msg model =
             ( { model | currentDocument = nextCurrentDocument}, Cmd.none)
 
         Test ->
-           (model, Cmd.map DocMsg <| Document.getImageList model.currentDocument)
+           (model, Cmd.map DocMsg <| ImageManager.getImageList model.currentDocument)
 
         ReadImage v ->
           let 
@@ -885,7 +887,7 @@ update msg model =
         DocMsg (ReceiveImageList result) ->
             case result of 
             Ok imageList -> ( { model | message = "Images: " ++ (String.fromInt (List.length imageList)) }
-                   , Cmd.map DocMsg (Document.processImageList imageList))
+                   , Cmd.map DocMsg (ImageManager.processImageList imageList))
             Err err -> ( { model | message = httpErrorHandler err }, Cmd.none )
             
 
@@ -1003,7 +1005,7 @@ printLatex model =
   (model, 
       Cmd.batch [
           Cmd.map DocMsg <| Document.getExportLatex model.currentDocument
-        , Cmd.map DocMsg <| Document.getImageList model.currentDocument
+        , Cmd.map DocMsg <| ImageManager.getImageList model.currentDocument
       ]
   )
 

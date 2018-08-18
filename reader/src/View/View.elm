@@ -72,17 +72,6 @@ header model =
         , adminModeButton (px 70) model
   ]
 
-spacer : Int -> Element msg
-spacer width_ = 
-  Element.el [width (px width_)] (Element.text "")
-
-appTitle : AppMode -> String 
-appTitle appMode =
-  case appMode of 
-    Reading -> "kNode"
-    Writing -> "kNode"
-    ImageEditing -> "kNode"
-    Admin -> "Admin"
 
 body : Model -> Element Msg 
 body model =
@@ -93,35 +82,27 @@ body model =
     Admin -> Admin.view model
 
 
-
-
-
-
- 
-
-
 footer : Model -> Element Msg
 footer model = 
   Element.row [moveUp 8, spacing 15, width fill, Background.color Widget.grey, height (px 40), paddingXY 20 0] [
         Element.el [width (px 240), Font.family [Font.typeface "Courier", Font.monospace]] (text model.message)
       , Element.el [documentDirtyIndicator  model, padding 5] (text ("id " ++ (String.fromInt model.currentDocument.id )))
       , Element.el [] (text <| docInfo model.currentDocument) 
-     --  , saveCurrentDocumentButton (px 50) model
       , testButton model
       , printDocumentButton model 
       , exportDocumentlLink model
       , getAuthorsDocumentsButton (px 110) model
-
   ] 
 
-testButton : Model -> Element Msg 
-testButton model = 
-    Input.button (Widget.buttonStyle  (px 115)) {
-      onPress =  Just Test
-    , label = Element.el [] (Element.text ("Prepare Images"))
-    }
+spacer : Int -> Element msg
+spacer width_ = 
+  Element.el [width (px width_)] (Element.text "")
 
 
+
+{-| 
+  Not currently used.
+-}
 documentDictionaryInfo : Model -> String 
 documentDictionaryInfo model = 
   let 
@@ -130,36 +111,12 @@ documentDictionaryInfo model =
   in  
     k ++ ":: " ++ v
 
-
-masterDocLoadedIndicator model =
-  case model.masterDocLoaded of 
-    True -> "master: LOADED"
-    False -> "master: NOT loaded"
-
-
+documentDirtyIndicator : Model -> Attr decorative msg
 documentDirtyIndicator  model = 
   case model.currentDocumentDirty  of 
     False -> Background.color Widget.indicatorGood
     True -> Background.color Widget.indicatorBad
 
-
-access : Document -> String 
-access doc = 
-  case doc.public of 
-    True -> "public"
-    False -> "private"
-
-docInfo : Document -> String 
-docInfo document = 
-  let 
-    wordCount = (String.fromInt (Document.wordCount document)) ++ " words"
-    access_ = access document
-  in 
-    "(" ++ access_ ++ ", " ++ wordCount ++ ")"
-
-showKeys : Model -> String 
-showKeys model = 
-  DocumentDictionary.keys model.documentDictionary |> String.join ", "
 
 
 -- OUTPUTS
@@ -183,10 +140,18 @@ searchInput model =
     }
 
 
--- BUTTONS
+-- BUTTONS AND LINKS
 
 
+testButton : Model -> Element Msg 
+testButton model = 
+    Input.button (Widget.buttonStyle  (px 115)) {
+      onPress =  Just Test
+    , label = Element.el [] (Element.text ("Prepare Images"))
+    }
 
+
+viewUserManualLink : Element msg
 viewUserManualLink = 
   Element.link [] { 
        url = Configuration.client ++ "/" ++ String.fromInt Configuration.userManualId
@@ -203,8 +168,31 @@ exportDocumentlLink model =
           Element.none 
         True -> 
           Widget.linkButtonFat (exportUrl model.currentDocument) "Export" (px 60) 
-  
-          
+
+
+modeButtonStyle appMode buttonMode width_ = 
+  case appMode == buttonMode of 
+    True -> buttonStyleWithColor Widget.darkRed width_  
+    False -> buttonStyleWithColor Widget.blue width_ 
+
+
+basicButton : List (Attribute msg) -> String -> msg -> Element msg
+basicButton style_ label_ msg =
+ Input.button style_ {
+        onPress =  Just msg
+      , label = Element.el [] (Element.text label_)
+      }
+
+xbutton : Model -> List (Attribute msg) -> String -> msg -> Element msg    
+xbutton model style_ label_ msg =  
+    case model.maybeCurrentUser of 
+    Nothing -> Element.none 
+    Just _ ->
+      Input.button style_ {
+        onPress =  Just msg
+      , label = Element.el [] (Element.text label_)
+      } 
+
  
 getRandomDocumentsButton : Length -> Model -> Element Msg    
 getRandomDocumentsButton width_ model = 
@@ -248,6 +236,8 @@ getAuthorsDocumentsButton_ width_ model =
             , label = Element.el [] (Element.text authorname)
             }
 
+{-| Not used.
+-}
 saveCurrentDocumentButton : Length -> Model -> Element Msg    
 saveCurrentDocumentButton width_ model =
   xbutton model (buttonStyle  width_) "Save" (SaveCurrentDocument (Time.millisToPosix 10))  
@@ -309,38 +299,6 @@ imageModeButton width_ model =
           onPress =  Just (ChangeMode ImageEditing)
         , label = Element.el [] (Element.text "Image")
         } 
-
-
--- END: BUTTONS
-
-
-modeButtonStyle appMode buttonMode width_ = 
-  case appMode == buttonMode of 
-    True -> buttonStyleWithColor Widget.darkRed width_  
-    False -> buttonStyleWithColor Widget.blue width_ 
-
-
--- Widgets
-
-basicButton : List (Attribute msg) -> String -> msg -> Element msg
-basicButton style_ label_ msg =
- Input.button style_ {
-        onPress =  Just msg
-      , label = Element.el [] (Element.text label_)
-      }
-
-xbutton : Model -> List (Attribute msg) -> String -> msg -> Element msg    
-xbutton model style_ label_ msg =  
-    case model.maybeCurrentUser of 
-    Nothing -> Element.none 
-    Just _ ->
-      Input.button style_ {
-        onPress =  Just msg
-      , label = Element.el [] (Element.text label_)
-      } 
-
--- MORE WIDGETS
-
  
 printDocumentButton model =
   case model.currentDocument.id > 0 of 
@@ -362,7 +320,37 @@ printLatexButton model =
     , label = Element.el [] (Element.text ("Print"))
     }
 
+-- STRING HELPERS
+
+appTitle : AppMode -> String 
+appTitle appMode =
+  case appMode of 
+    Reading -> "kNode"
+    Writing -> "kNode"
+    ImageEditing -> "kNode"
+    Admin -> "Admin"
+
+
 exportUrl : Document -> String 
 exportUrl document = 
   Configuration.backend ++ "/export/documents/" ++ String.fromInt  document.id
 
+
+access : Document -> String 
+access doc = 
+  case doc.public of 
+    True -> "public"
+    False -> "private"
+
+docInfo : Document -> String 
+docInfo document = 
+  let 
+    wordCount = (String.fromInt (Document.wordCount document)) ++ " words"
+    access_ = access document
+  in 
+    "(" ++ access_ ++ ", " ++ wordCount ++ ")"
+
+showKeys : Model -> String 
+showKeys model = 
+  DocumentDictionary.keys model.documentDictionary |> String.join ", "
+ 
