@@ -206,19 +206,7 @@ registrationEncoder email_ username_ name_ password_  =
 
 
 -- DECODERS
--- {
---     "user": {
---         "username": "jxxcarlson",
---         "token": "-",
---         "password": "-",
---         "name": "James Carlson",
---         "id": 1,
---         "email": "jxxcarlson@gmail.com",
---         "blurb": "math, physics, code, music",
---         "admin": true,
---         "active": true
---     }
--- }
+
 
 decodeUserFromOutside : Decoder User
 decodeUserFromOutside =

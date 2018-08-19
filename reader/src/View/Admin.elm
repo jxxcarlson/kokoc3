@@ -55,12 +55,19 @@ viewUsers userList =
     , columns =
         [ 
           { header = Element.el [Font.bold] (Element.text "ID")
-          , width = (px 60)
+          , width = (px 20)
           , view =
                 (\user ->
                     Element.el [alignRight] (Element.text (String.fromInt user.id))
                 )
           }
+        , { header = Element.el [Font.bold] (Element.text "V")
+          , width = (px 20)
+          , view =
+                 (\user ->
+                    Element.text (boolToString user.verified)
+                 )
+          }  
         , { header = Element.el [Font.bold] (Element.text "Username")
           , width = (px 110)
           , view =
