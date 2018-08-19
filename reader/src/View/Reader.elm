@@ -23,6 +23,8 @@ import Model exposing(Model
     , ToolPanelState(..)
     , DeleteDocumentState(..)
     , ErrorResponse(..)
+    , PreferencesPanelState(..)
+
   )
 import User exposing(Token, UserMsg(..), readToken, stringFromMaybeToken, User, BigUser)
 import DocumentListView exposing(DocListViewMsg(..))
@@ -66,9 +68,13 @@ bodyLeftColumn portion_ model =
 
 bodyRightColumn : Int -> Model -> Element Msg
 bodyRightColumn portion_ model = 
-  Element.column [width (fillPortion portion_), height fill, Background.color Widget.lightBlue, centerX] [
+  Element.column [width (fillPortion portion_), height fill, 
+     Background.color Widget.lightBlue, centerX
+     , paddingXY 15 0, spacing 15] [
       loginOrSignUpPanel model
     , logoutPanel model
+    , togglePreferencesButton (px 110) model
+    , userPreferencesPanel model
   ]
 
 
@@ -84,7 +90,7 @@ loginPanel model =
   case model.maybeCurrentUser of 
     Just _ -> Element.none 
     Nothing ->
-      Element.column [padding 20, spacing 20] [
+      Element.column [paddingXY 0 20, spacing 20] [
           Element.el [Font.bold, Font.size 18] (text "Sign in")
         , emailInput model
         , passwordInput model
@@ -109,7 +115,7 @@ signupPanel model =
   case model.maybeCurrentUser of 
     Just _ -> Element.none 
     Nothing ->
-      Element.column [padding 20, spacing 20] [
+      Element.column [paddingXY 0 20, spacing 20] [
           Element.el [Font.bold, Font.size 18] (text "Sign up")
         , emailInput model
         , usernameInput model
@@ -126,7 +132,7 @@ logoutPanel model =
   case model.maybeCurrentUser of 
     Nothing -> Element.none 
     Just _ ->
-      Element.column [padding 20, spacing 20] [
+      Element.column [paddingXY 0 20, spacing 20] [
           currentUserNameElement model
        
         
@@ -241,3 +247,36 @@ currentUserNameElement model =
 
 
 
+userPreferencesPanel model = 
+  case model.preferencesPanelState of 
+    PreferencesPanelOff -> Element.none
+    PreferencesPanelOn -> 
+      Element.column [spacing 10] [
+         blurbInput model (px 200) (px 100) "Blurb"
+      ]
+
+togglePreferencesButton : Length -> Model -> Element Msg    
+togglePreferencesButton width_ model = 
+  case model.maybeCurrentUser of 
+    Nothing -> Element.none 
+    Just _ -> 
+      Input.button (listItemStyleLarge width_) {
+        onPress =  Just TogglePreferencesPanel
+      , label = Element.el [] (Element.text "Preferences")
+      } 
+
+
+
+blurbInput model width_  height_ label_  =
+    Keyed.row []
+        [ ( (String.fromInt model.counter)
+          , Input.multiline 
+                [ width (width_), height (height_), paddingXY 10 0, scrollbarY ]
+                { onChange = Just GetContent
+                , text = model.blurb
+                , label = Input.labelAbove [ Font.size 14, Font.bold ] (text "Blurb")
+                , placeholder = Nothing
+                , spellcheck = False
+                }
+          )
+        ]

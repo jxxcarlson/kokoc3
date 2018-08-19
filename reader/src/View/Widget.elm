@@ -30,6 +30,15 @@ listItemStyleBold width_ = [
     , clipX
    ]
 
+listItemStyleLarge width_ = [
+     Font.size 16
+    , mouseDown [  Font.size 13, Background.color lightYellow]
+    , Font.color blue
+    , width width_
+    , height (px 24)
+    , clipX
+   ]   
+
 listItemStyleBoldPale width_ = [
      Font.size 14
     , mouseDown [  Font.size 13, Background.color lightYellow]

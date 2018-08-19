@@ -9,6 +9,7 @@ module Model exposing(
     , ImageAccessibility(..)
     , InfoForElm(..)
     , ErrorResponse(..)
+    , PreferencesPanelState(..)
     , initialModel
   )
 
@@ -41,6 +42,9 @@ type ErrorResponse = ShowPasswordReset | ShowVerifyAccount | NoErrorResponse
 type DeleteDocumentState = DeleteIsOnSafety | DeleteIsArmed
 
 type ImageAccessibility = PublicImage | PrivateImage
+
+type PreferencesPanelState = 
+  PreferencesPanelOn | PreferencesPanelOff
 
 type AppMode = 
   Reading | Writing | ImageEditing | Admin | DisplayAuthors
@@ -99,6 +103,8 @@ type alias Model =
       , emailSubject : String 
       , emailText : String
       , errorResponse : ErrorResponse
+      , blurb : String
+      , preferencesPanelState : PreferencesPanelState
     }
 
 
@@ -167,6 +173,8 @@ type Msg
     | SelectImage Image
     | SelectImageLoader
     | ToggleImageAccessibility
+    | TogglePreferencesPanel
+    
     
 
 initialModel : String -> Int -> Int -> Document -> Model 
@@ -216,4 +224,6 @@ initialModel locationHref windowWidth windowHeight document =
             , emailSubject = ""
             , emailText = ""
             , errorResponse = NoErrorResponse
+            , blurb = ""
+            , preferencesPanelState = PreferencesPanelOff
         }

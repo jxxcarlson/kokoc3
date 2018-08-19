@@ -44,6 +44,7 @@ import Model exposing(
     , ImageAccessibility(..)
     , InfoForElm(..)
     , ErrorResponse(..)
+    , PreferencesPanelState(..)
     , initialModel
   )
 
@@ -981,6 +982,11 @@ update msg model =
           case result of 
             Ok reply -> ({model | message = reply}, Cmd.none)
             Err error -> ({model | message = "Error sending mail"}, Cmd.none)
+
+        TogglePreferencesPanel ->
+          case model.preferencesPanelState of 
+             PreferencesPanelOff -> ({model | preferencesPanelState = PreferencesPanelOn },Cmd.none)
+             PreferencesPanelOn -> ({model | preferencesPanelState = PreferencesPanelOff },Cmd.none)
   
 -- UPDATE END
 
