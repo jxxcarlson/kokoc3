@@ -27,6 +27,7 @@ import DocumentView exposing(view, DocViewMsg(..))
 import DocumentListView exposing(DocListViewMsg(..))
 import Configuration
 import ImageManager exposing(ImageMsg(..))
+import Mail
 
 type InfoForElm = 
    DocumentDataFromOutside Document
@@ -92,6 +93,8 @@ type alias Model =
       , imageMode : ImageMode
       , maybeCurrentImage : Maybe Image
       , imageAccessibility : ImageAccessibility
+      , emailSubject : String 
+      , emailText : String
     }
 
 
@@ -106,6 +109,9 @@ type Msg
     | AcceptDocumenTitle String
     | AcceptDocumentTagString String
     | AcceptImageName String
+    | AcceptEmailSubject String
+    | AcceptEmailText String
+    | SendEmail
     | SignIn
     | SignOut
     | RegisterUser
@@ -119,6 +125,7 @@ type Msg
     | UserMsg User.UserMsg
     | DocMsg Document.DocMsg
     | ImageMsg ImageManager.ImageMsg
+    | MailMsg Mail.MailMsg
     | FileMsg Credentials.FileMsg
     | DocListMsg DocumentList.DocListMsg
     | DocListViewMsg DocumentListView.DocListViewMsg
@@ -201,4 +208,6 @@ initialModel locationHref windowWidth windowHeight document =
             , imageMode = LoadImage
             , maybeCurrentImage = Nothing
             , imageAccessibility = PrivateImage
+            , emailSubject = ""
+            , emailText = ""
         }

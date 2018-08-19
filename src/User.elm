@@ -12,6 +12,7 @@ module User exposing(
    , getTokenString
    , getTokenStringFromMaybeUser
    , username
+   , email
    , usernameFromMaybeUser
    , userId
    , encodeUserForOutside

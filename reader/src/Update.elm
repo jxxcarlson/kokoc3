@@ -29,6 +29,8 @@ import User exposing(Token, UserMsg(..), readToken, stringFromMaybeToken, User, 
 import ImageManager
 import AppUtility
 import ImageManager exposing (ImageMsg(..))
+import Mail
+
 
 
 import Model exposing(
@@ -83,8 +85,6 @@ port pushUrl : String -> Cmd msg
 
 
 -- OUTSIDE
-
-
 
 port infoForOutside : GenericOutsideData -> Cmd msg
 
@@ -332,7 +332,6 @@ doSearch model =
         Writing -> getUserDocuments model model.searchQueryString 
         ImageEditing -> searchForImages model
         Admin -> searchForUsers model 
-
 
 -- UPDATE
 
@@ -942,7 +941,24 @@ update msg model =
             PublicImage ->  ({model | imageAccessibility = PrivateImage}, Cmd.none)
             PrivateImage ->  ({model | imageAccessibility = PublicImage}, Cmd.none)
 
+        AcceptEmailSubject str ->
+          ({model | emailSubject = str}, Cmd.none)
 
+        AcceptEmailText str ->
+          ({model | emailText = str}, Cmd.none)
+
+        SendEmail -> 
+          ({ model | message = "Sending email"}, 
+             Cmd.map MailMsg <| Mail.sendEmailToUsers 
+              ( User.getTokenStringFromMaybeUser model.maybeCurrentUser) 
+                model.userList 
+                model.emailSubject 
+                model.emailText
+              )
+        MailMsg (Mail.AcknowledgeEmailSent result)-> 
+          case result of 
+            Ok reply -> ({model | message = reply}, Cmd.none)
+            Err error -> ({model | message = "Error sending mail"}, Cmd.none)
   
 -- UPDATE END
 

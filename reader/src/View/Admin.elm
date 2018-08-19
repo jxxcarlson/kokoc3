@@ -5,23 +5,33 @@ import Element.Background as Background
 import Element.Font as Font
 import Element.Input as Input
 import Element.Keyed as Keyed
+import Http
+import Json.Encode as Encode
+import Json.Decode as Decode exposing (at, int, list, string, decodeString, Decoder)
+
 
 import Model exposing(Model, Msg(..))
 import User exposing(Token, UserMsg(..), readToken, stringFromMaybeToken, User, BigUser)
 import View.Widget as Widget exposing(..)
+import Configuration
+
+type AdminMsg = 
+    AcknowledgeUpdateOfDocument String
+ 
 
 view : Model -> Element Msg
 view model = 
   Element.row [width (fillPortion 4), height fill, Background.color Widget.white, centerX] [
-     adminBodyLeftColumn 2 model,  adminCenterColumn model.windowHeight 4 model
+     adminLeftColumn 2 model,  adminCenterColumn model.windowHeight 4 model
   ]
 
-adminBodyLeftColumn : Int -> Model -> Element Msg
-adminBodyLeftColumn portion_ model = 
+adminLeftColumn : Int -> Model -> Element Msg
+adminLeftColumn portion_ model = 
   Element.column [width (fillPortion portion_), height fill, 
     Background.color Widget.lightBlue, paddingXY 20 20, spacing 10] [ 
         showUserCount model
-      , listUsersButton  model   
+      , listUsersButton  model  
+      , emailPanel model 
   ]
 
 showUserCount : Model -> Element msg 
@@ -37,12 +47,6 @@ showUserCount model =
 adminCenterColumn : Int -> Int -> Model -> Element Msg
 adminCenterColumn windowHeight_ portion_  model  = 
   Element.column [width (fillPortion portion_), height (px (windowHeight_ - 73)), scrollbarY] [ viewUsers model.userList ]
-
-adminRightColumn : Int -> Model -> Element Msg
-adminRightColumn portion_ model = 
-  Element.column [width (fillPortion portion_), height fill, Background.color Widget.lightBlue, centerX] [
-      
-  ]
 
 viewUsers : List BigUser -> Element msg 
 viewUsers userList =  
@@ -96,8 +100,28 @@ viewUsers userList =
         ]
     }
 
--- HELPERS
 
+emailPanel : Model -> Element Msg 
+emailPanel model = 
+  Element.column [spacing 10, padding 10, Background.color Widget.charcoal] [
+      Element.el [Font.bold, Font.size 18, Font.color Widget.white] (Element.text "Email")
+    , emailSubjectInput model
+    , textArea model 400 500 
+    , sendEmailButton model
+
+  ]
+
+
+emailSubjectInput : Model -> Element Msg
+emailSubjectInput model =
+    Input.text [width (px 400), height (px 30) , Font.color black] {
+        text = model.emailSubject 
+      , placeholder = Just (Input.placeholder [moveUp 5] (Element.text "subject"))
+      , onChange = Just(\str -> AcceptEmailSubject str)
+      , label = Input.labelAbove [ ] (text "")
+    }
+
+-- HELPERS
 
 listUsersButton : Model -> Element Msg 
 listUsersButton model = 
@@ -105,3 +129,26 @@ listUsersButton model =
       onPress =  Just GetUsers
     , label = Element.el [] (Element.text ("List users"))
     }
+
+sendEmailButton : Model -> Element Msg 
+sendEmailButton model = 
+    Input.button (Widget.whiteButtonStyle (px 90) ) {
+      onPress =  Just SendEmail
+    , label = Element.el [] (Element.text ("Send email"))
+    }
+
+textArea : Model -> Int -> Int -> Element Msg
+textArea model width_ height_  =
+    Keyed.row []
+        [ ( (String.fromInt model.counter)
+          , Input.multiline 
+                [ width (px width_), height (px height_), paddingXY 10 5, scrollbarY ]
+                { onChange = Just AcceptEmailText
+                , text = model.emailText
+                , label = Input.labelLeft [ Font.size 14, Font.bold ] (text "")
+                , placeholder = Just <| (Input.placeholder [moveDown 5] (Element.text "Text of email ... "))
+                , spellcheck = False
+                }
+          )
+        ]
+
