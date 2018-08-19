@@ -378,8 +378,11 @@ update msg model =
           case result of 
             Ok token -> 
               let 
-                maybeToken = Just token
+                maybeToken = Just token  -- ###
                 maybeCurrentUser = User.maybeUserFromEmailAndToken model.email (User.stringFromToken token)
+                bigUserCmd = case maybeCurrentUser of 
+                  Nothing -> Cmd.none 
+                  Just user -> Cmd.map UserMsg <| User.getBigUserRecord (User.userId user)
               in 
                ({ model | 
                     maybeToken = maybeToken
@@ -389,7 +392,11 @@ update msg model =
                   , password = ""
                   , username = ""
                 }
-                ,  sendMaybeUserDataToLocalStorage maybeCurrentUser ) 
+                ,  Cmd.batch [
+                    sendMaybeUserDataToLocalStorage maybeCurrentUser 
+                  , bigUserCmd
+                 ]
+                ) 
             Err err -> 
                let 
                  errorMessage = String.trim <| httpErrorHandler err
@@ -987,6 +994,19 @@ update msg model =
           case model.preferencesPanelState of 
              PreferencesPanelOff -> ({model | preferencesPanelState = PreferencesPanelOn },Cmd.none)
              PreferencesPanelOn -> ({model | preferencesPanelState = PreferencesPanelOff },Cmd.none)
+
+        UserMsg (ReceiveBigUserRecord result) ->
+           case result of 
+             (Ok bigUserRecord) -> ({model | blurb = bigUserRecord.user.blurb, message = bigUserRecord.user.blurb, maybeBigUser = Just bigUserRecord.user}, Cmd.none)
+             Err error -> ({model | blurb = "No blurb", message = httpErrorHandler error}, Cmd.none)
+
+        GetBigUser ->
+          case model.maybeCurrentUser of 
+            Nothing ->
+              (model, Cmd.none)
+            Just user ->   
+              (model, Cmd.map UserMsg <| User.getBigUserRecord (User.userId user))
+              
   
 -- UPDATE END
 
@@ -1178,7 +1198,14 @@ getTimeInOneSecond =
     |> Task.andThen (\_ -> Time.now)
     |> Task.perform (\time -> SessionStatus time)
 
+getBigUserInOneSecond = -- ###
+  Process.sleep (1000)
+    |> Task.perform (\_ -> Time.now)
  
+
+
+
+
 toUtcString : Time.Posix -> String
 toUtcString time =
   (String.fromInt (Time.toHour Time.utc time) |> String.padLeft 2 '0')

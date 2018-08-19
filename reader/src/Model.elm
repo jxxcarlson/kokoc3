@@ -65,6 +65,7 @@ type alias Model =
       , signupMode : SignupMode
       , maybeToken    : Maybe Token
       , maybeCurrentUser : Maybe User
+      , maybeBigUser : Maybe BigUser
       , searchQueryString  : String
       , currentDocument : Document
       , selectedDocumentId : Int
@@ -108,6 +109,7 @@ type alias Model =
     }
 
 
+-- MSG
 
 type Msg
     = NoOp
@@ -169,6 +171,7 @@ type Msg
     | SessionStatus Posix
     | PrintDocument 
     | GetUsers
+    | GetBigUser
     | MakeImage
     | SelectImage Image
     | SelectImageLoader
@@ -187,9 +190,10 @@ initialModel locationHref windowWidth windowHeight document =
             , searchQueryString = ""
             , maybeToken = Nothing
             , maybeCurrentUser = Nothing
+            , maybeBigUser = Nothing 
             , currentDocument = document
             , selectedDocumentId = 0
-            , maybeMasterDocument = Nothing 
+            , maybeMasterDocument = Nothing
             , documentList = DocumentList.empty
             , documentIdList = DocumentList.emptyIntList  
             , documentDictionary = DocumentDictionary.empty

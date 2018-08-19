@@ -271,7 +271,7 @@ blurbInput model width_  height_ label_  =
     Keyed.row []
         [ ( (String.fromInt model.counter)
           , Input.multiline 
-                [ width (width_), height (height_), paddingXY 10 0, scrollbarY ]
+                [ width (width_), height (height_), paddingXY 10 10, scrollbarY ]
                 { onChange = Just GetContent
                 , text = model.blurb
                 , label = Input.labelAbove [ Font.size 14, Font.bold ] (text "Blurb")

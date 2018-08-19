@@ -22,6 +22,7 @@ module User exposing(
    , stringFromMaybeToken
    , sessionIsExpired
    , getUsers
+   , getBigUserRecord
    , incrementMediaCountForMaybeUser
    ) 
 
@@ -150,6 +151,7 @@ type UserMsg =
     | RespondToNewUser (Result Http.Error Token)
     | ListUsers (Result Http.Error (List BigUser))
     | AcknowledgeMediaCountIncrement (Result Http.Error String)
+    | ReceiveBigUserRecord (Result Http.Error BigUserRecord)
 
 
 -- DECODERS
@@ -279,7 +281,13 @@ sessionIsExpired currentTime user =
 
 
 -- ADMIN
+type alias BigUserRecord = {user: BigUser}
 
+bigUserRecordDecoder : Decoder BigUserRecord
+bigUserRecordDecoder = 
+  Decode.succeed BigUserRecord
+        |> JPipeline.required "user" bigUserDecoder
+    
 
 bigUserDecoder : Decoder BigUser
 bigUserDecoder =
@@ -336,6 +344,23 @@ getUsersRequest query =
 getUsers : String -> Cmd UserMsg 
 getUsers query  = 
   Http.send ListUsers <| getUsersRequest query
+
+getBigUserRequest : Int -> Http.Request BigUserRecord
+getBigUserRequest userId_ = 
+    Http.request
+      { method = "Get"
+      , headers = [Http.header "APIVersion" "V2"]
+      , url = Configuration.backend ++ "/api/users/" ++ (String.fromInt userId_)
+      , body = Http.emptyBody
+      , expect = Http.expectJson bigUserRecordDecoder
+      , timeout = Just Configuration.timeout
+      , withCredentials = False
+      }
+ 
+
+getBigUserRecord : Int -> Cmd UserMsg 
+getBigUserRecord userId_  = 
+  Http.send ReceiveBigUserRecord <| getBigUserRequest userId_
 
 incrementMediaCountForMaybeUser : Maybe User -> Cmd UserMsg
 incrementMediaCountForMaybeUser maybeUser =
