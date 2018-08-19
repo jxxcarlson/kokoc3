@@ -101,6 +101,12 @@ viewUsers userList =
     }
 
 
+boolToString : Bool -> String 
+boolToString boolValue = 
+  case boolValue of 
+    True -> "T"
+    False -> "F"
+
 emailPanel : Model -> Element Msg 
 emailPanel model = 
   Element.column [spacing 10, padding 10, Background.color Widget.charcoal] [
