@@ -1,4 +1,4 @@
-module View.Admin exposing(view)
+module View.Author exposing(view)
 
 import Element exposing (..)
 import Element.Background as Background
@@ -22,16 +22,15 @@ type AdminMsg =
 view : Model -> Element Msg
 view model = 
   Element.row [width (fillPortion 4), height fill, Background.color Widget.white, centerX] [
-     adminLeftColumn 2 model,  adminCenterColumn model.windowHeight 4 model
+     authorLeftColumn 2 model,  authorCenterColumn model.windowHeight 4 model
   ]
 
-adminLeftColumn : Int -> Model -> Element Msg
-adminLeftColumn portion_ model = 
+authorLeftColumn : Int -> Model -> Element Msg
+authorLeftColumn portion_ model = 
   Element.column [width (fillPortion portion_), height fill, 
     Background.color Widget.lightBlue, paddingXY 20 20, spacing 10] [ 
         showUserCount model
       , listUsersButton  model  
-      , emailPanel model 
   ]
 
 showUserCount : Model -> Element msg 
@@ -44,8 +43,8 @@ showUserCount model =
       False -> Element.el [] (Element.text <| "Users: " ++ String.fromInt n)
 
 
-adminCenterColumn : Int -> Int -> Model -> Element Msg
-adminCenterColumn windowHeight_ portion_  model  = 
+authorCenterColumn : Int -> Int -> Model -> Element Msg
+authorCenterColumn windowHeight_ portion_  model  = 
   Element.column [width (fillPortion portion_), height (px (windowHeight_ - 73)), scrollbarY] [ viewUsers model.userList ]
 
 viewUsers : List BigUser -> Element msg 
@@ -66,13 +65,6 @@ viewUsers userList =
           , view =
                  (\user ->
                     Element.text (boolToString user.verified)
-                 )
-          } 
-        , { header = Element.el [Font.bold] (Element.text "P")
-          , width = (px 20)
-          , view =
-                 (\user ->
-                    Element.text (boolToString user.public)
                  )
           }  
         , { header = Element.el [Font.bold] (Element.text "Username")
@@ -121,54 +113,9 @@ boolToString boolValue =
     True -> "T"
     False -> "F"
 
-emailPanel : Model -> Element Msg 
-emailPanel model = 
-  Element.column [spacing 10, padding 10, Background.color Widget.charcoal] [
-      Element.el [Font.bold, Font.size 18, Font.color Widget.white] (Element.text "Email")
-    , emailSubjectInput model
-    , textArea model 400 500 
-    , sendEmailButton model
-
-  ]
-
-
-emailSubjectInput : Model -> Element Msg
-emailSubjectInput model =
-    Input.text [width (px 400), height (px 30) , Font.color black] {
-        text = model.emailSubject 
-      , placeholder = Just (Input.placeholder [moveUp 5] (Element.text "subject"))
-      , onChange = Just(\str -> AcceptEmailSubject str)
-      , label = Input.labelAbove [ ] (text "")
-    }
-
--- HELPERS
-
 listUsersButton : Model -> Element Msg 
 listUsersButton model = 
     Input.button (Widget.buttonStyle  (px 115)) {
       onPress =  Just GetUsers
     , label = Element.el [] (Element.text ("List users"))
     }
-
-sendEmailButton : Model -> Element Msg 
-sendEmailButton model = 
-    Input.button (Widget.whiteButtonStyle (px 90) ) {
-      onPress =  Just SendEmail
-    , label = Element.el [] (Element.text ("Send email"))
-    }
-
-textArea : Model -> Int -> Int -> Element Msg
-textArea model width_ height_  =
-    Keyed.row []
-        [ ( (String.fromInt model.counter)
-          , Input.multiline 
-                [ width (px width_), height (px height_), paddingXY 10 0, scrollbarY ]
-                { onChange = Just AcceptEmailText
-                , text = model.emailText
-                , label = Input.labelLeft [ Font.size 14, Font.bold ] (text "")
-                , placeholder = Just <| (Input.placeholder [moveDown 5] (Element.text "Text of email ... "))
-                , spellcheck = False
-                }
-          )
-        ]
-

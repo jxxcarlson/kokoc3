@@ -313,23 +313,19 @@ highLightTextType textType1 textType2 =
 newDocumentButton :  Model -> Element Msg    
 newDocumentButton model = 
   case model.appMode of 
-    ImageEditing -> Element.none
-    Reading -> Element.none 
     Writing -> 
       Input.button (buttonStyle (px 105)) {
           onPress =  Just (NewDocument)
         , label = Element.el [] (Element.text ("New document"))
       }
-    Admin -> Element.none
+    _ -> Element.none
 
 
 newChildButton :  Model -> Element Msg    
 newChildButton model = 
   case model.appMode of 
-    Reading -> Element.none 
     Writing -> newChildButton_ model
-    ImageEditing -> Element.none
-    Admin -> Element.none
+    _ -> Element.none
 
 newChildButton_ :  Model -> Element Msg    
 newChildButton_ model = 

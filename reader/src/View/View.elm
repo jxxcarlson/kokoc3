@@ -39,6 +39,7 @@ import View.Reader as Reader
 import View.Admin as Admin
 import View.Image as Image
 import View.Writer as Writer
+import View.Author as Author
 
 
 view  model =
@@ -65,6 +66,7 @@ header model =
         , readerModeButton (px 50) model
         , writerModeButton (px 48) model
         , imageModeButton (px 56) model]
+        , authorDisplayModeButton (px 62) model
         , spacer 10
         , viewUserManualLink
         , spacer 10
@@ -80,6 +82,7 @@ body model =
     Writing -> Writer.view model 
     ImageEditing -> Image.view model 
     Admin -> Admin.view model
+    DisplayAuthors -> Author.view model
 
 
 footer : Model -> Element Msg
@@ -155,7 +158,7 @@ viewUserManualLink : Element msg
 viewUserManualLink = 
   Element.link [] { 
        url = Configuration.client ++ "/" ++ String.fromInt Configuration.userManualId
-     , label = Element.el [Font.bold] (text "User manual") 
+     , label = Element.el [Font.bold] (text "Manual") 
   }
 
 exportDocumentlLink : Model -> Element msg   
@@ -299,7 +302,17 @@ imageModeButton width_ model =
           onPress =  Just (ChangeMode ImageEditing)
         , label = Element.el [] (Element.text "Image")
         } 
- 
+
+authorDisplayModeButton : Length -> Model -> Element Msg    
+authorDisplayModeButton width_ model = 
+  case model.maybeCurrentUser of 
+    Nothing -> Element.none 
+    Just user -> 
+        Input.button (modeButtonStyle model.appMode DisplayAuthors  width_) {
+          onPress =  Just (ChangeMode DisplayAuthors)
+        , label = Element.el [] (Element.text "Authors")
+        } 
+
 printDocumentButton model =
   case model.currentDocument.id > 0 of 
     True -> printButton model 
@@ -325,10 +338,8 @@ printLatexButton model =
 appTitle : AppMode -> String 
 appTitle appMode =
   case appMode of 
-    Reading -> "kNode"
-    Writing -> "kNode"
-    ImageEditing -> "kNode"
     Admin -> "Admin"
+    _ -> "kNode"
 
 
 exportUrl : Document -> String 

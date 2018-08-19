@@ -332,7 +332,8 @@ doSearch model =
             Just _ -> getUserDocuments model (model.searchQueryString ++ ", docs=any")
         Writing -> getUserDocuments model model.searchQueryString 
         ImageEditing -> searchForImages model
-        Admin -> searchForUsers model 
+        Admin -> searchForUsers model
+        DisplayAuthors -> searchForUsers model
 
 -- UPDATE
 
@@ -909,7 +910,13 @@ update msg model =
         UserMsg (ListUsers result) ->
           case result of 
               Ok userList -> ({model | userList = userList, message = "Users: " ++ (String.fromInt <| List.length userList)}, Cmd.none)
-              Err error -> ({model | message =  httpErrorHandler error}, Cmd.none)
+              Err error -> 
+                let 
+                  _ = Debug.log "ListUser error"  error
+                in 
+                  ({model | message = "ListUser error"}, Cmd.none)
+
+              -- message =  Debug.log "ListUser error" <| httpErrorHandler error}
 
         GetUsers -> 
           searchForUsers model
@@ -994,7 +1001,8 @@ imageQuery model basicQuery =
 
 
 
-
+{-| Handler: ListUsers
+-}
 searchForUsers : Model -> (Model, Cmd Msg)
 searchForUsers model = 
   ( model, Cmd.map UserMsg (User.getUsers <| "is_user=" ++ model.searchQueryString)) 

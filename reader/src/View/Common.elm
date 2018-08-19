@@ -21,14 +21,13 @@ texMacros model =
 toggleToolsButton : Length -> Model -> Element Msg    
 toggleToolsButton width_ model = 
   case model.appMode  of 
-    ImageEditing -> Element.none
-    Reading -> Element.none
     Writing -> 
       Input.button (Widget.buttonStyle width_ ) {
         onPress =  Just (ToggleToolPanelState)
       , label = Element.el [] (Element.text (toggleToolsTitle model.toolPanelState))
       }
-    Admin -> Element.none
+    _ -> Element.none
+
    
 
 toggleToolsTitle : ToolPanelState -> String 

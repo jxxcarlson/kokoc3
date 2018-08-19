@@ -24,12 +24,12 @@ timeout = 20000
 
 backend : String
 backend = 
-      "https://nshost.herokuapp.com"
-       -- "http://localhost:4000"
+      -- "https://nshost.herokuapp.com"
+      "http://localhost:4000"
 
 client : String 
-client =  "https://knode.io"
-          -- "http://localhost:8080"
+client =  -- "https://knode.io"
+           "http://localhost:8080"
 
 
 bucket : String

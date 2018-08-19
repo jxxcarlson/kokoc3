@@ -43,7 +43,7 @@ type DeleteDocumentState = DeleteIsOnSafety | DeleteIsArmed
 type ImageAccessibility = PublicImage | PrivateImage
 
 type AppMode = 
-  Reading | Writing | ImageEditing | Admin 
+  Reading | Writing | ImageEditing | Admin | DisplayAuthors
 
 type ImageMode = 
   LoadImage | ViewImage 
