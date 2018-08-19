@@ -137,6 +137,7 @@ type Msg
     | DocDictMsg DocumentDictionary.DocDictMsg
     | GoToStart
     | GoHome
+    | GoToUsersHomePage BigUser
     | ChangeMode AppMode
     | DebounceMsg Debounce.Msg
     | GetContent String

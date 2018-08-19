@@ -689,6 +689,16 @@ update msg model =
         Model.GoHome ->
           goHome model
 
+        GoToUsersHomePage bigUser ->
+          let 
+            queryString = "authorname=" ++ bigUser.username ++ "&key=home"
+          in 
+            ( {model | appMode = Reading
+                    , toolPanelState = HideToolPanel
+              }
+              , Cmd.map DocListMsg (DocumentList.findDocuments Nothing queryString)
+            )
+
         ChangeMode nextAppMode ->
           changeMode model nextAppMode
          
@@ -910,13 +920,8 @@ update msg model =
         UserMsg (ListUsers result) ->
           case result of 
               Ok userList -> ({model | userList = userList, message = "Users: " ++ (String.fromInt <| List.length userList)}, Cmd.none)
-              Err error -> 
-                let 
-                  _ = Debug.log "ListUser error"  error
-                in 
-                  ({model | message = "ListUser error"}, Cmd.none)
-
-              -- message =  Debug.log "ListUser error" <| httpErrorHandler error}
+              Err error ->  
+                  ({model | message = httpErrorHandler error}, Cmd.none)
 
         GetUsers -> 
           searchForUsers model
@@ -1003,9 +1008,15 @@ imageQuery model basicQuery =
 
 {-| Handler: ListUsers
 -}
+
+searchForUsersCmd : Model -> Cmd Msg 
+searchForUsersCmd model = 
+  Cmd.map UserMsg (User.getUsers <| "is_user=" ++ model.searchQueryString)
+
+
 searchForUsers : Model -> (Model, Cmd Msg)
 searchForUsers model = 
-  ( model, Cmd.map UserMsg (User.getUsers <| "is_user=" ++ model.searchQueryString)) 
+  ( model, searchForUsersCmd model) 
 
 searchForImages : Model -> (Model, Cmd Msg)
 searchForImages model = 
@@ -1122,6 +1133,14 @@ changeMode model nextAppMode =
       ImageEditing ->
         case model.imageList == [] of 
           True ->  Cmd.map FileMsg (Credentials.getImages "" (imageQuery model ""))
+          False -> Cmd.none
+      DisplayAuthors ->
+        case model.userList == [] of 
+          True -> searchForUsersCmd model 
+          False -> Cmd.none
+      Admin ->
+        case model.userList == [] of 
+          True -> searchForUsersCmd model 
           False -> Cmd.none
       _ -> Cmd.none
   in 

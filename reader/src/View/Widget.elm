@@ -50,6 +50,17 @@ listItemStyleNarrow width_ = [
     , clipX
    ]
 
+listItemStyleNarrowDark width_ = [
+     Font.size 13 
+    , mouseDown [  Font.size 13, Background.color lightYellow]
+    , Font.color darkBlue
+    , width width_
+    , height (px 16)
+    , paddingXY 20 0
+    , clipX
+   ]
+
+
 listItemStyleNarrow2 width_ = [
      Font.size 13 
     , mouseDown [  Font.size 13, Background.color lightYellow]
@@ -143,6 +154,8 @@ orange = Element.rgb 0.9 0.85 0.2
 black = Element.rgb 0.1 0.1 0.1
 
 blue = Element.rgb 0.3 0.3 0.5
+
+darkBlue = Element.rgb 0.3 0.3 0.8
 
 red = Element.rgb 1.0 0 0.0
 
