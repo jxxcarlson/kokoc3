@@ -22,6 +22,7 @@ import Model exposing(Model
     , SignupMode(..)
     , ToolPanelState(..)
     , DeleteDocumentState(..)
+    , ErrorResponse(..)
   )
 import User exposing(Token, UserMsg(..), readToken, stringFromMaybeToken, User, BigUser)
 import DocumentListView exposing(DocListViewMsg(..))
@@ -92,7 +93,8 @@ loginPanel model =
             , gotoRegistrationButton (px 66) model
         ] 
         , Element.paragraph [Font.color Widget.darkRed, width (px 160)] [text <| filterMessageForSignIn model.message]
-        , resetPasswordLink
+        , resetPasswordLink model
+        , verifyUserLink model
       ]
 
 filterMessageForSignIn : String -> String
@@ -101,9 +103,7 @@ filterMessageForSignIn str  =
     True -> ""
     False -> str
 
-                
-
-
+              
 signupPanel : Model -> Element Msg 
 signupPanel model = 
   case model.maybeCurrentUser of 
@@ -120,10 +120,6 @@ signupPanel model =
         ]
         , Element.paragraph [Font.color Widget.darkRed, width (px 160)] [text <| filterMessageForSignIn model.message]
       ]
-
-
-
-
 
 logoutPanel : Model -> Element Msg 
 logoutPanel model = 
@@ -146,13 +142,27 @@ signInButton width_ model =
   , label = Element.el [] (Element.text "Sign in")
   } 
 
-resetPasswordLink :  Element Msg    
-resetPasswordLink  = 
-  newTabLink []
-    { url = Configuration.backend ++ "/api/password/request"
-    , label = text "Reset password"
-    }
+resetPasswordLink :  Model -> Element Msg    
+resetPasswordLink  model = 
+  case model.errorResponse of 
+    ShowPasswordReset -> 
+      newTabLink []
+        { url = Configuration.backend ++ "/api/password/request"
+        , label = text "Reset password?"
+        }
+    _ -> Element.none
  
+verifyUserLink :  Model -> Element Msg    
+verifyUserLink  model = 
+  case model.errorResponse of 
+    ShowVerifyAccount -> 
+      newTabLink []
+        { url = Configuration.backend ++ "/api/request_verification"
+        , label = text "Request verification?"
+        }
+    _ -> Element.none
+
+
 
 registerUserButton : Length -> Model -> Element Msg    
 registerUserButton width_ model = 

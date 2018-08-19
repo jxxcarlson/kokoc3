@@ -8,6 +8,7 @@ module Model exposing(
     , DeleteDocumentState(..)
     , ImageAccessibility(..)
     , InfoForElm(..)
+    , ErrorResponse(..)
     , initialModel
   )
 
@@ -34,6 +35,8 @@ type InfoForElm =
  | DocumentListDataFromOutside DocumentList.IntList
  | UserDataFromOutside User 
 
+
+type ErrorResponse = ShowPasswordReset | ShowVerifyAccount | NoErrorResponse
 
 type DeleteDocumentState = DeleteIsOnSafety | DeleteIsArmed
 
@@ -95,6 +98,7 @@ type alias Model =
       , imageAccessibility : ImageAccessibility
       , emailSubject : String 
       , emailText : String
+      , errorResponse : ErrorResponse
     }
 
 
@@ -210,4 +214,5 @@ initialModel locationHref windowWidth windowHeight document =
             , imageAccessibility = PrivateImage
             , emailSubject = ""
             , emailText = ""
+            , errorResponse = NoErrorResponse
         }

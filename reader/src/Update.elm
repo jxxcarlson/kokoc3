@@ -43,6 +43,7 @@ import Model exposing(
     , DeleteDocumentState(..)
     , ImageAccessibility(..)
     , InfoForElm(..)
+    , ErrorResponse(..)
     , initialModel
   )
 
@@ -388,8 +389,17 @@ update msg model =
                 }
                 ,  sendMaybeUserDataToLocalStorage maybeCurrentUser ) 
             Err err -> 
-                ({model | message = "email/password not valid"},   Cmd.none  )
-
+               let 
+                 errorMessage = String.trim <| httpErrorHandler err
+                 errorResponse = if errorMessage == "Incorrect email or password" then
+                       ShowPasswordReset
+                    else if errorMessage == "Account not verified" then
+                       ShowVerifyAccount
+                    else 
+                       NoErrorResponse
+               in
+                ({model | message = errorMessage, errorResponse = errorResponse},   Cmd.none  )
+            
         UserMsg (RespondToNewUser result)->
           case result of 
             Ok token -> 
