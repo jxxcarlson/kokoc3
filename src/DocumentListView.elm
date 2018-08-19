@@ -3,7 +3,7 @@ module DocumentListView exposing(viewWithHeading, DocListViewMsg(..))
 import Element exposing (..)
 import Element.Input as Input
 import Element.Font as Font exposing(Font)
-import Widget
+import View.Widget as Widget
 
 import DocumentList exposing(DocumentList, documents)
 import Document exposing(Document, DocType(..))

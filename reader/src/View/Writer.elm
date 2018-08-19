@@ -34,7 +34,7 @@ import Configuration
 import AppUtility
 import View.EditorTools as EditorTools
 import View.Common as Common
-import Widget exposing(..)
+import View.Widget as Widget exposing(..)
 
 
 

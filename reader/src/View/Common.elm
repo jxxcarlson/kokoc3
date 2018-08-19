@@ -8,7 +8,7 @@ import DocumentDictionary
 import DocumentListView
 import DocumentList
 import Document exposing(DocType(..))
-import Widget
+import View.Widget as Widget
 
 
 texMacros : Model -> String

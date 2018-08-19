@@ -33,7 +33,7 @@ import Configuration
 import AppUtility
 import View.Common as Common
 import View.EditorTools as EditorTools
-import Widget exposing(..)
+import View.Widget as Widget exposing(..)
 
 
 -- READER

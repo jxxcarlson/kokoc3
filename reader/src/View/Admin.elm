@@ -8,12 +8,12 @@ import Element.Keyed as Keyed
 
 import Model exposing(Model, Msg(..))
 import User exposing(Token, UserMsg(..), readToken, stringFromMaybeToken, User, BigUser)
-import Widget 
+import View.Widget as Widget exposing(..)
 
 view : Model -> Element Msg
 view model = 
   Element.row [width (fillPortion 4), height fill, Background.color Widget.white, centerX] [
-     adminBodyLeftColumn 2 model,  adminCenterColumn model.windowHeight 7 model, adminRightColumn 2 model
+     adminBodyLeftColumn 2 model,  adminCenterColumn model.windowHeight 4 model
   ]
 
 adminBodyLeftColumn : Int -> Model -> Element Msg

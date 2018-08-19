@@ -33,7 +33,7 @@ import DocumentList
 import DocumentDictionary
 import Configuration
 import AppUtility
-import Widget exposing(..)
+import View.Widget as Widget exposing(..)
 
 import View.Reader as Reader
 import View.Admin as Admin

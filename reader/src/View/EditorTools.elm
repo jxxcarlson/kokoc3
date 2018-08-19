@@ -34,7 +34,7 @@ import DocumentDictionary
 import Configuration
 import AppUtility
 import View.Common as Common
-import Widget exposing(..)
+import View.Widget as Widget exposing(..)
 
 
 

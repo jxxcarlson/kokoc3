@@ -24,7 +24,7 @@ import MarkdownTools
 import Html exposing(Html) 
 
 import Document exposing(Document, Child, DocType(..), TextType(..))
-import Widget
+import View.Widget as Widget exposing(..)
 
 
 type DocViewMsg = 

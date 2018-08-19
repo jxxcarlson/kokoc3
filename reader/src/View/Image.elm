@@ -17,7 +17,7 @@ import User exposing(Token, UserMsg(..), readToken, stringFromMaybeToken, User, 
 import FileUploadCredentials as Credentials exposing(FileData, Image)
 import Configuration
 import AppUtility
-import Widget 
+import View.Widget as Widget 
 
 
 view : Model -> Element Msg
