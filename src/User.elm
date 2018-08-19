@@ -305,6 +305,7 @@ bigUserDecoder =
         |> JPipeline.required "active" Decode.bool
         |> JPipeline.required "documentCount" Decode.int
         |> JPipeline.required "mediaCount" Decode.int
+        |> JPipeline.required "verified" Decode.bool
 
 type alias BigUser = {
       username : String     
@@ -315,7 +316,8 @@ type alias BigUser = {
     , admin : Bool 
     , active : Bool
     , documentCount : Int
-    , mediaCount : Int 
+    , mediaCount : Int
+    , verified : Bool
   }
 
 

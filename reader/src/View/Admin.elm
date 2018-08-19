@@ -142,7 +142,7 @@ textArea model width_ height_  =
     Keyed.row []
         [ ( (String.fromInt model.counter)
           , Input.multiline 
-                [ width (px width_), height (px height_), paddingXY 10 5, scrollbarY ]
+                [ width (px width_), height (px height_), paddingXY 10 0, scrollbarY ]
                 { onChange = Just AcceptEmailText
                 , text = model.emailText
                 , label = Input.labelLeft [ Font.size 14, Font.bold ] (text "")
