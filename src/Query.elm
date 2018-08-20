@@ -4,19 +4,33 @@ import Regex
 
 
 parse: String -> String
-parse input_ =
-    let
-      input = String.replace "author=" "authorname=" input_
-      cmd =
-            input
-                |> String.split "="
-                |> List.head
-                |> Maybe.withDefault "NoCommand"
-    in
-        if List.member cmd [ "idlist" ] then
-            input
-        else
-            parseQueryHelper input
+parse str =
+    if List.member (getCommand str) [ "idlist" ] then
+        str
+    else
+        parseQueryHelper (doReplacements str)
+
+
+doReplacements : String -> String
+doReplacements str = 
+  str 
+    |> String.replace "author=" "authorname=" 
+    |> fixIdSearch
+
+
+fixIdSearch : String -> String
+fixIdSearch str =
+  if List.member (String.left 1 str) ["1", "2", "3", "4", "5", "6", "7", "8", "9"] then 
+    "id=" ++ str 
+  else 
+    str 
+
+getCommand : String -> String
+getCommand str = 
+  str
+    |> String.split "="
+    |> List.head
+    |> Maybe.withDefault "NoCommand"
 
 {-| If the inpute is INT, map it to id=INT, otherwise
     pass it on unchanged.

@@ -33,8 +33,8 @@ toggleToolsButton width_ model =
 toggleToolsTitle : ToolPanelState -> String 
 toggleToolsTitle toolPanelState =
   case toolPanelState of 
-     ShowToolPanel -> "Hide attributes"
-     HideToolPanel -> "Edit attributes"
+     ShowToolPanel -> "Hide tools"
+     HideToolPanel -> "Editor tools"
 
 
 

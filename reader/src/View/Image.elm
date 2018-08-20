@@ -30,8 +30,8 @@ imageLeftColumn : Int -> Model -> Element Msg
 imageLeftColumn portion_ model = 
   Element.column [width (fillPortion portion_), height fill, 
     Background.color Widget.lightBlue, paddingXY 20 20, spacing 10] [ 
-        imageCatalogueLink model
-      , Element.el [] (Element.text <| "Images: " ++ (String.fromInt <| List.length model.imageList))
+       -- imageCatalogueLink model
+       Element.el [] (Element.text <| "Images: " ++ (String.fromInt <| List.length model.imageList))
       , viewImages model.imageList
        
   ]
