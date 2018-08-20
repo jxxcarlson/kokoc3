@@ -1014,7 +1014,7 @@ update msg model =
               let 
                 nextBigUser = {bigUser | blurb = model.blurb}
               in 
-                (model, Cmd.map UserMsg <| User.updateBigUser nextBigUser)
+                (model, Cmd.map UserMsg <| User.updateBigUser (User.getTokenStringFromMaybeUser model.maybeCurrentUser) nextBigUser)
 
         UserMsg (AcknowlegeBigUserUpdate result) ->
            case result of 
@@ -1023,6 +1023,16 @@ update msg model =
 
         AcceptBlurb str ->
           ({model | blurb = str}, Cmd.none)
+
+        ToggleUserPublicPrivate ->
+          case model.maybeBigUser of 
+            Nothing -> (model, Cmd.none)
+            Just bigUser ->
+              case bigUser.public of  
+                True -> 
+                  ({model | maybeBigUser = Just {bigUser |  public = False}}, Cmd.none)
+                False ->
+                  ({model | maybeBigUser = Just {bigUser |  public = True}}, Cmd.none)
               
   
 -- UPDATE END

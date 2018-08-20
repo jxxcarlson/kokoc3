@@ -314,6 +314,10 @@ bigUserEncoder bigUser =
     , ("public", Encode.bool bigUser.public )  
   ]
 
+bigUserRecordEncoder : BigUser -> Encode.Value 
+bigUserRecordEncoder bigUser = 
+  Encode.object [ ("user", bigUserEncoder bigUser )]
+
 type alias BigUser = {
       username : String     
     , name : String
@@ -373,22 +377,22 @@ getBigUserRecord userId_  =
   Http.send ReceiveBigUserRecord <| getBigUserRequest userId_
 
 
-updateBigUserRequest : BigUser -> Http.Request String
-updateBigUserRequest bigUser = 
+updateBigUserRequest : String -> BigUser -> Http.Request String
+updateBigUserRequest tokenString bigUser = 
     Http.request
       { method = "Put"
-      , headers = [Http.header "APIVersion" "V2"]
+      , headers = [Http.header "APIVersion" "V2", Http.header "Authorization" ("Bearer " ++ tokenString)]
       , url = Configuration.backend ++ "/api/users/" ++ (String.fromInt bigUser.id)
-      , body = Http.jsonBody (bigUserEncoder bigUser)
+      , body = Http.jsonBody (bigUserRecordEncoder bigUser)
       , expect = Http.expectJson replyDecoder
       , timeout = Just Configuration.timeout
       , withCredentials = False
       }
  
 -- ### User.updateBigUser bigUser
-updateBigUser : BigUser -> Cmd UserMsg 
-updateBigUser bigUser  = 
-  Http.send AcknowlegeBigUserUpdate <| updateBigUserRequest bigUser
+updateBigUser : String -> BigUser -> Cmd UserMsg 
+updateBigUser tokenString bigUser  = 
+  Http.send AcknowlegeBigUserUpdate <| updateBigUserRequest tokenString bigUser
 
 
 

@@ -179,6 +179,7 @@ type Msg
     | SelectImageLoader
     | ToggleImageAccessibility
     | TogglePreferencesPanel
+    | ToggleUserPublicPrivate
     
     
 

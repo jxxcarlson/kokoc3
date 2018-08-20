@@ -253,6 +253,7 @@ userPreferencesPanel model =
     PreferencesPanelOn -> 
       Element.column [spacing 10] [
          blurbInput model (px 200) (px 100) "Blurb"
+       , toggleUserPublicPrivateButton (px 90) model
        , updatePreferencesButton (px 90) model 
       ]
 
@@ -291,5 +292,24 @@ updatePreferencesButton width_ model =
         onPress =  Just UpdateBigUser
       , label = Element.el [] (Element.text "Update")
       } 
+
+toggleUserPublicPrivateButton : Length -> Model -> Element Msg    
+toggleUserPublicPrivateButton width_ model = 
+  case model.maybeBigUser of 
+    Nothing -> Element.none 
+    Just _ -> 
+      Input.button (buttonStyle width_) {
+        onPress =  Just ToggleUserPublicPrivate
+      , label = Element.el [] (Element.text <| toggleUserPublicPrivateButtonTitle model)
+      } 
+
+toggleUserPublicPrivateButtonTitle : Model -> String 
+toggleUserPublicPrivateButtonTitle model =
+  case model.maybeBigUser of 
+    Nothing -> "---"
+    Just bigUser ->
+      case bigUser.public of 
+        True -> "Public"
+        False -> "Private"
 
 -- ### User.updateBigUser bigUser
