@@ -72,7 +72,7 @@ listItemStyleNarrowDark width_ = [
 
 listItemStyleNarrow2 width_ = [
      Font.size 13 
-    , mouseDown [  Font.size 13, Background.color lightYellow]
+    , mouseDown [Font.size 13, Background.color lightYellow]
     , Font.color blue
     , width width_
     , height (px 16)

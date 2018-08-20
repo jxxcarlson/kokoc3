@@ -312,6 +312,7 @@ handleKey model key =
     Character "w" -> changeMode model Writing
     Character "r" -> changeMode model Reading
     Character "i" -> changeMode model ImageEditing
+    Character "a" -> changeMode model DisplayAuthors
     Character "h" -> goHome model
     Character "/" -> getPublicDocumentsRawQuery model "random=public"
     Character "e" -> toggleToolPanelState model

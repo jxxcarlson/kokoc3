@@ -43,7 +43,7 @@ authorRightColumn portion_ model =
 showUserCount : Model -> Element msg 
 showUserCount model = 
   let 
-    n = List.length (List.filter (\user -> user.blurb /= "") model.userList)
+    n = List.length (List.filter (\user -> user.blurb /= "" && user.public) model.userList)
   in 
     case n == 0 of 
       True -> Element.none 
@@ -53,7 +53,7 @@ showUserCount model =
 authorCenterColumn : Int -> Int -> Model -> Element Msg
 authorCenterColumn windowHeight_ portion_  model  = 
   let 
-    userList = List.filter (\user -> user.blurb /= "") model.userList
+    userList = List.filter (\user -> user.blurb /= "" && user.public) model.userList
   in 
     Element.column [width (fillPortion portion_), height (px (windowHeight_ - 73)), scrollbarY] [ 
         Element.row [  spacing 10] [

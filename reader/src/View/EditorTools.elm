@@ -75,10 +75,10 @@ toolsPanel model = Element.column [ spacing 15, padding 10, height shrink, scrol
 
 versionsPanel model = 
   Element.column [spacing 5] [
-     Element.el [] (text <| "Version: " ++ (String.fromInt model.currentDocument.version))
+     Element.el [Font.bold] (text <| "Version: " ++ (String.fromInt model.currentDocument.version))
      , Element.column [] [
-         showVersionButton model
-        , newVersionButton model
+         Element.el [moveLeft 6] (showVersionButton model)
+        , Element.el [moveLeft 12] (newVersionButton model)
        ]
   ]
 
@@ -342,10 +342,6 @@ newChildButton__ model =
     onPress =  Just (NewChildDocument) 
   , label = Element.el [] (Element.text ("New subdocument"))
   }
-
-
-
-
 
 
 bodyReaderColumn : Int -> Int -> Model -> Element Msg
