@@ -23,6 +23,7 @@ module User exposing(
    , sessionIsExpired
    , getUsers
    , getBigUserRecord
+   , updateBigUser
    , incrementMediaCountForMaybeUser
    ) 
 
@@ -152,6 +153,7 @@ type UserMsg =
     | ListUsers (Result Http.Error (List BigUser))
     | AcknowledgeMediaCountIncrement (Result Http.Error String)
     | ReceiveBigUserRecord (Result Http.Error BigUserRecord)
+    | AcknowlegeBigUserUpdate (Result Http.Error String)
 
 
 -- DECODERS
@@ -304,6 +306,14 @@ bigUserDecoder =
         |> JPipeline.required "verified" Decode.bool
         |> JPipeline.required "public" Decode.bool
 
+bigUserEncoder : BigUser -> Encode.Value 
+bigUserEncoder bigUser = 
+  Encode.object [
+      ("name", Encode.string bigUser.name )
+    , ("blurb", Encode.string bigUser.blurb )  
+    , ("public", Encode.bool bigUser.public )  
+  ]
+
 type alias BigUser = {
       username : String     
     , name : String
@@ -361,6 +371,26 @@ getBigUserRequest userId_ =
 getBigUserRecord : Int -> Cmd UserMsg 
 getBigUserRecord userId_  = 
   Http.send ReceiveBigUserRecord <| getBigUserRequest userId_
+
+
+updateBigUserRequest : BigUser -> Http.Request String
+updateBigUserRequest bigUser = 
+    Http.request
+      { method = "Put"
+      , headers = [Http.header "APIVersion" "V2"]
+      , url = Configuration.backend ++ "/api/users/" ++ (String.fromInt bigUser.id)
+      , body = Http.jsonBody (bigUserEncoder bigUser)
+      , expect = Http.expectJson replyDecoder
+      , timeout = Just Configuration.timeout
+      , withCredentials = False
+      }
+ 
+-- ### User.updateBigUser bigUser
+updateBigUser : BigUser -> Cmd UserMsg 
+updateBigUser bigUser  = 
+  Http.send AcknowlegeBigUserUpdate <| updateBigUserRequest bigUser
+
+
 
 incrementMediaCountForMaybeUser : Maybe User -> Cmd UserMsg
 incrementMediaCountForMaybeUser maybeUser =

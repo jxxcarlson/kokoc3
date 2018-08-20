@@ -253,6 +253,7 @@ userPreferencesPanel model =
     PreferencesPanelOn -> 
       Element.column [spacing 10] [
          blurbInput model (px 200) (px 100) "Blurb"
+       , updatePreferencesButton (px 90) model 
       ]
 
 togglePreferencesButton : Length -> Model -> Element Msg    
@@ -272,7 +273,7 @@ blurbInput model width_  height_ label_  =
         [ ( (String.fromInt model.counter)
           , Input.multiline 
                 [ width (width_), height (height_), paddingXY 10 10, scrollbarY ]
-                { onChange = Just GetContent
+                { onChange = Just AcceptBlurb
                 , text = model.blurb
                 , label = Input.labelAbove [ Font.size 14, Font.bold ] (text "Blurb")
                 , placeholder = Nothing
@@ -280,3 +281,15 @@ blurbInput model width_  height_ label_  =
                 }
           )
         ]
+
+updatePreferencesButton : Length -> Model -> Element Msg    
+updatePreferencesButton width_ model = 
+  case model.maybeBigUser of 
+    Nothing -> Element.none 
+    Just _ -> 
+      Input.button (buttonStyle width_) {
+        onPress =  Just UpdateBigUser
+      , label = Element.el [] (Element.text "Update")
+      } 
+
+-- ### User.updateBigUser bigUser

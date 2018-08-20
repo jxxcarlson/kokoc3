@@ -123,6 +123,7 @@ type Msg
     | AcceptImageName String
     | AcceptEmailSubject String
     | AcceptEmailText String
+    | AcceptBlurb String
     | SendEmail
     | SignIn
     | SignOut
@@ -172,6 +173,7 @@ type Msg
     | PrintDocument 
     | GetUsers
     | GetBigUser
+    | UpdateBigUser
     | MakeImage
     | SelectImage Image
     | SelectImageLoader

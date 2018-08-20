@@ -1006,6 +1006,23 @@ update msg model =
               (model, Cmd.none)
             Just user ->   
               (model, Cmd.map UserMsg <| User.getBigUserRecord (User.userId user))
+
+        UpdateBigUser ->
+          case model.maybeBigUser of 
+            Nothing -> (model, Cmd.none)
+            Just bigUser -> 
+              let 
+                nextBigUser = {bigUser | blurb = model.blurb}
+              in 
+                (model, Cmd.map UserMsg <| User.updateBigUser nextBigUser)
+
+        UserMsg (AcknowlegeBigUserUpdate result) ->
+           case result of 
+             Ok reply -> ({ model | message = reply}, Cmd.none)
+             Err error -> ({model | message = httpErrorHandler error}, Cmd.none)
+
+        AcceptBlurb str ->
+          ({model | blurb = str}, Cmd.none)
               
   
 -- UPDATE END
