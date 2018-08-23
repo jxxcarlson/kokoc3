@@ -8,6 +8,8 @@ import Element.Font as Font
 import Element.Input as Input
 import Element.Keyed as Keyed
 
+import Browser.Dom exposing(Viewport)
+
 import Html exposing(Html)
 import Html.Attributes exposing(src, type_, value)
 import Html.Events exposing(on)
@@ -344,9 +346,9 @@ newChildButton__ model =
   }
 
 
-bodyReaderColumn : Int -> Int -> Model -> Element Msg
-bodyReaderColumn windowHeight_ portion_  model  = 
-  Element.column [width (fillPortion portion_), height (px (windowHeight_ - 73)), paddingXY 20 20
+bodyReaderColumn : Viewport -> Int -> Model -> Element Msg
+bodyReaderColumn viewport portion_  model  = 
+  Element.column [width (fillPortion portion_), height (px (round <| viewport.viewport.width - 73)), paddingXY 20 20
     , Background.color Widget.lightGrey, centerX] [
-      Element.map DocViewMsg (DocumentView.view windowHeight_ model.counter model.debounceCounter (Common.texMacros model) model.currentDocument)
+      Element.map DocViewMsg (DocumentView.view viewport model.counter model.debounceCounter (Common.texMacros model) model.currentDocument)
   ]

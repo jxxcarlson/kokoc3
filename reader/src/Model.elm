@@ -13,6 +13,8 @@ module Model exposing(
     , initialModel
   )
 
+import Browser.Dom exposing(Viewport)
+
 import Time exposing(Posix)
 import Json.Decode as Decode exposing(Decoder, Value)
 import Keyboard exposing (Key(..))
@@ -85,7 +87,7 @@ type alias Model =
       , tagString : String 
       , windowWidth : Int  
       , windowHeight : Int  
-      , maybeViewport : Maybe Dom.Viewport
+      , viewport : Viewport
       , deleteDocumentState : DeleteDocumentState
       , pressedKeys : List Key
       , previousKey : Key
@@ -213,7 +215,9 @@ initialModel locationHref windowWidth windowHeight document =
             , tagString = ""
             , windowWidth = windowWidth
             , windowHeight = windowHeight
-            , maybeViewport = Nothing
+            , viewport = {   scene = {width = toFloat windowWidth, height = toFloat windowHeight}
+                           , viewport = { x =  0, y = 0, width = toFloat windowWidth, height = toFloat windowHeight}
+                         }
             , deleteDocumentState = DeleteIsOnSafety
             , pressedKeys = []
             , previousKey = F20

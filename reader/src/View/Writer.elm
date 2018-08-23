@@ -7,6 +7,8 @@ import Element.Font as Font
 import Element.Input as Input
 import Element.Keyed as Keyed
 
+import Browser.Dom exposing(Viewport)
+
 import Html exposing(Html)
 import Html.Attributes exposing(src, type_, value)
 import Html.Events exposing(on)
@@ -41,28 +43,28 @@ import View.Widget as Widget exposing(..)
 view : Model -> Element Msg
 view model = 
   Element.row [width fill, height (px (model.windowHeight - 70)), Background.color Widget.white, centerX] [
-     bodyLeftColumn 2 model,  bodyEditorColumn model.windowHeight 5 model, bodyReaderColumn model.windowHeight 5 model
+     leftColumn 2 model,  editor model.windowHeight 5 model, reader model.viewport 5 model
   ]
 
-bodyReaderColumn : Int -> Int -> Model -> Element Msg
-bodyReaderColumn windowHeight_ portion_  model  = 
-  Element.column [width (fillPortion portion_), height (px (windowHeight_ - 73)), paddingXY 20 20
+reader : Viewport -> Int -> Model -> Element Msg
+reader viewport portion_  model  = 
+  Element.column [width (fillPortion portion_), height (px (round <| viewport.viewport.height - 73)), paddingXY 20 20
     , Background.color Widget.lightGrey, centerX] [
-      Element.map DocViewMsg (DocumentView.view windowHeight_ model.counter model.debounceCounter (Common.texMacros model) model.currentDocument)
+      Element.map DocViewMsg (DocumentView.view viewport model.counter model.debounceCounter (Common.texMacros model) model.currentDocument)
   ]
 
-bodyEditorColumn : Int -> Int -> Model -> Element Msg
-bodyEditorColumn windowHeight_ portion_ model  = 
-  Element.column [width (fillPortion portion_), height (px (windowHeight_ - 80))
+editor : Int -> Int -> Model -> Element Msg
+editor windowHeight_ portion_ model  = 
+  Element.column [width (fillPortion portion_), height (px (round <| model.viewport.viewport.height - 80))
     , Background.color Widget.lightYellow, centerX] [
-     textArea model (fillPortion portion_) windowHeight_ "Editor"
+     textArea model (fillPortion portion_) "Editor"
   ]
 
-textArea model width_ windowHeight_ label_  =
+textArea model width_ label_  =
     Keyed.row []
         [ ( (String.fromInt model.counter)
           , Input.multiline 
-                [ width (width_), height (px (windowHeight_ - 80)), paddingXY 10 0, scrollbarY ]
+                [ width (width_), height (px (round <| model.viewport.viewport.height - 80)), paddingXY 10 0, scrollbarY ]
                 { onChange = Just GetContent
                 , text = model.currentDocument.content
                 , label = Input.labelLeft [ Font.size 14, Font.bold ] (text "")
@@ -75,8 +77,8 @@ textArea model width_ windowHeight_ label_  =
 
 
 
-bodyLeftColumn : Int -> Model -> Element Msg
-bodyLeftColumn portion_ model = 
+leftColumn : Int -> Model -> Element Msg
+leftColumn portion_ model = 
   Element.column [width (fillPortion portion_), height fill, 
     Background.color Widget.lightBlue, paddingXY 20 20, spacing 10] [ 
         Element.row [spacing 10] [ Common.toggleToolsButton (px 105) model, EditorTools.newDocumentButton model ]

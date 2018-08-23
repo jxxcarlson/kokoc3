@@ -793,7 +793,7 @@ update msg model =
            ( { model | currentDocument = nextDocument, currentDocumentDirty = True }, Cmd.none)
 
         GetViewport viewport -> 
-           ({model | maybeViewport = (Just viewport) }, Cmd.none)
+           ({model | viewport = viewport }, Cmd.none)
 
 
         DeleteCurrentDocument ->

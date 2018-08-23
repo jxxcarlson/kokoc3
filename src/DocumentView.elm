@@ -13,6 +13,8 @@ import Element.Border as Border
 import Element.Lazy
 import Element.Keyed as Keyed
 
+import Browser.Dom exposing(Viewport)
+
 import Configuration  
 import KVList 
 
@@ -38,11 +40,11 @@ type alias DocumentView msg =
      , content: Element msg 
    }
 
-view : Int -> Int -> Int -> String -> Document -> Element DocViewMsg 
-view windowHeight_ counter debounceCounter texMacros document = 
+view : Viewport -> Int -> Int -> String -> Document -> Element DocViewMsg 
+view viewport counter debounceCounter texMacros document = 
     Element.column [spacing 15, width (fill |> maximum 600), centerX] [
         titleLine document
-        , (contentView windowHeight_ counter (documentView debounceCounter texMacros document ))
+        , (contentView viewport counter (documentView viewport debounceCounter texMacros document ))
     ]
 
 edges =
@@ -52,9 +54,9 @@ edges =
     , left = 0
     }
 
-contentView : Int -> Int -> (DocumentView DocViewMsg) -> Element DocViewMsg
-contentView windowHeight_ counter viewDoc = 
-  Keyed.el [   height (px (windowHeight_ - 150))
+contentView : Viewport -> Int -> (DocumentView DocViewMsg) -> Element DocViewMsg
+contentView viewport counter viewDoc = 
+  Keyed.el [   height (px (round <| viewport.viewport.height - 150))
              , scrollbarY
              , clipX
           ] 
@@ -106,23 +108,23 @@ loadChildrenButton  document =
 
 
 
-documentView : Int -> String -> Document -> DocumentView DocViewMsg
-documentView debounceCounter texMacros doc = 
+documentView : Viewport -> Int -> String -> Document -> DocumentView DocViewMsg
+documentView viewport debounceCounter texMacros doc = 
   { title = doc.title 
-    , content = documentContentView debounceCounter texMacros doc
+    , content = documentContentView viewport debounceCounter texMacros doc
   }
 
 
-documentContentView : Int -> String -> Document -> Element DocViewMsg 
-documentContentView debounceCounter texMacros document = 
+documentContentView : Viewport -> Int -> String -> Document -> Element DocViewMsg 
+documentContentView viewport debounceCounter texMacros document = 
     case document.docType of 
         Master -> viewCoverArt document -- viewChildren document 
-        Standard -> documentContentView_ debounceCounter texMacros document
+        Standard -> documentContentView_ viewport debounceCounter texMacros document
 
-documentContentView_ : Int -> String -> Document -> Element msg 
-documentContentView_  debounceCounter texMacros document =    
+documentContentView_ : Viewport -> Int -> String -> Document -> Element msg 
+documentContentView_  viewport debounceCounter texMacros document =    
   case document.textType of
-    MiniLatex -> viewMiniLatex texMacros document 
+    MiniLatex -> viewMiniLatex viewport texMacros document 
     Markdown -> viewMarkdown document 
     Asciidoc -> viewAsciidoc debounceCounter document.content
     AsciidocLatex -> viewAsciidoc debounceCounter document.content
@@ -138,8 +140,8 @@ prependMacros macros_ sourceText =
   in
     "$$\n" ++ macros__ ++ "\n$$\n\n" ++ sourceText 
 
-viewMiniLatex : String -> Document -> Element msg
-viewMiniLatex texMacros document =
+viewMiniLatex : Viewport -> String -> Document -> Element msg
+viewMiniLatex viewport texMacros document =
   let 
     preamble = 
       [  setCounterText document.tags 
@@ -158,11 +160,13 @@ viewMiniLatex texMacros document =
         MiniLatex.initializeEditRecord 0 (preamble ++ source ++ postlude) 
   in 
     MiniLatex.getRenderedText editRecord
-        |> List.map (\x -> Element.paragraph [ width (fill)] [ Element.html x ]) -- ###@@@
+        |> List.map (\x -> Element.paragraph [ width (px (texWidth viewport))] [ Element.html x ]) -- ###@@@
         |> Element.column []
 
 
-
+texWidth : Viewport -> Int 
+texWidth viewport = 
+  round <| 0.6363*(viewport.viewport.width - 440)
   
 edge = {left = 0, right = 0, top = 0, bottom = 0}
 

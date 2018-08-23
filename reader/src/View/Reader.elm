@@ -6,6 +6,8 @@ import Element.Font as Font
 import Element.Input as Input
 import Element.Keyed as Keyed
 
+import Browser.Dom exposing(Viewport)
+
 import Html exposing(Html)
 import Html.Attributes exposing(src, type_, value)
 import Html.Events exposing(on)
@@ -44,15 +46,15 @@ import View.Widget as Widget exposing(..)
 view : Model -> Element Msg
 view model = 
   Element.row [width (fillPortion 4), height fill, Background.color Widget.white, centerX] [
-     leftColumn 2 model,  body model.windowHeight 7 model, rightColumn 2 model
+     leftColumn 2 model,  body model.viewport 7 model, rightColumn 2 model
   ]
 
 
-body : Int -> Int -> Model -> Element Msg
-body windowHeight_ portion_  model  = 
-  Element.column [width (fillPortion portion_), height (px (windowHeight_ - 73)), paddingXY 20 20
+body : Viewport -> Int -> Model -> Element Msg
+body viewport portion_  model  = 
+  Element.column [width (fillPortion portion_), height (px (round <| viewport.viewport.width - 73)), paddingXY 20 20
     , Background.color Widget.lightGrey, centerX, clipX, clipY] [
-      Element.map DocViewMsg (DocumentView.view windowHeight_ model.counter model.debounceCounter (Common.texMacros model) model.currentDocument)
+      Element.map DocViewMsg (DocumentView.view viewport model.counter model.debounceCounter (Common.texMacros model) model.currentDocument)
   ]
 
 
