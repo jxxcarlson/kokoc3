@@ -40,6 +40,9 @@ import User exposing(User)
 
 import Document exposing(Document, documentDecoder)
 
+
+type DocumentList = DocumentList DocumentListRecord
+
 type alias DocumentListRecord = {
       documents: List Document
     , selected: Maybe Document
@@ -62,8 +65,6 @@ emptyIntList =
     , selected = 0
   }
 
-type DocumentList = DocumentList DocumentListRecord
- 
 
 empty : DocumentList 
 empty = DocumentList {

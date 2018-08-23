@@ -132,7 +132,10 @@ sendInfoOutside info =
         AskToEraseLocalStorage value ->
             infoForOutside { tag = "AskToEraseLocalStorage", data = Encode.null }
 
-
+bigUserCmd2 maybeCurrentUser =
+  case maybeCurrentUser of 
+      Nothing -> Cmd.none 
+      Just user -> Cmd.map UserMsg <| User.getBigUserRecord (User.userId user)
 
 getInfoFromOutside : (InfoForElm -> msg) -> (String -> msg) -> Sub msg
 getInfoFromOutside tagger onError =
@@ -239,7 +242,7 @@ processUrl urlString =
 -- link : msg -> List (Html.Attribute msg) -> List (Html msg) -> Html msg
 -- link href attrs children =
 --   Html.a (preventDefaultOn "click" (Decode.succeed (href, True)) :: attrs) children
-
+-- ###
 processInfoForElm : Model -> InfoForElm -> (Model, Cmd Msg)
 processInfoForElm model infoForElm_ =
   case infoForElm_ of 
@@ -255,7 +258,7 @@ processInfoForElm model infoForElm_ =
                   , maybeToken = Just (User.getToken user)
                   , message = "You are reconnected"
             }
-            , Cmd.none
+            , bigUserCmd2 (Just user)
           ) 
     DocumentListDataFromOutside intList ->
       ({ model | documentIdList = intList }
@@ -719,7 +722,11 @@ update msg model =
 
                 tokenString = User.getTokenStringFromMaybeUser model.maybeCurrentUser
             in
-                ({ model | debounce = debounce, debounceCounter = model.debounceCounter + 1}, Cmd.batch [
+                ({ model | debounce = debounce
+                         , debounceCounter = model.debounceCounter + 1
+                         --, documentList = DocumentList.updateDocument model.currentDocument model.documentList -- ###!!!
+                  }
+                         , Cmd.batch [
                     cmd  
                   , saveDocToLocalStorage model.currentDocument
                   ]
@@ -748,7 +755,9 @@ update msg model =
           let  
               tokenString = User.getTokenStringFromMaybeUser model.maybeCurrentUser 
           in 
-              ( { model | currentDocumentDirty = False }
+              ( { model |   currentDocumentDirty = False
+                          , documentList = DocumentList.updateDocument model.currentDocument model.documentList -- ###!!!
+                      }
                 , Cmd.batch [saveCurrentDocumentIfDirty model, getTime ])
                 -- , Cmd.map DocMsg <| Document.saveDocument tokenString model.currentDocument )
 
@@ -1087,6 +1096,7 @@ goToStart model =
   in 
     ({model | currentDocument = { doc | title = "Welcome!" }
           , currentDocumentDirty = False
+          , appMode = Reading
       }
       , saveCurrentDocumentIfDirty model  
     )
