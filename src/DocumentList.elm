@@ -273,7 +273,7 @@ deleteItemInDocumentListAt targetDocId documentList =
             setDocuments (Utility.listDeleteAt k (documents documentList)) documentList
 
 
-{-| Replaece the element in `documentList` whose id is that of
+{-| Replace the element in `documentList` whose id is that of
     of `document` by `document`.
 -}
 updateDocument : Document -> DocumentList -> DocumentList 

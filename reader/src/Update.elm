@@ -200,7 +200,7 @@ eraseLocalStorage =
 -- Choose the strategy for your use case.
 debounceConfig : Debounce.Config Msg
 debounceConfig =
-  { strategy = Debounce.later 250
+  { strategy = Debounce.later Configuration.debounceDelay
   , transform = DebounceMsg
   }
 
@@ -724,7 +724,6 @@ update msg model =
             in
                 ({ model | debounce = debounce
                          , debounceCounter = model.debounceCounter + 1
-                         , documentList = DocumentList.updateDocument model.currentDocument model.documentList -- ###!!!
                   }
                          , Cmd.batch [
                     cmd  
@@ -744,12 +743,13 @@ update msg model =
                     }
                     , cmd)
 
-        UpdateEditorContent str ->
+        UpdateEditorContent str -> -- ###!!!
           let  
             currentDocument = model.currentDocument 
             nextCurrentDocument = { currentDocument | content = str }
+            nextDocumentList = DocumentList.updateDocument nextCurrentDocument model.documentList
           in  
-            ( {model | currentDocument = nextCurrentDocument}, Cmd.none )
+            ( {model | currentDocument = nextCurrentDocument, documentList = nextDocumentList}, Cmd.none )
 
         SaveCurrentDocument time ->
           let  
@@ -759,7 +759,6 @@ update msg model =
                           , documentList = DocumentList.updateDocument model.currentDocument model.documentList -- ###!!!
                       }
                 , Cmd.batch [saveCurrentDocumentIfDirty model, getTime ])
-                -- , Cmd.map DocMsg <| Document.saveDocument tokenString model.currentDocument )
 
         UpdateCurrentDocument ->
           saveCurrentDocument model
@@ -1418,16 +1417,18 @@ displayCurrentMasterDocument model =
 
 getViewPort = Task.perform GetViewport Dom.getViewport
 
-saveCurrentDocument : Model -> (Model, Cmd Msg)
+saveCurrentDocument : Model -> (Model, Cmd Msg) -- ###!!!
 saveCurrentDocument model = 
   let  
       tokenString = User.getTokenStringFromMaybeUser model.maybeCurrentUser 
       currentDocument = model.currentDocument 
       tags = model.tagString |> String.split "," |> List.map String.trim
       nextCurrentDocument = { currentDocument | title = model.documentTitle, tags = tags}
+      nextDocumentList = DocumentList.updateDocument currentDocument model.documentList
   in 
       ( { model | currentDocumentDirty = False 
-                , currentDocument = nextCurrentDocument}
+                , currentDocument = nextCurrentDocument
+                , documentList = nextDocumentList}
         , Cmd.map DocMsg <| Document.saveDocument tokenString nextCurrentDocument )
 
  

@@ -2,7 +2,7 @@ module Configuration exposing(
     backend
    , client
    , autosaveDuration
-   , debounceDelay
+   , debounceDelay  
    , coverArtUrl
    , userManualId
    , basicDocumentText
@@ -40,7 +40,7 @@ autosaveDuration : Float
 autosaveDuration =
   8*1000 -- in milliseconds
 
-debounceDelay : Int
+debounceDelay : Float
 debounceDelay = 250
 
 coverArtUrl : String 
