@@ -161,13 +161,7 @@ viewMiniLatex texMacros document =
         |> List.map (\x -> Element.paragraph [ width (fill)] [ Element.html x ]) -- ###@@@
         |> Element.column []
 
-  --  MiniLatex.getRenderedText editRecord
-  --       |> List.map (\x -> Element.row [width fill] [
-  --             Element.paragraph [ width fill] [ Element.html x ] -- ###@@@
-  --           , Element.el [width (px 40)] (Element.text "")
-  --          ]
-  --       )
-  --       |> Element.column []
+
 
   
 edge = {left = 0, right = 0, top = 0, bottom = 0}
