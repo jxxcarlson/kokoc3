@@ -54,10 +54,9 @@ edges =
 
 contentView : Int -> Int -> (DocumentView DocViewMsg) -> Element DocViewMsg
 contentView windowHeight_ counter viewDoc = 
-  Keyed.el [  width (fill)
-            , height (px (windowHeight_ - 150))
-            , scrollbarY
-            , clipX
+  Keyed.el [   height (px (windowHeight_ - 150))
+             , scrollbarY
+             , clipX
           ] 
       ((String.fromInt counter), viewDoc.content)
 
@@ -159,10 +158,18 @@ viewMiniLatex texMacros document =
         MiniLatex.initializeEditRecord 0 (preamble ++ source ++ postlude) 
   in 
     MiniLatex.getRenderedText editRecord
-        |> List.map (\x -> Element.paragraph [ width fill] [ Element.html x ])
+        |> List.map (\x -> Element.paragraph [ width (fill)] [ Element.html x ]) -- ###@@@
         |> Element.column []
 
+  --  MiniLatex.getRenderedText editRecord
+  --       |> List.map (\x -> Element.row [width fill] [
+  --             Element.paragraph [ width fill] [ Element.html x ] -- ###@@@
+  --           , Element.el [width (px 40)] (Element.text "")
+  --          ]
+  --       )
+  --       |> Element.column []
 
+  
 edge = {left = 0, right = 0, top = 0, bottom = 0}
 
 setCounterText : List String -> String 
