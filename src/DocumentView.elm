@@ -42,7 +42,7 @@ type alias DocumentView msg =
 
 view : Viewport -> Int -> Int -> String -> Document -> Element DocViewMsg 
 view viewport counter debounceCounter texMacros document = 
-    Element.column [spacing 15, width (fill |> maximum 600), centerX] [
+    Element.column [spacing 15, width (px <| texWidth viewport), centerX] [
         titleLine document
         , (contentView viewport counter (documentView viewport debounceCounter texMacros document ))
     ]
@@ -166,7 +166,7 @@ viewMiniLatex viewport texMacros document =
 
 texWidth : Viewport -> Int 
 texWidth viewport = 
-  round <| 0.6363*(viewport.viewport.width - 440)
+  round <| 0.6363*(viewport.viewport.width - 460)
   
 edge = {left = 0, right = 0, top = 0, bottom = 0}
 
