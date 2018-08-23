@@ -45,8 +45,21 @@ view windowHeight_ counter debounceCounter texMacros document =
         , (contentView windowHeight_ counter (documentView debounceCounter texMacros document ))
     ]
 
+edges =
+    { top = 0
+    , right = 0
+    , bottom = 0
+    , left = 0
+    }
+
+contentView : Int -> Int -> (DocumentView DocViewMsg) -> Element DocViewMsg
 contentView windowHeight_ counter viewDoc = 
-  Keyed.el [width (fill), height (px (windowHeight_ - 150)), scrollbarY] ((String.fromInt counter), viewDoc.content)
+  Keyed.el [  width (fill)
+            , height (px (windowHeight_ - 150))
+            , scrollbarY
+            , clipX
+          ] 
+      ((String.fromInt counter), viewDoc.content)
 
 titleLine : Document -> Element DocViewMsg 
 titleLine document = 
@@ -146,8 +159,11 @@ viewMiniLatex texMacros document =
         MiniLatex.initializeEditRecord 0 (preamble ++ source ++ postlude) 
   in 
     MiniLatex.getRenderedText editRecord
-        |> List.map (\x -> Element.paragraph [  ] [ Element.html x ])
+        |> List.map (\x -> Element.paragraph [ width fill] [ Element.html x ])
         |> Element.column []
+
+
+edge = {left = 0, right = 0, top = 0, bottom = 0}
 
 setCounterText : List String -> String 
 setCounterText tags = 

@@ -106,6 +106,7 @@ type alias Model =
       , errorResponse : ErrorResponse
       , blurb : String
       , preferencesPanelState : PreferencesPanelState
+      , debugMessage : String
     }
 
 
@@ -233,4 +234,5 @@ initialModel locationHref windowWidth windowHeight document =
             , errorResponse = NoErrorResponse
             , blurb = ""
             , preferencesPanelState = PreferencesPanelOff
+            , debugMessage = "Debug: nothing"
         }

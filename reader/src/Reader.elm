@@ -45,6 +45,7 @@ init flags =
     , Cmd.batch [ 
           processUrl flags.location
         , getTimeInOneSecond
+        , Task.perform GetViewport Dom.getViewport
     ])
 
 focusSearchBox : Cmd Msg

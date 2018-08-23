@@ -44,20 +44,20 @@ import View.Widget as Widget exposing(..)
 view : Model -> Element Msg
 view model = 
   Element.row [width (fillPortion 4), height fill, Background.color Widget.white, centerX] [
-     bodyLeftColumn 2 model,  bodyReaderColumn model.windowHeight 7 model, bodyRightColumn 2 model
+     leftColumn 2 model,  body model.windowHeight 7 model, rightColumn 2 model
   ]
 
 
-bodyReaderColumn : Int -> Int -> Model -> Element Msg
-bodyReaderColumn windowHeight_ portion_  model  = 
+body : Int -> Int -> Model -> Element Msg
+body windowHeight_ portion_  model  = 
   Element.column [width (fillPortion portion_), height (px (windowHeight_ - 73)), paddingXY 20 20
-    , Background.color Widget.lightGrey, centerX, clipX] [
+    , Background.color Widget.lightGrey, centerX, clipX, clipY] [
       Element.map DocViewMsg (DocumentView.view windowHeight_ model.counter model.debounceCounter (Common.texMacros model) model.currentDocument)
   ]
 
 
-bodyLeftColumn : Int -> Model -> Element Msg
-bodyLeftColumn portion_ model = 
+leftColumn : Int -> Model -> Element Msg
+leftColumn portion_ model = 
   Element.column [width (fillPortion portion_), height fill, 
     Background.color Widget.lightBlue, paddingXY 20 20, spacing 10] [ 
         Element.row [spacing 10] [ Common.toggleToolsButton (px 105) model, EditorTools.newDocumentButton model ]
@@ -66,8 +66,8 @@ bodyLeftColumn portion_ model =
   ]
 
 
-bodyRightColumn : Int -> Model -> Element Msg
-bodyRightColumn portion_ model = 
+rightColumn : Int -> Model -> Element Msg
+rightColumn portion_ model = 
   Element.column [width (fillPortion portion_), height fill, 
      Background.color Widget.lightBlue, centerX
      , paddingXY 15 0, spacing 15] [

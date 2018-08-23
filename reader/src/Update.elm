@@ -4,6 +4,7 @@ port module Update exposing(
     , onUrlChange
     , getInfoFromOutside
     , getTimeInOneSecond
+    , getViewPort
   )
 
 import Json.Encode as Encode
@@ -792,7 +793,7 @@ update msg model =
            ( { model | currentDocument = nextDocument, currentDocumentDirty = True }, Cmd.none)
 
         GetViewport viewport -> 
-           ({model | maybeViewport = Just viewport }, Cmd.none)
+           ({model | maybeViewport = (Just viewport) }, Cmd.none)
 
 
         DeleteCurrentDocument ->
@@ -1411,10 +1412,7 @@ displayCurrentMasterDocument model =
     Nothing -> "Master: none"
     Just doc -> "Master: " ++ (String.fromInt doc.id) 
 
-
-
-
-
+getViewPort : Cmd Msg
 getViewPort = Task.perform GetViewport Dom.getViewport
 
 saveCurrentDocument : Model -> (Model, Cmd Msg) -- ###!!!

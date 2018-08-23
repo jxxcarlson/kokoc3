@@ -13,7 +13,7 @@ echo "${color}Compile reader${reset}"
 if [ "$1" = "--debug" ]
 then
 echo "${color}Compile using 0.19${reset}"
-${COMPILER} make  ./src/Reader.elm --output ${NGINX_LOCAL}Main.js
+${COMPILER} make ./src/Reader.elm --output ${NGINX_LOCAL}Main.js
 else
 echo "${color}Compile using 0.19 --optimized${reset}"
 ${COMPILER} make --optimize ./src/Reader.elm --output ${NGINX_LOCAL}Main.js
