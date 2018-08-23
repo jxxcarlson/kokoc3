@@ -724,7 +724,7 @@ update msg model =
             in
                 ({ model | debounce = debounce
                          , debounceCounter = model.debounceCounter + 1
-                         --, documentList = DocumentList.updateDocument model.currentDocument model.documentList -- ###!!!
+                         , documentList = DocumentList.updateDocument model.currentDocument model.documentList -- ###!!!
                   }
                          , Cmd.batch [
                     cmd  

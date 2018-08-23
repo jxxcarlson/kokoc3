@@ -2,6 +2,7 @@ module Configuration exposing(
     backend
    , client
    , autosaveDuration
+   , debounceDelay
    , coverArtUrl
    , userManualId
    , basicDocumentText
@@ -38,6 +39,9 @@ bucket = "noteimages"
 autosaveDuration : Float 
 autosaveDuration =
   8*1000 -- in milliseconds
+
+debounceDelay : Int
+debounceDelay = 250
 
 coverArtUrl : String 
 coverArtUrl = "http://noteimages.s3.amazonaws.com/app_images/robin2.jpg"
