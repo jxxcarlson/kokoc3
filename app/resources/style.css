@@ -1,0 +1,102 @@
+/*html { background-color: #aaa}
+body { margin-left: auto; margin-right:auto; font-family: Verdana; }
+button { width: 70px; height: 24px;  margin-right: 10px;
+  font-size:0.9em; border: none; background-color: white;}
+input { width: 280px; height: 26px;  margin-right: 10px; padding-left: 1em;
+    font-size:0.9em; border: none; background-color: white;}
+smallButton { width: 55px; height: 30px; margin-right: 8px;
+    background-color: black; color: white;}
+#elm-area { background-color: #fafafa; }
+#header {position: absolute; left: 0px; top: 0px;
+   width:100%; height:30px; padding-left: 10px; padding-top:7px;
+   padding-bottom:7px;
+   color: white;background-color:#444; }
+#footer {position: absolute; left: 0px; bottom: 0px;
+   width:100%; height:30px; padding-left: 10px; padding-top:7px; padding-left: 1em;
+   color: white;background-color:#444; }
+
+#SearchForm {display: inline-block;; margin-left: 40px;}
+
+#login {  position: absolute; right: 30px; top: 40px; padding-bottom: 1em;  }
+
+#loginForm {
+      width: 300px; height: 240px; background-color: #ddd;
+      padding-left: 1.4em; padding-right: 1em; padding-top: 2em;}
+
+#loginForm2 { position: absolute; right: 60px; top: 40px;
+            width: 240px; height: 240px; background-color: #ddd;
+            padding-left: 1.4em; padding-right: 1em; padding-top: 2em;}
+
+#carbonAd { position: absolute; right: 140px; top: 440px; padding: 15px;
+  width: 200px; height: 150px; color: white; background-color: #444;}
+
+#carbonAd2 { position: absolute; right: 90px; top: 390px; padding: 15px;
+    width: 250px; height: 200px; color: white; background-color: #444;}
+
+
+#toolSelectorPanel {position: absolute; top: 44px; left: 0;
+    background-color: #777; padding-top: 7px; padding-left: 1em;
+           width: 20%; height: 32px;
+  }
+
+#toolPane {position: absolute; top: 82px; left: 0;
+      overflow: scroll;
+      width: 20%; height: Calc(100% - 145px);
+      background-color: #ccccff; border: solid 1px;
+      padding-left: 1em; padding-right: 1em; padding-top: 2em;}
+
+#searchOptionControl { border: none; font-size:0.9em;
+  width: 100px;}
+
+#titlePane {position: absolute; top: 44px; left: Calc(20% + 1px);
+    background-color: #eee; padding-top: 7px;
+    padding-left: 1em; padding-right: 1em;
+           width: Calc(40% - 2em); height: 32px;
+           font-size: 1.3em;
+  }
+
+#rendered_text {position: absolute; top: 82px; left: Calc(20% - 1em);
+       overflow: scroll; margin-left:1em; background-color: #eee;
+       width: Calc(40% - 20px); height: Calc(100% - 145px); border: solid 1px;
+       padding-left: 1em; padding-right: 1em; padding-top: 2em;}
+
+#textPane { position: absolute; top: 82px; left: Calc(20% - 1em);
+        overflow: scroll; margin-left:1em; background-color: PaleBlue;
+        width: Calc(40% - 32px); height: Calc(100% - 145px); border: solid 1px;
+        padding-left: 1em; padding-right: 1em; padding-top: 2em;}
+
+#editPane {position: absolute; top: 82px; right: 40%;
+   overflow: scroll; margin-left:1em; background-color: #eee;
+   width: Calc(40% - 34px); height: Calc(100% - 147px); border: solid 1px;
+   padding-left: 1em; padding-right: 1em; padding-top: 2em; font-size: 1em;}
+
+#editor_info_pane { position: absolute; top: 43px; right: 0;
+    background-color: #ffefef; padding-top: 10px;padding-bottom: 2px;
+    border: solid 1px;
+    padding-left: 1em; padding-right: 1em;
+           width: Calc(40% - 31px); height: 31px;
+           font-size: 0.9em;
+}
+
+#editPane2 {position: absolute; top: 82px; right: 0;
+      overflow: scroll;
+      width: Calc(40% - 34px); height: Calc(100% - 152px);
+      background-color: pink; border:1px; border: solid 1px;
+      padding-left: 1em; padding-right: 1em; padding-top: 2em;}
+
+#id {margin-left: 20px;}
+#info{margin-left: 200px; }
+.selected { color: #944; font-weight: bold}
+.isSelected { background-color: #780000; color: white; }
+.isNotSelected {}
+.isSelected2 { background-color: #780000; color: white; }
+.isNotSelected2 {}
+.wide_button { width: 140px; height: 30px;}
+.my_radio_button { width: 16px; width: 16px; vertical-align: middle;}
+.radio_label { vertical-align: middle;}
+#searchDomainFieldSet { border: none;}
+ul { list-style-type: none; margin:0; padding:0; font-size:0.95em;}
+li {margin-bottom: 0.3em;}
+
+code {color: darkred; font-size:1.1em; font-family: Courier;}
+pre {margin-left: 32px;}*/

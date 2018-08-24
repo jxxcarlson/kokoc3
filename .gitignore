@@ -11,3 +11,5 @@ reader/dist/Main.min.js
 dist/50x.html
 dist/500x.html
 elm
+dist/Main.min.js.gz
+.vscode
