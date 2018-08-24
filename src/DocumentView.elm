@@ -18,8 +18,8 @@ import Browser.Dom exposing(Viewport)
 import Configuration  
 import KVList 
 
-import MeenyLatex.Differ exposing (EditRecord)
-import MeenyLatex.MiniLatex as MiniLatex
+import MiniLatex.Differ exposing (EditRecord)
+import MiniLatex.MiniLatex as MiniLatex   
 import MarkdownTools
 
 
