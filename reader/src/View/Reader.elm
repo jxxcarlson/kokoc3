@@ -52,7 +52,7 @@ view model =
 
 body : Viewport -> Int -> Model -> Element Msg
 body viewport portion_  model  = 
-  Element.column [width (fillPortion portion_), height (px (round <| viewport.viewport.width - 73)), paddingXY 20 20
+  Element.column [width (fillPortion portion_), height (px (round <| viewport.viewport.height - 73)), paddingXY 20 20
     , Background.color Widget.lightGrey, centerX, clipX, clipY] [
       Element.map DocViewMsg (DocumentView.view viewport model.counter model.debounceCounter (Common.texMacros model) model.currentDocument)
   ]

@@ -5,7 +5,7 @@ reset=`tput setaf 7`
 NGINX_LOCAL="/usr/local/var/www/"
 NGINX_REMOTE="/var/www/html/"
 DIST_LOCAL="./dist/"
-COMPILER="/Users/carlson/Downloads/2/elm"
+COMPILER="elm"
 
 
 echo
@@ -13,7 +13,7 @@ echo "${color}Compile reader${reset}"
 if [ "$1" = "--debug" ]
 then
 echo "${color}Compile using 0.19${reset}"
-${COMPILER} make ./src/Reader.elm --output ${NGINX_LOCAL}Main.js
+${COMPILER} make --debug ./src/Reader.elm --output ${NGINX_LOCAL}Main.js
 else
 echo "${color}Compile using 0.19 --optimized${reset}"
 ${COMPILER} make --optimize ./src/Reader.elm --output ${NGINX_LOCAL}Main.js
