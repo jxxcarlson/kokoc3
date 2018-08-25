@@ -1,4 +1,4 @@
-module View.Admin exposing(view)
+module View.Admin exposing(view , dateString)
 
 import Element exposing (..)
 import Element.Background as Background
@@ -8,7 +8,7 @@ import Element.Keyed as Keyed
 import Http
 import Json.Encode as Encode
 import Json.Decode as Decode exposing (at, int, list, string, decodeString, Decoder)
-
+import Time exposing(Posix, utc, Month(..))
 
 import Model exposing(Model, Msg(..))
 import User exposing(Token, UserMsg(..), readToken, stringFromMaybeToken, User, BigUser)
@@ -62,17 +62,24 @@ viewUsers userList =
                 )
           }
         , { header = Element.el [Font.bold] (Element.text "V")
-          , width = (px 20)
+          , width = (px 10)
           , view =
                  (\user ->
                     Element.text (boolToString user.verified)
                  )
           } 
         , { header = Element.el [Font.bold] (Element.text "P")
-          , width = (px 20)
+          , width = (px 10)
           , view =
                  (\user ->
                     Element.text (boolToString user.public)
+                 )
+          } 
+        , { header = Element.el [Font.bold] (Element.text "Joined")
+          , width = (px 90)
+          , view =
+                 (\user ->
+                    Element.text (dateString user.created)
                  )
           }  
         , { header = Element.el [Font.bold] (Element.text "Username")
@@ -114,6 +121,31 @@ viewUsers userList =
         ]
     }
 
+
+dateString : Posix -> String 
+dateString p = 
+  let 
+    y = Time.toYear utc p |> String.fromInt 
+    m = Time.toMonth utc p |> stringFromMonth
+    d = Time.toDay utc p |> String.fromInt 
+  in 
+    m ++ " " ++ d ++ ", " ++ y
+
+stringFromMonth : Time.Month -> String 
+stringFromMonth month = 
+  case month of 
+    Jan -> "Jan"
+    Feb -> "Feb"
+    Mar -> "Mar"
+    Apr -> "Apr"
+    May -> "May"
+    Jun -> "Jun"
+    Jul -> "Jul"
+    Aug -> "Aug"
+    Sep -> "Sep"
+    Oct -> "Oct"
+    Nov -> "Nov"
+    Dec -> "Dec"
 
 boolToString : Bool -> String 
 boolToString boolValue = 

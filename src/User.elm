@@ -305,6 +305,7 @@ bigUserDecoder =
         |> JPipeline.required "mediaCount" Decode.int
         |> JPipeline.required "verified" Decode.bool
         |> JPipeline.required "public" Decode.bool
+        |> JPipeline.required "created" (Decode.map ((\x -> x*1000) >> Time.millisToPosix) Decode.int)
 
 bigUserEncoder : BigUser -> Encode.Value 
 bigUserEncoder bigUser = 
@@ -330,6 +331,7 @@ type alias BigUser = {
     , mediaCount : Int
     , verified : Bool
     , public : Bool
+    , created : Posix
   }
 
 

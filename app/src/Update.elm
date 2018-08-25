@@ -1077,7 +1077,10 @@ imageQuery model basicQuery =
 
 searchForUsersCmd : Model -> Cmd Msg 
 searchForUsersCmd model = 
-  Cmd.map UserMsg (User.getUsers <| "is_user=" ++ model.searchQueryString)
+  case (String.contains "=" model.searchQueryString) of 
+    True ->  Cmd.map UserMsg (User.getUsers <| model.searchQueryString)
+    False -> Cmd.map UserMsg (User.getUsers <| "is_user=" ++ model.searchQueryString)
+  
 
 
 searchForUsers : Model -> (Model, Cmd Msg)
