@@ -121,6 +121,7 @@ type Msg
     | AcceptEmail String
     | AcceptUserName String 
     | AcceptSearchQuery String
+    | Search
     | AcceptDocumenTitle String
     | AcceptDocumentTagString String
     | AcceptImageName String

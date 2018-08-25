@@ -1043,6 +1043,9 @@ update msg model =
                   ({model | maybeBigUser = Just {bigUser |  public = False}}, Cmd.none)
                 False ->
                   ({model | maybeBigUser = Just {bigUser |  public = True}}, Cmd.none)
+
+        Search -> 
+          doSearch model
               
   
 -- UPDATE END

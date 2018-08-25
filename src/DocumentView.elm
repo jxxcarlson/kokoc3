@@ -166,7 +166,18 @@ viewMiniLatex viewport texMacros document =
 
 texWidth : Viewport -> Int 
 texWidth viewport = 
-  round <| 0.6363*(viewport.viewport.width - 460)
+  case (currentDevice viewport).class of 
+    Phone -> round <| 1.00*(viewport.viewport.width - 60)
+    _ -> round <| 0.6363*(viewport.viewport.width - 460)
+
+currentDevice : Viewport -> Device 
+currentDevice  viewport =
+  let 
+    width = viewport.viewport.width
+    height = viewport.viewport.height
+  in 
+    classifyDevice {width = round width, height = round height}
+
   
 edge = {left = 0, right = 0, top = 0, bottom = 0}
 

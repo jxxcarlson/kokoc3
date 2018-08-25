@@ -8,6 +8,8 @@ import Element.Keyed as Keyed
 import Element.Border as Border
 import Element.Lazy
 
+import Browser.Dom exposing(Viewport)
+
 import Html exposing(Html)
 import Html.Attributes exposing(src, type_, value)
 import Html.Events exposing(on)
@@ -40,9 +42,15 @@ import View.Admin as Admin
 import View.Image as Image
 import View.Writer as Writer
 import View.Author as Author
+import View.Phone exposing(phoneView)
+
+view model = 
+  case (currentDevice model.viewport).class of 
+    Phone -> phoneView model 
+    _ -> nonPhoneView model
 
 
-view  model =
+nonPhoneView  model =
    Element.layout [Font.size 14, width fill, height fill, clipY] <|
         Element.column [ width fill, height (px model.windowHeight)] [
               header model
@@ -95,7 +103,35 @@ footer model =
       , printDocumentButton model 
       , exportDocumentlLink model
       , getAuthorsDocumentsButton (px 110) model
+      , Element.el [] (text <| currentDeviceString model.viewport)
   ] 
+
+deviceClassString : DeviceClass -> String 
+deviceClassString deviceClass = 
+  case deviceClass of 
+    Phone -> "phone"
+    Tablet -> "tablet"
+    Desktop -> "desktop"
+    BigDesktop -> "big desktop"
+
+
+currentDevice : Viewport -> Device 
+currentDevice  viewport =
+  let 
+    width = viewport.viewport.width
+    height = viewport.viewport.height
+  in 
+    classifyDevice {width = round width, height = round height}
+
+
+currentDeviceString : Viewport -> String 
+currentDeviceString  viewport = 
+    viewport 
+      |> currentDevice 
+      |> .class
+      |> deviceClassString
+
+
 
 spacer : Int -> Element msg
 spacer width_ = 
