@@ -1208,7 +1208,7 @@ changeMode model nextAppMode =
           False -> Cmd.none
       _ -> Cmd.none
   in 
-    ({model | appMode = nextAppMode, toolPanelState = nextToolPaneState}, cmd)
+    ({model | appMode = nextAppMode, searchQueryString = "", toolPanelState = nextToolPaneState}, cmd)
 
 signOutCurrentUser : Model -> (Model, Cmd Msg)
 signOutCurrentUser model = 

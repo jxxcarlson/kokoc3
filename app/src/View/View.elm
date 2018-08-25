@@ -137,11 +137,18 @@ searchInput model =
     Input.text [htmlAttribute (Html.Attributes.id "search-box")
        , width (px 360), height (px 30) , Font.color black] {
         text = model.searchQueryString 
-      , placeholder = Just (Input.placeholder [moveUp 5] (text "Search example: type 'quantum', then press Ctrl-Enter"))
+      , placeholder = Just (Input.placeholder [moveUp 5] (text <| searchPlaceHolderText model ))
       , onChange = Just(\str -> AcceptSearchQuery str)
       , label = Input.labelLeft [ Font.size 14, Font.bold ] (text "")
     }
 
+searchPlaceHolderText : Model -> String 
+searchPlaceHolderText model  =
+  case model.appMode of 
+    ImageEditing -> "Example: type 'aust', press Ctrl-Enter"
+    DisplayAuthors -> "Example: type 'fred' or 'physics', press Ctrl-Enter"
+    Admin -> "Example: type 'alpha' or 'physics', press Ctrl-Enter"
+    _ -> "Example: type 'quantum', press Ctrl-Enter"
 
 -- BUTTONS AND LINKS
 
