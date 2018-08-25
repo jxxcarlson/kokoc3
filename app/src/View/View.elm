@@ -103,7 +103,7 @@ footer model =
       , printDocumentButton model 
       , exportDocumentlLink model
       , getAuthorsDocumentsButton (px 110) model
-      , Element.el [] (text <| currentDeviceString model.viewport)
+      -- , Element.el [] (text <| currentDeviceString model.viewport)
   ] 
 
 deviceClassString : DeviceClass -> String 
