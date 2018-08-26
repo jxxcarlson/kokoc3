@@ -1072,6 +1072,12 @@ imageQuery model basicQuery =
 {-| Handler: ListUsers
 -}
 
+searchForUsersCmdWithQuery : String -> Model -> Cmd Msg 
+searchForUsersCmdWithQuery searchQueryString model = 
+  Cmd.map UserMsg (User.getUsers <| searchQueryString)
+  
+
+
 searchForUsersCmd : Model -> Cmd Msg 
 searchForUsersCmd model = 
   case (String.contains "=" model.searchQueryString) of 
@@ -1207,7 +1213,7 @@ changeMode model nextAppMode =
           False -> Cmd.none
       Admin ->
         case model.userList == [] of 
-          True -> searchForUsersCmd model 
+          True -> searchForUsersCmdWithQuery "created=7" model 
           False -> Cmd.none
       _ -> Cmd.none
     searchQueryString = case nextAppMode of 

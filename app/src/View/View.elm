@@ -104,6 +104,7 @@ footer model =
       , exportDocumentlLink model
       , getAuthorsDocumentsButton (px 110) model
       -- , Element.el [] (text <| currentDeviceString model.viewport)
+      , Element.el [] (text <| Configuration.client)
   ] 
 
 deviceClassString : DeviceClass -> String 
