@@ -80,10 +80,7 @@ port imageRead : (Value -> msg) -> Sub msg
 port sendCredentials : Value -> Cmd msg 
 port sendPdfFileName : Value -> Cmd msg
 port sendDocumentForPrinting : Value -> Cmd msg
-
-
 port onUrlChange : (String -> msg) -> Sub msg
-
 port pushUrl : String -> Cmd msg
 
 
@@ -170,6 +167,31 @@ getInfoFromOutside tagger onError =
                     onError <| "Unexpected info from outside"
         )
 
+-- link : msg -> List (Html.Attribute msg) -> List (Html msg) -> Html msg
+-- link href attrs children =
+--   Html.a (preventDefaultOn "click" (Decode.succeed (href, True)) :: attrs) children
+-- ###
+processInfoForElm : Model -> InfoForElm -> (Model, Cmd Msg)
+processInfoForElm model infoForElm_ =
+  case infoForElm_ of 
+    DocumentDataFromOutside document -> 
+       ({model |    currentDocument = document  
+                  , documentList = DocumentList.make document []
+                  , message = "!got doc from outside"
+            }
+            , Cmd.none 
+          )  
+    UserDataFromOutside user -> 
+        ({model |   maybeCurrentUser = Just user 
+                  , maybeToken = Just (User.getToken user)
+                  , message = "You are reconnected"
+            }
+            , bigUserCmd2 (Just user)
+          ) 
+    DocumentListDataFromOutside intList ->
+      ({ model | documentIdList = intList }
+      , Cmd.map DocListMsg  (DocumentList.retrievDocumentsFromIntList model.maybeCurrentUser intList) )
+
 
 
 saveDocToLocalStorage : Document -> Cmd msg
@@ -239,31 +261,6 @@ processUrl urlString =
 
       InternalRef str ->
           Cmd.none
-
--- link : msg -> List (Html.Attribute msg) -> List (Html msg) -> Html msg
--- link href attrs children =
---   Html.a (preventDefaultOn "click" (Decode.succeed (href, True)) :: attrs) children
--- ###
-processInfoForElm : Model -> InfoForElm -> (Model, Cmd Msg)
-processInfoForElm model infoForElm_ =
-  case infoForElm_ of 
-    DocumentDataFromOutside document -> 
-       ({model |    currentDocument = document  
-                  , documentList = DocumentList.make document []
-                  , message = "!got doc from outside"
-            }
-            , Cmd.none 
-          )  
-    UserDataFromOutside user -> 
-        ({model |   maybeCurrentUser = Just user 
-                  , maybeToken = Just (User.getToken user)
-                  , message = "You are reconnected"
-            }
-            , bigUserCmd2 (Just user)
-          ) 
-    DocumentListDataFromOutside intList ->
-      ({ model | documentIdList = intList }
-      , Cmd.map DocListMsg  (DocumentList.retrievDocumentsFromIntList model.maybeCurrentUser intList) )
 
 
 idFromDocInfo str = 
@@ -1213,8 +1210,11 @@ changeMode model nextAppMode =
           True -> searchForUsersCmd model 
           False -> Cmd.none
       _ -> Cmd.none
+    searchQueryString = case nextAppMode of 
+      Admin -> "created=7"
+      _ -> ""
   in 
-    ({model | appMode = nextAppMode, searchQueryString = "", toolPanelState = nextToolPaneState}, cmd)
+    ({model | appMode = nextAppMode, searchQueryString = searchQueryString, toolPanelState = nextToolPaneState}, cmd)
 
 signOutCurrentUser : Model -> (Model, Cmd Msg)
 signOutCurrentUser model = 
