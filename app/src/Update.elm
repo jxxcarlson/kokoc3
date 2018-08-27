@@ -1155,6 +1155,7 @@ toggleToolPanelState model =
               documentTitle  = model.currentDocument.title
             , toolPanelState = nextToolPanelState
             , deleteDocumentState = DeleteIsOnSafety
+            , appMode = Writing
             }
   in 
     ( nextModel , Cmd.none)

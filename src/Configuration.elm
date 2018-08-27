@@ -105,53 +105,45 @@ $$\\int_0^1 x^n dx = \\frac{1}{n+1}$$
 
 basicDocumentText = 
     """
-This is \\strong{localhost:8000}, ready to run MiniLatex,
+
+This is \\strong{knode.io}, ready to run MiniLatex,
 Asciidoc, Markdown, or just plain old text.
 
 $$\\int_0^1 x^n dx = \\frac{1}{n+1}$$
 
 Write formulas, place images, etc.
 Edit live and publish to the web in real time. Lecture notes, poetry, whatever.
-Click on \\strong{Home} to go to your home page.
+Click on \\strong{\\blue{Home}} to go to your home page.
 
 
-\\bigskip
+\\medskip
 
 \\image{http://noteimages.s3.amazonaws.com/uploads/butterfly.jpg}{}{width: 450}
 
-\\bigskip
+\\medskip
 
-Click on \\strong{Random} to explore.  To find things, type something in
+Click on  \\strong{\\blue{Random}} to explore.  To find things, type something in
 the search box, e.g., \\italic{matt}, \\italic{wave}, or \\italic{snow},
 then type Ctrl-ENTER or Ctrl-RETURN.
  
 
-\\bigskip
-\\strong{localhost:8000} is made with \\href{http://elm-lang.org/}{Elm}.
+\\strong{knode.io} is made with \\href{http://elm-lang.org/}{Elm}.
 
 
-\\bigskip
-\\strong{Sample documents}
+\\subheading{Sample documents}
 \\begin{itemize} 
-  \\item \\href{https://localhost:8000/424}{Quantum Field Theory Notes}
-  \\item \\href{https://localhost:8000/365}{Visual Literacy}
-  \\item \\href{https://localhost:8000/754}{Butterfly}
-  \\item \\href{https://localhost:8000/346}{Metal}
+  \\item \\href{https://knode.io/424}{Quantum Field Theory Notes}
+  \\item \\href{https://knode.io/365}{Visual Literacy}
+  \\item \\href{https://knode.io/754}{Butterfly}
+  \\item \\href{https://knode.io/346}{Metal}
 \\end{itemize}
 
 
 Check out the \\href{https://jxxcarlson.github.io/app/miniLatexLive/index.html}{MiniLatex Live demo}
 \\mdash no login needed.
 
-\\medskip
-
 If you have questions or comments about MiniLatex or localhost:8000, please contact
 Jim Carlson: jxxcarlson at gmail.
-
-
-\\bigskip
-
-\\bigskip
 """
 
 newUserText = 
