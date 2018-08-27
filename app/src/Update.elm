@@ -753,9 +753,10 @@ update msg model =
               tokenString = User.getTokenStringFromMaybeUser model.maybeCurrentUser
           in 
             case model.currentDocument.docType of
-              Master -> (model, Cmd.none) -- do not autosave master documents ###
+              Master -> ({model | message = "Master, no autosave"} , Cmd.none) -- do not autosave master documents ###
               Standard -> 
                 ( { model |   currentDocumentDirty = False
+                            , message = "Doc saved"
                             , documentList = DocumentList.updateDocument model.currentDocument model.documentList 
                         }
                   , Cmd.batch [saveCurrentDocumentIfDirty model, getTime ])
