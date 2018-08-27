@@ -721,6 +721,7 @@ update msg model =
             in
                 ({ model | debounce = debounce
                          , debounceCounter = model.debounceCounter + 1
+                         --, message = "debounce: " ++ (String.fromInt model.debounceCounter)
                   }
                          , Cmd.batch [
                     cmd  
@@ -753,10 +754,10 @@ update msg model =
               tokenString = User.getTokenStringFromMaybeUser model.maybeCurrentUser
           in 
             case model.currentDocument.docType of
-              Master -> ({model | message = "Master, no autosave"} , Cmd.none) -- do not autosave master documents ###
+              Master -> ({model | message = "Autosave (no, M)"} , getTime) -- do not autosave master documents ###
               Standard -> 
                 ( { model |   currentDocumentDirty = False
-                            , message = "Doc saved"
+                            , message = "Autosaved doc " ++ (String.fromInt model.debounceCounter)
                             , documentList = DocumentList.updateDocument model.currentDocument model.documentList 
                         }
                   , Cmd.batch [saveCurrentDocumentIfDirty model, getTime ])
@@ -912,7 +913,8 @@ update msg model =
           in 
             case (sessionExpired, model.maybeCurrentUser) of 
                 (True, Just _) -> signOutCurrentUser model 
-                (_, _) -> ( {model | message = sessionString}, Cmd.none)
+                (_, _) -> ( {model | message = sessionString}, Cmd.none) -- ###
+
 
       
         PrintDocument -> 
@@ -1446,24 +1448,37 @@ saveCurrentDocument model =
           tokenString = User.getTokenStringFromMaybeUser model.maybeCurrentUser 
           currentDocument = model.currentDocument 
           tags = model.tagString |> String.split "," |> List.map String.trim
-          nextCurrentDocument = { currentDocument | title = model.documentTitle, tags = tags}
+          nextTags = case tags == [] of 
+            True -> currentDocument.tags 
+            False -> tags
+          nextDocumentTitle = case model.documentTitle == "" of
+            True ->  currentDocument.title
+            False -> model.documentTitle
+          nextCurrentDocument = { currentDocument | title = nextDocumentTitle, tags = nextTags}
           nextDocumentList = DocumentList.updateDocument currentDocument model.documentList
       in 
           ( { model | currentDocumentDirty = False 
+                    , message = "(s)" ++ (digest nextCurrentDocument.content)
                     , currentDocument = nextCurrentDocument
                     , documentList = nextDocumentList}
             , Cmd.map DocMsg <| Document.saveDocument tokenString nextCurrentDocument )
 
- 
+digest str = 
+  str 
+    |> String.replace "\n" ""
+    |> (\x -> (String.left 3 x) ++ "..." ++( String.right 3 x))
+
 saveCurrentMasterDocument : Model -> (Model, Cmd Msg) -- ###
 saveCurrentMasterDocument model = 
     let  
         tokenString = User.getTokenStringFromMaybeUser model.maybeCurrentUser
     in 
-        ( { model |   currentDocumentDirty = False
+        ( { model |  currentDocumentDirty = False
+                    , message = "(m)" ++ (digest model.currentDocument.content)
                     , documentList = DocumentList.updateDocument model.currentDocument model.documentList 
                 }
-          , Cmd.batch [ saveCurrentDocumentIfDirty model
+          , Cmd.batch [ -- saveCurrentDocumentIfDirty model
+                       Cmd.map DocMsg <| Document.saveDocument tokenString model.currentDocument 
                       , getTime 
                       , Cmd.map DocListMsg (DocumentList.loadMasterDocument model.maybeCurrentUser model.currentDocument.id) -- ###!!!
                   ])
