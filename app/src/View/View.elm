@@ -105,8 +105,16 @@ footer model =
       , getAuthorsDocumentsButton (px 110) model
       -- , Element.el [] (text <| currentDeviceString model.viewport)
       , Element.el [] (text <| Configuration.client)
+      , Element.el [] (text <| showMaybeUser model.maybeCurrentUser)
   ] 
 
+
+showMaybeUser : Maybe User -> String 
+showMaybeUser maybeUser = 
+  case maybeUser of 
+    Nothing -> "No User"
+    Just user -> User.username user
+    
 deviceClassString : DeviceClass -> String 
 deviceClassString deviceClass = 
   case deviceClass of 

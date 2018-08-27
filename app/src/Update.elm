@@ -170,7 +170,6 @@ getInfoFromOutside tagger onError =
 -- link : msg -> List (Html.Attribute msg) -> List (Html msg) -> Html msg
 -- link href attrs children =
 --   Html.a (preventDefaultOn "click" (Decode.succeed (href, True)) :: attrs) children
--- ###
 processInfoForElm : Model -> InfoForElm -> (Model, Cmd Msg)
 processInfoForElm model infoForElm_ =
   case infoForElm_ of 
@@ -380,7 +379,7 @@ update msg model =
           case result of 
             Ok token -> 
               let 
-                maybeToken = Just token  -- ###
+                maybeToken = Just token  
                 maybeCurrentUser = User.maybeUserFromEmailAndToken model.email (User.stringFromToken token)
                 bigUserCmd = case maybeCurrentUser of 
                   Nothing -> Cmd.none 
@@ -588,7 +587,7 @@ update msg model =
                 ({model | message = handleHttpError err},   Cmd.none  )
 
 
-        DocListViewMsg (SetCurrentDocument document) -> 
+        DocListViewMsg (SetCurrentDocument document) -> -- ###
             let  
               documentList = DocumentList.select (Just document) model.documentList
               masterDocLoaded = case document.docType of
@@ -741,7 +740,7 @@ update msg model =
                     }
                     , cmd)
 
-        UpdateEditorContent str -> -- ###!!!
+        UpdateEditorContent str -> 
           let  
             currentDocument = model.currentDocument 
             nextCurrentDocument = { currentDocument | content = str }
@@ -751,12 +750,15 @@ update msg model =
 
         SaveCurrentDocument time ->
           let  
-              tokenString = User.getTokenStringFromMaybeUser model.maybeCurrentUser 
+              tokenString = User.getTokenStringFromMaybeUser model.maybeCurrentUser
           in 
-              ( { model |   currentDocumentDirty = False
-                          , documentList = DocumentList.updateDocument model.currentDocument model.documentList -- ###!!!
-                      }
-                , Cmd.batch [saveCurrentDocumentIfDirty model, getTime ])
+            case model.currentDocument.docType of
+              Master -> (model, Cmd.none) -- do not autosave master documents ###
+              Standard -> 
+                ( { model |   currentDocumentDirty = False
+                            , documentList = DocumentList.updateDocument model.currentDocument model.documentList 
+                        }
+                  , Cmd.batch [saveCurrentDocumentIfDirty model, getTime ])
 
         UpdateCurrentDocument ->
           saveCurrentDocument model
@@ -765,12 +767,11 @@ update msg model =
         Outside infoForElm_ ->
            processInfoForElm model infoForElm_
            
-
-        ToggleToolPanelState ->  
-           toggleToolPanelState model 
+        ToggleToolPanelState -> 
+          toggleToolPanelState model 
 
         NewDocument -> 
-          doNewDocument model
+           doNewDocument model
 
         NewChildDocument -> 
           (model, Cmd.map DocMsg (newChildDocument model))
@@ -1128,37 +1129,44 @@ printLatex model =
 
 doNewDocument : Model -> (Model, Cmd Msg)
 doNewDocument model = 
-    ({ model | toolPanelState = ShowToolPanel
-            , documentTitle = "NEW DOCUMENT"
-            , currentDocumentDirty = False}, 
-        Cmd.batch[ 
-            Cmd.map DocMsg (newDocument model)
-          , saveCurrentDocumentIfDirty model
-        ] 
-    )
+  case model.maybeCurrentUser of 
+    Nothing -> (model, Cmd.none)
+    Just _ -> 
+      ({ model | toolPanelState = ShowToolPanel
+              , documentTitle = "NEW DOCUMENT"
+              , currentDocumentDirty = False}, 
+          Cmd.batch[ 
+              Cmd.map DocMsg (newDocument model)
+            , saveCurrentDocumentIfDirty model
+          ] 
+      )
+
 toggleToolPanelState : Model -> (Model, Cmd Msg)
 toggleToolPanelState model = 
-  let  
-      nextToolPanelState = 
-        case model.toolPanelState of 
-          HideToolPanel -> ShowToolPanel
-          ShowToolPanel -> HideToolPanel
-      nextModel = case nextToolPanelState of 
-          HideToolPanel -> 
-            let 
-              docList_ = model.documentList
-              nextDocList_ = DocumentList.updateDocument model.currentDocument docList_
-            in
-              { model | toolPanelState = nextToolPanelState, documentList = nextDocList_ }  
-          ShowToolPanel -> 
-            { model | 
-              documentTitle  = model.currentDocument.title
-            , toolPanelState = nextToolPanelState
-            , deleteDocumentState = DeleteIsOnSafety
-            , appMode = Writing
-            }
-  in 
-    ( nextModel , Cmd.none)
+  case model.maybeCurrentUser of 
+    Nothing -> (model, Cmd.none)
+    Just _ -> 
+      let  
+          nextToolPanelState = 
+            case model.toolPanelState of 
+              HideToolPanel -> ShowToolPanel
+              ShowToolPanel -> HideToolPanel
+          nextModel = case nextToolPanelState of 
+              HideToolPanel -> 
+                let 
+                  docList_ = model.documentList
+                  nextDocList_ = DocumentList.updateDocument model.currentDocument docList_
+                in
+                  { model | toolPanelState = nextToolPanelState, documentList = nextDocList_ }  
+              ShowToolPanel -> 
+                { model | 
+                  documentTitle  = model.currentDocument.title
+                , toolPanelState = nextToolPanelState
+                , deleteDocumentState = DeleteIsOnSafety
+                , appMode = Writing
+                }
+      in 
+        ( nextModel , Cmd.none)
 
 getPublicDocumentsRawQuery : Model -> String -> (Model, Cmd Msg)
 getPublicDocumentsRawQuery model query = 
@@ -1249,7 +1257,7 @@ getTimeInOneSecond =
     |> Task.andThen (\_ -> Time.now)
     |> Task.perform (\time -> SessionStatus time)
 
-getBigUserInOneSecond = -- ###
+getBigUserInOneSecond = 
   Process.sleep (1000)
     |> Task.perform (\_ -> Time.now)
  
@@ -1428,21 +1436,37 @@ displayCurrentMasterDocument model =
 getViewPort : Cmd Msg
 getViewPort = Task.perform GetViewport Dom.getViewport
 
-saveCurrentDocument : Model -> (Model, Cmd Msg) -- ###!!!
+saveCurrentDocument : Model -> (Model, Cmd Msg) -- ###
 saveCurrentDocument model = 
-  let  
-      tokenString = User.getTokenStringFromMaybeUser model.maybeCurrentUser 
-      currentDocument = model.currentDocument 
-      tags = model.tagString |> String.split "," |> List.map String.trim
-      nextCurrentDocument = { currentDocument | title = model.documentTitle, tags = tags}
-      nextDocumentList = DocumentList.updateDocument currentDocument model.documentList
-  in 
-      ( { model | currentDocumentDirty = False 
-                , currentDocument = nextCurrentDocument
-                , documentList = nextDocumentList}
-        , Cmd.map DocMsg <| Document.saveDocument tokenString nextCurrentDocument )
+  case model.currentDocument.docType of
+    Master -> saveCurrentMasterDocument model
+    Standard -> 
+      let  
+          tokenString = User.getTokenStringFromMaybeUser model.maybeCurrentUser 
+          currentDocument = model.currentDocument 
+          tags = model.tagString |> String.split "," |> List.map String.trim
+          nextCurrentDocument = { currentDocument | title = model.documentTitle, tags = tags}
+          nextDocumentList = DocumentList.updateDocument currentDocument model.documentList
+      in 
+          ( { model | currentDocumentDirty = False 
+                    , currentDocument = nextCurrentDocument
+                    , documentList = nextDocumentList}
+            , Cmd.map DocMsg <| Document.saveDocument tokenString nextCurrentDocument )
 
  
+saveCurrentMasterDocument : Model -> (Model, Cmd Msg) -- ###
+saveCurrentMasterDocument model = 
+    let  
+        tokenString = User.getTokenStringFromMaybeUser model.maybeCurrentUser
+    in 
+        ( { model |   currentDocumentDirty = False
+                    , documentList = DocumentList.updateDocument model.currentDocument model.documentList 
+                }
+          , Cmd.batch [ saveCurrentDocumentIfDirty model
+                      , getTime 
+                      , Cmd.map DocListMsg (DocumentList.loadMasterDocument model.maybeCurrentUser model.currentDocument.id) -- ###!!!
+                  ])
+
 httpErrorHandler : Http.Error -> String
 httpErrorHandler error = 
   case error of 
