@@ -25,6 +25,8 @@ module Document exposing(..)
 --     , encodeString
 --     , getImageList
 --     , processImageList
+--     , accessDictToString
+--     , stringToAccessDict
 --   )
 
 import Dict exposing(Dict)
@@ -33,6 +35,7 @@ import Json.Encode as Encode
 import Json.Decode as Decode exposing (at, int, list, string, decodeString, Decoder)
 import Json.Decode.Pipeline as JPipeline exposing (required, optional, hardcoded)
 import Http
+import List.Extra
 
 import Configuration
 import Utility
@@ -118,7 +121,9 @@ type alias Child =
     }
 
 type alias AccessDict =
-    Dict String String
+    Dict String AccessType 
+
+type AccessType = Readable | Writeable | ReadableAndWriteable | NotShared 
 
 
 {-| A master document has list of children -}
@@ -201,7 +206,7 @@ documentDecoder =
         |> JPipeline.required "level" Decode.int
 
         |> JPipeline.required "public" (Decode.bool)
-        |> JPipeline.required "access" (Decode.dict Decode.string)
+        |> JPipeline.required "access" (Decode.dict (Decode.map stringToAccessType Decode.string)) 
 
         |> JPipeline.required "tags" (Decode.list Decode.string)
 
@@ -215,11 +220,77 @@ documentDecoder =
         |> JPipeline.required "archive" Decode.string
         |> JPipeline.required "version" Decode.int
 
-        |> JPipeline.required "lastViewed" (Decode.map Time.millisToPosix Decode.int)
+            |> JPipeline.required "lastViewed" (Decode.map Time.millisToPosix Decode.int)
         |> JPipeline.required "created" (Decode.map Time.millisToPosix Decode.int)
         |> JPipeline.required "lastModified" (Decode.map Time.millisToPosix Decode.int)
        
-        
+    
+-- ACCESS
+
+stringToAccessType : String -> AccessType
+stringToAccessType str=
+    case str of
+        "r" ->
+           Readable
+
+        "w" ->
+           Writeable
+
+        "rw" -> 
+            ReadableAndWriteable
+
+        _ ->
+             NotShared
+
+
+accessTypeToString : AccessType -> String 
+accessTypeToString accessValue =
+  case accessValue of 
+    Readable -> "r"
+    Writeable -> "w"
+    ReadableAndWriteable -> "rw"
+    NotShared -> "not shared"
+
+accessDictToStringList : AccessDict -> List String 
+accessDictToStringList accessDict = 
+  accessDict 
+    |> Dict.toList
+    |> List.map kvTupleToString 
+
+stringListToAccessDict : List String -> AccessDict 
+stringListToAccessDict strlist = 
+ strlist
+   |> List.map String.trim 
+   |> List.map (\x -> String.split ":" x |> List.map String.trim)
+   |> List.filter (\item -> List.length item == 2)
+   |> List.map pairToKVTuple
+   |> Dict.fromList
+
+accessDictToString : AccessDict -> String 
+accessDictToString accessDict = 
+  accessDict |> accessDictToStringList |> String.join ", "
+
+stringToAccessDict : String -> AccessDict 
+stringToAccessDict str = 
+ str |> String.split "," |> stringListToAccessDict
+
+
+pairToKVTuple : List String -> (String, AccessType)
+pairToKVTuple list =
+  if List.length list /= 2 then 
+    ("bozo", NotShared)
+  else 
+    let 
+      key = List.Extra.getAt 0 list |> Maybe.withDefault "bozo"
+      value = List.Extra.getAt 1 list |> Maybe.withDefault "" |> stringToAccessType
+    in 
+     (key, value)
+
+kvTupleToString  : (String, AccessType) -> String 
+kvTupleToString (str, accessValue) =
+  str ++ ": " ++ (accessTypeToString accessValue)
+       
+
 decodeDocType : String -> Decoder DocType
 decodeDocType docTypeString =
     case docTypeString of
@@ -295,9 +366,17 @@ encodeDocument document =
         , ( "parent_title", Encode.string <| document.parentTitle )
         
         , ( "attributes", encodeDocumentAttributes <| document )
-        , ( "access", Encode.dict identity Encode.string document.access)
+        , ( "access", Encode.dict identity encodeDocumentAccess document.access)
        
         ]
+
+encodeDocumentAccess : AccessType -> Encode.Value 
+encodeDocumentAccess accessValue =
+  case accessValue of 
+    Readable -> Encode.string "r"
+    Writeable -> Encode.string "w"
+    ReadableAndWriteable -> Encode.string "rw"
+    NotShared -> Encode.string ""
 
 decodeDocumentFromOutside : Decoder Document
 decodeDocumentFromOutside =
@@ -314,7 +393,7 @@ decodeDocumentFromOutside =
         |> JPipeline.required "level" Decode.int
 
         |> JPipeline.required "public" (Decode.bool)
-        |> JPipeline.required "access" (Decode.dict Decode.string) -- PROBLEM
+        |> JPipeline.required "access" (Decode.dict (Decode.map stringToAccessType Decode.string)) -- PROBLEM
 
         |> JPipeline.required "tags" (Decode.list Decode.string) -- PROBLEM
 
@@ -351,7 +430,7 @@ encodeDocumentForOutside document =
         , ( "level", Encode.int <| document.level )
 
         , ( "public", Encode.bool <| document.public )
-        , ( "access", Encode.dict identity Encode.string document.access )
+        , ( "access", Encode.dict identity encodeDocumentAccess document.access )
 
         , ( "tags", Encode.list Encode.string document.tags )
 

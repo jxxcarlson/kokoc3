@@ -108,7 +108,7 @@ type alias Model =
       , errorResponse : ErrorResponse
       , blurb : String
       , preferencesPanelState : PreferencesPanelState
-      , debugMessage : String
+      , sharingString : String
     }
 
 
@@ -124,6 +124,7 @@ type Msg
     | Search
     | AcceptDocumenTitle String
     | AcceptDocumentTagString String
+    | AcceptSharingString String
     | AcceptImageName String
     | AcceptEmailSubject String
     | AcceptEmailText String
@@ -239,5 +240,5 @@ initialModel locationHref windowWidth windowHeight document =
             , errorResponse = NoErrorResponse
             , blurb = ""
             , preferencesPanelState = PreferencesPanelOff
-            , debugMessage = "Debug: nothing"
+            , sharingString = "Debug: nothing"
         }

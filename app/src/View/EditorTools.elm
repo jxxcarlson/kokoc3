@@ -70,8 +70,9 @@ toolsPanel model = Element.column [ spacing 15, padding 10, height shrink, scrol
   , masterDocPanel model
   , documentTitleInput model
   , documentPanels model
-  , tagInputPane model (px 250) (px 140) "Tags"
+  , tagInputPane model (px 250) (px 100) "Tags"
   , versionsPanel model
+  , sharingInputPane model (px 250) (px 100) "Sharing"
   ]
 
 
@@ -105,6 +106,25 @@ tagInputPane_ model width_ height_ label_  =
           )
         ]
 
+sharingInputPane model width_ height_ label_  = 
+  Element.column [] [
+      Element.el [Font.bold] (text label_)
+    , sharingInputPane_ model width_ height_ label_ 
+  ]
+
+sharingInputPane_ model width_ height_ label_  =
+    Keyed.row []
+        [ ( (String.fromInt model.counter)
+          , Input.multiline 
+                [ width (width_), height (height_), padding 10, scrollbarY ]
+                { onChange = Just AcceptSharingString
+                , text = model.currentDocument.access |> Document.accessDictToString
+                , label = Input.labelAbove [ Font.size 14, Font.bold ] (text "")
+                , placeholder = Nothing
+                , spellcheck = False
+                }
+          )
+        ]
 
 
 documentPanels model = 

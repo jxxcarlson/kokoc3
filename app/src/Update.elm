@@ -331,7 +331,10 @@ doSearch model =
         Reading -> 
           case model.maybeCurrentUser of 
             Nothing -> getPublicDocuments model model.searchQueryString 
-            Just _ -> getUserDocuments model (model.searchQueryString ++ ", docs=any")
+            Just _ -> 
+              case String.contains "shared" model.searchQueryString of 
+                True -> getUserDocuments model (model.searchQueryString)
+                False -> getUserDocuments model (model.searchQueryString ++ ", docs=any")
         Writing -> getUserDocuments model model.searchQueryString 
         ImageEditing -> searchForImages model
         Admin -> searchForUsers model
@@ -371,6 +374,15 @@ update msg model =
             nextDocument = {currentDocument | tags = nextTags  }
           in 
             ( { model | tagString = str, currentDocument = nextDocument, currentDocumentDirty = True }, Cmd.none )
+
+        AcceptSharingString str ->
+          let 
+            currentDocument = model.currentDocument 
+            nextAccessDict = str |> Document.stringToAccessDict
+            nextDocument = {currentDocument | access = nextAccessDict  }
+          in 
+            ( { model | sharingString = str, currentDocument = nextDocument, currentDocumentDirty = True }, Cmd.none )
+
 
         AcceptImageName str -> 
             ( { model | imageName = str }, Cmd.none )

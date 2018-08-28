@@ -16,6 +16,7 @@ doReplacements str =
   str 
     |> String.replace "author=" "authorname=" 
     |> String.replace "ago=" "days_before="
+    |> String.replace "shared" "shared=yes"
     |> fixIdSearch
 
 

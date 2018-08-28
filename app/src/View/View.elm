@@ -105,7 +105,7 @@ footer model =
       , getAuthorsDocumentsButton (px 110) model
       -- , Element.el [] (text <| currentDeviceString model.viewport)
       , Element.el [] (text <| Configuration.client)
-      -- , Element.el [] (text <| "access: " ++ (Debug.toString model.currentDocument.access))
+      , Element.el [] (text <| "access: " ++ (Document.accessDictToString model.currentDocument.access))
       -- , Element.el [] (text <| "autosave: " ++ (String.fromFloat Configuration.autosaveDuration) ++ " ms") 
   ] 
 
