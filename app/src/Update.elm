@@ -1233,7 +1233,7 @@ changeMode model nextAppMode =
           False -> Cmd.none
       DisplayAuthors ->
         case model.userList == [] of 
-          True -> searchForUsersCmd model 
+          True -> searchForUsersCmdWithQuery "created=3000" model 
           False -> Cmd.none
       Admin ->
         case model.userList == [] of 
