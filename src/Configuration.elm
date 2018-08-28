@@ -50,7 +50,7 @@ userManualId = 750
 
 signInText = 
    """
-This is localhost:8000, ready to run MiniLatex, Asciidoc, or Markdown.
+This is knode.io, ready to run MiniLatex, Asciidoc, or Markdown.
 
 $$\\int_0^1 x^n dx = \\frac{1}{n+1}$$
 
@@ -66,7 +66,7 @@ You are now signed out. See you later.
 signedUpText : String
 signedUpText =
  """ 
-Welcome to localhost:8000.  We are ready to run MiniLatex, Asciidoc, or Markdown for you
+Welcome to knode.io.  We are ready to run MiniLatex, Asciidoc, or Markdown for you
 
 $$\\int_0^1 x^n dx = \\frac{1}{n+1}$$
 
@@ -142,7 +142,7 @@ then type Ctrl-ENTER or Ctrl-RETURN.
 Check out the \\href{https://jxxcarlson.github.io/app/miniLatexLive/index.html}{MiniLatex Live demo}
 \\mdash no login needed.
 
-If you have questions or comments about MiniLatex or localhost:8000, please contact
+If you have questions or comments about MiniLatex or knode.io, please contact
 Jim Carlson: jxxcarlson at gmail.
 """
 
@@ -188,7 +188,7 @@ or for that mattter \\strong{ato hy}.
 \\item Every document has a numerical ID, like a person's
 social security number. You can type the ID in the search
 box to find a document.   If someone says, "My class notes
-are on document \\strong{440} at localhost:8000,"" you 
+are on document \\strong{440} at knode.io"" you 
 know what to do. 
 
 \\item To find all the public articles by an author
