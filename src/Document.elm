@@ -220,7 +220,6 @@ documentDecoder =
         |> JPipeline.required "lastModified" (Decode.map Time.millisToPosix Decode.int)
        
         
-        
 decodeDocType : String -> Decoder DocType
 decodeDocType docTypeString =
     case docTypeString of
@@ -296,6 +295,7 @@ encodeDocument document =
         , ( "parent_title", Encode.string <| document.parentTitle )
         
         , ( "attributes", encodeDocumentAttributes <| document )
+        , ( "access", Encode.dict identity Encode.string document.access)
        
         ]
 
