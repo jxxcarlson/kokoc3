@@ -155,21 +155,21 @@ queryStringFromFileInfo fileInfo =
 
 
 
-getS3PresignedUrlRequest : String -> String -> String -> Http.Request String
-getS3PresignedUrlRequest tokenString bucket path = 
+getS3PresignedUrlRequest : String -> String -> String -> String -> Http.Request String
+getS3PresignedUrlRequest tokenString bucket path mimetype = 
     Http.request
         { method = "Get"
         , headers = [Http.header "APIVersion" "V2", Http.header "Authorization" ("Bearer " ++ tokenString)]
-        , url = Configuration.backend ++ "/api/presigned" ++ "?bucket=" ++ bucket ++ "&path=" ++ path
+        , url = Configuration.backend ++ "/api/presigned" ++ "?bucket=" ++ bucket ++ "&path=" ++ path ++ "&mime_type=" ++ mimetype
         , body = Http.jsonBody Encode.null
         , expect = Http.expectJson Decode.string
         , timeout = Just Configuration.timeout
         , withCredentials = False
         }
 
-getS3PresignedUrl : String -> String -> String -> Cmd FileMsg 
-getS3PresignedUrl tokenString bucket path =
-    Http.send ReceivePresignedUrl <| getS3PresignedUrlRequest tokenString bucket path
+getS3PresignedUrl : String -> String -> String -> String -> Cmd FileMsg 
+getS3PresignedUrl tokenString bucket path mimetype =
+    Http.send ReceivePresignedUrl <| getS3PresignedUrlRequest tokenString bucket path mimetype
 
 
 getS3CredentialsRequest : String -> FileInfo -> Http.Request CredentialsWrapper

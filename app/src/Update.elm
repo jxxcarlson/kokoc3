@@ -864,7 +864,7 @@ update msg model =
                   , path = (User.usernameFromMaybeUser model.maybeCurrentUser) 
                 }
             path_ = (User.usernameFromMaybeUser model.maybeCurrentUser) ++ "/" ++ fileInfo.filename
-            cmd = Credentials.getS3PresignedUrl (stringFromMaybeToken  model.maybeToken) "noteimages" path_
+            cmd = Credentials.getS3PresignedUrl (stringFromMaybeToken  model.maybeToken) "noteimages" path_ fileInfo.mimetype
 
           in
             ({model | message = fileInfo.filename, maybeFileData = maybeFileData, fileValue = v }, Cmd.map FileMsg cmd )
