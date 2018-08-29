@@ -283,7 +283,7 @@ masterDocumentButton : Model -> Element Msg
 masterDocumentButton model = 
   Input.button (documentTypeButtonStyle model Master) {
     onPress =  Just (SetDocumentType Master)
-  , label = Element.el [] (Element.text ("Collection"))
+  , label = Element.el [] (Element.text ("Master"))
   }
 
 
