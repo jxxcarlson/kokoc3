@@ -336,9 +336,9 @@ newDocumentButton :  Model -> Element Msg
 newDocumentButton model = 
   case model.appMode of 
     Writing -> 
-      Input.button (buttonStyle (px 105)) {
+      Input.button (buttonStyle (px 90)) {
           onPress =  Just (NewDocument)
-        , label = Element.el [] (Element.text ("New document"))
+        , label = Element.el [] (Element.text ("New doc"))
       }
     _ -> Element.none
 
@@ -360,9 +360,16 @@ newChildButton_ model =
 
 newChildButton__ :  Model -> Element Msg    
 newChildButton__ model = 
-  Input.button (buttonStyle (px 130)) {
+  Input.button (buttonStyle (px 90)) {
     onPress =  Just (NewChildDocument) 
-  , label = Element.el [] (Element.text ("New subdocument"))
+  , label = Element.el [] (Element.text ("New subdoc"))
+  }
+
+newMasterButton :  Model -> Element Msg    
+newMasterButton model = 
+  Input.button (buttonStyle (px 90)) {
+    onPress =  Just (NewMasterDocument) 
+  , label = Element.el [] (Element.text ("New master"))
   }
 
 

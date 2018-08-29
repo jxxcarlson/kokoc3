@@ -94,7 +94,7 @@ basicDocument = Document
     1  
     True
     Dict.empty
-    ["texmacros:453"]
+    []
     []
     0
     "Parent"

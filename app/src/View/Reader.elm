@@ -62,7 +62,7 @@ leftColumn : Int -> Model -> Element Msg
 leftColumn portion_ model = 
   Element.column [width (fillPortion portion_), height fill, 
     Background.color Widget.lightBlue, paddingXY 20 20, spacing 10] [ 
-        Element.row [spacing 10] [ Common.toggleToolsButton (px 105) model, EditorTools.newDocumentButton model ]
+        Element.row [spacing 10] [ Common.toggleToolsButton (px 90) model, EditorTools.newDocumentButton model ]
       , EditorTools.newChildButton model 
       , EditorTools.toolsOrContents model
   ]

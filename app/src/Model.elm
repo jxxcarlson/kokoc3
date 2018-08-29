@@ -185,6 +185,7 @@ type Msg
     | ToggleImageAccessibility
     | TogglePreferencesPanel
     | ToggleUserPublicPrivate
+    | NewMasterDocument
     
     
 

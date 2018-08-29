@@ -316,7 +316,7 @@ handleKey model key =
     Character "h" -> goHome model
     Character "/" -> getPublicDocumentsRawQuery model "random=public"
     Character "e" -> toggleToolPanelState model
-    Character "n" -> doNewDocument model
+    Character "n" -> doNewStandardDocument model
     Character "p" -> printDocument model
     Character "0" -> goToStart model
 
@@ -785,7 +785,11 @@ update msg model =
           toggleToolPanelState model 
 
         NewDocument -> 
-           doNewDocument model
+           doNewStandardDocument model
+
+        NewMasterDocument -> 
+          doNewMasterDocument model
+              
 
         NewChildDocument -> 
           (model, Cmd.map DocMsg (newChildDocument model))
@@ -1059,7 +1063,8 @@ update msg model =
 
         Search -> 
           doSearch model
-              
+
+
   
 -- UPDATE END
 
@@ -1142,8 +1147,8 @@ printLatex model =
   )
 
 
-doNewDocument : Model -> (Model, Cmd Msg)
-doNewDocument model = 
+doNewStandardDocument : Model -> (Model, Cmd Msg)
+doNewStandardDocument model = 
   case model.maybeCurrentUser of 
     Nothing -> (model, Cmd.none)
     Just _ -> 
@@ -1151,7 +1156,20 @@ doNewDocument model =
               , documentTitle = "NEW DOCUMENT"
               , currentDocumentDirty = False}, 
           Cmd.batch[ 
-              Cmd.map DocMsg (newDocument model)
+              Cmd.map DocMsg (newDocument model Standard)
+            , saveCurrentDocumentIfDirty model
+          ] 
+      )
+doNewMasterDocument : Model -> (Model, Cmd Msg)
+doNewMasterDocument model = 
+  case model.maybeCurrentUser of 
+    Nothing -> (model, Cmd.none)
+    Just _ -> 
+      ({ model | toolPanelState = ShowToolPanel
+              , documentTitle = "NEW MASTER DOCUMENT"
+              , currentDocumentDirty = False}, 
+          Cmd.batch[ 
+              Cmd.map DocMsg (newDocument model Master)
             , saveCurrentDocumentIfDirty model
           ] 
       )
@@ -1372,14 +1390,14 @@ getUserDocuments model queryString =
   )
 
 
-newDocument : Model ->Cmd DocMsg
-newDocument model =
+newDocument : Model -> DocType -> Cmd DocMsg
+newDocument model docType =
   case model.maybeCurrentUser of 
     Nothing -> Cmd.none
-    Just user -> newDocumentForUser user model
+    Just user -> newDocumentForUser user model docType
 
-newDocumentForUser : User -> Model -> Cmd DocMsg
-newDocumentForUser user model =  
+newDocumentForUser : User -> Model -> DocType -> Cmd DocMsg
+newDocumentForUser user model docType =  
   let  
     headDocument = DocumentList.getFirst  model.documentList
     parentId = case headDocument.docType of 
@@ -1389,18 +1407,28 @@ newDocumentForUser user model =
        Nothing -> 0 
        Just selectedDoc -> selectedDoc.id
   in  
-    Document.createDocument (User.getTokenString user) (makeNewDocument user )
+    Document.createDocument (User.getTokenString user) (makeNewDocument user docType )
 
-makeNewDocument : User -> Document
-makeNewDocument user =
+makeNewDocument : User -> DocType -> Document
+makeNewDocument user docType =
     let
         newDocument_ = SystemDocument.newDocument
     in
-       { newDocument_ | 
-            authorId =  User.userId user
-          , authorName = User.username user
-          , title = "NEW DOCUMENT"
-        }
+      case docType of 
+        Standard -> 
+          { newDocument_ | 
+                authorId =  User.userId user
+              , authorName = User.username user
+              , title = "NEW DOCUMENT"
+            }
+        Master -> 
+          { newDocument_ | 
+                authorId =  User.userId user
+              , authorName = User.username user
+              , title = "NEW MASTER DOCUMENT"
+              , content = "Add new sections by using the text '== 1234' to add the document with ID 1234.  Add one document per line."
+              , docType = Master
+            }
   
 
 newChildDocument : Model ->Cmd DocMsg
@@ -1426,6 +1454,10 @@ newDocumentForUserWithParent user model =
     Document.createDocument (User.getTokenString user) (makeNewDocumentWithParent parentId parentTitle selectedDocumentId user )
   
 
+{-| NOTE: don't mess with the text ", placeUnder:" 
+    -- It plays a role in placing the subdocument 
+    -- I know, I know: very bad coding practie. 
+-}
 makeNewDocumentWithParent : Int -> String -> Int -> User -> Document
 makeNewDocumentWithParent parentId parentTitle selectedDocumentId user =
     let
