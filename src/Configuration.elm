@@ -14,7 +14,8 @@ module Configuration exposing(
    , welcomeText
    , bucket
    , timeout
-   , adminUsername)
+   , adminUsername
+   , documentQueueCapacity)
 
 
 adminUsername : String 
@@ -29,6 +30,9 @@ backend = "http://localhost:4000"
 client : String 
 client = "http://localhost:8080"
 
+
+documentQueueCapacity : Int 
+documentQueueCapacity = 10
 
 bucket : String
 bucket = "noteimages"

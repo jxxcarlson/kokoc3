@@ -43,13 +43,37 @@ import View.Widget as Widget exposing(..)
 toolsOrContents model = 
   case model.toolPanelState of 
     ShowToolPanel -> toolsPanel model
-    HideToolPanel -> Element.map Model.DocListViewMsg 
+    HideToolPanel -> 
+      Element.column [spacing 5] [
+        toggleDocumentListDiplayButton model
+        , displayDocumentList model
+      ]
+    
+
+displayDocumentList : Model -> Element Msg    
+displayDocumentList model =  
+  case model.documentListSource of 
+    Model.SearchResults ->    
+     Element.map Model.DocListViewMsg 
         ( DocumentListView.viewWithHeading 
           model.windowHeight model.masterDocLoaded 
           (docListTitle model) 
           model.documentList
         )
+    Model.RecentDocumentsQueue ->  
+      Element.map Model.DocListViewMsg 
+       ( DocumentListView.viewWithHeading 
+          model.windowHeight model.masterDocLoaded 
+          ("Recent documents") 
+          (DocumentList.documentQueueToDocumentList model.currentDocument model.recentDocumentQueue)
+        )
 
+toggleDocumentListDiplayButton : Model -> Element Msg 
+toggleDocumentListDiplayButton model = 
+  Input.button Widget.titleStyle {
+    onPress =  Just (ToggleDocumentSource)
+  , label = Element.el [] (Element.text ("<=>"))
+  }
 
 docListTitle : Model -> String 
 docListTitle model = 

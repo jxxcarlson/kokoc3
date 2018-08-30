@@ -460,16 +460,17 @@ displayMenuItems model =
            , incrementVersionItem
            , separator
            , toggleEditPanelItem
+           , toggleUserPreferencesItem
            , printItem
            , goToStartItem
         ]
 
-separator = Element.el (Widget.menuSeparatorStyle  (px 160)) (Element.text "—")
+separator = Element.el (Widget.menuSeparatorStyle  (px 160)) (Element.text "———————-———————")
 
 toggleToolMenu = 
     Input.button (Widget.menuItemStyle  (px 140)) {
       onPress =  Just ToggleToolMenu
-    , label = Element.el [] (Element.text ("Tool Menu"))
+    , label = Element.el [] (Element.text ("TOOLS"))
     }
 
 saveCurrentDocumentItem : Element Msg
@@ -579,3 +580,9 @@ incrementVersionItem  =
     , label = Element.el [] (Element.text ("New version Ctrl-V"))
     }
 
+toggleUserPreferencesItem :  Element Msg
+toggleUserPreferencesItem  = 
+    Input.button (Widget.menuItemStyle  (px 160)) {
+      onPress =  (Just (TogglePreferencesPanel))
+    , label = Element.el [] (Element.text ("User preferences Ctrl-U"))
+    }

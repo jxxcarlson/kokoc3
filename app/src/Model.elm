@@ -12,6 +12,7 @@ module Model exposing(
     , PreferencesPanelState(..)
     , initialModel
     , ToolMenuState(..)
+    , DocumentListSource(..)
   )
 
 import Browser.Dom exposing(Viewport)
@@ -33,6 +34,7 @@ import DocumentListView exposing(DocListViewMsg(..))
 import Configuration
 import ImageManager exposing(ImageMsg(..))
 import Mail
+import Queue exposing(Queue)
 
 type InfoForElm = 
    DocumentDataFromOutside Document
@@ -111,6 +113,8 @@ type alias Model =
       , preferencesPanelState : PreferencesPanelState
       , sharingString : String
       , toolMenuState : ToolMenuState
+      , recentDocumentQueue : Queue Document
+      , documentListSource : DocumentListSource
     }
 
 
@@ -190,6 +194,7 @@ type Msg
     | NewMasterDocument
     | ToggleToolMenu
     | IncrementVersion
+    | ToggleDocumentSource
     
     
 
@@ -247,6 +252,10 @@ initialModel locationHref windowWidth windowHeight document =
             , preferencesPanelState = PreferencesPanelOff
             , sharingString = "Debug: nothing"
             , toolMenuState = HideToolMenu
+            , recentDocumentQueue = Queue.fromList [] Configuration.documentQueueCapacity
+            , documentListSource = SearchResults
         }
 
 type ToolMenuState = HideToolMenu| ShowToolMenu
+
+type DocumentListSource = SearchResults | RecentDocumentsQueue

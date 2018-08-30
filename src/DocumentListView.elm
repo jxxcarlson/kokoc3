@@ -11,6 +11,7 @@ import Document exposing(Document, DocType(..))
 type DocListViewMsg = 
   SetCurrentDocument Document
 
+  
 
 viewWithHeading : Int -> Bool -> String -> DocumentList -> Element DocListViewMsg
 viewWithHeading height_ masterDocLoaded heading docList = 

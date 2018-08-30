@@ -24,6 +24,7 @@ module DocumentList exposing(
   , emptyIntList
   , intListFromDocumentList
   , updateDocument
+  , documentQueueToDocumentList
   )
 
 import Json.Encode as Encode    
@@ -39,6 +40,7 @@ import Configuration
 import User exposing(User)
 
 import Document exposing(Document, documentDecoder)
+import Queue exposing(Queue) 
 
 
 type DocumentList = DocumentList DocumentListRecord
@@ -284,3 +286,7 @@ updateDocument document documentList =
   in 
     setDocuments newdocs_ documentList
 
+
+documentQueueToDocumentList : Document -> (Queue Document) -> DocumentList 
+documentQueueToDocumentList document documentQueue = 
+    DocumentList { documents  = (Queue.list documentQueue), selected = Just document}

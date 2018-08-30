@@ -48,8 +48,10 @@ import Model exposing(
     , PreferencesPanelState(..)
     , initialModel
     , ToolMenuState(..)
+    , DocumentListSource(..)
   )
 
+import Queue exposing(Queue)
 import User exposing(
    Token
    , UserMsg(..)
@@ -58,6 +60,7 @@ import User exposing(
    )
 
 import UrlAppParser exposing(Route(..))
+
 
 import Configuration
 import SystemDocument
@@ -323,6 +326,7 @@ handleKey model key =
     Character "m" -> doNewMasterDocument model
     Character "n" -> doNewStandardDocument model
     Character "p" -> printDocument model
+    Character "u" -> togglePreferences model
     Character "v" -> doIncrementVersion model
     Character "0" -> goToStart model
 
@@ -622,6 +626,7 @@ update msg model =
                  , masterDocLoaded = masterDocLoaded
                  , deleteDocumentState = DeleteIsOnSafety
                  , documentList = documentList
+                 , recentDocumentQueue = Queue.enqueueUnique document model.recentDocumentQueue
                  , currentDocumentDirty = False
                  , counter = model.counter + 1
 
@@ -1032,10 +1037,8 @@ update msg model =
             Err error -> ({model | message = "Error sending mail"}, Cmd.none)
 
         TogglePreferencesPanel ->
-          case model.preferencesPanelState of 
-             PreferencesPanelOff -> ({model | preferencesPanelState = PreferencesPanelOn },Cmd.none)
-             PreferencesPanelOn -> ({model | preferencesPanelState = PreferencesPanelOff },Cmd.none)
-
+          togglePreferences model 
+          
         UserMsg (ReceiveBigUserRecord result) ->
            case result of 
              (Ok bigUserRecord) -> ({model | blurb = bigUserRecord.user.blurb, message = bigUserRecord.user.blurb, maybeBigUser = Just bigUserRecord.user}, Cmd.none)
@@ -1083,8 +1086,11 @@ update msg model =
             HideToolMenu -> ({model | toolMenuState = ShowToolMenu}, Cmd.none)
             ShowToolMenu -> ({model | toolMenuState = HideToolMenu}, Cmd.none)
 
+        ToggleDocumentSource ->
+          case model.documentListSource of 
+            SearchResults -> ({model | documentListSource = RecentDocumentsQueue}, Cmd.none)
+            RecentDocumentsQueue -> ({model | documentListSource = SearchResults}, Cmd.none)
 
-  
 -- UPDATE END
 
 -- HELPERS
@@ -1128,7 +1134,7 @@ searchForUsersCmd model =
 
 searchForUsers : Model -> (Model, Cmd Msg)
 searchForUsers model = 
-  ( {model | toolMenuState = HideToolMenu}, searchForUsersCmd model) 
+  ( {model | toolMenuState = HideToolMenu, documentListSource = SearchResults}, searchForUsersCmd model) 
 
 searchForImages : Model -> (Model, Cmd Msg)
 searchForImages model = 
@@ -1137,7 +1143,7 @@ searchForImages model =
       True -> ""
       False -> model.searchQueryString
   in
-  ( {model | toolMenuState = HideToolMenu}, Cmd.map FileMsg (Credentials.getImages "" (imageQuery model queryString)))
+  ( {model | toolMenuState = HideToolMenu, documentListSource = SearchResults}, Cmd.map FileMsg (Credentials.getImages "" (imageQuery model queryString)))
 
 goToStart model = 
   let  
@@ -1226,10 +1232,23 @@ toggleToolPanelState model =
       in 
         ( nextModel , Cmd.none)
 
+
+togglePreferences : Model -> (Model, Cmd Msg)
+togglePreferences model =
+    case model.preferencesPanelState of 
+        PreferencesPanelOff -> ({model | preferencesPanelState = PreferencesPanelOn
+               , toolMenuState = HideToolMenu
+               , appMode = Reading },Cmd.none)
+        PreferencesPanelOn -> ({model | preferencesPanelState = PreferencesPanelOff
+              , toolMenuState = HideToolMenu
+              , appMode = Reading },Cmd.none)
+
+
 getPublicDocumentsRawQuery : Model -> String -> (Model, Cmd Msg)
 getPublicDocumentsRawQuery model query = 
   ({ model | appMode = Reading
       , toolPanelState = HideToolPanel
+      , documentListSource = SearchResults
       , masterDocLoaded = False
       , currentDocumentDirty = False 
       , toolMenuState = HideToolMenu
@@ -1395,6 +1414,7 @@ getPublicDocuments model queryString =
                , toolPanelState = HideToolPanel
                ,  masterDocLoaded = False 
                , currentDocumentDirty = False
+               , documentListSource = SearchResults
             }
             , Cmd.batch [
                 Cmd.map DocListMsg (DocumentList.findDocuments Nothing (Query.parse queryString))
@@ -1409,7 +1429,8 @@ getUserDocuments model queryString =
   ({ model | toolPanelState = HideToolPanel
        , masterDocLoaded = False
        , currentDocumentDirty = False
-       , toolMenuState = HideToolMenu } 
+       , toolMenuState = HideToolMenu
+       , documentListSource = SearchResults } 
     , Cmd.batch [
         Cmd.map DocListMsg (DocumentList.findDocuments model.maybeCurrentUser (Query.parse queryString))
       , saveCurrentDocumentIfDirty model
