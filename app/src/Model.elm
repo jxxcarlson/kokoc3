@@ -11,6 +11,7 @@ module Model exposing(
     , ErrorResponse(..)
     , PreferencesPanelState(..)
     , initialModel
+    , ToolMenuState(..)
   )
 
 import Browser.Dom exposing(Viewport)
@@ -109,6 +110,7 @@ type alias Model =
       , blurb : String
       , preferencesPanelState : PreferencesPanelState
       , sharingString : String
+      , toolMenuState : ToolMenuState
     }
 
 
@@ -186,6 +188,7 @@ type Msg
     | TogglePreferencesPanel
     | ToggleUserPublicPrivate
     | NewMasterDocument
+    | ToggleToolMenu
     
     
 
@@ -242,4 +245,7 @@ initialModel locationHref windowWidth windowHeight document =
             , blurb = ""
             , preferencesPanelState = PreferencesPanelOff
             , sharingString = "Debug: nothing"
+            , toolMenuState = HideToolMenu
         }
+
+type ToolMenuState = HideToolMenu| ShowToolMenu

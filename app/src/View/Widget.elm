@@ -9,6 +9,27 @@ import Element.Lazy
 
 
 
+menuItemStyle width_ = [
+     Font.size 13 
+    , mouseDown [  Font.size 13, Background.color lightYellow]
+    , Font.color white
+    , Background.color charcoal
+    , width width_
+    , height (px 24)
+    , paddingXY 10 0
+    , clipX
+   ]
+
+menuSeparatorStyle width_ = [
+     Font.size 10 
+    , Font.color white
+    , Background.color charcoal
+    , width width_
+    , height (px 10)
+    , paddingXY 10 0
+    , clipX
+   ]
+
 listItemStyle width_ = [
      Font.size 13 
     , mouseDown [  Font.size 13, Background.color lightYellow]
@@ -104,6 +125,17 @@ buttonStyle width_ = [
     , height (px 24)
     , paddingXY 10 0
     , Border.rounded 8
+   ]
+
+titleButtonStyle width_ = [
+     Font.size 24 
+    , mouseDown [  Font.size 13, Background.color mouseDownColor]
+    -- , Background.color Fong.color.gray, Font.color white
+    , width width_
+    , Font.color blue 
+    , height (px 28)
+    , paddingXY 10 0
+    , moveDown 3
    ]
 
 whiteButtonStyle width_ = [

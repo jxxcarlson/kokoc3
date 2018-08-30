@@ -47,6 +47,7 @@ import Model exposing(
     , ErrorResponse(..)
     , PreferencesPanelState(..)
     , initialModel
+    , ToolMenuState(..)
   )
 
 import User exposing(
@@ -308,14 +309,16 @@ handleKey model key =
   case key of 
     Enter -> doSearch model
     Character "s" -> saveCurrentDocument model
-    Character "=" -> saveCurrentDocument model
+    Character "=" -> saveCurrentDocument model    
+    Character "/" -> getPublicDocumentsRawQuery model "random=public"
     Character "w" -> changeMode model Writing
     Character "r" -> changeMode model Reading
     Character "i" -> changeMode model ImageEditing
     Character "a" -> changeMode model DisplayAuthors
     Character "h" -> goHome model
-    Character "/" -> getPublicDocumentsRawQuery model "random=public"
+    Character "j" -> makeNewChildDocument model
     Character "e" -> toggleToolPanelState model
+    Character "m" -> doNewMasterDocument model
     Character "n" -> doNewStandardDocument model
     Character "p" -> printDocument model
     Character "0" -> goToStart model
@@ -323,7 +326,9 @@ handleKey model key =
     _ -> (model, Cmd.none)
 
 
-
+makeNewChildDocument : Model -> (Model, Cmd Msg)
+makeNewChildDocument model = 
+  (model, Cmd.map DocMsg (newChildDocument model))
 
 doSearch : Model -> (Model, Cmd Msg)
 doSearch model = 
@@ -669,7 +674,8 @@ update msg model =
             )
 
         GetPublicDocumentsRawQuery query ->
-           getPublicDocumentsRawQuery model query 
+           getPublicDocumentsRawQuery model query
+
 
         GetImages query ->
           (model, Cmd.map FileMsg <| Credentials.getImages "" query)
@@ -1064,6 +1070,11 @@ update msg model =
         Search -> 
           doSearch model
 
+        ToggleToolMenu -> 
+          case model.toolMenuState of
+            HideToolMenu -> ({model | toolMenuState = ShowToolMenu}, Cmd.none)
+            ShowToolMenu -> ({model | toolMenuState = HideToolMenu}, Cmd.none)
+
 
   
 -- UPDATE END
@@ -1207,6 +1218,7 @@ getPublicDocumentsRawQuery model query =
       , toolPanelState = HideToolPanel
       , masterDocLoaded = False
       , currentDocumentDirty = False 
+      , toolMenuState = HideToolMenu
     }, 
     Cmd.batch [ 
         Cmd.map DocListMsg (DocumentList.findDocuments Nothing query)
@@ -1262,7 +1274,7 @@ changeMode model nextAppMode =
       Admin -> "created=7"
       _ -> ""
   in 
-    ({model | appMode = nextAppMode, searchQueryString = searchQueryString, toolPanelState = nextToolPaneState}, cmd)
+    ({model | appMode = nextAppMode, searchQueryString = searchQueryString, toolPanelState = nextToolPaneState, toolMenuState = HideToolMenu}, cmd)
 
 signOutCurrentUser : Model -> (Model, Cmd Msg)
 signOutCurrentUser model = 
@@ -1504,7 +1516,8 @@ saveCurrentDocument model =
           ( { model | currentDocumentDirty = False 
                     , message = "(s)" ++ (digest nextCurrentDocument.content)
                     , currentDocument = nextCurrentDocument
-                    , documentList = nextDocumentList}
+                    , documentList = nextDocumentList
+                    , toolMenuState = HideToolMenu }
             , Cmd.map DocMsg <| Document.saveDocument tokenString nextCurrentDocument )
 
 digest str = 

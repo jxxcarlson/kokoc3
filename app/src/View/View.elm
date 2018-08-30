@@ -26,6 +26,7 @@ import Model exposing(Model
     , SignupMode(..)
     , ToolPanelState(..)
     , DeleteDocumentState(..)
+    , ToolMenuState(..)
   )
 import User exposing(Token, UserMsg(..), readToken, stringFromMaybeToken, User, BigUser)
 import DocumentListView exposing(DocListViewMsg(..))
@@ -66,9 +67,9 @@ header model =
         -- , getDocumentsButton (px 60) model
         , getRandomDocumentsButton (px 70) model
         , spacer 8
-        , Element.el [ Font.size 24] (text <| appTitle model.appMode)
+        -- , Element.el [ Font.size 24] (text <| appTitle model.appMode)
+        , startButton (px 90) model 
         , spacer 8
-        , startButton (px 50) model 
         , homeButton (px 55) model
         , spacer 11
         , readerModeButton (px 50) model
@@ -80,6 +81,7 @@ header model =
         , spacer 10
         , Reader.signoutButton (px 70) model
         , adminModeButton (px 70) model
+        , toolMenu model 
   ]
 
 
@@ -301,9 +303,9 @@ saveCurrentDocumentButton width_ model =
 
 startButton : Length -> Model -> Element Msg    
 startButton width_ model = 
-  Input.button (buttonStyle  width_) {
+  Input.button (titleButtonStyle  width_) {
     onPress =  Just (GoToStart)
-  , label = Element.el [] (Element.text "Start")
+  , label = Element.el [] (Element.text "kNode")
   } 
 
 homeButton : Length -> Model -> Element Msg    
@@ -420,3 +422,91 @@ showKeys model =
  
  -- INPUTS
 
+
+toolMenu : Model -> Element Msg 
+toolMenu model = 
+    Element.row [spacing 5,Background.color charcoal, Font.color white, padding 10]
+     [ Element.el
+        [ Element.below (displayMenuItems model)
+        ]
+        (toggleToolMenu)
+     ]
+
+
+      -- Element.column [spacing 5,Background.color charcoal, Font.color white]
+      --  [toggleToolMenu
+
+      --    ,  Element.column [ spacing 5, Element.below (displayMenuItems model)] []
+      --  ]
+
+displayMenuItems : Model ->  Element Msg
+displayMenuItems model =
+  case model.toolMenuState of 
+    HideToolMenu -> Element.none
+    ShowToolMenu -> 
+      Element.column [ moveLeft  10]
+        [
+             saveCurrentDocumentItem
+           , randomDocumentItem model
+           , Element.el (Widget.menuSeparatorStyle  (px 160)) (Element.text "—")
+           , readerModeItem model
+           , writerModeItem model
+           , imageModeItem model
+           , authorModeItem model
+           , homeItem model
+        ]
+
+toggleToolMenu = 
+    Input.button (Widget.menuItemStyle  (px 140)) {
+      onPress =  Just ToggleToolMenu
+    , label = Element.el [] (Element.text ("Tool Menu"))
+    }
+
+saveCurrentDocumentItem : Element Msg
+saveCurrentDocumentItem = 
+    Input.button (Widget.menuItemStyle  (px 160)) {
+      onPress =  Just UpdateCurrentDocument
+    , label = Element.el [] (Element.text ("Save Ctrl-S or Ctrl-="))
+    }
+
+randomDocumentItem : Model -> Element Msg
+randomDocumentItem model = 
+    Input.button (Widget.menuItemStyle  (px 160)) {
+      onPress =  (Just (randomItemMsg model))
+    , label = Element.el [] (Element.text ("Random docs Ctrl-/"))
+    }
+
+writerModeItem : Model -> Element Msg
+writerModeItem model = 
+    Input.button (Widget.menuItemStyle  (px 160)) {
+      onPress =  (Just (ChangeMode Writing))
+    , label = Element.el [] (Element.text ("Write mode Ctrl-W"))
+    }
+
+readerModeItem : Model -> Element Msg
+readerModeItem model = 
+    Input.button (Widget.menuItemStyle  (px 160)) {
+      onPress =  (Just (ChangeMode Reading))
+    , label = Element.el [] (Element.text ("Read mode Ctrl-R"))
+    }
+
+imageModeItem : Model -> Element Msg
+imageModeItem model = 
+    Input.button (Widget.menuItemStyle  (px 160)) {
+      onPress =  (Just (ChangeMode ImageEditing))
+    , label = Element.el [] (Element.text ("Image upload Ctrl-I"))
+    }
+
+authorModeItem : Model -> Element Msg
+authorModeItem model = 
+    Input.button (Widget.menuItemStyle  (px 160)) {
+      onPress =  (Just (ChangeMode DisplayAuthors))
+    , label = Element.el [] (Element.text ("Author list Ctrl-A"))
+    }
+
+homeItem : Model -> Element Msg
+homeItem model = 
+    Input.button (Widget.menuItemStyle  (px 160)) {
+      onPress =  (Just (GoHome))
+    , label = Element.el [] (Element.text ("Home Ctrl-H"))
+    }
