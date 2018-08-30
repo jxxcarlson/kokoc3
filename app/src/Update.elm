@@ -1532,7 +1532,13 @@ digest str =
     |> String.replace "\n" ""
     |> (\x -> (String.left 3 x) ++ "..." ++( String.right 3 x))
 
-saveCurrentMasterDocument : Model -> (Model, Cmd Msg) 
+
+{-| Cmd.map DocMsg <| Document.saveDocument tokenString model.currentDocument  
+    should be executed and complete first so that it doesn't clash with 
+    Cmd.map DocListMsg (DocumentList.loadMasterDocument model.maybeCurrentUser model.currentDocument.id) /
+    So this should be rewritten using Tasks and andThen.
+-}
+saveCurrentMasterDocument : Model -> (Model, Cmd Msg) -- ###
 saveCurrentMasterDocument model = 
     let  
         tokenString = User.getTokenStringFromMaybeUser model.maybeCurrentUser
@@ -1541,10 +1547,9 @@ saveCurrentMasterDocument model =
                     , message = "(m)" ++ (digest model.currentDocument.content)
                     , documentList = DocumentList.updateDocument model.currentDocument model.documentList 
                 }
-          , Cmd.batch [ -- saveCurrentDocumentIfDirty model
-                       Cmd.map DocMsg <| Document.saveDocument tokenString model.currentDocument 
-                      , getTime 
+          , Cmd.batch [ getTime 
                       , Cmd.map DocListMsg (DocumentList.loadMasterDocument model.maybeCurrentUser model.currentDocument.id) 
+                      , Cmd.map DocMsg <| Document.saveDocument tokenString model.currentDocument 
                   ])
 
 httpErrorHandler : Http.Error -> String
