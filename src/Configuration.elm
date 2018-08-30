@@ -24,10 +24,10 @@ timeout : Float
 timeout = 20000
 
 backend : String
-backend = "https://nshost.herokuapp.com"
+backend = "http://localhost:4000"
 
 client : String 
-client = "https://knode.io"
+client = "http://localhost:8080"
 
 
 bucket : String
@@ -132,10 +132,10 @@ then type Ctrl-ENTER or Ctrl-RETURN.
 
 \\subheading{Sample documents}
 \\begin{itemize} 
-  \\item \\href{https://knode.io/424}{Quantum Field Theory Notes}
-  \\item \\href{https://knode.io/365}{Visual Literacy}
-  \\item \\href{https://knode.io/754}{Butterfly}
-  \\item \\href{https://knode.io/346}{Metal}
+  \\item \\href{http://localhost:8080/424}{Quantum Field Theory Notes}
+  \\item \\href{http://localhost:8080/365}{Visual Literacy}
+  \\item \\href{http://localhost:8080/754}{Butterfly}
+  \\item \\href{http://localhost:8080/346}{Metal}
 \\end{itemize}
 
 

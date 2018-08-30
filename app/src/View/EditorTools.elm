@@ -184,10 +184,10 @@ publicControls model =
 
 
 showVersionButton model = 
-  linkButton (showVersionsUrl model.currentDocument) "Show versions" (px 100)
+  linkButton (showVersionsUrl model.currentDocument) " Show versions" (px 100)
   
-newVersionButton model = 
-  linkButton (newVersionUrl model.currentDocument) "New version" (px 100)
+-- newVersionButton model = 
+--   linkButton (newVersionUrl model.currentDocument) "New version" (px 100)
 
 
 showVersionsUrl : Document -> String
@@ -199,6 +199,12 @@ newVersionUrl : Document -> String
 newVersionUrl document =
     Configuration.backend ++ "/archive/new_version" ++ "/" ++(String.fromInt document.id)
 
+newVersionButton : Model -> Element Msg 
+newVersionButton model = 
+  Input.button (textTypeButtonStyle model MiniLatex) {
+    onPress =  Just (IncrementVersion)
+  , label = Element.el [] (Element.text ("New version"))
+  }
 
 
 miniLatexTypeButton : Model -> Element Msg 

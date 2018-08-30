@@ -96,6 +96,10 @@
 
 		});
 
+		app.ports.incrementVersion.subscribe(function (url) {
+			window.open(url,'_blank');
+		});
+
 		app.ports.sendCredentials.subscribe(function (credentialsWrapper) {
 
 			console.log("JS/url: " + credentialsWrapper.url)

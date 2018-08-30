@@ -73,6 +73,7 @@ import DocumentView exposing(view, DocViewMsg(..))
 import DocumentListView exposing(DocListViewMsg(..))
 import DocumentDictionary exposing(DocumentDictionary, DocDictMsg(..))
 import Query 
+import View.EditorTools as EditorTools
 
 
 port readImage : Value -> Cmd msg
@@ -83,6 +84,7 @@ port sendPdfFileName : Value -> Cmd msg
 port sendDocumentForPrinting : Value -> Cmd msg
 port onUrlChange : (String -> msg) -> Sub msg
 port pushUrl : String -> Cmd msg
+port incrementVersion : String -> Cmd msg
 
 
 -- OUTSIDE
@@ -944,6 +946,17 @@ update msg model =
             MiniLatex ->  printLatex model 
             _ -> 
               ({model | toolMenuState = HideToolMenu}, sendDocumentForPrinting (Document.encodeString (Document.printUrl model.currentDocument)))
+
+
+        IncrementVersion -> 
+          let 
+            currentDocument = model.currentDocument
+            nextCurrentDocument = { currentDocument | version = currentDocument.version + 1}
+          in
+            ( {model | toolMenuState = HideToolMenu, currentDocument = nextCurrentDocument }
+              , incrementVersion (EditorTools.newVersionUrl model.currentDocument)
+            )
+
 
         ImageMsg (ReceiveImageList result) ->
             case result of 
