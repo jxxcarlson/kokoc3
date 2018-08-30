@@ -425,19 +425,16 @@ showKeys model =
 
 toolMenu : Model -> Element Msg 
 toolMenu model = 
-    Element.row [spacing 5,Background.color charcoal, Font.color white, padding 10]
-     [ Element.el
-        [ Element.below (displayMenuItems model)
-        ]
-        (toggleToolMenu)
-     ]
+  case model.maybeCurrentUser of 
+    Nothing -> Element.none 
+    Just _ -> 
+      Element.row [spacing 5,Background.color charcoal, Font.color white, padding 10]
+      [ Element.el
+          [ Element.below (displayMenuItems model)
+          ]
+          (toggleToolMenu)
+      ]
 
-
-      -- Element.column [spacing 5,Background.color charcoal, Font.color white]
-      --  [toggleToolMenu
-
-      --    ,  Element.column [ spacing 5, Element.below (displayMenuItems model)] []
-      --  ]
 
 displayMenuItems : Model ->  Element Msg
 displayMenuItems model =
@@ -446,15 +443,27 @@ displayMenuItems model =
     ShowToolMenu -> 
       Element.column [ moveLeft  10]
         [
-             saveCurrentDocumentItem
+             separator
+           , doSearchItem
            , randomDocumentItem model
-           , Element.el (Widget.menuSeparatorStyle  (px 160)) (Element.text "—")
+           , separator
            , readerModeItem model
            , writerModeItem model
            , imageModeItem model
            , authorModeItem model
            , homeItem model
+           , separator
+           , saveCurrentDocumentItem
+           , newStandardDocItem
+           , newMasterDocItem 
+           , newSubDocumentItem
+           , separator
+           , toggleEditPanelItem
+           , printItem
+           , goToStartItem
         ]
+
+separator = Element.el (Widget.menuSeparatorStyle  (px 160)) (Element.text "—")
 
 toggleToolMenu = 
     Input.button (Widget.menuItemStyle  (px 140)) {
@@ -466,7 +475,7 @@ saveCurrentDocumentItem : Element Msg
 saveCurrentDocumentItem = 
     Input.button (Widget.menuItemStyle  (px 160)) {
       onPress =  Just UpdateCurrentDocument
-    , label = Element.el [] (Element.text ("Save Ctrl-S or Ctrl-="))
+    , label = Element.el [] (Element.text ("Save doc Ctrl-S"))
     }
 
 randomDocumentItem : Model -> Element Msg
@@ -474,6 +483,13 @@ randomDocumentItem model =
     Input.button (Widget.menuItemStyle  (px 160)) {
       onPress =  (Just (randomItemMsg model))
     , label = Element.el [] (Element.text ("Random docs Ctrl-/"))
+    }
+    
+doSearchItem : Element Msg
+doSearchItem  = 
+    Input.button (Widget.menuItemStyle  (px 160)) {
+      onPress =  (Just (Search))
+    , label = Element.el [] (Element.text ("Search Ctrl-Enter"))
     }
 
 writerModeItem : Model -> Element Msg
@@ -510,3 +526,50 @@ homeItem model =
       onPress =  (Just (GoHome))
     , label = Element.el [] (Element.text ("Home Ctrl-H"))
     }
+
+newStandardDocItem :  Element Msg
+newStandardDocItem  = 
+    Input.button (Widget.menuItemStyle  (px 160)) {
+      onPress =  (Just (NewDocument))
+    , label = Element.el [] (Element.text ("New document Ctrl-N"))
+    }
+
+newSubDocumentItem : Element Msg
+newSubDocumentItem  = 
+    Input.button (Widget.menuItemStyle  (px 160)) {
+      onPress =  (Just (NewChildDocument))
+    , label = Element.el [] (Element.text ("New subdocument Ctrl-J"))
+    }
+
+newMasterDocItem :  Element Msg
+newMasterDocItem  = 
+    Input.button (Widget.menuItemStyle  (px 160)) {
+      onPress =  (Just (NewMasterDocument))
+    , label = Element.el [] (Element.text ("New master doc Ctrl-M"))
+    }
+
+toggleEditPanelItem :  Element Msg
+toggleEditPanelItem  = 
+    Input.button (Widget.menuItemStyle  (px 160)) {
+      onPress =  (Just (ToggleToolPanelState))
+    , label = Element.el [] (Element.text ("Edit Panel Ctrl-E"))
+    }
+
+printItem :  Element Msg
+printItem  = 
+    Input.button (Widget.menuItemStyle  (px 160)) {
+      onPress =  (Just (PrintDocument))
+    , label = Element.el [] (Element.text ("Print Ctrl-P"))
+    }
+
+
+goToStartItem :  Element Msg
+goToStartItem  = 
+    Input.button (Widget.menuItemStyle  (px 160)) {
+      onPress =  (Just (GoToStart))
+    , label = Element.el [] (Element.text ("kNode Ctrl-0"))
+    }
+
+
+
+

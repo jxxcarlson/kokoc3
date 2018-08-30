@@ -330,7 +330,7 @@ makeNewChildDocument : Model -> (Model, Cmd Msg)
 makeNewChildDocument model = 
   (model, Cmd.map DocMsg (newChildDocument model))
 
-doSearch : Model -> (Model, Cmd Msg)
+doSearch : Model -> (Model, Cmd Msg) --- ###
 doSearch model = 
   case model.appMode of 
         Reading -> 
@@ -798,7 +798,7 @@ update msg model =
               
 
         NewChildDocument -> 
-          (model, Cmd.map DocMsg (newChildDocument model))
+          ({model | toolMenuState = HideToolMenu, appMode = Writing} , Cmd.map DocMsg (newChildDocument model))
 
         SetDocumentTextType textType -> 
           let  
@@ -943,7 +943,7 @@ update msg model =
           case model.currentDocument.textType of 
             MiniLatex ->  printLatex model 
             _ -> 
-              (model, sendDocumentForPrinting (Document.encodeString (Document.printUrl model.currentDocument)))
+              ({model | toolMenuState = HideToolMenu}, sendDocumentForPrinting (Document.encodeString (Document.printUrl model.currentDocument)))
 
         ImageMsg (ReceiveImageList result) ->
             case result of 
@@ -1120,7 +1120,7 @@ searchForUsersCmd model =
 
 searchForUsers : Model -> (Model, Cmd Msg)
 searchForUsers model = 
-  ( model, searchForUsersCmd model) 
+  ( {model | toolMenuState = HideToolMenu}, searchForUsersCmd model) 
 
 searchForImages : Model -> (Model, Cmd Msg)
 searchForImages model = 
@@ -1129,7 +1129,7 @@ searchForImages model =
       True -> ""
       False -> model.searchQueryString
   in
-  ( model, Cmd.map FileMsg (Credentials.getImages "" (imageQuery model queryString)))
+  ( {model | toolMenuState = HideToolMenu}, Cmd.map FileMsg (Credentials.getImages "" (imageQuery model queryString)))
 
 goToStart model = 
   let  
@@ -1138,6 +1138,7 @@ goToStart model =
     ({model | currentDocument = { doc | title = "Welcome!" }
           , currentDocumentDirty = False
           , appMode = Reading
+          , toolMenuState = HideToolMenu
       }
       , saveCurrentDocumentIfDirty model  
     )
@@ -1165,7 +1166,9 @@ doNewStandardDocument model =
     Just _ -> 
       ({ model | toolPanelState = ShowToolPanel
               , documentTitle = "NEW DOCUMENT"
-              , currentDocumentDirty = False}, 
+              , currentDocumentDirty = False
+              , toolMenuState = HideToolMenu
+              , appMode = Writing}, 
           Cmd.batch[ 
               Cmd.map DocMsg (newDocument model Standard)
             , saveCurrentDocumentIfDirty model
@@ -1178,7 +1181,9 @@ doNewMasterDocument model =
     Just _ -> 
       ({ model | toolPanelState = ShowToolPanel
               , documentTitle = "NEW MASTER DOCUMENT"
-              , currentDocumentDirty = False}, 
+              , currentDocumentDirty = False
+              , toolMenuState = HideToolMenu
+              , appMode = Writing}, 
           Cmd.batch[ 
               Cmd.map DocMsg (newDocument model Master)
             , saveCurrentDocumentIfDirty model
@@ -1201,13 +1206,14 @@ toggleToolPanelState model =
                   docList_ = model.documentList
                   nextDocList_ = DocumentList.updateDocument model.currentDocument docList_
                 in
-                  { model | toolPanelState = nextToolPanelState, documentList = nextDocList_ }  
+                  { model | toolPanelState = nextToolPanelState, documentList = nextDocList_ , toolMenuState = HideToolMenu}  
               ShowToolPanel -> 
                 { model | 
                   documentTitle  = model.currentDocument.title
                 , toolPanelState = nextToolPanelState
                 , deleteDocumentState = DeleteIsOnSafety
                 , appMode = Writing
+                , toolMenuState = HideToolMenu
                 }
       in 
         ( nextModel , Cmd.none)
@@ -1394,7 +1400,8 @@ getUserDocuments : Model -> String -> (Model, Cmd Msg)
 getUserDocuments model queryString =
   ({ model | toolPanelState = HideToolPanel
        , masterDocLoaded = False
-       , currentDocumentDirty = False } 
+       , currentDocumentDirty = False
+       , toolMenuState = HideToolMenu } 
     , Cmd.batch [
         Cmd.map DocListMsg (DocumentList.findDocuments model.maybeCurrentUser (Query.parse queryString))
       , saveCurrentDocumentIfDirty model
@@ -1495,7 +1502,7 @@ displayCurrentMasterDocument model =
 getViewPort : Cmd Msg
 getViewPort = Task.perform GetViewport Dom.getViewport
 
-saveCurrentDocument : Model -> (Model, Cmd Msg) -- ###
+saveCurrentDocument : Model -> (Model, Cmd Msg)
 saveCurrentDocument model = 
   case model.currentDocument.docType of
     Master -> saveCurrentMasterDocument model
@@ -1525,7 +1532,7 @@ digest str =
     |> String.replace "\n" ""
     |> (\x -> (String.left 3 x) ++ "..." ++( String.right 3 x))
 
-saveCurrentMasterDocument : Model -> (Model, Cmd Msg) -- ###
+saveCurrentMasterDocument : Model -> (Model, Cmd Msg) 
 saveCurrentMasterDocument model = 
     let  
         tokenString = User.getTokenStringFromMaybeUser model.maybeCurrentUser
@@ -1537,7 +1544,7 @@ saveCurrentMasterDocument model =
           , Cmd.batch [ -- saveCurrentDocumentIfDirty model
                        Cmd.map DocMsg <| Document.saveDocument tokenString model.currentDocument 
                       , getTime 
-                      , Cmd.map DocListMsg (DocumentList.loadMasterDocument model.maybeCurrentUser model.currentDocument.id) -- ###!!!
+                      , Cmd.map DocListMsg (DocumentList.loadMasterDocument model.maybeCurrentUser model.currentDocument.id) 
                   ])
 
 httpErrorHandler : Http.Error -> String
