@@ -323,6 +323,7 @@ handleKey model key =
     Character "m" -> doNewMasterDocument model
     Character "n" -> doNewStandardDocument model
     Character "p" -> printDocument model
+    Character "v" -> doIncrementVersion model
     Character "0" -> goToStart model
 
     _ -> (model, Cmd.none)
@@ -949,13 +950,7 @@ update msg model =
 
 
         IncrementVersion -> 
-          let 
-            currentDocument = model.currentDocument
-            nextCurrentDocument = { currentDocument | version = currentDocument.version + 1}
-          in
-            ( {model | toolMenuState = HideToolMenu, currentDocument = nextCurrentDocument }
-              , incrementVersion (EditorTools.newVersionUrl model.currentDocument)
-            )
+           doIncrementVersion model
 
 
         ImageMsg (ReceiveImageList result) ->
@@ -1564,6 +1559,18 @@ saveCurrentMasterDocument model =
                       , Cmd.map DocListMsg (DocumentList.loadMasterDocument model.maybeCurrentUser model.currentDocument.id) 
                       , Cmd.map DocMsg <| Document.saveDocument tokenString model.currentDocument 
                   ])
+
+
+doIncrementVersion : Model -> (Model, Cmd Msg)
+doIncrementVersion model =
+  let 
+    currentDocument = model.currentDocument
+    nextCurrentDocument = { currentDocument | version = currentDocument.version + 1}
+  in
+    ( {model | toolMenuState = HideToolMenu, currentDocument = nextCurrentDocument }
+      , incrementVersion (EditorTools.newVersionUrl model.currentDocument)
+    )
+
 
 httpErrorHandler : Http.Error -> String
 httpErrorHandler error = 
