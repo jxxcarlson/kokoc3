@@ -44,9 +44,9 @@ toolsOrContents model =
   case model.toolPanelState of 
     ShowToolPanel -> toolsPanel model
     HideToolPanel -> 
-      Element.column [spacing 5, alignTop] [
-          toggleDocumentListDiplayButton model
-         , displayDocumentList model
+      Element.row [ ] [
+          Element.el [ Element.inFront (toggleDocumentListDiplayButton model)]
+          (displayDocumentList model)
       ]
     
 
@@ -72,7 +72,7 @@ toggleDocumentListDiplayButton : Model -> Element Msg
 toggleDocumentListDiplayButton model = 
   Input.button Widget.titleStyle {
     onPress =  Just (ToggleDocumentSource)
-  , label = Element.el [] (Element.text ("<=>"))
+  , label = Element.el [Font.bold] (Element.text ("<=>"))
   }
 
 docListTitle : Model -> String 

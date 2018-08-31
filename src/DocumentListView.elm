@@ -8,7 +8,7 @@ import View.Widget as Widget
 import DocumentList exposing(DocumentList, documents)
 import Document exposing(Document, DocType(..))
 
-type DocListViewMsg = 
+type DocListViewMsg =  
   SetCurrentDocument Document
 
   
@@ -16,7 +16,7 @@ type DocListViewMsg =
 viewWithHeading : Int -> Bool -> String -> DocumentList -> Element DocListViewMsg
 viewWithHeading height_ masterDocLoaded heading docList = 
   Element.column [ spacing 10] [
-     Element.el [moveRight 10, Font.size 18, Font.bold] (text heading)
+     Element.el [moveRight 45, Font.size 18, Font.bold] (text heading)
     , view height_ masterDocLoaded docList
   ]
 
