@@ -43,7 +43,7 @@ type alias DocumentView msg =
 view : Viewport -> Int -> Int -> String -> Document -> Element DocViewMsg 
 view viewport counter debounceCounter texMacros document = 
     Element.column [spacing 15, width (px <| texWidth viewport), centerX] [
-        titleLine document
+          titleLine document
         , (contentView viewport counter (documentView viewport debounceCounter texMacros document ))
     ]
 

@@ -44,7 +44,7 @@ toolsOrContents model =
   case model.toolPanelState of 
     ShowToolPanel -> toolsPanel model
     HideToolPanel -> 
-      Element.row [spacing 5, alignTop] [
+      Element.column [spacing 5, alignTop] [
           toggleDocumentListDiplayButton model
          , displayDocumentList model
       ]
@@ -56,14 +56,14 @@ displayDocumentList model =
     Model.SearchResults ->    
      Element.map Model.DocListViewMsg 
         ( DocumentListView.viewWithHeading 
-          model.windowHeight model.masterDocLoaded 
+          (model.windowHeight - 20) model.masterDocLoaded 
           (docListTitle model) 
           model.documentList
         )
     Model.RecentDocumentsQueue ->  
       Element.map Model.DocListViewMsg 
        ( DocumentListView.viewWithHeading 
-          model.windowHeight model.masterDocLoaded 
+          (model.windowHeight - 20) model.masterDocLoaded 
           ("Recent documents") 
           (DocumentList.documentQueueToDocumentList model.currentDocument model.recentDocumentQueue)
         )
