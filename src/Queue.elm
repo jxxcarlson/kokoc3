@@ -52,7 +52,6 @@ last (Queue list_ capacity_) =
   List.drop ((List.length list_) - 1) list_ |> List.head
 
 
-
 allButLast : List a -> List a 
 allButLast list_ = 
   let 

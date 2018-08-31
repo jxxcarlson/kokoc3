@@ -274,6 +274,13 @@
 				}
 				break;
 
+				case "DocumentQueueData":
+				console.log("DocumentQueueData")
+				if (msg.data != null) {
+					localStorage.setItem("recentDocumentQueue", JSON.stringify(msg.data));
+				}
+				break;
+
 				case "AskToReconnectDocument":
 				console.log("AskToReconnectDocument")
 				if (localStorage.currentDocument != null && localStorage.currentDocument[0] !='[') {
@@ -285,6 +292,15 @@
 				console.log("AskToReconnectDocumentList")
 				if (localStorage.currentDocumentList != null ) {
 					app.ports.infoForElm.send({tag: "ReconnectDocumentList", data: JSON.parse(localStorage.currentDocumentList)})
+				}
+				break;
+
+				case "AskToReconnectRecentDocumentQueue":
+				console.log("AskToReconnectRecentDocumentQueue")
+				if (localStorage.recentDocumentQueue != null ) {
+					console.log("queue: " + localStorage.recentDocumentQueue)
+					console.log("json: " + JSON.parse(localStorage.recentDocumentQueue))
+					app.ports.infoForElm.send({tag: "ReconnectDocumentQueue", data: JSON.parse(localStorage.recentDocumentQueue)})
 				}
 				break;
 

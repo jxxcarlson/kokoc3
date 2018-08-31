@@ -21,10 +21,13 @@ module DocumentList exposing(
   , IntList
   , intListDecoder
   , retrievDocumentsFromIntList
+  , retrievRecentDocumentQueueFromIntList
   , emptyIntList
   , intListFromDocumentList
   , updateDocument
   , documentQueueToDocumentList
+  , encodeDocumentQueue
+  , intListForDocumentQueueDecoder
   )
 
 import Json.Encode as Encode    
@@ -137,6 +140,7 @@ type DocListMsg =
   ReceiveDocumentList (Result Http.Error DocumentList)
   | ReceiveDocumentListWithSelectedId (Result Http.Error DocumentList)
   | RestoreDocumentList (Result Http.Error DocumentList)
+  | RestoreRecentDocumentQueue (Result Http.Error (Queue Document))
   | ReceiveDocumentListAndPreserveCurrentSelection (Result Http.Error DocumentList)
 
 
@@ -153,6 +157,15 @@ retrievDocumentsFromIntList maybeUser intList =
       queryString = "idlist=" ++ ids
     in
       Http.send RestoreDocumentList <| findDocumentsRequest maybeUser queryString
+
+retrievRecentDocumentQueueFromIntList : Maybe User -> (List Int) ->  Cmd DocListMsg 
+retrievRecentDocumentQueueFromIntList maybeUser intList =
+    let 
+      ids = intList |> List.reverse |> List.map String.fromInt |> String.join ","
+      queryString = "idlist=" ++ ids
+    
+    in
+      Http.send RestoreRecentDocumentQueue <| findDocumentQueueRequest maybeUser queryString
 
 
 loadMasterDocument : Maybe User -> Int -> Cmd DocListMsg 
@@ -184,14 +197,20 @@ documentListDecoder : Decoder DocumentList
 documentListDecoder = 
   Decode.map DocumentList documentListRecordDecoder
 
+documentQueueDecoder : Decoder (Queue Document)
+documentQueueDecoder = 
+  Decode.map (\list -> Queue.fromList list Configuration.documentQueueCapacity) listDocumentDecoder
+
 intListDecoder : Decoder IntList 
 intListDecoder = 
   Decode.map2 IntList
     (Decode.field "documentIds" (list int))
     (Decode.field "selected" int)
     
-
-
+intListForDocumentQueueDecoder : Decoder (List Int)
+intListForDocumentQueueDecoder = 
+  list int
+ 
 -- ENCODERS
 
 documentListEncoder : DocumentList -> Encode.Value 
@@ -222,6 +241,26 @@ findDocumentsRequest maybeUser queryString =
     , url = Configuration.backend ++ route
     , body = Http.jsonBody Encode.null
     , expect = Http.expectJson documentListDecoder
+    , timeout = Just Configuration.timeout
+    , withCredentials = False
+    }
+
+
+findDocumentQueueRequest : Maybe User -> String -> Http.Request (Queue Document)
+findDocumentQueueRequest maybeUser queryString = 
+  let 
+    (route, headers) = case maybeUser of 
+         Nothing -> ("/api/public/documents?" ++ queryString, 
+             [Http.header "APIVersion" "V2"])
+         Just user -> ("/api/documents?" ++ queryString, 
+            [Http.header "APIVersion" "V2", Http.header "authorization" ("Bearer " ++ (User.getTokenString user))])
+  in
+  Http.request
+    { method = "Get"
+    , headers = headers
+    , url = Configuration.backend ++ route
+    , body = Http.jsonBody Encode.null
+    , expect = Http.expectJson documentQueueDecoder
     , timeout = Just Configuration.timeout
     , withCredentials = False
     }
@@ -290,3 +329,16 @@ updateDocument document documentList =
 documentQueueToDocumentList : Document -> (Queue Document) -> DocumentList 
 documentQueueToDocumentList document documentQueue = 
     DocumentList { documents  = (Queue.list documentQueue), selected = Just document}
+
+
+encodeDocumentQueue : (Queue Document) -> Encode.Value 
+encodeDocumentQueue documentQueue = 
+  documentQueue
+    |> Queue.list 
+    |> List.map .id
+    |> encodeIntList
+
+encodeIntList : (List Int) -> Encode.Value 
+encodeIntList intList_ = 
+   Encode.list Encode.int intList_
+   

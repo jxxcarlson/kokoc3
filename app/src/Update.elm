@@ -100,8 +100,10 @@ port infoForElm : (GenericOutsideData -> msg) -> Sub msg
 type InfoForOutside =
     DocumentData Encode.Value
   | DocumentListData Encode.Value
+  | DocumentQueueData Encode.Value
   | AskToReconnectDocument Encode.Value
   | AskToReconnectDocumentList Encode.Value
+  | AskToReconnectRecentDocumentQueue Encode.Value
   | UserData Encode.Value 
   | AskToReconnectUser Encode.Value
   | AskToEraseLocalStorage Encode.Value
@@ -121,6 +123,9 @@ sendInfoOutside info =
         DocumentListData value ->
             infoForOutside { tag = "DocumentListData", data = value }
 
+        DocumentQueueData value -> 
+            infoForOutside { tag = "DocumentQueueData", data = value }
+
         UserData value ->
             infoForOutside { tag = "UserData", data = value }
 
@@ -129,6 +134,9 @@ sendInfoOutside info =
 
         AskToReconnectDocumentList value ->
             infoForOutside { tag = "AskToReconnectDocumentList", data = Encode.null }
+
+        AskToReconnectRecentDocumentQueue value ->
+            infoForOutside { tag = "AskToReconnectRecentDocumentQueue", data = Encode.null }
 
         AskToReconnectUser value ->
             infoForOutside { tag = "AskToReconnectUser", data = Encode.null }
@@ -161,6 +169,14 @@ getInfoFromOutside tagger onError =
 
                         Err e ->(
                             onError <| "No doc to retrieve" )
+
+                "ReconnectDocumentQueue" ->
+                    case Decode.decodeValue DocumentList.intListForDocumentQueueDecoder outsideInfo.data of
+                        Ok result ->
+                            tagger <| RecentDocumentQueueDataFromOutside  result
+
+                        Err e -> (
+                            onError <| "No document queue to retrieve" )
 
                 "ReconnectUser" ->
                     case Decode.decodeValue User.decodeUserFromOutside outsideInfo.data of
@@ -197,6 +213,10 @@ processInfoForElm model infoForElm_ =
       ({ model | documentIdList = intList, message = "intList: " ++ (String.fromInt <| List.length intList.ints) }
       , Cmd.map DocListMsg  (DocumentList.retrievDocumentsFromIntList model.maybeCurrentUser intList) )
 
+    RecentDocumentQueueDataFromOutside intList ->
+        ({ model | debugString =  "ids for Queue: " ++ (String.fromInt <| List.length intList) }
+        , Cmd.map DocListMsg  (DocumentList.retrievRecentDocumentQueueFromIntList model.maybeCurrentUser intList))
+
 
 
 saveDocToLocalStorage : Document -> Cmd msg
@@ -206,6 +226,11 @@ saveDocToLocalStorage document =
 saveDocumentListToLocalStorage : DocumentList -> Cmd msg
 saveDocumentListToLocalStorage documentList =
     sendInfoOutside (DocumentListData (DocumentList.documentListEncoder documentList))
+
+
+saveRecentDocumentQueueToLocalStorage : Queue Document -> Cmd msg
+saveRecentDocumentQueueToLocalStorage documentQueue =
+    sendInfoOutside (DocumentQueueData (DocumentList.encodeDocumentQueue documentQueue))
 
 
 sendMaybeUserDataToLocalStorage : Maybe User -> Cmd msg
@@ -247,12 +272,14 @@ processUrl urlString =
         Cmd.batch [
             sendInfoOutside (AskToReconnectDocument Encode.null)
             , sendInfoOutside (AskToReconnectDocumentList Encode.null)
+            , sendInfoOutside (AskToReconnectRecentDocumentQueue Encode.null)
             ,  sendInfoOutside (AskToReconnectUser Encode.null)
         ]
         
       DocumentIdRef docId -> 
         Cmd.batch [
             sendInfoOutside (AskToReconnectUser Encode.null)
+            , sendInfoOutside (AskToReconnectRecentDocumentQueue Encode.null)
             --, sendInfoOutside (AskToReconnectDocumentList Encode.null)
             , Cmd.map DocMsg (Document.getDocumentById docId Nothing)
             , Cmd.map DocListMsg (DocumentList.findDocuments Nothing <| "id=" ++ (String.fromInt docId))  
@@ -261,6 +288,7 @@ processUrl urlString =
       HomeRef username -> 
         Cmd.batch [
             sendInfoOutside (AskToReconnectUser Encode.null)
+            , sendInfoOutside (AskToReconnectRecentDocumentQueue Encode.null)
             , Cmd.map DocListMsg (DocumentList.findDocuments Nothing ("key=home&authorname=" ++ username)) 
         ]
 
@@ -542,6 +570,22 @@ update msg model =
             Err err -> 
                 ({model | message = handleHttpError err},   Cmd.none  )
 
+
+        -- DocListMsg (RestoreRecentDocumentQueue result) -> 
+        --   case result of 
+        --     Ok documentList ->
+        --       (model, Cmd.none)
+
+        --     Err err -> 
+        --         ({model | message = handleHttpError err},   Cmd.none  )
+
+        DocListMsg (RestoreRecentDocumentQueue result) ->
+          case result of 
+            Ok restoredDocumentQueue ->
+              ({model | recentDocumentQueue =  restoredDocumentQueue}, Cmd.none)
+            Err err -> 
+                ({model | message = handleHttpError err},   Cmd.none  )
+
         DocListMsg (ReceiveDocumentListWithSelectedId result)->
           case result of 
             Ok documentList -> 
@@ -614,6 +658,7 @@ update msg model =
         DocListViewMsg (SetCurrentDocument document) -> -- ###
             let  
               documentList = DocumentList.select (Just document) model.documentList
+              nextDocumentQueue = Queue.enqueueUnique document model.recentDocumentQueue
               masterDocLoaded = case document.docType of
                 Standard -> model.masterDocLoaded
                 Master -> True
@@ -626,7 +671,7 @@ update msg model =
                  , masterDocLoaded = masterDocLoaded
                  , deleteDocumentState = DeleteIsOnSafety
                  , documentList = documentList
-                 , recentDocumentQueue = Queue.enqueueUnique document model.recentDocumentQueue
+                 , recentDocumentQueue = nextDocumentQueue
                  , currentDocumentDirty = False
                  , counter = model.counter + 1
 
@@ -634,6 +679,7 @@ update msg model =
                  , Cmd.batch[
                         loadMasterCommand
                       , saveDocToLocalStorage document
+                      , saveRecentDocumentQueueToLocalStorage nextDocumentQueue
                       , saveDocumentListToLocalStorage documentList 
                       , loadTexMacrosForDocument document model
                       , pushDocument document

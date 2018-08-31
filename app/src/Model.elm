@@ -39,6 +39,7 @@ import Queue exposing(Queue)
 type InfoForElm = 
    DocumentDataFromOutside Document
  | DocumentListDataFromOutside DocumentList.IntList
+ | RecentDocumentQueueDataFromOutside (List Int)
  | UserDataFromOutside User 
 
 
@@ -115,6 +116,7 @@ type alias Model =
       , toolMenuState : ToolMenuState
       , recentDocumentQueue : Queue Document
       , documentListSource : DocumentListSource
+      , debugString : String 
     }
 
 
@@ -254,6 +256,7 @@ initialModel locationHref windowWidth windowHeight document =
             , toolMenuState = HideToolMenu
             , recentDocumentQueue = Queue.fromList [] Configuration.documentQueueCapacity
             , documentListSource = SearchResults
+            , debugString = ""
         }
 
 type ToolMenuState = HideToolMenu| ShowToolMenu
