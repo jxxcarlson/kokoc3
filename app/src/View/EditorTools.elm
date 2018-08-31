@@ -44,9 +44,9 @@ toolsOrContents model =
   case model.toolPanelState of 
     ShowToolPanel -> toolsPanel model
     HideToolPanel -> 
-      Element.column [spacing 5] [
-        toggleDocumentListDiplayButton model
-        , displayDocumentList model
+      Element.row [spacing 5, alignTop] [
+          toggleDocumentListDiplayButton model
+         , displayDocumentList model
       ]
     
 

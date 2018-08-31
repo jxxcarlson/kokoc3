@@ -194,7 +194,7 @@ processInfoForElm model infoForElm_ =
             , bigUserCmd2 (Just user)
           ) 
     DocumentListDataFromOutside intList ->
-      ({ model | documentIdList = intList }
+      ({ model | documentIdList = intList, message = "intList: " ++ (String.fromInt <| List.length intList.ints) }
       , Cmd.map DocListMsg  (DocumentList.retrievDocumentsFromIntList model.maybeCurrentUser intList) )
 
 
