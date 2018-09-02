@@ -657,7 +657,9 @@ update msg model =
 
         DocListViewMsg (SetCurrentDocument document) -> -- ###
             let  
-              documentList = DocumentList.select (Just document) model.documentList
+              documentList = case model.documentListSource of 
+                SearchResults -> DocumentList.select (Just document) model.documentList
+                RecentDocumentsQueue -> DocumentList.addAndSelect document model.documentList
               nextDocumentQueue = case model.documentListSource of 
                   SearchResults -> Queue.enqueueUnique document model.recentDocumentQueue
                   RecentDocumentsQueue -> model.recentDocumentQueue

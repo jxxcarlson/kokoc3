@@ -26,8 +26,11 @@ module DocumentList exposing(
   , intListFromDocumentList
   , updateDocument
   , documentQueueToDocumentList
+  , documentListFromDocumentQueue
   , encodeDocumentQueue
   , intListForDocumentQueueDecoder
+  , addAndSelect
+
   )
 
 import Json.Encode as Encode    
@@ -111,6 +114,20 @@ selectedId documentList =
 select : Maybe Document -> DocumentList -> DocumentList 
 select maybeSelectedDocument (DocumentList documentList) =
     DocumentList { documents = documentList.documents, selected = maybeSelectedDocument}
+
+addAndSelect : Document -> DocumentList -> DocumentList 
+addAndSelect document documentList =
+  case (member document documentList) of 
+    False -> prependAndSelect document documentList 
+    True -> documentList 
+
+member : Document -> DocumentList -> Bool
+member document documentList = 
+  List.member document (documents documentList)
+
+prependAndSelect : Document -> DocumentList -> DocumentList 
+prependAndSelect document documentList = 
+  DocumentList { documents = document::(documents documentList), selected = Just document}
 
 selectFirst : DocumentList -> DocumentList 
 selectFirst documentList = 
@@ -329,6 +346,10 @@ updateDocument document documentList =
 documentQueueToDocumentList : Document -> (Queue Document) -> DocumentList 
 documentQueueToDocumentList document documentQueue = 
     DocumentList { documents  = (Queue.list documentQueue), selected = Just document}
+
+documentListFromDocumentQueue :  (Queue Document) -> DocumentList 
+documentListFromDocumentQueue documentQueue = 
+    DocumentList { documents  = (Queue.list documentQueue), selected = Nothing}
 
 
 encodeDocumentQueue : (Queue Document) -> Encode.Value 
