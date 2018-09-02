@@ -214,7 +214,7 @@ processInfoForElm model infoForElm_ =
       , Cmd.map DocListMsg  (DocumentList.retrievDocumentsFromIntList model.maybeCurrentUser intList) )
 
     RecentDocumentQueueDataFromOutside intList ->
-        ({ model | debugString =  "ids for Queue: " ++ (String.fromInt <| List.length intList) }
+        (model 
         , Cmd.map DocListMsg  (DocumentList.retrievRecentDocumentQueueFromIntList model.maybeCurrentUser intList))
 
 
@@ -658,7 +658,9 @@ update msg model =
         DocListViewMsg (SetCurrentDocument document) -> -- ###
             let  
               documentList = DocumentList.select (Just document) model.documentList
-              nextDocumentQueue = Queue.enqueueUnique document model.recentDocumentQueue
+              nextDocumentQueue = case model.documentListSource of 
+                  SearchResults -> Queue.enqueueUnique document model.recentDocumentQueue
+                  RecentDocumentsQueue -> model.recentDocumentQueue
               masterDocLoaded = case document.docType of
                 Standard -> model.masterDocLoaded
                 Master -> True
@@ -674,6 +676,7 @@ update msg model =
                  , recentDocumentQueue = nextDocumentQueue
                  , currentDocumentDirty = False
                  , counter = model.counter + 1
+                 , debugString = "SET"
 
                  }
                  , Cmd.batch[
