@@ -39,8 +39,21 @@ import View.Common as Common
 import View.Widget as Widget exposing(..)
 
 
-
 toolsOrContents model = 
+  case model.maybeCurrentUser of 
+    Nothing -> toolsOrContentsPublic model
+    Just _ -> toolsOrContentsForUser model
+
+
+toolsOrContentsPublic model = 
+     Element.map Model.DocListViewMsg 
+        ( DocumentListView.viewWithHeading 
+          (model.windowHeight) model.masterDocLoaded 
+          (docListTitle model) 
+          model.documentList
+        )
+
+toolsOrContentsForUser model = 
   case model.toolPanelState of 
     ShowToolPanel -> toolsPanel model
     HideToolPanel -> 
@@ -55,14 +68,14 @@ displayDocumentList model =
   case model.documentListSource of 
     Model.SearchResults ->    
      Element.map Model.DocListViewMsg 
-        ( DocumentListView.viewWithHeading 
+        ( DocumentListView.viewWithHeadingShifted 
           (model.windowHeight - 20) model.masterDocLoaded 
           (docListTitle model) 
           model.documentList
         )
     Model.RecentDocumentsQueue ->  
       Element.map Model.DocListViewMsg 
-       ( DocumentListView.viewWithHeading 
+       ( DocumentListView.viewWithHeadingShifted 
           (model.windowHeight - 20) model.masterDocLoaded 
           ("Recent documents") 
           (DocumentList.documentQueueToDocumentList model.currentDocument model.recentDocumentQueue)
