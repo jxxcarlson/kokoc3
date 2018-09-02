@@ -1,6 +1,7 @@
 module DocumentList exposing(
     DocumentList
   , DocListMsg(..)
+  , IntList
   , findDocuments
   , loadMasterDocument
   , loadMasterDocumentWithCurrentSelection
@@ -18,7 +19,6 @@ module DocumentList exposing(
   , deleteItemInDocumentListAt
   , make
   , documentListEncoder
-  , IntList
   , intListDecoder
   , retrievDocumentsFromIntList
   , retrievRecentDocumentQueueFromIntList
@@ -31,7 +31,6 @@ module DocumentList exposing(
   , encodeDocumentQueue
   , intListForDocumentQueueDecoder
   , addAndSelect
-
   )
 
 import Json.Encode as Encode    
@@ -50,12 +49,21 @@ import Document exposing(Document, documentDecoder)
 import Queue exposing(Queue) 
 
 
-type DocumentList = DocumentList DocumentListRecord
+type DocumentList = DocumentList (List Document) (Maybe Document) 
+
 
 type alias DocumentListRecord = {
       documents: List Document
     , selected: Maybe Document
   }
+
+fromDocumentAndList : (List Document) -> (Maybe Document) -> DocumentList
+fromDocumentAndList listOfDocuments maybeDocument  = 
+   DocumentList listOfDocuments maybeDocument
+
+selected : DocumentList -> Maybe Document 
+selected (DocumentList listOfDocuments maybeDocument) = 
+  maybeDocument
 
 type alias IntList = {
       ints : List Int
@@ -76,35 +84,26 @@ emptyIntList =
 
 
 empty : DocumentList 
-empty = DocumentList {
-    documents = []
-  , selected = Nothing 
-  }
+empty = DocumentList [] Nothing
 
 make : Document -> List Document -> DocumentList 
 make document listOfDocuments = 
-  let 
-    documentListRecord = { documents = document::listOfDocuments, selected = Just document}
-  in 
-    DocumentList documentListRecord 
+  DocumentList (document::listOfDocuments) (Just document) 
 
 
 prepend : Document -> DocumentList -> DocumentList 
-prepend document (DocumentList documentListRecord) = 
-   DocumentList { documentListRecord | documents = document :: documentListRecord.documents, selected = Just document }
+prepend document (DocumentList documentList maybeDocument) = 
+   DocumentList (document :: documentList) (Just document)
    
 
 documents : DocumentList -> List Document 
-documents (DocumentList documentList) =
-  documentList.documents
+documents (DocumentList documentList maybeDocument) =
+  documentList
 
 setDocuments : List Document -> DocumentList -> DocumentList
-setDocuments listOfDocuments (DocumentList documentListRecord)  = 
-  DocumentList { documentListRecord | documents = listOfDocuments }
+setDocuments listOfDocuments (DocumentList documentList maybeDocument)  = 
+  DocumentList listOfDocuments maybeDocument
 
-selected : DocumentList -> Maybe Document 
-selected (DocumentList docListRecord) =
- docListRecord.selected
 
 selectedId : DocumentList -> Int 
 selectedId documentList = 
@@ -113,8 +112,8 @@ selectedId documentList =
      Just document -> document.id 
 
 select : Maybe Document -> DocumentList -> DocumentList 
-select maybeSelectedDocument (DocumentList documentList) =
-    DocumentList { documents = documentList.documents, selected = maybeSelectedDocument}
+select maybeSelectedDocument (DocumentList documentList maybeDocument) =
+    DocumentList documentList  maybeSelectedDocument
 
 addAndSelect : Document -> DocumentList -> DocumentList 
 addAndSelect document documentList =
@@ -127,8 +126,8 @@ member document documentList =
   List.member document (documents documentList)
 
 prependAndSelect : Document -> DocumentList -> DocumentList 
-prependAndSelect document documentList = 
-  DocumentList { documents = document::(documents documentList), selected = Just document}
+prependAndSelect document (DocumentList documentList maybeDocument) = 
+  DocumentList (document::documentList) (Just document)
 
 selectFirst : DocumentList -> DocumentList 
 selectFirst documentList = 
@@ -149,8 +148,8 @@ notFoundDocument =
     { doc | title = "Not found" }
 
 documentListLength : DocumentList -> Int 
-documentListLength (DocumentList documentList) =
-  List.length documentList.documents
+documentListLength (DocumentList documentList maybeDocument) =
+  List.length documentList
 
 -- MSG 
 
@@ -223,7 +222,11 @@ documentListRecordDecoder =
 
 documentListDecoder : Decoder DocumentList
 documentListDecoder = 
-  Decode.map DocumentList documentListRecordDecoder
+  Decode.map documentListFromRecord documentListRecordDecoder 
+
+documentListFromRecord : DocumentListRecord -> DocumentList 
+documentListFromRecord r = 
+  DocumentList r.documents r.selected
 
 documentQueueDecoder : Decoder (Queue Document)
 documentQueueDecoder = 
@@ -356,11 +359,11 @@ updateDocument document documentList =
 
 documentQueueToDocumentList : Document -> (Queue Document) -> DocumentList 
 documentQueueToDocumentList document documentQueue = 
-    DocumentList { documents  = (Queue.list documentQueue), selected = Just document}
+    DocumentList (Queue.list documentQueue) (Just document)
 
 documentListFromDocumentQueue :  (Queue Document) -> DocumentList 
 documentListFromDocumentQueue documentQueue = 
-    DocumentList { documents  = (Queue.list documentQueue), selected = Nothing}
+    DocumentList  (Queue.list documentQueue) Nothing
 
 
 encodeDocumentQueue : (Queue Document) -> Encode.Value 
