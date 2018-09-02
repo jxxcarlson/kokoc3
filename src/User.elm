@@ -306,13 +306,15 @@ bigUserDecoder =
         |> JPipeline.required "verified" Decode.bool
         |> JPipeline.required "public" Decode.bool
         |> JPipeline.required "created" (Decode.map ((\x -> x*1000) >> Time.millisToPosix) Decode.int)
+        |> JPipeline.required "documentIds" (Decode.list Decode.int)
 
 bigUserEncoder : BigUser -> Encode.Value 
 bigUserEncoder bigUser = 
   Encode.object [
       ("name", Encode.string bigUser.name )
     , ("blurb", Encode.string bigUser.blurb )  
-    , ("public", Encode.bool bigUser.public )  
+    , ("public", Encode.bool bigUser.public ) 
+    , ("document_ids", (Encode.list Encode.int) bigUser.documentIds) 
   ]
 
 bigUserRecordEncoder : BigUser -> Encode.Value 
@@ -332,6 +334,7 @@ type alias BigUser = {
     , verified : Bool
     , public : Bool
     , created : Posix
+    , documentIds : List Int 
   }
 
 
