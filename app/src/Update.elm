@@ -684,6 +684,7 @@ update msg model =
                       , saveDocToLocalStorage document
                       , saveRecentDocumentQueueToLocalStorage nextDocumentQueue
                       , saveDocumentListToLocalStorage documentList 
+                      , updateBigUserCmd model
                       , loadTexMacrosForDocument document model
                       , pushDocument document
                  ]
@@ -1101,13 +1102,8 @@ update msg model =
               (model, Cmd.map UserMsg <| User.getBigUserRecord (User.userId user))
 
         UpdateBigUser ->
-          case model.maybeBigUser of 
-            Nothing -> (model, Cmd.none)
-            Just bigUser -> 
-              let 
-                nextBigUser = {bigUser | blurb = model.blurb}
-              in 
-                (model, Cmd.map UserMsg <| User.updateBigUser (User.getTokenStringFromMaybeUser model.maybeCurrentUser) nextBigUser)
+          (model, updateBigUserCmd model)
+      
 
         UserMsg (AcknowlegeBigUserUpdate result) ->
            case result of 
@@ -1421,7 +1417,10 @@ signIn model =
           startupDoc = SystemDocument.signIn
           freshModel = initialModel "" model.windowWidth model.windowHeight  startupDoc
       in 
-          (freshModel, Cmd.map UserMsg (User.getTokenCmd model.email model.password)  ) 
+          (freshModel, Cmd.batch[
+              Cmd.map UserMsg (User.getTokenCmd model.email model.password)  
+              , eraseLocalStorage
+          ]) -- ###
 
 loadTexMacrosForDocument : Document -> Model -> Cmd Msg 
 loadTexMacrosForDocument document model =
@@ -1640,6 +1639,18 @@ doIncrementVersion model =
     ( {model | toolMenuState = HideToolMenu, currentDocument = nextCurrentDocument }
       , incrementVersion (EditorTools.newVersionUrl model.currentDocument)
     )
+
+
+updateBigUserCmd : Model -> Cmd Msg
+updateBigUserCmd model = 
+  case model.maybeBigUser of 
+    Nothing -> Cmd.none
+    Just bigUser -> 
+      let 
+        nextBigUser = {bigUser | blurb = model.blurb, documentIds = List.map .id <| Queue.list model.recentDocumentQueue}
+      in 
+        Cmd.map UserMsg <| User.updateBigUser (User.getTokenStringFromMaybeUser model.maybeCurrentUser) nextBigUser
+
 
 
 httpErrorHandler : Http.Error -> String
