@@ -435,7 +435,7 @@ update msg model =
                 maybeCurrentUser = User.maybeUserFromEmailAndToken model.email (User.stringFromToken token)
                 bigUserCmd = case maybeCurrentUser of 
                   Nothing -> Cmd.none 
-                  Just user -> Cmd.map UserMsg <| User.getBigUserRecord (User.userId user)
+                  Just user -> Cmd.map UserMsg <| User.getBigUserRecordAtSignIn (User.userId user)
               in 
                ({ model | 
                     maybeToken = maybeToken
@@ -669,8 +669,7 @@ update msg model =
               loadMasterCommand = case document.docType of 
                 Standard -> Cmd.none
                 Master ->   Cmd.map DocListMsg (DocumentList.loadMasterDocument model.maybeCurrentUser document.id)
-            in
-               ({ model | 
+              newModel = { model | 
                    currentDocument = document
                  , masterDocLoaded = masterDocLoaded
                  , deleteDocumentState = DeleteIsOnSafety
@@ -681,13 +680,15 @@ update msg model =
                  , debugString = "SET"
 
                  }
+            in
+               ( newModel
                  , Cmd.batch[
                         loadMasterCommand
                       , saveDocToLocalStorage document
                       , saveRecentDocumentQueueToLocalStorage nextDocumentQueue
                       , saveDocumentListToLocalStorage documentList 
-                      , updateBigUserCmd model
-                      , loadTexMacrosForDocument document model
+                      , updateBigUserCmd newModel
+                      , loadTexMacrosForDocument document newModel
                       , pushDocument document
                  ]
                )
@@ -1093,7 +1094,19 @@ update msg model =
           
         UserMsg (ReceiveBigUserRecord result) ->
            case result of 
-             (Ok bigUserRecord) -> ({model | blurb = bigUserRecord.user.blurb, message = bigUserRecord.user.blurb, maybeBigUser = Just bigUserRecord.user}, Cmd.none)
+             (Ok bigUserRecord) -> ({model | blurb = bigUserRecord.user.blurb
+                 , maybeBigUser = Just bigUserRecord.user
+                 }
+                , Cmd.none)
+             Err error -> ({model | blurb = "No blurb", message = httpErrorHandler error}, Cmd.none)
+
+        UserMsg (ReceiveBigUserRecordAtSignIn result) ->
+           case result of 
+             (Ok bigUserRecord) -> ({model | blurb = bigUserRecord.user.blurb
+                 , maybeBigUser = Just bigUserRecord.user
+                 }
+                , Cmd.map DocListMsg (DocumentList.retrievRecentDocumentQueueFromIntList model.maybeCurrentUser (bigUserRecord.user.documentIds))
+              )
              Err error -> ({model | blurb = "No blurb", message = httpErrorHandler error}, Cmd.none)
 
         GetBigUser ->

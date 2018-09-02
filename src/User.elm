@@ -23,6 +23,7 @@ module User exposing(
    , sessionIsExpired
    , getUsers
    , getBigUserRecord
+   , getBigUserRecordAtSignIn
    , updateBigUser
    , incrementMediaCountForMaybeUser
    ) 
@@ -153,6 +154,7 @@ type UserMsg =
     | ListUsers (Result Http.Error (List BigUser))
     | AcknowledgeMediaCountIncrement (Result Http.Error String)
     | ReceiveBigUserRecord (Result Http.Error BigUserRecord)
+    | ReceiveBigUserRecordAtSignIn (Result Http.Error BigUserRecord)
     | AcknowlegeBigUserUpdate (Result Http.Error String)
 
 
@@ -380,6 +382,10 @@ getBigUserRequest userId_ =
 getBigUserRecord : Int -> Cmd UserMsg 
 getBigUserRecord userId_  = 
   Http.send ReceiveBigUserRecord <| getBigUserRequest userId_
+
+getBigUserRecordAtSignIn : Int -> Cmd UserMsg 
+getBigUserRecordAtSignIn userId_  = 
+  Http.send ReceiveBigUserRecordAtSignIn <| getBigUserRequest userId_
 
 
 updateBigUserRequest : String -> BigUser -> Http.Request String
