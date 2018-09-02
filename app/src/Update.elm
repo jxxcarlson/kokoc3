@@ -589,8 +589,10 @@ update msg model =
         DocListMsg (RestoreRecentDocumentQueueAtSignIn result) -> -- ###@@@
           case result of 
             Ok restoredDocumentQueue ->
-              ({model | recentDocumentQueue =  restoredDocumentQueue}, 
-                saveRecentDocumentQueueToLocalStorage restoredDocumentQueue)
+              ({model | recentDocumentQueue =  restoredDocumentQueue
+                , documentListSource = RecentDocumentsQueue } 
+                , saveRecentDocumentQueueToLocalStorage restoredDocumentQueue
+              )
             Err err -> 
                 ({model | message = handleHttpError err},   Cmd.none  )
 
@@ -702,13 +704,13 @@ update msg model =
                )
 
         DocViewMsg (LoadMaster docId) ->
-           ({model | masterDocLoaded = True}, Cmd.map DocListMsg (DocumentList.loadMasterDocument model.maybeCurrentUser docId))
+           ({model | masterDocLoaded = True, documentListSource = SearchResults}, Cmd.map DocListMsg (DocumentList.loadMasterDocument model.maybeCurrentUser docId))
 
         DocViewMsg (LoadMasterWithSelection childId docId) ->
-           ({ model | selectedDocumentId = childId, masterDocLoaded = True},  Cmd.map DocListMsg (DocumentList.loadMasterDocumentAndSelect model.maybeCurrentUser docId))
+           ({ model | selectedDocumentId = childId, masterDocLoaded = True, documentListSource = SearchResults},  Cmd.map DocListMsg (DocumentList.loadMasterDocumentAndSelect model.maybeCurrentUser docId))
 
         DocViewMsg (LoadMasterWithCurrentSelection docId) ->
-         ({model | appMode = Reading, toolPanelState = HideToolPanel, masterDocLoaded = True} , Cmd.map DocListMsg (DocumentList.loadMasterDocumentWithCurrentSelection model.maybeCurrentUser docId))
+         ({model | appMode = Reading, toolPanelState = HideToolPanel, masterDocLoaded = True, documentListSource = SearchResults} , Cmd.map DocListMsg (DocumentList.loadMasterDocumentWithCurrentSelection model.maybeCurrentUser docId))
 
         SignIn ->
           signIn model

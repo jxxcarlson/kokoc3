@@ -554,7 +554,7 @@ toggleEditPanelItem :  Element Msg
 toggleEditPanelItem  = 
     Input.button (Widget.menuItemStyle  (px 160)) {
       onPress =  (Just (ToggleToolPanelState))
-    , label = Element.el [] (Element.text ("Edit Panel Ctrl-E"))
+    , label = Element.el [] (Element.text ("Edit Tools Ctrl-E"))
     }
 
 printItem :  Element Msg
