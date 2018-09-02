@@ -365,7 +365,7 @@ makeNewChildDocument : Model -> (Model, Cmd Msg)
 makeNewChildDocument model = 
   (model, Cmd.map DocMsg (newChildDocument model))
 
-doSearch : Model -> (Model, Cmd Msg) --- ###
+doSearch : Model -> (Model, Cmd Msg)
 doSearch model = 
   case model.appMode of 
         Reading -> 
@@ -586,6 +586,14 @@ update msg model =
             Err err -> 
                 ({model | message = handleHttpError err},   Cmd.none  )
 
+        DocListMsg (RestoreRecentDocumentQueueAtSignIn result) -> -- ###@@@
+          case result of 
+            Ok restoredDocumentQueue ->
+              ({model | recentDocumentQueue =  restoredDocumentQueue}, 
+                saveRecentDocumentQueueToLocalStorage restoredDocumentQueue)
+            Err err -> 
+                ({model | message = handleHttpError err},   Cmd.none  )
+
         DocListMsg (ReceiveDocumentListWithSelectedId result)->
           case result of 
             Ok documentList -> 
@@ -655,7 +663,7 @@ update msg model =
                 ({model | message = handleHttpError err},   Cmd.none  )
 
 
-        DocListViewMsg (SetCurrentDocument document) -> -- ###
+        DocListViewMsg (SetCurrentDocument document) -> 
             let  
               documentList = case model.documentListSource of 
                 SearchResults -> DocumentList.select (Just document) model.documentList
@@ -833,7 +841,7 @@ update msg model =
               tokenString = User.getTokenStringFromMaybeUser model.maybeCurrentUser
           in 
             case model.currentDocument.docType of
-              Master -> ({model | message = "Autosave (no, M)"} , getTime) -- do not autosave master documents ###
+              Master -> ({model | message = "Autosave (no, M)"} , getTime) -- do not autosave master documents 
               Standard -> 
                 ( { model |   currentDocumentDirty = False
                             , message = "Autosaved doc " ++ (String.fromInt model.debounceCounter)
@@ -996,7 +1004,7 @@ update msg model =
           in 
             case (sessionExpired, model.maybeCurrentUser) of 
                 (True, Just _) -> signOutCurrentUser model 
-                (_, _) -> ( {model | message = sessionString}, Cmd.none) -- ###
+                (_, _) -> ( {model | message = sessionString}, Cmd.none) 
 
 
       
@@ -1105,7 +1113,7 @@ update msg model =
              (Ok bigUserRecord) -> ({model | blurb = bigUserRecord.user.blurb
                  , maybeBigUser = Just bigUserRecord.user
                  }
-                , Cmd.map DocListMsg (DocumentList.retrievRecentDocumentQueueFromIntList model.maybeCurrentUser (bigUserRecord.user.documentIds))
+                , Cmd.map DocListMsg (DocumentList.retrievRecentDocumentQueueFromIntListAtSignIn model.maybeCurrentUser (bigUserRecord.user.documentIds))
               )
              Err error -> ({model | blurb = "No blurb", message = httpErrorHandler error}, Cmd.none)
 
@@ -1423,7 +1431,7 @@ saveCurrentDocumentIfDirty model =
          Cmd.map DocMsg <| Document.saveDocument token model.currentDocument 
         
 
-signIn model =
+signIn model = -- ###
   case String.length model.password < 8 of 
     True -> ({model | message = "Password must contain at least 8 characters"}, Cmd.none)
     False ->

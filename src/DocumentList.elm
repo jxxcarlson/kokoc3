@@ -22,6 +22,7 @@ module DocumentList exposing(
   , intListDecoder
   , retrievDocumentsFromIntList
   , retrievRecentDocumentQueueFromIntList
+  , retrievRecentDocumentQueueFromIntListAtSignIn
   , emptyIntList
   , intListFromDocumentList
   , updateDocument
@@ -158,6 +159,7 @@ type DocListMsg =
   | ReceiveDocumentListWithSelectedId (Result Http.Error DocumentList)
   | RestoreDocumentList (Result Http.Error DocumentList)
   | RestoreRecentDocumentQueue (Result Http.Error (Queue Document))
+  | RestoreRecentDocumentQueueAtSignIn (Result Http.Error (Queue Document))
   | ReceiveDocumentListAndPreserveCurrentSelection (Result Http.Error DocumentList)
 
 
@@ -183,6 +185,15 @@ retrievRecentDocumentQueueFromIntList maybeUser intList =
     
     in
       Http.send RestoreRecentDocumentQueue <| findDocumentQueueRequest maybeUser queryString
+
+retrievRecentDocumentQueueFromIntListAtSignIn : Maybe User -> (List Int) ->  Cmd DocListMsg 
+retrievRecentDocumentQueueFromIntListAtSignIn maybeUser intList =
+    let 
+      ids = intList |> List.reverse |> List.map String.fromInt |> String.join ","
+      queryString = "idlist=" ++ ids
+    
+    in
+      Http.send RestoreRecentDocumentQueueAtSignIn <| findDocumentQueueRequest maybeUser queryString
 
 
 loadMasterDocument : Maybe User -> Int -> Cmd DocListMsg 
