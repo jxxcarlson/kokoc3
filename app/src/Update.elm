@@ -1431,6 +1431,7 @@ signIn model =
           basicDoc = Document.basicDocument
           startupDoc = SystemDocument.signIn
           freshModel = initialModel "" model.windowWidth model.windowHeight  startupDoc
+          documentListSource = RecentDocumentsQueue
       in 
           (freshModel, Cmd.batch[
               Cmd.map UserMsg (User.getTokenCmd model.email model.password)  
