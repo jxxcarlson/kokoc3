@@ -59,6 +59,7 @@ contentView viewport counter viewDoc =
   Keyed.el [   height (px (round <| viewport.viewport.height - 150))
              , scrollbarY
              , clipX
+             , Element.htmlAttribute <| HA.attribute "id" "_textView_"
           ] 
       ((String.fromInt counter), viewDoc.content)
 
