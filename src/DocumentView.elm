@@ -161,7 +161,7 @@ viewMiniLatex viewport texMacros document =
   in 
     MiniLatex.getRenderedText editRecord
         |> List.map (\x -> Element.paragraph [ width (px (texWidth viewport))] [ Element.html x ]) -- ###@@@
-        |> Element.column []
+        |> Element.column [Element.htmlAttribute <| HA.attribute "id" "renderedText"]
 
 
 texWidth : Viewport -> Int 

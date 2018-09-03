@@ -888,6 +888,10 @@ update msg model =
         GetViewport viewport -> 
            ({model | viewport = viewport }, Cmd.none)
 
+        FindViewportOfRenderedText result ->
+          case result of 
+            Ok viewport -> ({ model | viewPortOfRenderedText = Just viewport, debugString = "doc VP OK"}, Cmd.none)
+            Err _ -> ({model | debugString = "doc VP ERROR"}, Cmd.none)
 
         DeleteCurrentDocument ->
           let 
@@ -929,7 +933,8 @@ update msg model =
             ( { model | currentDocument = nextCurrentDocument}, Cmd.none)
 
         Test ->
-           (model, Cmd.map ImageMsg <| ImageManager.getImageList model.currentDocument)
+          (model, getViewPortOfRenderedText)
+           -- (model, Cmd.map ImageMsg <| ImageManager.getImageList model.currentDocument)
 
         ReadImage v ->
           let 
@@ -1604,6 +1609,11 @@ displayCurrentMasterDocument model =
 
 getViewPort : Cmd Msg
 getViewPort = Task.perform GetViewport Dom.getViewport
+
+getViewPortOfRenderedText : Cmd Msg
+getViewPortOfRenderedText = Task.attempt FindViewportOfRenderedText (Dom.getViewportOf "renderedText")
+
+-- FindViewportOfRenderedText : Result x a -> msg
 
 saveCurrentDocument : Model -> (Model, Cmd Msg)
 saveCurrentDocument model = 

@@ -107,10 +107,30 @@ footer model =
       , getAuthorsDocumentsButton (px 110) model
       -- , Element.el [] (text <| currentDeviceString model.viewport)
       , Element.el [] (text <| Configuration.client)
-      , Element.el [] (text <| "access: " ++ (Document.accessDictToString model.currentDocument.access))
+      -- , Element.el [] (text <| "access: " ++ (Document.accessDictToString model.currentDocument.access))
+      , Element.el [] (text <| viewportInfo model)
       , Element.el [] (text <| model.debugString) 
+    
   ] 
 
+viewportInfo : Model -> String 
+viewportInfo model = 
+  case model.viewPortOfRenderedText of 
+    Nothing -> "--"
+    Just v ->
+      let 
+        x = v.viewport.x |> String.fromFloat
+        y = v.viewport.x |> String.fromFloat
+        h = v.viewport.height |> String.fromFloat
+      in 
+      "x = " ++ x ++ ", y = " ++ y ++ ", h = "  ++ h
+
+
+yCoordinateForRenderedText : Model -> Float 
+yCoordinateForRenderedText model = 
+  case model.viewPortOfRenderedText of 
+    Nothing -> 0
+    Just viewport -> viewport.viewport.y
 
 showMaybeUser : Maybe User -> String 
 showMaybeUser maybeUser = 
@@ -201,13 +221,19 @@ searchPlaceHolderText model  =
 -- BUTTONS AND LINKS
 
 
-testButton : Model -> Element Msg 
-testButton model = 
+prepareImagesButton : Model -> Element Msg 
+prepareImagesButton model = 
     Input.button (Widget.buttonStyle  (px 115)) {
       onPress =  Just Test
     , label = Element.el [] (Element.text ("Prepare Images"))
     }
 
+testButton : Model -> Element Msg 
+testButton model = 
+    Input.button (Widget.buttonStyle  (px 115)) {
+      onPress =  Just Test
+    , label = Element.el [] (Element.text ("Test"))
+    }
 
 viewUserManualLink : Element msg
 viewUserManualLink = 

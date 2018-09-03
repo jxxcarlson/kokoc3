@@ -92,6 +92,7 @@ type alias Model =
       , windowWidth : Int  
       , windowHeight : Int  
       , viewport : Viewport
+      , viewPortOfRenderedText : Maybe Viewport
       , deleteDocumentState : DeleteDocumentState
       , pressedKeys : List Key
       , previousKey : Key
@@ -174,6 +175,7 @@ type Msg
     | SetDocumentTextType TextType
     | SetDocumentType DocType
     | GetViewport Dom.Viewport
+    | FindViewportOfRenderedText (Result Dom.Error Dom.Viewport)
     | DeleteCurrentDocument
     | CancelDeleteCurrentDocument
     | KeyMsg Keyboard.Msg
@@ -232,6 +234,7 @@ initialModel locationHref windowWidth windowHeight document =
             , viewport = {   scene = {width = toFloat windowWidth, height = toFloat windowHeight}
                            , viewport = { x =  0, y = 0, width = toFloat windowWidth, height = toFloat windowHeight}
                          }
+            , viewPortOfRenderedText = Nothing
             , deleteDocumentState = DeleteIsOnSafety
             , pressedKeys = []
             , previousKey = F20
