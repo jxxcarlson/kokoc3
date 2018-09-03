@@ -6,6 +6,7 @@ module Queue exposing(
     , remove 
     , enqueue 
     , enqueueUnique 
+    , enqueueUniqueWithProperty
     , dropLast
   )
 
@@ -28,6 +29,13 @@ remove : a -> Queue a -> Queue a
 remove element (Queue list_ capacity_) = 
   Queue (List.filter (\x -> x /= element) list_) capacity_
 
+{-|  Remove x from Queue if property x == preperty element.
+-}
+removeUsingProperty : (a -> b) -> a ->  Queue a -> Queue a 
+removeUsingProperty property element (Queue list_ capacity_) = 
+  Queue (List.filter (\x -> property x /= property element) list_) capacity_
+
+
 enqueue : a -> Queue a -> Queue a 
 enqueue element (Queue list_ capacity_) = 
   case List.length list_ == capacity_ of 
@@ -37,6 +45,10 @@ enqueue element (Queue list_ capacity_) =
 enqueueUnique : a -> Queue a -> Queue a 
 enqueueUnique element queue = 
   enqueue element (remove element queue)
+
+enqueueUniqueWithProperty : (a -> b) -> a -> Queue a -> Queue a 
+enqueueUniqueWithProperty property element queue = 
+  enqueue element (removeUsingProperty property element queue)
 
 
 dropLast : Queue a -> Queue a 

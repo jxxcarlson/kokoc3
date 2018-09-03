@@ -45,8 +45,11 @@ viewTableOfContents height_ docList =
   Element.column [spacing 5, scrollbarY, height (px (height_ - 150)) ] 
     ( List.indexedMap (activeDocTitleWithIndex (DocumentList.selected docList)) (documents docList) )
 
+viewDocument : Document -> Element msg
 viewDocument doc =
     Element.el (Widget.listItemStyle  (px 140)) (text doc.title)
+
+-- HELPERS: ELEMENT
 
 transformedTitle : Document -> String
 transformedTitle doc = 
@@ -73,10 +76,13 @@ activeDocTitleWithIndex  maybeSelectedDocument index document =
         } 
     )
 
+titleWithIndex : Int -> Document -> Element msg
 titleWithIndex index document = 
   case (index == 0) of 
     True ->  (Element.text <| transformedTitle document)
     False -> (Element.text <| (String.fromInt index) ++ ". " ++ (transformedTitle document))
+
+-- HELPERS: ATTRIBUTE
 
 selectedElementStyle : Maybe Document -> Document -> List (Element.Attribute msg)
 selectedElementStyle maybeSelectedDocument document = 

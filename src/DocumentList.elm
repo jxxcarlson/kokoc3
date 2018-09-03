@@ -57,18 +57,58 @@ type alias DocumentListRecord = {
     , selected: Maybe Document
   }
 
+type alias IntList = {
+      ints : List Int
+    , selected : Int
+  }
+
+
+{- Constructors -}
+
 fromDocumentAndList : (List Document) -> (Maybe Document) -> DocumentList
 fromDocumentAndList listOfDocuments maybeDocument  = 
    DocumentList listOfDocuments maybeDocument
+
+empty : DocumentList 
+empty = DocumentList [] Nothing
+
+make : Document -> List Document -> DocumentList 
+make document listOfDocuments = 
+  DocumentList (document::listOfDocuments) (Just document) 
+
+
+{- Accessors -}
+
+documents : DocumentList -> List Document 
+documents (DocumentList documentList maybeDocument) =
+  documentList   
 
 selected : DocumentList -> Maybe Document 
 selected (DocumentList listOfDocuments maybeDocument) = 
   maybeDocument
 
-type alias IntList = {
-      ints : List Int
-    , selected : Int
-  }
+{- Properties -}
+
+member : Document -> DocumentList -> Bool
+member document documentList = 
+  List.member document (documents documentList)
+
+selectedId : DocumentList -> Int 
+selectedId documentList = 
+   case selected documentList of 
+     Nothing -> 0
+     Just document -> document.id 
+
+getFirst : DocumentList -> Document 
+getFirst documentList = 
+  List.head (documents documentList) |> Maybe.withDefault notFoundDocument
+
+
+documentListLength : DocumentList -> Int 
+documentListLength (DocumentList documentList maybeDocument) =
+  List.length documentList
+
+{- Converters -}
 
 intListFromDocumentList : DocumentList -> IntList 
 intListFromDocumentList documentList =
@@ -83,33 +123,17 @@ emptyIntList =
   }
 
 
-empty : DocumentList 
-empty = DocumentList [] Nothing
-
-make : Document -> List Document -> DocumentList 
-make document listOfDocuments = 
-  DocumentList (document::listOfDocuments) (Just document) 
-
+{- Modifiers -}
 
 prepend : Document -> DocumentList -> DocumentList 
 prepend document (DocumentList documentList maybeDocument) = 
    DocumentList (document :: documentList) (Just document)
    
 
-documents : DocumentList -> List Document 
-documents (DocumentList documentList maybeDocument) =
-  documentList
-
 setDocuments : List Document -> DocumentList -> DocumentList
 setDocuments listOfDocuments (DocumentList documentList maybeDocument)  = 
   DocumentList listOfDocuments maybeDocument
 
-
-selectedId : DocumentList -> Int 
-selectedId documentList = 
-   case selected documentList of 
-     Nothing -> 0
-     Just document -> document.id 
 
 select : Maybe Document -> DocumentList -> DocumentList 
 select maybeSelectedDocument (DocumentList documentList maybeDocument) =
@@ -121,9 +145,6 @@ addAndSelect document documentList =
     False -> prependAndSelect document documentList 
     True -> documentList 
 
-member : Document -> DocumentList -> Bool
-member document documentList = 
-  List.member document (documents documentList)
 
 prependAndSelect : Document -> DocumentList -> DocumentList 
 prependAndSelect document (DocumentList documentList maybeDocument) = 
@@ -136,9 +157,49 @@ selectFirst documentList =
   in 
     select maybeFirstDocument documentList
 
-getFirst : DocumentList -> Document 
-getFirst documentList = 
-  List.head (documents documentList) |> Maybe.withDefault notFoundDocument
+{-| Replace the element in `documentList` whose id is that of
+    of `document` by `document`.
+-}
+updateDocument : Document -> DocumentList -> DocumentList 
+updateDocument document documentList =
+  let 
+    docs_ = documents documentList 
+    newdocs_ = Utility.replaceIf (\doc -> doc.id == document.id) document docs_ 
+  in 
+    setDocuments newdocs_ documentList
+
+
+nextDocumentList : Int -> Document -> DocumentList -> DocumentList
+nextDocumentList targetDocId document documentList = 
+  case targetDocId == 0 of 
+    True ->  prepend document documentList
+    False ->
+      let  
+        maybeTargetIndex = List.Extra.findIndex (\doc -> doc.id ==  targetDocId) (documents documentList)
+      in  
+        case maybeTargetIndex of 
+          Nothing -> prepend document documentList
+          Just k -> 
+            setDocuments (Utility.listInsertAt (k+1) document (documents documentList)) documentList
+              |> select (Just document)
+
+
+deleteItemInDocumentListAt : Int -> DocumentList -> DocumentList
+deleteItemInDocumentListAt targetDocId documentList = 
+  case targetDocId == 0 of 
+    True ->  documentList
+    False ->
+      let  
+        maybeTargetIndex = List.Extra.findIndex (\doc -> doc.id ==  targetDocId) (documents documentList)
+      in  
+        case maybeTargetIndex of 
+          Nothing -> documentList
+          Just k -> 
+            setDocuments (Utility.listDeleteAt k (documents documentList)) documentList
+
+
+
+{- Helpers -}
 
 notFoundDocument : Document 
 notFoundDocument = 
@@ -147,11 +208,9 @@ notFoundDocument =
   in 
     { doc | title = "Not found" }
 
-documentListLength : DocumentList -> Int 
-documentListLength (DocumentList documentList maybeDocument) =
-  List.length documentList
 
--- MSG 
+
+{- MSG -}
 
 type DocListMsg = 
   ReceiveDocumentList (Result Http.Error DocumentList)
@@ -162,7 +221,7 @@ type DocListMsg =
   | ReceiveDocumentListAndPreserveCurrentSelection (Result Http.Error DocumentList)
 
 
---  CMDS
+{-  CMDS -}
 
 findDocuments : Maybe User -> String -> Cmd DocListMsg
 findDocuments maybeUser queryString = 
@@ -209,7 +268,7 @@ loadMasterDocumentWithCurrentSelection : Maybe User -> Int -> Cmd DocListMsg
 loadMasterDocumentWithCurrentSelection maybeUser docId = 
   Http.send ReceiveDocumentListAndPreserveCurrentSelection <| loadMasterDocumentRequest maybeUser docId
 
--- DECODERS 
+{- DECODERS -}
 
 listDocumentDecoder : Decoder (List Document)
 listDocumentDecoder =
@@ -242,7 +301,7 @@ intListForDocumentQueueDecoder : Decoder (List Int)
 intListForDocumentQueueDecoder = 
   list int
  
--- ENCODERS
+{- ENCODERS -}
 
 documentListEncoder : DocumentList -> Encode.Value 
 documentListEncoder documentList = 
@@ -254,7 +313,7 @@ documentListEncoder documentList =
         , ("documentIds", Encode.list Encode.int intList.ints)
      ]
 
--- REQUESTS
+{- REQUESTS -}
 
 
 findDocumentsRequest : Maybe User -> String -> Http.Request DocumentList
@@ -316,46 +375,7 @@ loadMasterDocumentRequest  maybeUser docId =
     }
 
 
-nextDocumentList : Int -> Document -> DocumentList -> DocumentList
-nextDocumentList targetDocId document documentList = 
-  case targetDocId == 0 of 
-    True ->  prepend document documentList
-    False ->
-      let  
-        maybeTargetIndex = List.Extra.findIndex (\doc -> doc.id ==  targetDocId) (documents documentList)
-      in  
-        case maybeTargetIndex of 
-          Nothing -> prepend document documentList
-          Just k -> 
-            setDocuments (Utility.listInsertAt (k+1) document (documents documentList)) documentList
-              |> select (Just document)
-
-
-deleteItemInDocumentListAt : Int -> DocumentList -> DocumentList
-deleteItemInDocumentListAt targetDocId documentList = 
-  case targetDocId == 0 of 
-    True ->  documentList
-    False ->
-      let  
-        maybeTargetIndex = List.Extra.findIndex (\doc -> doc.id ==  targetDocId) (documents documentList)
-      in  
-        case maybeTargetIndex of 
-          Nothing -> documentList
-          Just k -> 
-            setDocuments (Utility.listDeleteAt k (documents documentList)) documentList
-
-
-{-| Replace the element in `documentList` whose id is that of
-    of `document` by `document`.
--}
-updateDocument : Document -> DocumentList -> DocumentList 
-updateDocument document documentList =
-  let 
-    docs_ = documents documentList 
-    newdocs_ = Utility.replaceIf (\doc -> doc.id == document.id) document docs_ 
-  in 
-    setDocuments newdocs_ documentList
-
+{- Queue Interop -}
 
 documentQueueToDocumentList : Document -> (Queue Document) -> DocumentList 
 documentQueueToDocumentList document documentQueue = 

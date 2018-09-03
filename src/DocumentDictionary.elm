@@ -15,8 +15,18 @@ type DocumentDictionary =
 type DocDictMsg = 
   PutDocumentInDictionaryAsTexMacros (Result Http.Error DocumentRecord)
 
+-- CONSTRUCTORS
 
 empty = DocumentDictionary Dict.empty
+
+-- MODIFIERS
+
+put : String -> Document -> DocumentDictionary -> DocumentDictionary 
+put key document (DocumentDictionary dict) = 
+  DocumentDictionary (Dict.insert key document dict)
+
+
+-- PROPERTIES
 
 keys : DocumentDictionary -> List String 
 keys (DocumentDictionary dict) = 
@@ -26,11 +36,6 @@ values : DocumentDictionary -> List String
 values (DocumentDictionary dict) = 
   Dict.values dict |> List.map .id |> List.map String.fromInt
  
-
-put : String -> Document -> DocumentDictionary -> DocumentDictionary 
-put key document (DocumentDictionary dict) = 
-  DocumentDictionary (Dict.insert key document dict)
-
 get : String -> DocumentDictionary -> Maybe Document
 get key (DocumentDictionary dict) = 
   Dict.get key dict
@@ -47,6 +52,8 @@ matchId id key (DocumentDictionary dict) =
     case maybeDocument of 
       Nothing -> False 
       Just doc -> doc.id == id 
+
+-- CMD
 
 putTexMacroDocumentInDictionaryById : Int -> Maybe String -> Cmd DocDictMsg
 putTexMacroDocumentInDictionaryById id maybeTokenString = 

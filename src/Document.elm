@@ -1,33 +1,32 @@
-module Document exposing(..)
+module Document exposing(
+      Document
+    , DocumentRecord
+    , Child
+    , DocMsg(..)
+    , DocType(..)
+    , TextType(..)
+    , getDocumentById 
+    , saveDocument
+    , updateDocumentWithQueryString
+    , createDocument
+    , deleteDocument
+    , getDocumentByIdRequest
+    , documentDecoder
+    , encodeDocumentForOutside
+    , decodeDocumentFromOutside
+    , basicDocument
+    , newDocument
+    , wordCount
+    , selectedDocId
+    , attachDocumentToMasterBelowCmd
+    , sendToWorker
+    , getExportLatex
+    , encodeString
+    , accessDictToString
+    , stringToAccessDict
+    , printUrl
+  )
 
---       Document
---     , DocumentRecord
---     , getDocumentById 
---     , saveDocument
---     , updateDocumentWithQueryString
---     , createDocument
---     , deleteDocument
---     , getDocumentByIdRequest
---     , documentDecoder
---     , encodeDocumentForOutside
---     , decodeDocumentFromOutside
---     , Child
---     , DocMsg(..)
---     , DocType(..)
---     , TextType(..)
---     , basicDocument
---     , newDocument
---     , wordCount
---     , selectedDocId
---     , attachDocumentToMasterBelowCmd
---     , sendToWorker
---     , getExportLatex
---     , encodeString
---     , getImageList
---     , processImageList
---     , accessDictToString
---     , stringToAccessDict
---   )
 
 import Dict exposing(Dict)
 import Time exposing(Posix)
@@ -80,38 +79,6 @@ type alias Document =
     , modified : Posix
     }
 
-
-
-basicDocument : Document 
-basicDocument = Document
-    0
-    "basicDocument123"
-    0
-    "author123"
-    "— kNode team"
-    "Welcome to kNode Reader"
-    Configuration.basicDocumentText
-    1  
-    True
-    Dict.empty
-    []
-    []
-    0
-    "Parent"
-    MiniLatex
-    Standard
-    "default"
-    0
-    (Time.millisToPosix 0)
-    (Time.millisToPosix 0)
-    (Time.millisToPosix 0)
-
-
-
-newDocument : Document 
-newDocument = 
-   { basicDocument | content = Configuration.newMiniLatexDocumentText, title = "New Document" }
-  
 type alias Child =
     { title : String
     , docId : Int
@@ -150,33 +117,38 @@ type DocMsg =
   | ReceiveLatexExportText (Result Http.Error String)
   
 
+-- CONSTRUCTORS 
+
+basicDocument : Document 
+basicDocument = Document
+    0
+    "basicDocument123"
+    0
+    "author123"
+    "— kNode team"
+    "Welcome to kNode Reader"
+    Configuration.basicDocumentText
+    1  
+    True
+    Dict.empty
+    []
+    []
+    0
+    "Parent"
+    MiniLatex
+    Standard
+    "default"
+    0
+    (Time.millisToPosix 0)
+    (Time.millisToPosix 0)
+    (Time.millisToPosix 0)
+
+
+
+newDocument : Document 
+newDocument = 
+   { basicDocument | content = Configuration.newMiniLatexDocumentText, title = "New Document" }
   
--- HELPERS
-
-
-printUrl : Document -> String
-printUrl document =
-    Configuration.backend ++ "/print/documents" ++ "/" ++ (String.fromInt document.id) ++ "?" ++ printTypeString document
-
-
-printTypeString : Document -> String
-printTypeString document =
-    case document.textType of
-        Asciidoc ->
-            "text=adoc"
-
-        AsciidocLatex ->
-            "text=adoc_latex"
-
-        MiniLatex ->
-            "text=latex"
-
-        PlainText ->
-            "text=latex"
-
-        Markdown ->
-            "text=markdown"
-
 
 -- DECODERS
 
@@ -223,73 +195,17 @@ documentDecoder =
             |> JPipeline.required "lastViewed" (Decode.map Time.millisToPosix Decode.int)
         |> JPipeline.required "created" (Decode.map Time.millisToPosix Decode.int)
         |> JPipeline.required "lastModified" (Decode.map Time.millisToPosix Decode.int)
-       
+
+
+
+stringDecoder : Decoder String
+stringDecoder =
+    Decode.string
+
+dataStringDecoder : Decoder String
+dataStringDecoder =
+    Decode.field "data" Decode.string
     
--- ACCESS
-
-stringToAccessType : String -> AccessType
-stringToAccessType str=
-    case str of
-        "r" ->
-           Readable
-
-        "w" ->
-           Writeable
-
-        "rw" -> 
-            ReadableAndWriteable
-
-        _ ->
-             NotShared
-
-
-accessTypeToString : AccessType -> String 
-accessTypeToString accessValue =
-  case accessValue of 
-    Readable -> "r"
-    Writeable -> "w"
-    ReadableAndWriteable -> "rw"
-    NotShared -> "not shared"
-
-accessDictToStringList : AccessDict -> List String 
-accessDictToStringList accessDict = 
-  accessDict 
-    |> Dict.toList
-    |> List.map kvTupleToString 
-
-stringListToAccessDict : List String -> AccessDict 
-stringListToAccessDict strlist = 
- strlist
-   |> List.map String.trim 
-   |> List.map (\x -> String.split ":" x |> List.map String.trim)
-   |> List.filter (\item -> List.length item == 2)
-   |> List.map pairToKVTuple
-   |> Dict.fromList
-
-accessDictToString : AccessDict -> String 
-accessDictToString accessDict = 
-  accessDict |> accessDictToStringList |> String.join ", "
-
-stringToAccessDict : String -> AccessDict 
-stringToAccessDict str = 
- str |> String.split "," |> stringListToAccessDict
-
-
-pairToKVTuple : List String -> (String, AccessType)
-pairToKVTuple list =
-  if List.length list /= 2 then 
-    ("bozo", NotShared)
-  else 
-    let 
-      key = List.Extra.getAt 0 list |> Maybe.withDefault "bozo"
-      value = List.Extra.getAt 1 list |> Maybe.withDefault "" |> stringToAccessType
-    in 
-     (key, value)
-
-kvTupleToString  : (String, AccessType) -> String 
-kvTupleToString (str, accessValue) =
-  str ++ ": " ++ (accessTypeToString accessValue)
-       
 
 decodeDocType : String -> Decoder DocType
 decodeDocType docTypeString =
@@ -336,7 +252,42 @@ decodeChild =
         |> JPipeline.required "comment" (Decode.string)
 
 
--- ENCODERS
+
+decodeDocumentFromOutside : Decoder Document
+decodeDocumentFromOutside =
+    Decode.succeed Document
+        |> JPipeline.required "id" Decode.int
+        |> JPipeline.required "identifier" Decode.string
+
+        |> JPipeline.required "authorId" Decode.int
+        |> JPipeline.required "authorIdentifier" Decode.string
+        |> JPipeline.required "authorName" Decode.string
+
+        |> JPipeline.required "title" Decode.string
+        |> JPipeline.required "content" Decode.string
+        |> JPipeline.required "level" Decode.int
+
+        |> JPipeline.required "public" (Decode.bool)
+        |> JPipeline.required "access" (Decode.dict (Decode.map stringToAccessType Decode.string)) -- PROBLEM
+
+        |> JPipeline.required "tags" (Decode.list Decode.string) -- PROBLEM
+
+        |> JPipeline.required "children" (Decode.list decodeChild) -- PROBLEM
+        |> JPipeline.required "parentId" Decode.int
+        |> JPipeline.required "parentTitle" Decode.string
+
+        |> JPipeline.required "textType" (Decode.string |> Decode.andThen decodeTextType)
+        |> JPipeline.required "docType" (Decode.string |> Decode.andThen decodeDocType)
+        
+        |> JPipeline.required "archive" Decode.string
+        |> JPipeline.required "version" Decode.int
+
+        |> JPipeline.required "lastViewed" (Decode.map Time.millisToPosix Decode.int)
+        |> JPipeline.required "created" (Decode.map Time.millisToPosix Decode.int)
+        |> JPipeline.required "lastModified" (Decode.map Time.millisToPosix Decode.int)
+       
+        
+ -- ENCODERS
 
 
 encodeDocumentRecord : Document -> Encode.Value
@@ -377,42 +328,7 @@ encodeDocumentAccess accessValue =
     Writeable -> Encode.string "w"
     ReadableAndWriteable -> Encode.string "rw"
     NotShared -> Encode.string ""
-
-decodeDocumentFromOutside : Decoder Document
-decodeDocumentFromOutside =
-    Decode.succeed Document
-        |> JPipeline.required "id" Decode.int
-        |> JPipeline.required "identifier" Decode.string
-
-        |> JPipeline.required "authorId" Decode.int
-        |> JPipeline.required "authorIdentifier" Decode.string
-        |> JPipeline.required "authorName" Decode.string
-
-        |> JPipeline.required "title" Decode.string
-        |> JPipeline.required "content" Decode.string
-        |> JPipeline.required "level" Decode.int
-
-        |> JPipeline.required "public" (Decode.bool)
-        |> JPipeline.required "access" (Decode.dict (Decode.map stringToAccessType Decode.string)) -- PROBLEM
-
-        |> JPipeline.required "tags" (Decode.list Decode.string) -- PROBLEM
-
-        |> JPipeline.required "children" (Decode.list decodeChild) -- PROBLEM
-        |> JPipeline.required "parentId" Decode.int
-        |> JPipeline.required "parentTitle" Decode.string
-
-        |> JPipeline.required "textType" (Decode.string |> Decode.andThen decodeTextType)
-        |> JPipeline.required "docType" (Decode.string |> Decode.andThen decodeDocType)
-        
-        |> JPipeline.required "archive" Decode.string
-        |> JPipeline.required "version" Decode.int
-
-        |> JPipeline.required "lastViewed" (Decode.map Time.millisToPosix Decode.int)
-        |> JPipeline.required "created" (Decode.map Time.millisToPosix Decode.int)
-        |> JPipeline.required "lastModified" (Decode.map Time.millisToPosix Decode.int)
        
-        
-        
 
 encodeDocumentForOutside : Document -> Encode.Value
 encodeDocumentForOutside document =
@@ -513,8 +429,74 @@ encodeChild record =
         , ( "comment", Encode.string <| record.comment )
         ]
 
+-- ACCESS
 
--- REQUESTS AND CMDS
+stringToAccessType : String -> AccessType
+stringToAccessType str=
+    case str of
+        "r" ->
+           Readable
+
+        "w" ->
+           Writeable
+
+        "rw" -> 
+            ReadableAndWriteable
+
+        _ ->
+             NotShared
+
+
+accessTypeToString : AccessType -> String 
+accessTypeToString accessValue =
+  case accessValue of 
+    Readable -> "r"
+    Writeable -> "w"
+    ReadableAndWriteable -> "rw"
+    NotShared -> "not shared"
+
+accessDictToStringList : AccessDict -> List String 
+accessDictToStringList accessDict = 
+  accessDict 
+    |> Dict.toList
+    |> List.map kvTupleToString 
+
+stringListToAccessDict : List String -> AccessDict 
+stringListToAccessDict strlist = 
+ strlist
+   |> List.map String.trim 
+   |> List.map (\x -> String.split ":" x |> List.map String.trim)
+   |> List.filter (\item -> List.length item == 2)
+   |> List.map pairToKVTuple
+   |> Dict.fromList
+
+accessDictToString : AccessDict -> String 
+accessDictToString accessDict = 
+  accessDict |> accessDictToStringList |> String.join ", "
+
+stringToAccessDict : String -> AccessDict 
+stringToAccessDict str = 
+ str |> String.split "," |> stringListToAccessDict
+
+
+pairToKVTuple : List String -> (String, AccessType)
+pairToKVTuple list =
+  if List.length list /= 2 then 
+    ("bozo", NotShared)
+  else 
+    let 
+      key = List.Extra.getAt 0 list |> Maybe.withDefault "bozo"
+      value = List.Extra.getAt 1 list |> Maybe.withDefault "" |> stringToAccessType
+    in 
+     (key, value)
+
+kvTupleToString  : (String, AccessType) -> String 
+kvTupleToString (str, accessValue) =
+  str ++ ": " ++ (accessTypeToString accessValue)
+       
+
+
+-- REQUESTS
 
 getDocumentByIdRequest : Int -> Maybe String -> Http.Request DocumentRecord
 getDocumentByIdRequest id maybeTokenString = 
@@ -552,9 +534,17 @@ saveDocumentRequest tokenString document =
         }
 
 
-saveDocument : String -> Document -> Cmd DocMsg 
-saveDocument tokenString document =
-    Http.send AcknowledgeUpdateOfDocument <| saveDocumentRequest tokenString document
+getExportLatexRequest : Document -> Http.Request String
+getExportLatexRequest document = 
+  Http.request
+        { method = "Get"
+        , headers =  []  
+        , url = Configuration.backend ++ "/api/export/" ++ String.fromInt document.id 
+        , body = Http.jsonBody Encode.null
+        , expect = Http.expectJson dataStringDecoder
+        , timeout = Just Configuration.timeout
+        , withCredentials = False
+        }   
 
 
 updateDocumentWithQueryStringRequest : String -> String -> Document -> Http.Request DocumentRecord
@@ -570,45 +560,34 @@ updateDocumentWithQueryStringRequest tokenString queryString document =
         }
 
 
-updateDocumentWithQueryString : String -> String -> Document -> Cmd DocMsg 
-updateDocumentWithQueryString tokenString queryString document =
-    Http.send AcknowledgeUpdateOfDocument <| updateDocumentWithQueryStringRequest tokenString queryString document
+
+-- HELPERS: STRING
 
 
-createDocumentRequest : String -> Document -> Http.Request DocumentRecord
-createDocumentRequest tokenString document = 
-  Http.request
-        { method = "Post"
-        , headers = [Http.header "APIVersion" "V2", Http.header "Authorization" ("Bearer " ++ tokenString)]
-        , url = Configuration.backend ++ "/api/documents/"
-        , body = Http.jsonBody (encodeDocumentRecord document)
-        , expect = Http.expectJson documentRecordDecoder
-        , timeout = Just Configuration.timeout
-        , withCredentials = False
-        }
-
-createDocument : String -> Document -> Cmd DocMsg 
-createDocument tokenString document =
-    Http.send NewDocumentCreated <| createDocumentRequest tokenString document
-
-deleteDocumentRequest : String -> Document -> Http.Request String
-deleteDocumentRequest tokenString document = 
-  Http.request
-        { method = "Delete"
-        , headers = [Http.header "APIVersion" "V2", Http.header "Authorization" ("Bearer " ++ tokenString)]
-        , url = Configuration.backend ++ "/api/documents/" ++ (String.fromInt document.id)
-        , body = Http.jsonBody (encodeDocumentRecord document)
-        , expect = Http.expectJson replyDecoder
-        , timeout = Just Configuration.timeout
-        , withCredentials = False
-        }
-
-deleteDocument : String -> Document -> Cmd DocMsg 
-deleteDocument tokenString document =
-    Http.send AcknowledgeDocumentDeleted <| deleteDocumentRequest tokenString document
+printUrl : Document -> String
+printUrl document =
+    Configuration.backend ++ "/print/documents" ++ "/" ++ (String.fromInt document.id) ++ "?" ++ printTypeString document
 
 
--- HELPER
+printTypeString : Document -> String
+printTypeString document =
+    case document.textType of
+        Asciidoc ->
+            "text=adoc"
+
+        AsciidocLatex ->
+            "text=adoc_latex"
+
+        MiniLatex ->
+            "text=latex"
+
+        PlainText ->
+            "text=latex"
+
+        Markdown ->
+            "text=markdown"
+
+-- HELPERS: Int
 
 wordCount : Document -> Int
 wordCount document =
@@ -630,6 +609,8 @@ selectedDocId document =
       |> Maybe.withDefault "0"
       |> String.toInt
       |> Maybe.withDefault 0
+
+-- CMD
 
 attachDocumentToMasterBelowCmd : String -> Int -> Document -> Maybe Document -> Cmd DocMsg
 attachDocumentToMasterBelowCmd  tokenString selectedDocId_ childDocument maybeMasterDocument =
@@ -670,28 +651,54 @@ encodeString content =
     Encode.object
         [ ( "data", Encode.string content ) ]
 
-stringDecoder : Decoder String
-stringDecoder =
-    Decode.string
-
-dataStringDecoder : Decoder String
-dataStringDecoder =
-    Decode.field "data" Decode.string
-
-getExportLatexRequest : Document -> Http.Request String
-getExportLatexRequest document = 
-  Http.request
-        { method = "Get"
-        , headers =  []  
-        , url = Configuration.backend ++ "/api/export/" ++ String.fromInt document.id 
-        , body = Http.jsonBody Encode.null
-        , expect = Http.expectJson dataStringDecoder
-        , timeout = Just Configuration.timeout
-        , withCredentials = False
-        }
 
 getExportLatex : Document -> Cmd DocMsg 
 getExportLatex document =
     Http.send ReceiveLatexExportText <| getExportLatexRequest document
 
+
+-- CMD
+
+updateDocumentWithQueryString : String -> String -> Document -> Cmd DocMsg 
+updateDocumentWithQueryString tokenString queryString document =
+    Http.send AcknowledgeUpdateOfDocument <| updateDocumentWithQueryStringRequest tokenString queryString document
+
+
+createDocumentRequest : String -> Document -> Http.Request DocumentRecord
+createDocumentRequest tokenString document = 
+  Http.request
+        { method = "Post"
+        , headers = [Http.header "APIVersion" "V2", Http.header "Authorization" ("Bearer " ++ tokenString)]
+        , url = Configuration.backend ++ "/api/documents/"
+        , body = Http.jsonBody (encodeDocumentRecord document)
+        , expect = Http.expectJson documentRecordDecoder
+        , timeout = Just Configuration.timeout
+        , withCredentials = False
+        }
+
+createDocument : String -> Document -> Cmd DocMsg 
+createDocument tokenString document =
+    Http.send NewDocumentCreated <| createDocumentRequest tokenString document
+
+deleteDocumentRequest : String -> Document -> Http.Request String
+deleteDocumentRequest tokenString document = 
+  Http.request
+        { method = "Delete"
+        , headers = [Http.header "APIVersion" "V2", Http.header "Authorization" ("Bearer " ++ tokenString)]
+        , url = Configuration.backend ++ "/api/documents/" ++ (String.fromInt document.id)
+        , body = Http.jsonBody (encodeDocumentRecord document)
+        , expect = Http.expectJson replyDecoder
+        , timeout = Just Configuration.timeout
+        , withCredentials = False
+        }
+
+deleteDocument : String -> Document -> Cmd DocMsg 
+deleteDocument tokenString document =
+    Http.send AcknowledgeDocumentDeleted <| deleteDocumentRequest tokenString document
+
+
+
+saveDocument : String -> Document -> Cmd DocMsg 
+saveDocument tokenString document =
+    Http.send AcknowledgeUpdateOfDocument <| saveDocumentRequest tokenString document
 

@@ -671,7 +671,7 @@ update msg model =
                 SearchResults -> DocumentList.select (Just document) model.documentList
                 RecentDocumentsQueue -> DocumentList.addAndSelect document model.documentList
               nextDocumentQueue = case model.documentListSource of 
-                  SearchResults -> Queue.enqueueUnique document model.recentDocumentQueue
+                  SearchResults -> Queue.enqueueUniqueWithProperty (\x -> x.id) document model.recentDocumentQueue
                   RecentDocumentsQueue -> model.recentDocumentQueue
               masterDocLoaded = case document.docType of
                 Standard -> model.masterDocLoaded
