@@ -7,7 +7,6 @@ module Document exposing(
     , TextType(..)
     , getDocumentById 
     , saveDocument
-    , updateDocumentWithQueryString
     , createDocument
     , deleteDocument
     , getDocumentByIdRequest
@@ -534,19 +533,6 @@ saveDocumentRequest tokenString document =
         }
 
 
-getExportLatexRequest : Document -> Http.Request String
-getExportLatexRequest document = 
-  Http.request
-        { method = "Get"
-        , headers =  []  
-        , url = Configuration.backend ++ "/api/export/" ++ String.fromInt document.id 
-        , body = Http.jsonBody Encode.null
-        , expect = Http.expectJson dataStringDecoder
-        , timeout = Just Configuration.timeout
-        , withCredentials = False
-        }   
-
-
 updateDocumentWithQueryStringRequest : String -> String -> Document -> Http.Request DocumentRecord
 updateDocumentWithQueryStringRequest tokenString queryString document = 
     Http.request
@@ -559,6 +545,20 @@ updateDocumentWithQueryStringRequest tokenString queryString document =
         , withCredentials = False
         }
 
+
+
+
+getExportLatexRequest : Document -> Http.Request String
+getExportLatexRequest document = 
+  Http.request
+        { method = "Get"
+        , headers =  []  
+        , url = Configuration.backend ++ "/api/export/" ++ String.fromInt document.id 
+        , body = Http.jsonBody Encode.null
+        , expect = Http.expectJson dataStringDecoder
+        , timeout = Just Configuration.timeout
+        , withCredentials = False
+        }   
 
 
 -- HELPERS: STRING
@@ -659,11 +659,6 @@ getExportLatex document =
 
 -- CMD
 
-updateDocumentWithQueryString : String -> String -> Document -> Cmd DocMsg 
-updateDocumentWithQueryString tokenString queryString document =
-    Http.send AcknowledgeUpdateOfDocument <| updateDocumentWithQueryStringRequest tokenString queryString document
-
-
 createDocumentRequest : String -> Document -> Http.Request DocumentRecord
 createDocumentRequest tokenString document = 
   Http.request
@@ -702,3 +697,6 @@ saveDocument : String -> Document -> Cmd DocMsg
 saveDocument tokenString document =
     Http.send AcknowledgeUpdateOfDocument <| saveDocumentRequest tokenString document
 
+updateDocumentWithQueryString : String -> String -> Document -> Cmd DocMsg 
+updateDocumentWithQueryString tokenString queryString document =
+    Http.send AcknowledgeUpdateOfDocument <| updateDocumentWithQueryStringRequest tokenString queryString document

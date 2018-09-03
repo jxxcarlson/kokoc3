@@ -117,13 +117,16 @@ viewportInfo : Model -> String
 viewportInfo model = 
   case model.viewPortOfRenderedText of 
     Nothing -> "--"
-    Just v ->
+    Just vp ->
       let 
-        x = v.viewport.x |> String.fromFloat
-        y = v.viewport.x |> String.fromFloat
-        h = v.viewport.height |> String.fromFloat
+        x = vp.viewport.x |> String.fromFloat
+        y = vp.viewport.x |> String.fromFloat
+        h = vp.viewport.height |> String.fromFloat
+        w = vp.viewport.width |> String.fromFloat
+        sw = vp.scene.width |> String.fromFloat
+        sh = vp.scene.height |> String.fromFloat
       in 
-      "x = " ++ x ++ ", y = " ++ y ++ ", h = "  ++ h
+      "x = " ++ x ++ ", y = " ++ y ++ ", h = "  ++ h ++ ", w = " ++ w ++ ", sw = " ++ sw ++ ", sh = " ++ sh
 
 
 yCoordinateForRenderedText : Model -> Float 

@@ -41,7 +41,7 @@ import Configuration
 
 -- localhost:4000/api/authentication
 
--- MODEL
+-- TYPES
 
 type User = User UserRecord
 
@@ -59,6 +59,8 @@ type alias RegistrationUserRecord = {
   , password : String 
   
   }  
+
+type alias BigUserRecord = {user: BigUser}
 
 -- ACCESSORS
 
@@ -155,7 +157,7 @@ type UserMsg =
     | AcknowledgeMediaCountIncrement (Result Http.Error String)
     | ReceiveBigUserRecord (Result Http.Error BigUserRecord)
     | ReceiveBigUserRecordAtSignIn (Result Http.Error BigUserRecord)
-    | AcknowlegeBigUserUpdate (Result Http.Error String)
+    | AcknowlegeBigUserUpdate (Result Http.Error BigUserRecord)
 
 
 -- DECODERS
@@ -174,6 +176,41 @@ jwtDecoder =
 replyDecoder : Decoder String 
 replyDecoder = 
   Decode.field "reply" Decode.string
+
+
+decodeUserFromOutside : Decoder User
+decodeUserFromOutside =
+  Decode.map User <|
+    Decode.map4 UserRecord
+       (field "email" string)
+       (field "id" int)
+       (Decode.map Token (field "token" string))
+       (field "username" string)
+
+
+bigUserRecordDecoder : Decoder BigUserRecord
+bigUserRecordDecoder = 
+  Decode.succeed BigUserRecord
+        |> JPipeline.required "user" bigUserDecoder
+    
+
+bigUserDecoder : Decoder BigUser
+bigUserDecoder =
+    Decode.succeed BigUser
+        |> JPipeline.required "username" Decode.string
+        |> JPipeline.required "name" Decode.string
+        |> JPipeline.required "id" Decode.int
+        |> JPipeline.required "email" Decode.string
+        |> JPipeline.required "blurb" Decode.string
+        |> JPipeline.required "admin" Decode.bool
+        |> JPipeline.required "active" Decode.bool
+        |> JPipeline.required "documentCount" Decode.int
+        |> JPipeline.required "mediaCount" Decode.int
+        |> JPipeline.required "verified" Decode.bool
+        |> JPipeline.required "public" Decode.bool
+        |> JPipeline.required "created" (Decode.map ((\x -> x*1000) >> Time.millisToPosix) Decode.int)
+        |> JPipeline.required "documentIds" (Decode.list Decode.int)
+
 
 -- ENCODERS
 
@@ -210,18 +247,6 @@ registrationEncoder email_ username_ name_ password_  =
       ])
     ]
 
-
--- DECODERS
-
-
-decodeUserFromOutside : Decoder User
-decodeUserFromOutside =
-  Decode.map User <|
-    Decode.map4 UserRecord
-       (field "email" string)
-       (field "id" int)
-       (Decode.map Token (field "token" string))
-       (field "username" string)
 
 
 -- REQUEST
@@ -285,30 +310,7 @@ sessionIsExpired currentTime user =
 
 
 -- ADMIN
-type alias BigUserRecord = {user: BigUser}
 
-bigUserRecordDecoder : Decoder BigUserRecord
-bigUserRecordDecoder = 
-  Decode.succeed BigUserRecord
-        |> JPipeline.required "user" bigUserDecoder
-    
-
-bigUserDecoder : Decoder BigUser
-bigUserDecoder =
-    Decode.succeed BigUser
-        |> JPipeline.required "username" Decode.string
-        |> JPipeline.required "name" Decode.string
-        |> JPipeline.required "id" Decode.int
-        |> JPipeline.required "email" Decode.string
-        |> JPipeline.required "blurb" Decode.string
-        |> JPipeline.required "admin" Decode.bool
-        |> JPipeline.required "active" Decode.bool
-        |> JPipeline.required "documentCount" Decode.int
-        |> JPipeline.required "mediaCount" Decode.int
-        |> JPipeline.required "verified" Decode.bool
-        |> JPipeline.required "public" Decode.bool
-        |> JPipeline.required "created" (Decode.map ((\x -> x*1000) >> Time.millisToPosix) Decode.int)
-        |> JPipeline.required "documentIds" (Decode.list Decode.int)
 
 bigUserEncoder : BigUser -> Encode.Value 
 bigUserEncoder bigUser = 
@@ -388,14 +390,14 @@ getBigUserRecordAtSignIn userId_  =
   Http.send ReceiveBigUserRecordAtSignIn <| getBigUserRequest userId_
 
 
-updateBigUserRequest : String -> BigUser -> Http.Request String
+updateBigUserRequest : String -> BigUser -> Http.Request BigUserRecord
 updateBigUserRequest tokenString bigUser = 
     Http.request
       { method = "Put"
       , headers = [Http.header "APIVersion" "V2", Http.header "Authorization" ("Bearer " ++ tokenString)]
       , url = Configuration.backend ++ "/api/users/" ++ (String.fromInt bigUser.id)
       , body = Http.jsonBody (bigUserRecordEncoder bigUser)
-      , expect = Http.expectJson replyDecoder
+      , expect = Http.expectJson bigUserRecordDecoder
       , timeout = Just Configuration.timeout
       , withCredentials = False
       }

@@ -1124,6 +1124,13 @@ update msg model =
               )
              Err error -> ({model | blurb = "No blurb", message = httpErrorHandler error}, Cmd.none)
 
+        UserMsg (AcknowlegeBigUserUpdate result) ->
+           case result of 
+             Ok bigUserRecord -> ({ model | message = "BIG USER OK"}, Cmd.none)
+             -- Err error -> ({model | message = Debug.log "BUE" <| Debug.toString error}, Cmd.none)
+            -- Err error -> ({model | message = Debug.log "BUE" <| httpErrorHandler error}, Cmd.none)
+             Err error -> ({model | message = "BIG USER ERROR"}, Cmd.none)
+
         GetBigUser ->
           case model.maybeCurrentUser of 
             Nothing ->
@@ -1135,10 +1142,8 @@ update msg model =
           (model, updateBigUserCmd model)
       
 
-        UserMsg (AcknowlegeBigUserUpdate result) ->
-           case result of 
-             Ok reply -> ({ model | message = reply}, Cmd.none)
-             Err error -> ({model | message = httpErrorHandler error}, Cmd.none)
+        
+
 
         AcceptBlurb str ->
           ({model | blurb = str}, Cmd.none)
@@ -1625,10 +1630,15 @@ saveCurrentDocument model =
       let  
           tokenString = User.getTokenStringFromMaybeUser model.maybeCurrentUser 
           currentDocument = model.currentDocument 
-          tags = model.tagString |> String.split "," |> List.map String.trim
-          nextTags = case tags == [] of 
+          tagStringSaved = model.tagString
+          newTags = model.tagString 
+            |> String.split "," 
+            |> List.map String.trim
+            |> List.filter (\x -> x /= "")
+          tagLengthString = String.fromInt <| List.length newTags
+          nextTags = case newTags == [] of 
             True -> currentDocument.tags 
-            False -> tags
+            False -> newTags
           nextDocumentTitle = case model.documentTitle == "" of
             True ->  currentDocument.title
             False -> model.documentTitle
@@ -1639,7 +1649,9 @@ saveCurrentDocument model =
                     , message = "(s)" ++ (digest nextCurrentDocument.content)
                     , currentDocument = nextCurrentDocument
                     , documentList = nextDocumentList
-                    , toolMenuState = HideToolMenu }
+                    , toolMenuState = HideToolMenu 
+                    -- , debugString = "TSL = " ++ tagLengthString ++ ", TS = " ++ tagStringSaved
+                    }
             , Cmd.map DocMsg <| Document.saveDocument tokenString nextCurrentDocument )
 
 digest str = 
