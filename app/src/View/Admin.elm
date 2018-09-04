@@ -169,7 +169,7 @@ emailSubjectInput model =
     Input.text [width (px 400), height (px 30) , Font.color black] {
         text = model.emailSubject 
       , placeholder = Just (Input.placeholder [moveUp 5] (Element.text "subject"))
-      , onChange = Just(\str -> AcceptEmailSubject str)
+      , onChange = (\str -> AcceptEmailSubject str)
       , label = Input.labelAbove [ ] (text "")
     }
 
@@ -195,7 +195,7 @@ textArea model width_ height_  =
         [ ( (String.fromInt model.counter)
           , Input.multiline 
                 [ width (px width_), height (px height_), paddingXY 10 0, scrollbarY ]
-                { onChange = Just AcceptEmailText
+                { onChange = AcceptEmailText
                 , text = model.emailText
                 , label = Input.labelLeft [ Font.size 14, Font.bold ] (text "")
                 , placeholder = Just <| (Input.placeholder [moveDown 5] (Element.text "Text of email ... "))

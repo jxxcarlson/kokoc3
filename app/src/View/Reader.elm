@@ -212,7 +212,7 @@ passwordInput model =
         text = model.password 
       , placeholder = Nothing
       , show = False
-      , onChange = Just(\str -> AcceptPassword str)
+      , onChange = (\str -> AcceptPassword str)
       , label = Input.labelAbove [ Font.size 12, Font.bold, moveDown 0 ] (text "Password")
     }
 
@@ -221,7 +221,7 @@ emailInput model =
     Input.text [width (px 180), height (px 30) , Font.color black] {
         text = model.email 
       , placeholder = Nothing
-      , onChange = Just(\str -> AcceptEmail str)
+      , onChange = (\str -> AcceptEmail str)
       , label = Input.labelAbove [ Font.size 12, Font.bold, moveDown 0 ] (text "Email")
     }
 
@@ -231,7 +231,7 @@ usernameInput model =
     Input.text [width (px 180), height (px 30) , Font.color black] {
         text = model.username 
       , placeholder = Nothing
-      , onChange = Just(\str -> AcceptUserName str)
+      , onChange = (\str -> AcceptUserName str)
       , label = Input.labelAbove [ Font.size 12, Font.bold, moveDown 0 ] (text "User name")
     }
 
@@ -276,7 +276,7 @@ blurbInput model width_  height_ label_  =
         [ ( (String.fromInt model.counter)
           , Input.multiline 
                 [ width (width_), height (height_), paddingXY 10 10, scrollbarY ]
-                { onChange = Just AcceptBlurb
+                { onChange = AcceptBlurb
                 , text = model.blurb
                 , label = Input.labelAbove [ Font.size 14, Font.bold ] (text "Blurb")
                 , placeholder = Nothing

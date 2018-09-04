@@ -209,7 +209,7 @@ searchInput model =
        , width (px 360), height (px 30) , Font.color black] {
         text = model.searchQueryString 
       , placeholder = Just (Input.placeholder [moveUp 5] (text <| searchPlaceHolderText model ))
-      , onChange = Just(\str -> AcceptSearchQuery str)
+      , onChange = (\str -> AcceptSearchQuery str)
       , label = Input.labelLeft [ Font.size 14, Font.bold ] (text "")
     }
 

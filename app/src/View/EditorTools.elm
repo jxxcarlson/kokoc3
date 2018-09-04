@@ -134,7 +134,7 @@ tagInputPane_ model width_ height_ label_  =
         [ ( (String.fromInt model.counter)
           , Input.multiline 
                 [ width (width_), height (height_), padding 10, scrollbarY ]
-                { onChange = Just AcceptDocumentTagString
+                { onChange = AcceptDocumentTagString
                 , text = model.currentDocument.tags |> String.join ", "
                 , label = Input.labelAbove [ Font.size 14, Font.bold ] (text "")
                 , placeholder = Nothing
@@ -154,7 +154,7 @@ sharingInputPane_ model width_ height_ label_  =
         [ ( (String.fromInt model.counter)
           , Input.multiline 
                 [ width (width_), height (height_), padding 10, scrollbarY ]
-                { onChange = Just AcceptSharingString
+                { onChange = AcceptSharingString
                 , text = model.currentDocument.access |> Document.accessDictToString
                 , label = Input.labelAbove [ Font.size 14, Font.bold ] (text "")
                 , placeholder = Nothing
@@ -193,7 +193,7 @@ documentTitleInput model =
     Input.text [htmlAttribute (Html.Attributes.id "title-input"), width (px 250), height (px 30) , Font.color black] {
         text = model.documentTitle
       , placeholder = Nothing
-      , onChange = Just(\str -> AcceptDocumenTitle str)
+      , onChange = (\str -> AcceptDocumenTitle str)
       , label = Input.labelAbove [ Font.size 14, Font.bold ] (text "Title")
     }
 
