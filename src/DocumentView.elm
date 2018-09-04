@@ -12,6 +12,7 @@ import Element.Input as Input
 import Element.Border as Border
 import Element.Lazy
 import Element.Keyed as Keyed
+import Mark
 
 import Browser.Dom exposing(Viewport)
 
@@ -46,13 +47,6 @@ view viewport counter debounceCounter texMacros document =
           titleLine document
         , (contentView viewport counter (documentView viewport debounceCounter texMacros document ))
     ]
-
-edges =
-    { top = 0
-    , right = 0
-    , bottom = 0
-    , left = 0
-    }
 
 contentView : Viewport -> Int -> (DocumentView DocViewMsg) -> Element DocViewMsg
 contentView viewport counter viewDoc = 
@@ -130,16 +124,8 @@ documentContentView_  viewport debounceCounter texMacros document =
     Asciidoc -> viewAsciidoc debounceCounter document.content
     AsciidocLatex -> viewAsciidoc debounceCounter document.content
     PlainText -> viewPlainText document
+    ElmMarkup -> viewElmMarkup document
   
-normalize str = 
-  str |> String.lines |> List.filter (\x -> x /= "") |> String.join("\n") 
-
-   
-prependMacros macros_ sourceText = 
-  let
-    macros__ =  (macros_ |> normalize)
-  in
-    "$$\n" ++ macros__ ++ "\n$$\n\n" ++ sourceText 
 
 viewMiniLatex : Viewport -> String -> Document -> Element msg
 viewMiniLatex viewport texMacros document =
@@ -165,43 +151,33 @@ viewMiniLatex viewport texMacros document =
         |> Element.column [Element.htmlAttribute <| HA.attribute "id" "renderedText"]
 
 
-texWidth : Viewport -> Int 
-texWidth viewport = 
-  case (currentDevice viewport).class of 
-    Phone -> round <| 1.00*(viewport.viewport.width - 60)
-    _ -> round <| 0.6363*(viewport.viewport.width - 460)
-
-currentDevice : Viewport -> Device 
-currentDevice  viewport =
-  let 
-    width = viewport.viewport.width
-    height = viewport.viewport.height
-  in 
-    classifyDevice {width = round width, height = round height}
-
-  
-edge = {left = 0, right = 0, top = 0, bottom = 0}
-
-setCounterText : List String -> String 
-setCounterText tags = 
-  let 
-    maybeSectionNumber = KVList.intValueForKey "sectionNumber" tags
-  in 
-    case maybeSectionNumber of 
-      Nothing -> ""
-      Just sectionNumber -> "\\setcounter{section}{" ++ String.fromInt sectionNumber ++ "}\n\n"
-
-setDocId : Int -> String
-setDocId id = "\\setdocid{" ++ (String.fromInt id) ++ "}"
-
-setClient : String 
-setClient = 
-  "\\setclient{" ++ Configuration.client ++ "}"
 
 viewMarkdown : Document -> Element msg
 viewMarkdown document =
   Element.el [ Element.paddingEach {top = 0, bottom = 120, left = 0, right = 0} ] (Element.html <| MarkdownTools.view document.content)
 
+viewElmMarkup : Document -> Element msg 
+viewElmMarkup document =
+  let 
+    parsedElement = 
+      -- case Mark.parse elmMarkupTestContent of 
+      case Mark.parse document.content of 
+        Ok parsedContent -> parsedContent 
+        Err error -> Element.el [] (Element.text <| Debug.toString error)
+  in 
+    Element.el [ Element.paddingEach {top = 0, bottom = 120, left = 0, right = 0} ] (parsedElement)
+
+
+elmMarkupTestContent : String 
+elmMarkupTestContent = 
+  """
+| title 
+    First test!
+
+ 
+This is a test.
+
+"""
 
 -- YAY: https://ellie-test-19-cutover.now.sh/LGShLFZHvha1
 -- https://ellie-test-19-cutover.now.sh/LGc6jCfs64a1
@@ -264,3 +240,58 @@ viewChild parentId child =
         , label = Element.el [ moveUp 0, padding 5, Font.size 12, Font.bold] (text child.title)
         } 
     )
+
+-- HELPERS
+
+
+edges =
+    { top = 0
+    , right = 0
+    , bottom = 0
+    , left = 0
+    }
+
+texWidth : Viewport -> Int 
+texWidth viewport = 
+  case (currentDevice viewport).class of 
+    Phone -> round <| 1.00*(viewport.viewport.width - 60)
+    _ -> round <| 0.6363*(viewport.viewport.width - 460)
+
+currentDevice : Viewport -> Device 
+currentDevice  viewport =
+  let 
+    width = viewport.viewport.width
+    height = viewport.viewport.height
+  in 
+    classifyDevice {width = round width, height = round height}
+
+  
+edge = {left = 0, right = 0, top = 0, bottom = 0}
+
+setCounterText : List String -> String 
+setCounterText tags = 
+  let 
+    maybeSectionNumber = KVList.intValueForKey "sectionNumber" tags
+  in 
+    case maybeSectionNumber of 
+      Nothing -> ""
+      Just sectionNumber -> "\\setcounter{section}{" ++ String.fromInt sectionNumber ++ "}\n\n"
+
+setDocId : Int -> String
+setDocId id = "\\setdocid{" ++ (String.fromInt id) ++ "}"
+
+setClient : String 
+setClient = 
+  "\\setclient{" ++ Configuration.client ++ "}"
+
+normalize : String -> String 
+normalize str = 
+  str |> String.lines |> List.filter (\x -> x /= "") |> String.join("\n") 
+
+   
+prependMacros  : String -> String -> String
+prependMacros macros_ sourceText = 
+  let
+    macros__ =  (macros_ |> normalize)
+  in
+    "$$\n" ++ macros__ ++ "\n$$\n\n" ++ sourceText 

@@ -103,6 +103,7 @@ type TextType
     | Asciidoc
     | AsciidocLatex
     | PlainText
+    | ElmMarkup
 
 
 -- MSG
@@ -236,6 +237,9 @@ decodeTextType textTypeString =
 
         "markdown" ->
             Decode.succeed Markdown
+
+        "elm-markup" ->
+            Decode.succeed ElmMarkup
 
         _ ->
             Decode.fail <| "I don't know a textType named " ++ textTypeString
@@ -415,6 +419,9 @@ encodeTextType textType =
 
         Markdown ->
             Encode.string "markdown"
+    
+        ElmMarkup -> 
+             Encode.string "elm-markup"
 
 
 
@@ -586,6 +593,9 @@ printTypeString document =
 
         Markdown ->
             "text=markdown"
+        
+        ElmMarkup -> 
+            "text=elm-markup"
 
 -- HELPERS: Int
 

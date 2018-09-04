@@ -22,14 +22,12 @@
             "elm-community/list-extra": "8.0.0",
             "jinjor/elm-debounce": "3.0.0",
             "mdgriffith/elm-markup": "1.0.0",
-            "mdgriffith/stylish-elephants": "8.1.0",
+            "mdgriffith/elm-ui": "1.0.0",
             "ohanhi/keyboard": "1.0.0",
             "pablohirafuji/elm-markdown": "2.0.5",
             "simonh1000/elm-jwt": "6.0.0"
         },
-        "indirect": {
-            "mdgriffith/elm-ui": "1.0.0"
-        }
+        "indirect": {}
     },
     "test-dependencies": {
         "direct": {},

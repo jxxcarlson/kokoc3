@@ -175,6 +175,7 @@ documentPanels model =
 textTypePanel model = 
   Element.column [spacing 5] [
       miniLatexTypeButton model 
+    , elmMarkupTypeButton model 
     , asciidocTypeButton model 
     , asciidocLatexTypeButton model 
     , markdownTypeButton model 
@@ -249,6 +250,13 @@ miniLatexTypeButton model =
   Input.button (textTypeButtonStyle model MiniLatex) {
     onPress =  Just (SetDocumentTextType MiniLatex)
   , label = Element.el [] (Element.text ("MiniLatex"))
+  }
+
+elmMarkupTypeButton : Model -> Element Msg 
+elmMarkupTypeButton model = 
+  Input.button (textTypeButtonStyle model ElmMarkup) {
+    onPress =  Just (SetDocumentTextType ElmMarkup)
+  , label = Element.el [] (Element.text ("Elm markup"))
   }
 
 asciidocTypeButton : Model -> Element Msg 

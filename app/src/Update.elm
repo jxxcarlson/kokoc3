@@ -1618,7 +1618,7 @@ getViewPortOfRenderedText : Cmd Msg
 getViewPortOfRenderedText = Task.attempt FindViewportOfRenderedText (Dom.getViewportOf "_textView_")
 
 
--- "_textView_" "renderedText"
+-- "_textView_" "re nderedText"
 -- FindViewportOfRenderedText : Result x a -> msg
 
 saveCurrentDocument : Model -> (Model, Cmd Msg)
