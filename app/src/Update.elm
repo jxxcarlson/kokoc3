@@ -687,7 +687,6 @@ update msg model =
                  , recentDocumentQueue = nextDocumentQueue
                  , currentDocumentDirty = False
                  , counter = model.counter + 1
-                 , debugString = "SET"
 
                  }
             in
@@ -1616,10 +1615,10 @@ getViewPort : Cmd Msg
 getViewPort = Task.perform GetViewport Dom.getViewport
 
 getViewPortOfRenderedText : Cmd Msg
-getViewPortOfRenderedText = Task.attempt FindViewportOfRenderedText (Dom.getViewportOf "renderedText")
+getViewPortOfRenderedText = Task.attempt FindViewportOfRenderedText (Dom.getViewportOf "_textView_")
 
 
--- "_textView_"
+-- "_textView_" "renderedText"
 -- FindViewportOfRenderedText : Result x a -> msg
 
 saveCurrentDocument : Model -> (Model, Cmd Msg)
@@ -1651,7 +1650,7 @@ saveCurrentDocument model =
                     , documentList = nextDocumentList
                     , toolMenuState = HideToolMenu 
                     -- , debugString = "TSL = " ++ tagLengthString ++ ", TS = " ++ tagStringSaved
-                    }
+                  }
             , Cmd.map DocMsg <| Document.saveDocument tokenString nextCurrentDocument )
 
 digest str = 
