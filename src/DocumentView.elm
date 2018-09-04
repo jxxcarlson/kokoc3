@@ -163,7 +163,7 @@ viewElmMarkup document =
       -- case Mark.parse elmMarkupTestContent of 
       case Mark.parse document.content of 
         Ok parsedContent -> parsedContent 
-        Err error -> Element.el [] (Element.text <| Debug.toString error)
+        Err error -> Element.el [] (Element.text "Oops, Markup parse error")
   in 
     Element.el [ Element.paddingEach {top = 0, bottom = 120, left = 0, right = 0} ] (parsedElement)
 
