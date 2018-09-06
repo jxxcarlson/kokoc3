@@ -58,7 +58,8 @@
 				}
 		});
 		
-		// Image stuff
+		// IMAGE UPLOADER 
+
 		var globalReader = function () {
 
 			var reader = new FileReader();
@@ -151,9 +152,9 @@
 			}
 
 		});
-
-	    // END Image stuff
 				
+		// NAVIGATION
+
 		// Inform app of browser navigation (the BACK and FORWARD buttons)
 		window.addEventListener('popstate', function () {
 			app.ports.onUrlChange.send(location.href);
@@ -165,6 +166,9 @@
 			app.ports.onUrlChange.send(location.href);
 		});
 				
+
+		// MATH TEXT
+
 		var typesetTimeout = null
 		var typesetQueue = []
 		function enqueueTypeset(el) {
@@ -218,7 +222,8 @@
 				enqueueTypeset(this)
 			}
 		})
-	
+		
+		// ASCIIDOC
 		
 		// https://ellie-test-19-cutover.now.sh/LFVgrr8Cf2a1
 		
@@ -253,6 +258,8 @@
 				this.innerHTML = asciidoctor.convert(this._content, {safe: 'safe', attributes: 'icons=font'})
 			}
 		})
+
+		// OUTSIDE
 
 		app.ports.infoForOutside.subscribe(msg => {
 
