@@ -1706,13 +1706,14 @@ httpErrorHandler : Http.Error -> String
 httpErrorHandler error = 
   case error of 
     Http.BadPayload errorString response ->
-      errorString  
-        |> Utility.getEnclosedText "{" "}"
-        |> String.split ":"
-        |> List.drop 1 
-        |> List.head
-        |> Maybe.withDefault ""
-        |> String.replace "\"" "" 
+      "Bad Payload"
+      -- errorString  
+      --   |> Utility.getEnclosedText "{" "}"
+      --   |> String.split ":"
+      --   |> List.drop 1 
+      --   |> List.head
+      --   |> Maybe.withDefault ""
+      --   |> String.replace "\"" "" 
         -- |> (\x -> "Bad payload: " ++ x)
       -- Debug.toString response
     Http.BadUrl str -> "Bad url: " ++ str 
