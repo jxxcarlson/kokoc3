@@ -72,6 +72,7 @@ import DocumentList exposing(
         , findDocuments
         , documentListLength
      )
+import Queue
 import DocumentView exposing(view, DocViewMsg(..))
 import DocumentListView exposing(DocListViewMsg(..))
 import DocumentDictionary exposing(DocumentDictionary, DocDictMsg(..))
@@ -834,8 +835,9 @@ update msg model =
             currentDocument = model.currentDocument 
             nextCurrentDocument = { currentDocument | content = str }
             nextDocumentList = DocumentList.updateDocument nextCurrentDocument model.documentList
+            nextDocumentQueue = Queue.enqueueUniqueWithProperty (\x -> x.id) nextCurrentDocument model.recentDocumentQueue
           in  
-            ( {model | currentDocument = nextCurrentDocument, documentList = nextDocumentList}, Cmd.none )
+            ( {model | currentDocument = nextCurrentDocument, recentDocumentQueue = nextDocumentQueue, documentList = nextDocumentList}, Cmd.none )
 
         SaveCurrentDocument time ->
           let  
@@ -847,6 +849,8 @@ update msg model =
                 ( { model |   currentDocumentDirty = False
                             , message = "Autosaved doc " ++ (String.fromInt model.debounceCounter)
                             , documentList = DocumentList.updateDocument model.currentDocument model.documentList 
+                            , recentDocumentQueue = Queue.enqueueUniqueWithProperty (\x -> x.id) model.currentDocument model.recentDocumentQueue
+
                         }
                   , Cmd.batch [saveCurrentDocumentIfDirty model, getTime ])
 
@@ -1298,8 +1302,10 @@ toggleToolPanelState model =
                 let 
                   docList_ = model.documentList
                   nextDocList_ = DocumentList.updateDocument model.currentDocument docList_
+                  nextDocumentQueue = Queue.enqueueUniqueWithProperty (\x -> x.id) model.currentDocument model.recentDocumentQueue
+
                 in
-                  { model | toolPanelState = nextToolPanelState, documentList = nextDocList_ , toolMenuState = HideToolMenu}  
+                  { model | toolPanelState = nextToolPanelState, documentList = nextDocList_ , recentDocumentQueue = nextDocumentQueue, toolMenuState = HideToolMenu}  
               ShowToolPanel -> 
                 { model | 
                   documentTitle  = model.currentDocument.title
@@ -1621,6 +1627,10 @@ getViewPortOfRenderedText = Task.attempt FindViewportOfRenderedText (Dom.getView
 -- "_textView_" "re nderedText"
 -- FindViewportOfRenderedText : Result x a -> msg
 
+
+    
+
+
 saveCurrentDocument : Model -> (Model, Cmd Msg)
 saveCurrentDocument model = 
   case model.currentDocument.docType of
@@ -1643,11 +1653,13 @@ saveCurrentDocument model =
             False -> model.documentTitle
           nextCurrentDocument = { currentDocument | title = nextDocumentTitle, tags = nextTags}
           nextDocumentList = DocumentList.updateDocument currentDocument model.documentList
+          nextDocumentQueue = Queue.enqueueUniqueWithProperty (\x -> x.id) currentDocument model.recentDocumentQueue
       in 
           ( { model | currentDocumentDirty = False 
                     , message = "(s)" ++ (digest nextCurrentDocument.content)
                     , currentDocument = nextCurrentDocument
                     , documentList = nextDocumentList
+                    , recentDocumentQueue = nextDocumentQueue
                     , toolMenuState = HideToolMenu 
                     -- , debugString = "TSL = " ++ tagLengthString ++ ", TS = " ++ tagStringSaved
                   }
@@ -1672,6 +1684,8 @@ saveCurrentMasterDocument model =
         ( { model |  currentDocumentDirty = False
                     , message = "(m)" ++ (digest model.currentDocument.content)
                     , documentList = DocumentList.updateDocument model.currentDocument model.documentList 
+                    , recentDocumentQueue = Queue.enqueueUniqueWithProperty (\x -> x.id) model.currentDocument model.recentDocumentQueue
+
                 }
           , Cmd.batch [ getTime 
                       , Cmd.map DocListMsg (DocumentList.loadMasterDocument model.maybeCurrentUser model.currentDocument.id) 
