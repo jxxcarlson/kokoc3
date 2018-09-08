@@ -152,7 +152,9 @@ Jim Carlson: jxxcarlson at gmail.
 
 newUserText = 
     """
-Welcome!
+Welcome!  
+
+We sent you a verification email \\mdash check it out, OK?
 
 \\begin{itemize}
 
@@ -162,11 +164,13 @@ Welcome!
 
 \\item To find things, type something in
 the search box, e.g., \\italic{matt}, \\italic{wave}, or \\italic{snow}.
+Then do \\strong{ctrl-RETURN}.
 
 \\item To create or edit a document, click on \\strong{Write}.
 
 \\end{itemize}
 
+Please contact jxxcarlson at gmail.com if you have questions or comments about this app.
 
 \\bigskip
 

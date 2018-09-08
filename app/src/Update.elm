@@ -215,7 +215,10 @@ processInfoForElm model infoForElm_ =
       , Cmd.map DocListMsg  (DocumentList.retrievDocumentsFromIntList model.maybeCurrentUser intList) )
 
     RecentDocumentQueueDataFromOutside intList ->
-        (model 
+      case intList of 
+       [] -> (model, Cmd.none)
+       _ ->
+        ({model  | documentListSource = RecentDocumentsQueue}
         , Cmd.map DocListMsg  (DocumentList.retrievRecentDocumentQueueFromIntList model.maybeCurrentUser intList))
 
 
@@ -835,7 +838,7 @@ update msg model =
             currentDocument = model.currentDocument 
             nextCurrentDocument = { currentDocument | content = str }
             nextDocumentList = DocumentList.updateDocument nextCurrentDocument model.documentList
-            nextDocumentQueue = Queue.enqueueUniqueWithProperty (\x -> x.id) nextCurrentDocument model.recentDocumentQueue
+            nextDocumentQueue = Queue.replaceUsingPredicate (\doc -> doc.id == nextCurrentDocument.id) nextCurrentDocument model.recentDocumentQueue
           in  
             ( {model | currentDocument = nextCurrentDocument, recentDocumentQueue = nextDocumentQueue, documentList = nextDocumentList}, Cmd.none )
 
@@ -849,7 +852,7 @@ update msg model =
                 ( { model |   currentDocumentDirty = False
                             , message = "Autosaved doc " ++ (String.fromInt model.debounceCounter)
                             , documentList = DocumentList.updateDocument model.currentDocument model.documentList 
-                            , recentDocumentQueue = Queue.enqueueUniqueWithProperty (\x -> x.id) model.currentDocument model.recentDocumentQueue
+                            , recentDocumentQueue = Queue.replaceUsingPredicate (\doc -> doc.id == model.currentDocument.id) model.currentDocument model.recentDocumentQueue
 
                         }
                   , Cmd.batch [saveCurrentDocumentIfDirty model, getTime ])
@@ -936,7 +939,7 @@ update msg model =
             ( { model | currentDocument = nextCurrentDocument}, Cmd.none)
 
         Test ->
-          (model, getViewPortOfRenderedText)
+          (model, getViewPortOfRenderedText "p.0.10")
            -- (model, Cmd.map ImageMsg <| ImageManager.getImageList model.currentDocument)
 
         ReadImage v ->
@@ -1302,7 +1305,7 @@ toggleToolPanelState model =
                 let 
                   docList_ = model.documentList
                   nextDocList_ = DocumentList.updateDocument model.currentDocument docList_
-                  nextDocumentQueue = Queue.enqueueUniqueWithProperty (\x -> x.id) model.currentDocument model.recentDocumentQueue
+                  nextDocumentQueue = Queue.replaceUsingPredicate (\doc -> doc.id == model.currentDocument.id) model.currentDocument model.recentDocumentQueue
 
                 in
                   { model | toolPanelState = nextToolPanelState, documentList = nextDocList_ , recentDocumentQueue = nextDocumentQueue, toolMenuState = HideToolMenu}  
@@ -1620,15 +1623,14 @@ displayCurrentMasterDocument model =
 getViewPort : Cmd Msg
 getViewPort = Task.perform GetViewport Dom.getViewport
 
-getViewPortOfRenderedText : Cmd Msg
-getViewPortOfRenderedText = Task.attempt FindViewportOfRenderedText (Dom.getViewportOf "_textView_")
+getViewPortOfRenderedText : String -> Cmd Msg
+getViewPortOfRenderedText id = 
+   Task.attempt FindViewportOfRenderedText (Dom.getViewportOf id)
 
 
 -- "_textView_" "re nderedText"
 -- FindViewportOfRenderedText : Result x a -> msg
 
-
-    
 
 
 saveCurrentDocument : Model -> (Model, Cmd Msg)
@@ -1653,7 +1655,7 @@ saveCurrentDocument model =
             False -> model.documentTitle
           nextCurrentDocument = { currentDocument | title = nextDocumentTitle, tags = nextTags}
           nextDocumentList = DocumentList.updateDocument currentDocument model.documentList
-          nextDocumentQueue = Queue.enqueueUniqueWithProperty (\x -> x.id) currentDocument model.recentDocumentQueue
+          nextDocumentQueue = Queue.replaceUsingPredicate (\doc -> doc.id == currentDocument.id) currentDocument model.recentDocumentQueue
       in 
           ( { model | currentDocumentDirty = False 
                     , message = "(s)" ++ (digest nextCurrentDocument.content)
@@ -1684,7 +1686,7 @@ saveCurrentMasterDocument model =
         ( { model |  currentDocumentDirty = False
                     , message = "(m)" ++ (digest model.currentDocument.content)
                     , documentList = DocumentList.updateDocument model.currentDocument model.documentList 
-                    , recentDocumentQueue = Queue.enqueueUniqueWithProperty (\x -> x.id) model.currentDocument model.recentDocumentQueue
+                    , recentDocumentQueue = Queue.replaceUsingPredicate (\doc -> doc.id == model.currentDocument.id) model.currentDocument model.recentDocumentQueue
 
                 }
           , Cmd.batch [ getTime 

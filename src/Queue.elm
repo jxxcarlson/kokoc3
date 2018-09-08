@@ -7,8 +7,11 @@ module Queue exposing(
     , enqueue 
     , enqueueUnique 
     , enqueueUniqueWithProperty
+    , replaceUsingPredicate
     , dropLast
   )
+
+import Utility
 
 type Queue a =
   Queue (List a) Int
@@ -45,6 +48,11 @@ enqueue element (Queue list_ capacity_) =
 enqueueUnique : a -> Queue a -> Queue a 
 enqueueUnique element queue = 
   enqueue element (remove element queue)
+
+replaceUsingPredicate : (a -> Bool) -> a -> Queue a -> Queue a 
+replaceUsingPredicate predicate element (Queue l c) = 
+  Queue (Utility.replaceIf predicate element l) c
+
 
 enqueueUniqueWithProperty : (a -> b) -> a -> Queue a -> Queue a 
 enqueueUniqueWithProperty property element queue = 

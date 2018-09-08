@@ -43,7 +43,8 @@ type alias DocumentView msg =
 
 view : Viewport -> Int -> Int -> String -> Document -> Element DocViewMsg 
 view viewport counter debounceCounter texMacros document = 
-    Element.column [spacing 15, width (px <| texWidth viewport), centerX] [
+    Element.column [spacing 15, width (px <| texWidth viewport), centerX 
+        , Element.htmlAttribute <| HA.attribute "id" "_textViewParent_"] [
           titleLine document
         , (contentView viewport counter (documentView viewport debounceCounter texMacros document ))
     ]
@@ -148,7 +149,7 @@ viewMiniLatex viewport texMacros document =
   in 
     MiniLatex.getRenderedText editRecord
         |> List.map (\x -> Element.paragraph [ width (px (texWidth viewport))] [ Element.html x ]) -- ###@@@
-        |> Element.column [Element.htmlAttribute <| HA.attribute "id" "renderedText"]
+        |> Element.column [Element.htmlAttribute <| HA.attribute "id" "_renderedText_"]
 
 
 
