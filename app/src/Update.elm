@@ -517,14 +517,21 @@ update msg model =
                 documentSelected = case maybeDocumentToSelect of 
                    Just doc -> doc 
                    Nothing -> Document.basicDocument
-                nextDocumentList_ = DocumentList.select maybeDocumentToSelect model.documentList                        
+                nextDocumentList_ = DocumentList.select maybeDocumentToSelect model.documentList
+                nextDocumentQueue = Queue.removeWithPredicate (\doc -> doc.id == idOfDocumentToDelete)  model.recentDocumentQueue                       
+                nextModel = { model | message = "Document deleted: " ++ (String.fromInt indexOfDocumentToDelete) ++ ", Document selected: " ++ (String.fromInt documentSelectedId) 
+                    , currentDocument = documentSelected 
+                    , toolPanelState = HideToolPanel
+                    , documentList = DocumentList.deleteItemInDocumentListAt idOfDocumentToDelete nextDocumentList_
+                    , recentDocumentQueue = nextDocumentQueue
+                
+                  }
               in 
-               ({ model | message = "Document deleted: " ++ (String.fromInt indexOfDocumentToDelete) ++ ", Document selected: " ++ (String.fromInt documentSelectedId) 
-                  , currentDocument = documentSelected 
-                  , toolPanelState = HideToolPanel
-                  , documentList = DocumentList.deleteItemInDocumentListAt idOfDocumentToDelete nextDocumentList_
-              
-                },  Cmd.none)
+               (nextModel,  Cmd.batch [
+                     updateBigUserCmd nextModel
+                  ,  saveRecentDocumentQueueToLocalStorage nextDocumentQueue
+                 ]
+                )
             Err err -> 
                 ({model | message = handleHttpError err},   Cmd.none  )
 
@@ -535,11 +542,18 @@ update msg model =
                 nextDocument = documentRecord.document
                 selectedDocId_ = Document.selectedDocId nextDocument
                 cmd = Cmd.map DocMsg (Document.attachDocumentToMasterBelowCmd  (User.getTokenStringFromMaybeUser model.maybeCurrentUser) selectedDocId_ nextDocument model.maybeMasterDocument)
-                nextDocumentList_ = DocumentList.nextDocumentList selectedDocId_ nextDocument model.documentList    
-              in  
-               ({ model | currentDocument = nextDocument
+                nextDocumentList_ = DocumentList.nextDocumentList selectedDocId_ nextDocument model.documentList  
+                nextDocumentQueue = Queue.enqueueUnique nextDocument model.recentDocumentQueue  
+                nextModel = { model | currentDocument = nextDocument
                          , documentList = nextDocumentList_
-                },  cmd)
+                         , recentDocumentQueue = nextDocumentQueue
+                  }
+              in  
+               ( nextModel ,  Cmd.batch[
+                        updateBigUserCmd nextModel
+                     ,  saveRecentDocumentQueueToLocalStorage nextDocumentQueue
+                  ]
+               )
             Err err -> 
                 ({model | message = handleHttpError err},   Cmd.none  )
 

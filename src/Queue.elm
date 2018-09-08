@@ -8,6 +8,7 @@ module Queue exposing(
     , enqueueUnique 
     , enqueueUniqueWithProperty
     , replaceUsingPredicate
+    , removeWithPredicate
     , dropLast
   )
 
@@ -37,6 +38,10 @@ remove element (Queue list_ capacity_) =
 removeUsingProperty : (a -> b) -> a ->  Queue a -> Queue a 
 removeUsingProperty property element (Queue list_ capacity_) = 
   Queue (List.filter (\x -> property x /= property element) list_) capacity_
+
+removeWithPredicate : (a -> Bool) -> Queue a -> Queue a   
+removeWithPredicate predicate (Queue list_ capacity_)= 
+  Queue (List.filter (not << predicate) list_) capacity_  
 
 
 enqueue : a -> Queue a -> Queue a 
