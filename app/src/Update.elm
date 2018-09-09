@@ -324,6 +324,10 @@ preventDefaultOn string decoder =
 
 keyGateway : Model -> (List Key, Maybe Keyboard.KeyChange) -> ( Model, Cmd Msg )
 keyGateway model (pressedKeys, maybeKeyChange) =
+  let
+    _ = Debug.log "keys" pressedKeys
+  in
+  
     if List.member Control model.pressedKeys then
         respondToContolCommand model pressedKeys
     else
@@ -930,7 +934,9 @@ update msg model =
             
         KeyMsg keyMsg ->
           let 
-            (pressedKeys, maybeKeyChange) = Keyboard.updateWithKeyChange (Keyboard.oneOf [Keyboard.characterKey, Keyboard.modifierKey]) keyMsg model.pressedKeys
+            (pressedKeys, maybeKeyChange) = Keyboard.updateWithKeyChange 
+                (Keyboard.oneOf [Keyboard.characterKey, Keyboard.modifierKey, Keyboard.whitespaceKey]) 
+                keyMsg model.pressedKeys
           in 
             keyGateway model (pressedKeys, maybeKeyChange)
             
