@@ -95,7 +95,6 @@ type alias Model =
       , viewPortOfRenderedText : Maybe Viewport
       , deleteDocumentState : DeleteDocumentState
       , pressedKeys : List Key
-      , previousKey : Key
       , locationHref : String
       , masterDocLoaded : Bool
       , maybeImageString : Maybe String
@@ -237,7 +236,6 @@ initialModel locationHref windowWidth windowHeight document =
             , viewPortOfRenderedText = Nothing
             , deleteDocumentState = DeleteIsOnSafety
             , pressedKeys = []
-            , previousKey = F20
             , locationHref = locationHref
             , masterDocLoaded = False
             , maybeImageString = Nothing

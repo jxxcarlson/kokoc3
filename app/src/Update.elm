@@ -322,21 +322,19 @@ preventDefaultOn string decoder =
 
 -- KEY COMMANDS
 
-
-
-keyGateway : Model -> List Key -> ( Model, Cmd Msg )
-keyGateway model pressedKeys =
-    if model.previousKey == Control then
+keyGateway : Model -> (List Key, Maybe Keyboard.KeyChange) -> ( Model, Cmd Msg )
+keyGateway model (pressedKeys, maybeKeyChange) =
+    if List.member Control model.pressedKeys then
         respondToContolCommand model pressedKeys
     else
-       ( { model | previousKey = headKey pressedKeys }, Cmd.none )
+       ( { model | pressedKeys = pressedKeys }, Cmd.none )
 
 
 respondToContolCommand : Model -> List Key -> ( Model, Cmd Msg )
 respondToContolCommand model pressedKeys =
     let
         newModel =
-            { model | previousKey = headKey pressedKeys }
+            { model | pressedKeys = pressedKeys}
     in
         handleKey newModel (headKey pressedKeys) 
 
@@ -932,9 +930,9 @@ update msg model =
             
         KeyMsg keyMsg ->
           let 
-            pressedKeys = Keyboard.update keyMsg model.pressedKeys
+            (pressedKeys, maybeKeyChange) = Keyboard.updateWithKeyChange (Keyboard.oneOf [Keyboard.characterKey, Keyboard.modifierKey]) keyMsg model.pressedKeys
           in 
-            keyGateway model pressedKeys
+            keyGateway model (pressedKeys, maybeKeyChange)
             
         GetUserManual ->
           (model, Cmd.map DocMsg (Document.getDocumentById Configuration.userManualId Nothing))
