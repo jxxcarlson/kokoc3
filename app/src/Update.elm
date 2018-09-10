@@ -325,19 +325,10 @@ preventDefaultOn string decoder =
 keyGateway : Model -> (List Key, Maybe Keyboard.KeyChange) -> ( Model, Cmd Msg )
 keyGateway model (pressedKeys, maybeKeyChange) =
     if List.member Control model.pressedKeys then
-        respondToContolCommand model pressedKeys
+        handleKey { model | pressedKeys = pressedKeys} (headKey pressedKeys)
     else
        ( { model | pressedKeys = pressedKeys }, Cmd.none )
-
-
-respondToContolCommand : Model -> List Key -> ( Model, Cmd Msg )
-respondToContolCommand model pressedKeys =
-    let
-        newModel =
-            { model | pressedKeys = pressedKeys}
-    in
-        handleKey newModel (headKey pressedKeys) 
-
+       
 
 handleKey : Model -> Key -> (Model, Cmd Msg)
 handleKey model key = 
