@@ -328,7 +328,7 @@ keyGateway model (pressedKeys, maybeKeyChange) =
         handleKey { model | pressedKeys = pressedKeys} (headKey pressedKeys)
     else
        ( { model | pressedKeys = pressedKeys }, Cmd.none )
-       
+
 
 handleKey : Model -> Key -> (Model, Cmd Msg)
 handleKey model key = 
@@ -347,6 +347,7 @@ handleKey model key =
     Character "m" -> doNewMasterDocument model
     Character "n" -> doNewStandardDocument model
     Character "p" -> printDocument model
+    Character "q" -> putCurrentDocumentAtTopOfQueue model
     Character "u" -> togglePreferences model
     Character "v" -> doIncrementVersion model
     Character "0" -> goToStart model
@@ -1721,7 +1722,9 @@ updateBigUserCmd model =
       in 
         Cmd.map UserMsg <| User.updateBigUser (User.getTokenStringFromMaybeUser model.maybeCurrentUser) nextBigUser
 
-
+putCurrentDocumentAtTopOfQueue : Model -> (Model, Cmd Msg)
+putCurrentDocumentAtTopOfQueue model = 
+  ({model | recentDocumentQueue = Queue.enqueueUnique model.currentDocument model.recentDocumentQueue}, Cmd.none)
 
 httpErrorHandler : Http.Error -> String
 httpErrorHandler error = 
