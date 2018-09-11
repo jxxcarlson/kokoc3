@@ -198,6 +198,7 @@ type Msg
     | ToggleToolMenu
     | IncrementVersion
     | ToggleDocumentSource
+    | UserClicksOutsideSearchBox Bool
     
     
 

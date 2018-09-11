@@ -392,7 +392,7 @@ update msg model =
             ( { model | username = str }, Cmd.none )
 
         AcceptSearchQuery searchQueryString -> 
-            ( { model | searchQueryString = searchQueryString }, Cmd.none )
+            ( { model | searchQueryString = Debug.log "SQ" searchQueryString, message = "Inside", debugString = "Inside" }, Cmd.none )
 
         AcceptDocumenTitle str ->
           let 
@@ -594,7 +594,7 @@ update msg model =
             Err err -> 
                 ({model | message = handleHttpError err},   Cmd.none  )
 
-        DocListMsg (RestoreRecentDocumentQueueAtSignIn result) -> -- ###@@@
+        DocListMsg (RestoreRecentDocumentQueueAtSignIn result) -> 
           case result of 
             Ok restoredDocumentQueue ->
               ({model | recentDocumentQueue =  restoredDocumentQueue
@@ -1183,6 +1183,12 @@ update msg model =
             SearchResults -> ({model | documentListSource = RecentDocumentsQueue}, Cmd.none)
             RecentDocumentsQueue -> ({model | documentListSource = SearchResults}, Cmd.none)
 
+        UserClicksOutsideSearchBox clickedOutside ->
+          case clickedOutside of 
+            True -> ({model | debugString = "Outside"}, Cmd.none)
+            False -> ({model | debugString = "Inside"}, Cmd.none)
+          
+
 -- UPDATE END
 
 -- HELPERS
@@ -1457,7 +1463,7 @@ saveCurrentDocumentIfDirty model =
          Cmd.map DocMsg <| Document.saveDocument token model.currentDocument 
         
 
-signIn model = -- ###
+signIn model = 
   case String.length model.password < 8 of 
     True -> ({model | message = "Password must contain at least 8 characters"}, Cmd.none)
     False ->
@@ -1470,7 +1476,7 @@ signIn model = -- ###
           (freshModel, Cmd.batch[
               Cmd.map UserMsg (User.getTokenCmd model.email model.password)  
               , eraseLocalStorage
-          ]) -- ###
+          ]) 
 
 loadTexMacrosForDocument : Document -> Model -> Cmd Msg 
 loadTexMacrosForDocument document model =
