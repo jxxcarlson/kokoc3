@@ -45,6 +45,8 @@ import View.Writer as Writer
 import View.Author as Author
 import View.Phone exposing(phoneView)
 
+import OnClickOutside
+
 view model = 
   case (currentDevice model.viewport).class of 
     Phone -> phoneView model 
@@ -205,8 +207,10 @@ label fontSize str =
 
 searchInput : Model -> Element Msg
 searchInput model =
-    Input.text [htmlAttribute (Html.Attributes.id "search-box")
-       , width (px 360), height (px 30) , Font.color black] {
+    Input.text ([htmlAttribute (Html.Attributes.id "search-box")
+       , width (px 360), height (px 30) , Font.color black] 
+         ++ OnClickOutside.withIdElement "search-box" (UserClicksOutsideSearchBox))
+       {
         text = model.searchQueryString 
       , placeholder = Just (Input.placeholder [moveUp 5] (text <| searchPlaceHolderText model ))
       , onChange = (\str -> AcceptSearchQuery str)
@@ -216,10 +220,10 @@ searchInput model =
 searchPlaceHolderText : Model -> String 
 searchPlaceHolderText model  =
   case model.appMode of 
-    ImageEditing -> "Example: type 'aust', press Ctrl-Enter"
-    DisplayAuthors -> "Example: type 'fred' or 'physics', press Ctrl-Enter"
-    Admin -> "Example: type 'alpha' or 'physics', press Ctrl-Enter"
-    _ -> "Example: type 'quantum', press Ctrl-Enter"
+    ImageEditing -> "Example: type 'aust', press Enter"
+    DisplayAuthors -> "Example: type 'fred' or 'physics', press Enter"
+    Admin -> "Example: type 'alpha' or 'physics', press Enter"
+    _ -> "Example: type 'quantum', press Enter"
 
 -- BUTTONS AND LINKS
 
@@ -520,7 +524,7 @@ doSearchItem : Element Msg
 doSearchItem  = 
     Input.button (Widget.menuItemStyle  (px 160)) {
       onPress =  (Just (Search))
-    , label = Element.el [] (Element.text ("Search Ctrl-Enter"))
+    , label = Element.el [] (Element.text ("Search Enter"))
     }
 
 writerModeItem : Model -> Element Msg

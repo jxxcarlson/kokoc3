@@ -2,6 +2,7 @@ module Model exposing(
       Msg(..)
     , Model
     , AppMode(..)
+    , FocusedElement(..)
     , ImageMode(..)
     , SignupMode(..)
     , ToolPanelState(..)
@@ -117,8 +118,9 @@ type alias Model =
       , recentDocumentQueue : Queue Document
       , documentListSource : DocumentListSource
       , debugString : String 
-    }
+      , focusedElement : FocusedElement 
 
+    }
 
 -- MSG
 
@@ -199,6 +201,7 @@ type Msg
     | IncrementVersion
     | ToggleDocumentSource
     | UserClicksOutsideSearchBox Bool
+
     
     
 
@@ -259,8 +262,11 @@ initialModel locationHref windowWidth windowHeight document =
             , recentDocumentQueue = Queue.fromList [] Configuration.documentQueueCapacity
             , documentListSource = SearchResults
             , debugString = ""
+            , focusedElement = NoFocus
         }
 
 type ToolMenuState = HideToolMenu| ShowToolMenu
 
 type DocumentListSource = SearchResults | RecentDocumentsQueue
+
+type FocusedElement = FocusOnSearchBox | NoFocus

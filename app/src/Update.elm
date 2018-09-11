@@ -23,6 +23,7 @@ import Http
 import Process
 
 
+import Model exposing(..)
 import Utility
 
 import FileUploadCredentials as Credentials exposing(FileData, Image)
@@ -326,6 +327,11 @@ keyGateway : Model -> (List Key, Maybe Keyboard.KeyChange) -> ( Model, Cmd Msg )
 keyGateway model (pressedKeys, maybeKeyChange) =
     if List.member Control model.pressedKeys then
         handleKey { model | pressedKeys = pressedKeys} (headKey pressedKeys)
+    else if model.focusedElement == FocusOnSearchBox && List.member Enter model.pressedKeys then
+      let
+          newModel = {model | pressedKeys = pressedKeys }
+      in
+          doSearch newModel
     else
        ( { model | pressedKeys = pressedKeys }, Cmd.none )
 
@@ -392,7 +398,8 @@ update msg model =
             ( { model | username = str }, Cmd.none )
 
         AcceptSearchQuery searchQueryString -> 
-            ( { model | searchQueryString = Debug.log "SQ" searchQueryString, message = "Inside", debugString = "Inside" }, Cmd.none )
+            ( { model | searchQueryString = searchQueryString
+              , focusedElement = FocusOnSearchBox }, Cmd.none )
 
         AcceptDocumenTitle str ->
           let 
@@ -1139,8 +1146,6 @@ update msg model =
         UserMsg (AcknowlegeBigUserUpdate result) ->
            case result of 
              Ok bigUserRecord -> ({ model | message = "BIG USER OK"}, Cmd.none)
-             -- Err error -> ({model | message = Debug.log "BUE" <| Debug.toString error}, Cmd.none)
-            -- Err error -> ({model | message = Debug.log "BUE" <| httpErrorHandler error}, Cmd.none)
              Err error -> ({model | message = "BIG USER ERROR"}, Cmd.none)
 
         GetBigUser ->
@@ -1185,11 +1190,11 @@ update msg model =
 
         UserClicksOutsideSearchBox clickedOutside ->
           case clickedOutside of 
-            True -> ({model | debugString = "Outside"}, Cmd.none)
-            False -> ({model | debugString = "Inside"}, Cmd.none)
+            True -> ({model | focusedElement = NoFocus}, Cmd.none)
+            False -> ({model | focusedElement = FocusOnSearchBox }, Cmd.none)
           
 
--- UPDATE END
+-- UPDATE END    
 
 -- HELPERS
 

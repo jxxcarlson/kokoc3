@@ -27449,7 +27449,7 @@ var author$project$Main$searchInput = function (model) {
 						[
 							mdgriffith$stylish_elephants$Element$moveUp(5)
 						]),
-					mdgriffith$stylish_elephants$Element$text('Search example: type \'quantum\', then press Ctrl-Enter'))),
+					mdgriffith$stylish_elephants$Element$text('Search example: type \'quantum\', then press Enter'))),
 			ar: model.aK
 		});
 };
