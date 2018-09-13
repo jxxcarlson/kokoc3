@@ -48,10 +48,6 @@ init flags =
         , Task.perform GetViewport Dom.getViewport
     ])
 
-focusSearchBox : Cmd Msg
-focusSearchBox =
-  Task.attempt (\_ -> NoOp) (Dom.focus "search-box")
-
 
 -- SUBSCRIPITONS
 

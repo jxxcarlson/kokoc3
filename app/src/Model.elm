@@ -201,6 +201,7 @@ type Msg
     | IncrementVersion
     | ToggleDocumentSource
     | UserClicksOutsideSearchBox Bool
+    | SetFocusOnSearchBox (Result Browser.Dom.Error ())
 
     
     

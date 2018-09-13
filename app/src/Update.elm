@@ -346,6 +346,7 @@ handleKey model key =
     Character "r" -> changeMode model Reading
     Character "i" -> changeMode model ImageEditing
     Character "a" -> changeMode model DisplayAuthors
+    Character "f" -> (model, focusSearchBox)
     Character "h" -> goHome model
     Character "j" -> makeNewChildDocument model
     Character "e" -> toggleToolPanelState model
@@ -358,6 +359,12 @@ handleKey model key =
     Character "0" -> goToStart model
 
     _ -> (model, Cmd.none)
+
+focusSearchBox : Cmd Msg
+focusSearchBox =
+  Task.attempt SetFocusOnSearchBox (Dom.focus "search-box")
+  -- https://package.elm-lang.org/packages/elm/core/latest/Task#perform
+
 
 
 makeNewChildDocument : Model -> (Model, Cmd Msg)
@@ -1191,6 +1198,14 @@ update msg model =
           case clickedOutside of 
             True -> ({model | focusedElement = NoFocus}, Cmd.none)
             False -> ({model | focusedElement = FocusOnSearchBox }, Cmd.none)
+
+        SetFocusOnSearchBox result ->
+          (model, Cmd.none)
+          -- case result of 
+          --   Err _ -> ({model | debugString = "Focus ERROR"}, Cmd.none)
+          --   Ok () -> ({model | debugString = "Focus"}, Cmd.none)
+        -- https://package.elm-lang.org/packages/elm/core/latest/Task#perform
+          
           
 
 -- UPDATE END    
