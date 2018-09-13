@@ -1514,7 +1514,10 @@ pushDocument document =
 
 headKey : List Key -> Key
 headKey keyList =
-    List.head keyList |> Maybe.withDefault F20
+    keyList 
+      |> List.filter (\item -> item /= Control)
+      |> List.head 
+      |> Maybe.withDefault F20
 
 getPublicDocuments : Model -> String -> (Model, Cmd Msg)
 getPublicDocuments model queryString =
