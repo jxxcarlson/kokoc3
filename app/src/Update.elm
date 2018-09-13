@@ -548,6 +548,7 @@ update msg model =
                 nextDocumentList_ = DocumentList.nextDocumentList selectedDocId_ nextDocument model.documentList  
                 nextDocumentQueue = Queue.enqueueUnique nextDocument model.recentDocumentQueue  
                 nextModel = { model | currentDocument = nextDocument
+                         , sourceText = nextDocument.content
                          , documentList = nextDocumentList_
                          , recentDocumentQueue = nextDocumentQueue
                   }
