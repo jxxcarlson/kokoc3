@@ -339,7 +339,6 @@ keyGateway model (pressedKeys, maybeKeyChange) =
 handleKey : Model -> Key -> (Model, Cmd Msg)
 handleKey model key = 
   case key of 
-    Enter -> doSearch model
     Character "s" -> saveCurrentDocument model
     Character "=" -> saveCurrentDocument model    
     Character "/" -> getPublicDocumentsRawQuery model "random=public"

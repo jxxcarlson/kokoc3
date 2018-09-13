@@ -477,7 +477,6 @@ displayMenuItems model =
       Element.column [ moveLeft  10]
         [
              separator
-           , doSearchItem
            , randomDocumentItem model
            , separator
            , readerModeItem model
