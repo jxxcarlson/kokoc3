@@ -111,7 +111,7 @@ footer model =
       , Element.el [] (text <| Configuration.client)
       -- , Element.el [] (text <| "access: " ++ (Document.accessDictToString model.currentDocument.access))
       , Element.el [] (text <| viewportInfo model)
-      , Element.el [] (text <| model.debugString) 
+      , Element.el [] (text <| String.fromInt model.debounceCounter) 
     
   ] 
 

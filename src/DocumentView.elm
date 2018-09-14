@@ -139,6 +139,12 @@ documentContentView_  dvd =
 
 viewMiniLatex : DocumentViewData -> Element msg
 viewMiniLatex dvd =
+    MiniLatex.getRenderedText (setupEditRecord dvd)
+        |> List.map (\x -> Element.paragraph [ width (px (texWidth dvd.viewport))] [ Element.html x ]) -- ###@@@
+        |> Element.column [Element.htmlAttribute <| HA.attribute "id" "_renderedText_"]
+
+
+setupEditRecord dvd = 
   let 
     preamble = 
       [  setCounterText dvd.document.tags 
@@ -153,14 +159,9 @@ viewMiniLatex dvd =
                 dvd.document.content 
              else 
                 prependMacros dvd.texMacros dvd.document.content
-    editRecord =
-        MiniLatex.initializeEditRecord 0 (preamble ++ source ++ postlude) 
-  in 
-    MiniLatex.getRenderedText editRecord
-        |> List.map (\x -> Element.paragraph [ width (px (texWidth dvd.viewport))] [ Element.html x ]) -- ###@@@
-        |> Element.column [Element.htmlAttribute <| HA.attribute "id" "_renderedText_"]
-
-
+  in
+     MiniLatex.initializeEditRecord 0 (preamble ++ source ++ postlude) 
+  
 
 viewMarkdown : Document -> Element msg
 viewMarkdown document =

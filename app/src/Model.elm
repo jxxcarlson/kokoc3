@@ -36,6 +36,11 @@ import Configuration
 import ImageManager exposing(ImageMsg(..))
 import Mail
 import Queue exposing(Queue)
+import MiniLatex.Differ exposing (EditRecord)
+import MiniLatex.MiniLatex as MiniLatex 
+import Html exposing(Html)
+
+
 
 type InfoForElm = 
    DocumentDataFromOutside Document
@@ -64,7 +69,7 @@ type ToolPanelState =
 
 type SignupMode = RegistrationMode | SigninMode 
 
-type alias Model =
+type alias Model a =
     {   message  : String
       , password : String
       , username : String
@@ -75,6 +80,7 @@ type alias Model =
       , maybeBigUser : Maybe BigUser
       , searchQueryString  : String
       , currentDocument : Document
+      , editRecord : EditRecord a
       , selectedDocumentId : Int
       , maybeMasterDocument : Maybe Document
       , documentList : DocumentList 
@@ -206,7 +212,7 @@ type Msg
     
     
 
-initialModel : String -> Int -> Int -> Document -> Model 
+initialModel : String -> Int -> Int -> Document -> Model (Html msg)
 initialModel locationHref windowWidth windowHeight document =
     {   message = "Not signed in"
             , password = ""
@@ -218,6 +224,7 @@ initialModel locationHref windowWidth windowHeight document =
             , maybeCurrentUser = Nothing
             , maybeBigUser = Nothing 
             , currentDocument = document
+            , editRecord = MiniLatex.initializeEditRecord 0 ""
             , selectedDocumentId = 0
             , maybeMasterDocument = Nothing
             , documentList = DocumentList.empty
