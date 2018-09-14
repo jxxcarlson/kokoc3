@@ -41,22 +41,38 @@ type alias DocumentView msg =
      , content: Element msg 
    }
 
+
+type alias DocumentViewData = {
+    viewport : Viewport  
+  , counter : Int  
+  , debounceCounter : Int  
+  , texMacros : String  
+  , document : Document 
+  }
+
 view : Viewport -> Int -> Int -> String -> Document -> Element DocViewMsg 
 view viewport counter debounceCounter texMacros document = 
-    Element.column [spacing 15, width (px <| texWidth viewport), centerX 
-        , Element.htmlAttribute <| HA.attribute "id" "_textViewParent_"] [
-          titleLine document
-        , (contentView viewport counter (documentView viewport debounceCounter texMacros document ))
-    ]
+  let  
+    dvd = { viewport = viewport
+       , counter = counter
+       , debounceCounter = debounceCounter
+       , texMacros = texMacros 
+       , document = document }
+    in 
+        Element.column [spacing 15, width (px <| texWidth viewport), centerX 
+            , Element.htmlAttribute <| HA.attribute "id" "_textViewParent_"] [
+              titleLine dvd.document
+            , contentView dvd
+        ]
 
-contentView : Viewport -> Int -> (DocumentView DocViewMsg) -> Element DocViewMsg
-contentView viewport counter viewDoc = 
-  Keyed.el [   height (px (round <| viewport.viewport.height - 150))
+contentView : DocumentViewData -> Element DocViewMsg
+contentView dvd = 
+  Keyed.el [   height (px (round <| dvd.viewport.viewport.height - 150))
              , scrollbarY
              , clipX
              , Element.htmlAttribute <| HA.attribute "id" "_textView_"
           ] 
-      ((String.fromInt counter), viewDoc.content)
+      ((String.fromInt dvd.counter), (documentContentView dvd))
 
 titleLine : Document -> Element DocViewMsg 
 titleLine document = 
@@ -104,51 +120,51 @@ loadChildrenButton  document =
 
 
 
-documentView : Viewport -> Int -> String -> Document -> DocumentView DocViewMsg
-documentView viewport debounceCounter texMacros doc = 
-  { title = doc.title 
-    , content = documentContentView viewport debounceCounter texMacros doc
+documentView : DocumentViewData -> DocumentView DocViewMsg
+documentView dvd = 
+  { title = dvd.document.title 
+    , content = documentContentView dvd
   }
 
 
-documentContentView : Viewport -> Int -> String -> Document -> Element DocViewMsg 
-documentContentView viewport debounceCounter texMacros document = 
-    case document.docType of 
-        Master -> viewCoverArt document -- viewChildren document 
-        Standard -> documentContentView_ viewport debounceCounter texMacros document
+documentContentView : DocumentViewData -> Element DocViewMsg 
+documentContentView dvd = 
+    case dvd.document.docType of 
+        Master -> viewCoverArt dvd.document -- viewChildren document 
+        Standard -> documentContentView_ dvd
 
-documentContentView_ : Viewport -> Int -> String -> Document -> Element msg 
-documentContentView_  viewport debounceCounter texMacros document =    
-  case document.textType of
-    MiniLatex -> viewMiniLatex viewport texMacros document 
-    Markdown -> viewMarkdown document 
-    Asciidoc -> viewAsciidoc debounceCounter document.content
-    AsciidocLatex -> viewAsciidoc debounceCounter document.content
-    PlainText -> viewPlainText document
-    ElmMarkup -> viewElmMarkup document
+documentContentView_ : DocumentViewData -> Element msg 
+documentContentView_  dvd =    
+  case dvd.document.textType of
+    MiniLatex -> viewMiniLatex dvd 
+    Markdown -> viewMarkdown dvd.document 
+    Asciidoc -> viewAsciidoc dvd.debounceCounter dvd.document.content
+    AsciidocLatex -> viewAsciidoc dvd.debounceCounter dvd.document.content
+    PlainText -> viewPlainText dvd.document
+    ElmMarkup -> viewElmMarkup dvd.document
   
 
-viewMiniLatex : Viewport -> String -> Document -> Element msg
-viewMiniLatex viewport texMacros document =
+viewMiniLatex : DocumentViewData -> Element msg
+viewMiniLatex dvd =
   let 
     preamble = 
-      [  setCounterText document.tags 
-       , setDocId document.id 
+      [  setCounterText dvd.document.tags 
+       , setDocId dvd.document.id 
        , setClient
        , ""
       ] |> String.join("\n\n")
 
     postlude = "\n\n\\bigskip\n\\bigskip\n\\bigskip\n\\bigskip\n\n"
 
-    source = if texMacros == "" then 
-                document.content 
+    source = if dvd.texMacros == "" then 
+                dvd.document.content 
              else 
-                prependMacros texMacros document.content
+                prependMacros dvd.texMacros dvd.document.content
     editRecord =
         MiniLatex.initializeEditRecord 0 (preamble ++ source ++ postlude) 
   in 
     MiniLatex.getRenderedText editRecord
-        |> List.map (\x -> Element.paragraph [ width (px (texWidth viewport))] [ Element.html x ]) -- ###@@@
+        |> List.map (\x -> Element.paragraph [ width (px (texWidth dvd.viewport))] [ Element.html x ]) -- ###@@@
         |> Element.column [Element.htmlAttribute <| HA.attribute "id" "_renderedText_"]
 
 
