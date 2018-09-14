@@ -19,13 +19,13 @@ type AdminMsg =
     AcknowledgeUpdateOfDocument String
  
 
-view : Model -> Element Msg
+view : Model a -> Element Msg
 view model = 
   Element.row [width (fillPortion 4), height fill, Background.color Widget.white, centerX] [
      authorLeftColumn 2 model,  authorCenterColumn model.windowHeight 4 model, authorRightColumn 2 model
   ]
 
-authorLeftColumn : Int -> Model -> Element Msg
+authorLeftColumn : Int -> Model a -> Element Msg
 authorLeftColumn portion_ model = 
   Element.column [width (fillPortion portion_), height fill, 
     Background.color Widget.lightBlue, paddingXY 20 20, spacing 10] [ 
@@ -33,14 +33,14 @@ authorLeftColumn portion_ model =
       , listUsersButton  model  
   ]
 
-authorRightColumn : Int -> Model -> Element Msg
+authorRightColumn : Int -> Model a -> Element Msg
 authorRightColumn portion_ model = 
   Element.column [width (fillPortion portion_), height fill, 
     Background.color Widget.lightBlue, paddingXY 20 20, spacing 10] [ 
    
   ]
 
-showUserCount : Model -> Element msg 
+showUserCount : Model a -> Element msg 
 showUserCount model = 
   let 
     n = List.length (List.filter (\user -> user.blurb /= "" && user.public) model.userList)
@@ -50,7 +50,7 @@ showUserCount model =
       False -> Element.el [] (Element.text <| "Users: " ++ String.fromInt n)
 
 
-authorCenterColumn : Int -> Int -> Model -> Element Msg
+authorCenterColumn : Int -> Int -> Model a -> Element Msg
 authorCenterColumn windowHeight_ portion_  model  = 
   let 
     userList = List.filter (\user -> user.blurb /= "" && user.public) model.userList
@@ -82,7 +82,7 @@ boolToString boolValue =
     True -> "T"
     False -> "F"
 
-listUsersButton : Model -> Element Msg 
+listUsersButton : Model a -> Element Msg 
 listUsersButton model = 
     Input.button (Widget.buttonStyle  (px 115)) {
       onPress =  Just GetUsers

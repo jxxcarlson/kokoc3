@@ -40,20 +40,20 @@ import View.Widget as Widget exposing(..)
 
 
 
-view : Model -> Element Msg
+view : Model a -> Element Msg
 view model = 
   Element.row [width fill, height (px (model.windowHeight - 70)), Background.color Widget.white, centerX] [
      leftColumn 2 model,  editor model.windowHeight 5 model, reader model.viewport 5 model
   ]
 
-reader : Viewport -> Int -> Model -> Element Msg
+reader : Viewport -> Int -> Model a -> Element Msg
 reader viewport portion_  model  = 
   Element.column [width (fillPortion portion_), height (px (round <| viewport.viewport.height - 73)), paddingXY 20 20
     , Background.color Widget.lightGrey, centerX] [
       Element.map DocViewMsg (DocumentView.view  <| Common.documentViewData model)
   ]
 
-editor : Int -> Int -> Model -> Element Msg
+editor : Int -> Int -> Model a -> Element Msg
 editor windowHeight_ portion_ model  = 
   Element.column [width (fillPortion portion_), height (px (round <| model.viewport.viewport.height - 80))
     , Background.color Widget.lightYellow, centerX] [
@@ -77,7 +77,7 @@ textArea model width_ label_  =
 
 
 
-leftColumn : Int -> Model -> Element Msg
+leftColumn : Int -> Model a -> Element Msg
 leftColumn portion_ model = 
   Element.column [width (fillPortion portion_), height fill, 
     Background.color Widget.lightBlue, paddingXY 20 20, spacing 10] [ 

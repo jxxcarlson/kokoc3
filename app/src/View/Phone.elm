@@ -18,7 +18,7 @@ import Json.Decode as Decode exposing(Decoder, Value)
 import VirtualDom exposing (Handler(..))
 
 
-import Model exposing(Model
+import Model  exposing(Model 
     , Msg(..)
     , AppMode(..)
     , SignupMode(..)
@@ -49,7 +49,7 @@ phoneView model =
      
 
 
-header : Model -> Element Msg
+header : Model a -> Element Msg
 header model = 
   Element.row [width fill, Background.color Widget.grey, height (px 40), paddingXY 20 0, spacing 10, alignLeft] [
       Element.row [ spacing 10]  [
@@ -59,14 +59,9 @@ header model =
      ]
   ]
 
--- getRandomDocumentsButton : Length -> Model -> Element Msg    
--- getRandomDocumentsButton width_ model = 
---   Input.button (buttonStyle  width_) {
---     onPress =  Just (randomItemMsg model)
---   , label = Element.el [] (Element.text "Random")
---   } 
 
-searchInput : Model -> Element Msg
+
+searchInput : Model a -> Element Msg
 searchInput model =
     Input.text [htmlAttribute (Html.Attributes.id "search-box")
        , width (px 200), height (px 30) , Font.color black] {
@@ -76,18 +71,18 @@ searchInput model =
       , label = Input.labelLeft [ Font.size 14, Font.bold ] (text "")
     }
 
-searchPlaceHolderText : Model -> String 
+searchPlaceHolderText : Model a -> String 
 searchPlaceHolderText model  =
    "Example: type 'wave'"
    
-searchButton : Length -> Model -> Element Msg    
+searchButton : Length -> Model a -> Element Msg    
 searchButton width_ model = 
   Input.button (buttonStyle  width_) {
     onPress =  Just (Search)
   , label = Element.el [] (Element.text "Search")
   }
 
-body : Model -> Element Msg
+body : Model a -> Element Msg
 body model  = 
   Element.column [width (currentWidth model), height (currentHeight model)
     , Background.color Widget.lightGrey, centerX, clipX, clipY] [
@@ -95,10 +90,10 @@ body model  =
   ]
 
 
-currentWidth : Model -> Length
+currentWidth : Model a -> Length
 currentWidth model = 
   (px <| round <| model.viewport.viewport.width)
 
-currentHeight : Model -> Length
+currentHeight : Model a -> Length
 currentHeight model = 
   (px <| round <| model.viewport.viewport.height)

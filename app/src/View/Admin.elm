@@ -19,13 +19,13 @@ type AdminMsg =
     AcknowledgeUpdateOfDocument String
  
 
-view : Model -> Element Msg
+view : Model a -> Element Msg
 view model = 
   Element.row [width (fillPortion 4), height fill, Background.color Widget.white, centerX] [
      adminLeftColumn 2 model,  adminCenterColumn model.windowHeight 4 model
   ]
 
-adminLeftColumn : Int -> Model -> Element Msg
+adminLeftColumn : Int -> Model a -> Element Msg
 adminLeftColumn portion_ model = 
   Element.column [width (fillPortion portion_), height fill, 
     Background.color Widget.lightBlue, paddingXY 20 20, spacing 10] [ 
@@ -34,7 +34,7 @@ adminLeftColumn portion_ model =
       , emailPanel model 
   ]
 
-showUserCount : Model -> Element msg 
+showUserCount : Model a -> Element msg 
 showUserCount model = 
   let 
     n = List.length model.userList
@@ -44,7 +44,7 @@ showUserCount model =
       False -> Element.el [] (Element.text <| "Users: " ++ String.fromInt n)
 
 
-adminCenterColumn : Int -> Int -> Model -> Element Msg
+adminCenterColumn : Int -> Int -> Model a -> Element Msg
 adminCenterColumn windowHeight_ portion_  model  = 
   Element.column [width (fillPortion portion_), height (px (windowHeight_ - 73)), scrollbarY] [ viewUsers model.userList ]
 
@@ -153,7 +153,7 @@ boolToString boolValue =
     True -> "T"
     False -> "F"
 
-emailPanel : Model -> Element Msg 
+emailPanel : Model a -> Element Msg 
 emailPanel model = 
   Element.column [spacing 10, padding 10, Background.color Widget.charcoal] [
       Element.el [Font.bold, Font.size 18, Font.color Widget.white] (Element.text "Email")
@@ -164,7 +164,7 @@ emailPanel model =
   ]
 
 
-emailSubjectInput : Model -> Element Msg
+emailSubjectInput : Model a -> Element Msg
 emailSubjectInput model =
     Input.text [width (px 400), height (px 30) , Font.color black] {
         text = model.emailSubject 
@@ -175,21 +175,21 @@ emailSubjectInput model =
 
 -- HELPERS
 
-listUsersButton : Model -> Element Msg 
+listUsersButton : Model a -> Element Msg 
 listUsersButton model = 
     Input.button (Widget.buttonStyle  (px 115)) {
       onPress =  Just GetUsers
     , label = Element.el [] (Element.text ("List users"))
     }
 
-sendEmailButton : Model -> Element Msg 
+sendEmailButton : Model a -> Element Msg 
 sendEmailButton model = 
     Input.button (Widget.whiteButtonStyle (px 90) ) {
       onPress =  Just SendEmail
     , label = Element.el [] (Element.text ("Send email"))
     }
 
-textArea : Model -> Int -> Int -> Element Msg
+textArea : Model a -> Int -> Int -> Element Msg
 textArea model width_ height_  =
     Keyed.row []
         [ ( (String.fromInt model.counter)

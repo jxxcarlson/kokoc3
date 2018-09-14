@@ -6,6 +6,7 @@ import Browser.Dom as Dom
 import Task
 import Time exposing(Posix)
 import Keyboard
+import Html exposing(Html)
 
 import SystemDocument
 import View.View exposing(view)
@@ -39,7 +40,7 @@ type alias Flags =
 
 -- INIT
 
-init : Flags -> ( Model, Cmd Msg )
+init : Flags -> ( Model (Html Msg), Cmd Msg )
 init flags = 
     ( initialModel flags.location flags.width flags.height  SystemDocument.welcome 
     , Cmd.batch [ 
@@ -51,7 +52,7 @@ init flags =
 
 -- SUBSCRIPITONS
 
-autosaveSubscription : Model -> Sub Msg
+autosaveSubscription : Model (Html Msg) -> Sub Msg
 autosaveSubscription model =
    Time.every model.autosaveDuration SaveCurrentDocument
 

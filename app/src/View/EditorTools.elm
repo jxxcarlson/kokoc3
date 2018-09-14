@@ -26,6 +26,7 @@ import Model exposing(Model
     , SignupMode(..)
     , ToolPanelState(..)
     , DeleteDocumentState(..)
+    , DocumentListSource(..)
   )
 import User exposing(Token, UserMsg(..), readToken, stringFromMaybeToken, User, BigUser)
 import DocumentListView exposing(DocListViewMsg(..))
@@ -46,7 +47,7 @@ toolsOrContents model =
 
 
 toolsOrContentsPublic model = 
-     Element.map Model.DocListViewMsg 
+     Element.map DocListViewMsg 
         ( DocumentListView.viewWithHeading 
           (model.windowHeight) model.masterDocLoaded 
           (docListTitle model) 
@@ -63,32 +64,32 @@ toolsOrContentsForUser model =
       ]
     
 
-displayDocumentList : Model -> Element Msg    
+displayDocumentList : Model a -> Element Msg    
 displayDocumentList model =  
   case model.documentListSource of 
-    Model.SearchResults ->    
-     Element.map Model.DocListViewMsg 
+    SearchResults ->    
+     Element.map DocListViewMsg 
         ( DocumentListView.viewWithHeadingShifted 
           (model.windowHeight - 20) model.masterDocLoaded 
           (docListTitle model) 
           model.documentList
         )
-    Model.RecentDocumentsQueue ->  
-      Element.map Model.DocListViewMsg 
+    RecentDocumentsQueue ->  
+      Element.map DocListViewMsg 
        ( DocumentListView.viewWithHeadingShifted 
           (model.windowHeight - 20) model.masterDocLoaded 
           ("Recent documents") 
           (DocumentList.documentQueueToDocumentList model.currentDocument model.recentDocumentQueue)
         )
 
-toggleDocumentListDiplayButton : Model -> Element Msg 
+toggleDocumentListDiplayButton : Model a -> Element Msg 
 toggleDocumentListDiplayButton model = 
   Input.button Widget.titleStyle {
     onPress =  Just (ToggleDocumentSource)
   , label = Element.el [Font.bold] (Element.text ("<=>"))
   }
 
-docListTitle : Model -> String 
+docListTitle : Model a -> String 
 docListTitle model = 
   let  
     documentCount = List.length (DocumentList.documents model.documentList)
@@ -189,7 +190,7 @@ documentTypePanel model =
   ]
 
 
-documentTitleInput : Model -> Element Msg
+documentTitleInput : Model a -> Element Msg
 documentTitleInput model =
     Input.text [htmlAttribute (Html.Attributes.id "title-input"), width (px 250), height (px 30) , Font.color black] {
         text = model.documentTitle
@@ -201,7 +202,7 @@ documentTitleInput model =
  
 
 
-deleteDocumentButton : Model -> Element Msg
+deleteDocumentButton : Model a -> Element Msg
 deleteDocumentButton model =
    Element.row [spacing 10] [
         deleteCurrentDocumentButton (px 60) model
@@ -214,7 +215,7 @@ masterDocPanel model =
 
   ]
 
-publicControls : Model -> Element Msg 
+publicControls : Model a -> Element Msg 
 publicControls model = 
   Element.row [spacing 5] [ publicButton model.currentDocument, privateButton model.currentDocument]
 
@@ -237,7 +238,7 @@ newVersionUrl : Document -> String
 newVersionUrl document =
     Configuration.backend ++ "/archive/new_version" ++ "/" ++(String.fromInt document.id)
 
-newVersionButton : Model -> Element Msg 
+newVersionButton : Model a -> Element Msg 
 newVersionButton model = 
   Input.button (textTypeButtonStyle model MiniLatex) {
     onPress =  Just (IncrementVersion)
@@ -245,42 +246,42 @@ newVersionButton model =
   }
 
 
-miniLatexTypeButton : Model -> Element Msg 
+miniLatexTypeButton : Model a -> Element Msg 
 miniLatexTypeButton model = 
   Input.button (textTypeButtonStyle model MiniLatex) {
     onPress =  Just (SetDocumentTextType MiniLatex)
   , label = Element.el [] (Element.text ("MiniLatex"))
   }
 
-elmMarkupTypeButton : Model -> Element Msg 
+elmMarkupTypeButton : Model a -> Element Msg 
 elmMarkupTypeButton model = 
   Input.button (textTypeButtonStyle model ElmMarkup) {
     onPress =  Just (SetDocumentTextType ElmMarkup)
   , label = Element.el [] (Element.text ("Elm markup"))
   }
 
-asciidocTypeButton : Model -> Element Msg 
+asciidocTypeButton : Model a -> Element Msg 
 asciidocTypeButton model = 
   Input.button (textTypeButtonStyle model Asciidoc) {
     onPress =  Just (SetDocumentTextType Asciidoc)
   , label = Element.el [] (Element.text ("Asciidoc"))
   }
 
-asciidocLatexTypeButton : Model -> Element Msg 
+asciidocLatexTypeButton : Model a -> Element Msg 
 asciidocLatexTypeButton model = 
   Input.button (textTypeButtonStyle model AsciidocLatex) {
     onPress =  Just (SetDocumentTextType AsciidocLatex)
   , label = Element.el [] (Element.text ("Asciidoc Latex"))
   }
 
-markdownTypeButton : Model -> Element Msg 
+markdownTypeButton : Model a -> Element Msg 
 markdownTypeButton model = 
   Input.button (textTypeButtonStyle model Markdown) {
     onPress =  Just (SetDocumentTextType Markdown)
   , label = Element.el [] (Element.text ("Markdown"))
   }
 
-plainTextTypeButton : Model -> Element Msg 
+plainTextTypeButton : Model a -> Element Msg 
 plainTextTypeButton model = 
   Input.button (textTypeButtonStyle model PlainText) {
     onPress =  Just (SetDocumentTextType PlainText)
@@ -288,19 +289,19 @@ plainTextTypeButton model =
   } 
 
 
-textTypeButtonStyle : Model -> TextType -> List (Attribute msg) 
+textTypeButtonStyle : Model a -> TextType -> List (Attribute msg) 
 textTypeButtonStyle model textType = 
   (
      (listItemStyleNarrow (px 110))  ++  (highLightTextType model.currentDocument.textType textType)
   )
 
-documentTypeButtonStyle : Model -> DocType -> List (Attribute msg) 
+documentTypeButtonStyle : Model a -> DocType -> List (Attribute msg) 
 documentTypeButtonStyle model docType = 
   (
      (listItemStyleNarrow (px 110))  ++  (highLightDocumentType model.currentDocument.docType docType)
   )
 
-standardDocumentButton : Model -> Element Msg 
+standardDocumentButton : Model a -> Element Msg 
 standardDocumentButton model = 
   Input.button (documentTypeButtonStyle model Standard) {
     onPress =  Just (SetDocumentType Standard)
@@ -330,7 +331,7 @@ publicIndicatorColor actual target =
      False -> Widget.buttonColor
 
 
-masterDocumentButton : Model -> Element Msg 
+masterDocumentButton : Model a -> Element Msg 
 masterDocumentButton model = 
   Input.button (documentTypeButtonStyle model Master) {
     onPress =  Just (SetDocumentType Master)
@@ -338,7 +339,7 @@ masterDocumentButton model =
   }
 
 
-deleteCurrentDocumentButton : Length -> Model -> Element Msg    
+deleteCurrentDocumentButton : Length -> Model a -> Element Msg    
 deleteCurrentDocumentButton width_ model = 
     case model.maybeCurrentUser of 
     Nothing -> Element.none 
@@ -349,14 +350,14 @@ deleteCurrentDocumentButton width_ model =
       } 
 
 
-cancelDeleteCurrentDocumentButton : Length -> Model -> Element Msg    
+cancelDeleteCurrentDocumentButton : Length -> Model a -> Element Msg    
 cancelDeleteCurrentDocumentButton width_ model = 
   case model.deleteDocumentState of 
     DeleteIsOnSafety -> Element.none 
     DeleteIsArmed -> cancelDeleteCurrentDocumentButton_ width_ model
     
 
-cancelDeleteCurrentDocumentButton_ : Length -> Model -> Element Msg    
+cancelDeleteCurrentDocumentButton_ : Length -> Model a -> Element Msg    
 cancelDeleteCurrentDocumentButton_ width_ model = 
   Input.button (buttonStyle  width_) {
     onPress =  Just (CancelDeleteCurrentDocument)
@@ -383,7 +384,7 @@ highLightTextType textType1 textType2 =
     False -> [Font.light] 
 
 
-newDocumentButton :  Model -> Element Msg    
+newDocumentButton :  Model a -> Element Msg    
 newDocumentButton model = 
   case model.appMode of 
     Writing -> 
@@ -394,13 +395,13 @@ newDocumentButton model =
     _ -> Element.none
 
 
-newChildButton :  Model -> Element Msg    
+newChildButton :  Model a -> Element Msg    
 newChildButton model = 
   case model.appMode of 
     Writing -> newChildButton_ model
     _ -> Element.none
 
-newChildButton_ :  Model -> Element Msg    
+newChildButton_ :  Model a -> Element Msg    
 newChildButton_ model = 
   let 
     headDocument = DocumentList.getFirst model.documentList
@@ -409,14 +410,14 @@ newChildButton_ model =
       Standard -> Element.none 
       Master -> newChildButton__ model
 
-newChildButton__ :  Model -> Element Msg    
+newChildButton__ :  Model a -> Element Msg    
 newChildButton__ model = 
   Input.button (buttonStyle (px 90)) {
     onPress =  Just (NewChildDocument) 
   , label = Element.el [] (Element.text ("New subdoc"))
   }
 
-newMasterButton :  Model -> Element Msg    
+newMasterButton :  Model a -> Element Msg    
 newMasterButton model = 
   Input.button (buttonStyle (px 90)) {
     onPress =  Just (NewMasterDocument) 
@@ -424,7 +425,7 @@ newMasterButton model =
   }
 
 
-bodyReaderColumn : Viewport -> Int -> Model -> Element Msg
+bodyReaderColumn : Viewport -> Int -> Model a -> Element Msg
 bodyReaderColumn viewport portion_  model  = 
   Element.column [width (fillPortion portion_), height (px (round <| viewport.viewport.width - 73)), paddingXY 20 20
     , Background.color Widget.lightGrey, centerX] [
