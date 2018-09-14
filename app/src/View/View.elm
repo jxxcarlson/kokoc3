@@ -47,12 +47,13 @@ import View.Phone exposing(phoneView)
 
 import OnClickOutside
 
+view : Model a -> Html Msg
 view model = 
   case (currentDevice model.viewport).class of 
     Phone -> phoneView model 
     _ -> nonPhoneView model
 
-
+nonPhoneView : Model a -> Html Msg
 nonPhoneView  model =
    Element.layout [Font.size 14, width fill, height fill, clipY] <|
         Element.column [ width fill, height (px model.windowHeight)] [
