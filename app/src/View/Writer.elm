@@ -50,7 +50,7 @@ reader : Viewport -> Int -> Model -> Element Msg
 reader viewport portion_  model  = 
   Element.column [width (fillPortion portion_), height (px (round <| viewport.viewport.height - 73)), paddingXY 20 20
     , Background.color Widget.lightGrey, centerX] [
-      Element.map DocViewMsg (DocumentView.view viewport model.counter model.debounceCounter (Common.texMacros model) model.currentDocument)
+      Element.map DocViewMsg (DocumentView.view  <| Common.documentViewData model)
   ]
 
 editor : Int -> Int -> Model -> Element Msg

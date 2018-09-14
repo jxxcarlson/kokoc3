@@ -1,4 +1,4 @@
-module DocumentView exposing(view, options,  DocViewMsg(..))
+module DocumentView exposing(view, options,  DocumentViewData, DocViewMsg(..))
 
 import Json.Encode as Encode    
 
@@ -50,20 +50,13 @@ type alias DocumentViewData = {
   , document : Document 
   }
 
-view : Viewport -> Int -> Int -> String -> Document -> Element DocViewMsg 
-view viewport counter debounceCounter texMacros document = 
-  let  
-    dvd = { viewport = viewport
-       , counter = counter
-       , debounceCounter = debounceCounter
-       , texMacros = texMacros 
-       , document = document }
-    in 
-        Element.column [spacing 15, width (px <| texWidth viewport), centerX 
-            , Element.htmlAttribute <| HA.attribute "id" "_textViewParent_"] [
-              titleLine dvd.document
-            , contentView dvd
-        ]
+view : DocumentViewData -> Element DocViewMsg 
+view dvd = 
+    Element.column [spacing 15, width (px <| texWidth dvd.viewport), centerX 
+        , Element.htmlAttribute <| HA.attribute "id" "_textViewParent_"] [
+            titleLine dvd.document
+        , contentView dvd
+    ]
 
 contentView : DocumentViewData -> Element DocViewMsg
 contentView dvd = 

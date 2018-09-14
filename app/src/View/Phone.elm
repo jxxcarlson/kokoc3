@@ -91,7 +91,7 @@ body : Model -> Element Msg
 body model  = 
   Element.column [width (currentWidth model), height (currentHeight model)
     , Background.color Widget.lightGrey, centerX, clipX, clipY] [
-      Element.map DocViewMsg (DocumentView.view model.viewport model.counter model.debounceCounter (Common.texMacros model) model.currentDocument)
+      Element.map DocViewMsg (DocumentView.view  <| Common.documentViewData model)
   ]
 
 

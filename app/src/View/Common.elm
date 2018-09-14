@@ -7,6 +7,7 @@ import Model exposing(Model, Msg(..), ToolPanelState(..), AppMode(..))
 import DocumentDictionary
 import DocumentListView
 import DocumentList
+import DocumentView exposing(DocumentViewData)
 import Document exposing(DocType(..))
 import View.Widget as Widget
 
@@ -37,4 +38,14 @@ toggleToolsTitle toolPanelState =
      HideToolPanel -> "Editor tools"
 
 
+documentViewData : Model -> DocumentViewData
+documentViewData model = 
+  {
+      viewport = model.viewport  
+    , counter = model.counter
+    , debounceCounter = model.debounceCounter 
+    , texMacros = texMacros model
+    , document = model.currentDocument
+  }
 
+  
