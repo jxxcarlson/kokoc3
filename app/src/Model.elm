@@ -126,6 +126,7 @@ type alias Model a =
       , documentListSource : DocumentListSource
       , debugString : String 
       , focusedElement : FocusedElement 
+      , seed : Int
 
     }
 
@@ -209,6 +210,8 @@ type Msg
     | ToggleDocumentSource
     | UserClicksOutsideSearchBox Bool
     | SetFocusOnSearchBox (Result Browser.Dom.Error ())
+    | GenerateSeed
+    | NewSeed Int
 
     
     
@@ -272,6 +275,7 @@ initialModel locationHref windowWidth windowHeight document =
             , documentListSource = SearchResults
             , debugString = ""
             , focusedElement = NoFocus
+            , seed = 0
         }
 
 type ToolMenuState = HideToolMenu| ShowToolMenu

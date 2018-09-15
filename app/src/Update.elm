@@ -21,6 +21,7 @@ import Time
 import Browser.Dom as Dom
 import Http
 import Process
+import Random
 
 import Utility
 
@@ -1163,10 +1164,6 @@ update msg model =
 
         UpdateBigUser ->
           (model, updateBigUserCmd model)
-      
-
-        
-
 
         AcceptBlurb str ->
           ({model | blurb = str}, Cmd.none)
@@ -1206,7 +1203,11 @@ update msg model =
           --   Ok () -> ({model | debugString = "Focus"}, Cmd.none)
         -- https://package.elm-lang.org/packages/elm/core/latest/Task#perform
           
-          
+        GenerateSeed ->
+            ( model, Random.generate NewSeed (Random.int 1 10000) )
+
+        NewSeed newSeed ->
+            ( { model | seed = newSeed }, Cmd.none ) 
 
 -- UPDATE END    
 
