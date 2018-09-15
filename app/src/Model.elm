@@ -216,7 +216,7 @@ type Msg
     
     
 
-initialModel : String -> Int -> Int -> Document -> Model (Html msg)
+initialModel : String -> Int -> Int -> Document -> Model (Html Msg)
 initialModel locationHref windowWidth windowHeight document =
     {   message = "Not signed in"
             , password = ""

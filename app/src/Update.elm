@@ -1429,7 +1429,7 @@ changeMode model nextAppMode =
   in 
     ({model | appMode = nextAppMode, searchQueryString = searchQueryString, toolPanelState = nextToolPaneState, toolMenuState = HideToolMenu}, cmd)
 
-signOutCurrentUser : Model (Html Msg)  -> (Model (Html msg), Cmd Msg)
+signOutCurrentUser : Model (Html Msg)  -> (Model (Html Msg), Cmd Msg)
 signOutCurrentUser model = 
   let 
     freshModel = initialModel "" model.windowWidth model.windowHeight  SystemDocument.signedOut
