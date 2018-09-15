@@ -30,7 +30,7 @@ import Document exposing(Document, DocType(..), DocMsg(..), TextType(..))
 import User exposing(Token, UserMsg(..), User, BigUser)
 import DocumentList exposing( DocumentList , DocListMsg(..) )
 import DocumentDictionary exposing(DocumentDictionary, DocDictMsg(..))
-import DocumentView exposing(view, DocViewMsg(..))
+import DocViewMsg exposing(DocViewMsg(..))
 import DocumentListView exposing(DocListViewMsg(..))
 import Configuration
 import ImageManager exposing(ImageMsg(..))
@@ -165,7 +165,7 @@ type Msg
     | FileMsg Credentials.FileMsg
     | DocListMsg DocumentList.DocListMsg
     | DocListViewMsg DocumentListView.DocListViewMsg
-    | DocViewMsg DocumentView.DocViewMsg
+    | DocViewMsg DocViewMsg
     | DocDictMsg DocumentDictionary.DocDictMsg
     | GoToStart
     | GoHome

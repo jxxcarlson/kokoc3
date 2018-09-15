@@ -31,6 +31,7 @@ import ImageManager
 import AppUtility
 import ImageManager exposing (ImageMsg(..))
 import Mail
+import DocViewMsg exposing(DocViewMsg(..))
 
 
 
@@ -74,7 +75,7 @@ import DocumentList exposing(
         , documentListLength
      )
 import Queue
-import DocumentView exposing(view, DocViewMsg(..))
+import DocumentView exposing(view)
 import DocumentListView exposing(DocListViewMsg(..))
 import DocumentDictionary exposing(DocumentDictionary, DocDictMsg(..))
 import Query 

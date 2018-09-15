@@ -12,6 +12,8 @@ import Document exposing(DocType(..))
 import View.Widget as Widget
 import Html exposing(Html)
 
+import BigEditRecord exposing(BigEditRecord)
+
 
 texMacros : Model (Html Msg) -> String
 texMacros model = 
@@ -47,6 +49,7 @@ documentViewData model =
     , debounceCounter = model.debounceCounter 
     , texMacros = texMacros model
     , document = model.currentDocument
+    , bigEditRecord = BigEditRecord.empty 0 0
   }
 
   

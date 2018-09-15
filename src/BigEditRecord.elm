@@ -39,4 +39,6 @@ updateFromDocument ber document texMacros seed_ =
 getRenderedText : BigEditRecord msg -> List (Html msg)
 getRenderedText ber = 
    MiniLatex.getRenderedText (editRecord ber)
+
+
       

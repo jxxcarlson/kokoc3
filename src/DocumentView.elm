@@ -1,4 +1,7 @@
-module DocumentView exposing(view, DocumentViewData, DocViewMsg(..))
+module DocumentView exposing(view, DocumentViewData)
+
+
+import Model exposing(Msg)
 
 import Json.Encode as Encode    
 
@@ -25,6 +28,8 @@ import MiniLatex.Differ exposing (EditRecord)
 import MiniLatex.MiniLatex as MiniLatex   
 import MarkdownTools
 import ElmMarkup
+import BigEditRecord exposing(BigEditRecord)
+import DocViewMsg exposing(DocViewMsg(..))
 
 
 import Html exposing(Html) 
@@ -33,12 +38,6 @@ import Document exposing(Document, Child, DocType(..), TextType(..))
 import View.Widget as Widget exposing(..)
 
 
-type DocViewMsg = 
-    LoadMaster Int
-  | LoadMasterWithSelection Int Int 
-  | LoadMasterWithCurrentSelection Int
-  | GetPublicDocumentsRawQuery2 String
-
 
 type alias DocumentViewData = {
     viewport : Viewport  
@@ -46,6 +45,7 @@ type alias DocumentViewData = {
   , debounceCounter : Int  
   , texMacros : String  
   , document : Document 
+  , bigEditRecord : BigEditRecord (Html Msg)
   }
 
 view : DocumentViewData -> Element DocViewMsg 
