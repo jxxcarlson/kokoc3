@@ -43,12 +43,13 @@ type alias DocumentViewData = {
     viewport : Viewport  
   , counter : Int  
   , debounceCounter : Int  
+  , seed : Int
   , texMacros : String  
   , document : Document 
-  , bigEditRecord : BigEditRecord (Html Msg)
+  , bigEditRecord : BigEditRecord Msg
   }
 
-view : DocumentViewData -> Element DocViewMsg 
+view : DocumentViewData -> Element Msg 
 view dvd = 
     Element.column [spacing 15, width (px <| texWidth dvd.viewport), centerX 
         , Element.htmlAttribute <| HA.attribute "id" "_textViewParent_"] 
@@ -57,7 +58,7 @@ view dvd =
           , contentView dvd
         ]
 
-contentView : DocumentViewData -> Element DocViewMsg
+contentView : DocumentViewData -> Element Msg
 contentView dvd = 
   Keyed.el [   height (px (round <| dvd.viewport.viewport.height - 150))
              , scrollbarY
@@ -66,7 +67,7 @@ contentView dvd =
           ] 
       ((String.fromInt dvd.counter), (documentContentView dvd))
 
-titleLine : Document -> Element DocViewMsg 
+titleLine : Document -> Element Msg 
 titleLine document = 
   if document.parentId == 0 then 
     if document.docType == Standard then 
@@ -89,36 +90,39 @@ titleLine document =
 
 titleLineStyle height_ = [paddingXY 10 10, spacing 5, Background.color Widget.charcoal, Font.color Widget.white, width fill, height (px height_)] 
 
-loadMasterDocumentButton : Document -> Element DocViewMsg    
+loadMasterDocumentButton : Document -> Element Msg    
 loadMasterDocumentButton  document = 
-  Element.el [] (
+  (Element.el [] (
         Input.button (Widget.titleStyleLight) {
             onPress =  Just (LoadMasterWithCurrentSelection document.parentId)
         , label = Element.el [ padding 10, Font.size 18, Font.bold] (text (document.parentTitle))
         } 
     )
+   )  |> Element.map Model.DocViewMsg
 
-loadChildrenButton : Document -> Element DocViewMsg    
+loadChildrenButton : Document -> Element Msg    
 loadChildrenButton  document = 
-  Element.el [] (
+  (Element.el [] (
         Input.button (Widget.titleStyleLight) {
           onPress =  Just (LoadMasterWithCurrentSelection document.id)
         , label = Element.el [ moveUp 0, padding 5, Font.size 18, Font.bold] (text (document.title))
         } 
     )  
+  )  |> Element.map Model.DocViewMsg 
 
     {- #################################### -}
 
 
-documentContentView : DocumentViewData -> Element DocViewMsg 
+documentContentView : DocumentViewData -> Element Msg 
 documentContentView dvd = 
     case dvd.document.docType of 
-        Master -> viewCoverArt dvd.document -- viewChildren document 
+        Master -> Element.map Model.DocViewMsg <| viewCoverArt dvd.document -- viewChildren document 
         Standard -> documentContentView_ dvd
 
-documentContentView_ : DocumentViewData -> Element msg 
+documentContentView_ : DocumentViewData -> Element Msg 
 documentContentView_  dvd =    
   case dvd.document.textType of
+    -- MiniLatex -> Element.el [] (Element.text "foo") 
     MiniLatex -> viewMiniLatex dvd 
     Markdown -> viewMarkdown dvd.document 
     Asciidoc -> viewAsciidoc dvd.debounceCounter dvd.document.content
@@ -127,14 +131,16 @@ documentContentView_  dvd =
     ElmMarkup -> ElmMarkup.view dvd.document
   
 
-viewMiniLatex : DocumentViewData -> Element msg
+viewMiniLatex : DocumentViewData -> Element Msg
 viewMiniLatex dvd =
-    MiniLatex.getRenderedText (MiniLatexTools.setupEditRecord dvd.texMacros dvd.document)
-        |> List.map (\x -> Element.paragraph [ width (px (texWidth dvd.viewport))] [ Element.html x ]) -- ###@@@
-        |> Element.column [Element.htmlAttribute <| HA.attribute "id" "_renderedText_"]
+  BigEditRecord.updateFromDocument dvd.bigEditRecord  dvd.document dvd.texMacros dvd.seed 
+    |> BigEditRecord.getRenderedTextAsElements
+    |> List.map (\x -> Element.paragraph [ width (px (texWidth dvd.viewport))] [ x ]) 
+    |> Element.column [Element.htmlAttribute <| HA.attribute "id" "_renderedText_"]
+  
 
 
-viewMarkdown : Document -> Element msg
+viewMarkdown : Document -> Element Msg
 viewMarkdown document =
   Element.el [ Element.paddingEach {top = 0, bottom = 120, left = 0, right = 0} ] (Element.html <| MarkdownTools.view document.content)
 
@@ -145,19 +151,19 @@ viewMarkdown document =
 -- https://ellie-test-19-cutover.now.sh/LGc6jCfs64a1
 
 
-viewAsciidoc : Int -> String -> Element msg
+viewAsciidoc : Int -> String -> Element Msg
 viewAsciidoc debounceCounter str =
   Keyed.el [ Element.paddingEach {top = 0, bottom = 120, left = 0, right = 0}  ] (  ("Asciidoc." ++ String.fromInt debounceCounter)
                   , (Element.html <| asciidocText str))
 
 
-asciidocText : String -> Html msg
+asciidocText : String -> Html Msg
 asciidocText str =
     Html.node "asciidoc-text"
         [ HA.property "content" (Encode.string str) ]
         []
 
-viewPlainText : Document -> Element msg
+viewPlainText : Document -> Element Msg
 viewPlainText document =
    Element.el [ Element.paddingEach {top = 0, bottom = 120, left = 0, right = 0} ] (Element.html <| MarkdownTools.view document.content)
 
@@ -174,25 +180,27 @@ viewCoverArt document =
   in 
     Element.image [width fill] {src = coverArtUrl, description = "Cover Art"}
 
-getAuthorsDocumentsTitleButton_ : Length -> Document -> Element DocViewMsg    
+getAuthorsDocumentsTitleButton_ : Length -> Document -> Element Msg    
 getAuthorsDocumentsTitleButton_ width_ document = 
-  let  
+  (let  
     authorname = document.authorName 
   in 
     Input.button (Widget.listItemStyleBoldPale  width_) {
       onPress =  Just (GetPublicDocumentsRawQuery2 ("authorname=" ++ authorname))
     , label = Element.el [] (text authorname)
     } 
+  ) |> Element.map Model.DocViewMsg
 
-getAuthorsDocumentsTitleButton2 : Length -> Document -> Element DocViewMsg    
+getAuthorsDocumentsTitleButton2 : Length -> Document -> Element Msg    
 getAuthorsDocumentsTitleButton2 width_ document = 
-  let  
+  (let  
     authorname = document.authorName 
   in 
     Input.button (Widget.listItemStyleBoldPale  width_) {
       onPress =  Just (GetPublicDocumentsRawQuery2 ("authorname=" ++ authorname))
     , label = Element.el [] (text <| "(" ++ authorname ++ ")")
-    } 
+    }
+  )   |> Element.map Model.DocViewMsg
 
 viewChild : Int -> Child -> Element DocViewMsg 
 viewChild parentId child = 

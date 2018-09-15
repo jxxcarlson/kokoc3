@@ -49,7 +49,7 @@ phoneView model =
      
 
 
-header : Model (Html Msg) -> Element Msg
+header : Model -> Element Msg
 header model = 
   Element.row [width fill, Background.color Widget.grey, height (px 40), paddingXY 20 0, spacing 10, alignLeft] [
       Element.row [ spacing 10]  [
@@ -61,7 +61,7 @@ header model =
 
 
 
-searchInput : Model (Html Msg) -> Element Msg
+searchInput : Model -> Element Msg
 searchInput model =
     Input.text [htmlAttribute (Html.Attributes.id "search-box")
        , width (px 200), height (px 30) , Font.color black] {
@@ -71,29 +71,29 @@ searchInput model =
       , label = Input.labelLeft [ Font.size 14, Font.bold ] (text "")
     }
 
-searchPlaceHolderText : Model (Html Msg) -> String 
+searchPlaceHolderText : Model -> String 
 searchPlaceHolderText model  =
    "Example: type 'wave'"
    
-searchButton : Length -> Model (Html Msg) -> Element Msg    
+searchButton : Length -> Model -> Element Msg    
 searchButton width_ model = 
   Input.button (buttonStyle  width_) {
     onPress =  Just (Search)
   , label = Element.el [] (Element.text "Search")
   }
 
-body : Model (Html Msg) -> Element Msg
+body : Model -> Element Msg
 body model  = 
   Element.column [width (currentWidth model), height (currentHeight model)
     , Background.color Widget.lightGrey, centerX, clipX, clipY] [
-      Element.map DocViewMsg (DocumentView.view  <| Common.documentViewData model)
+      DocumentView.view  <| Common.documentViewData model
   ]
 
 
-currentWidth : Model (Html Msg) -> Length
+currentWidth : Model -> Length
 currentWidth model = 
   (px <| round <| model.viewport.viewport.width)
 
-currentHeight : Model (Html Msg) -> Length
+currentHeight : Model -> Length
 currentHeight model = 
   (px <| round <| model.viewport.viewport.height)

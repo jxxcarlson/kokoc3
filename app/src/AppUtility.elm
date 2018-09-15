@@ -4,7 +4,7 @@ import Model exposing(Model)
 import User
 import Configuration
 
-imageUrlAtS3 : Model a -> String
+imageUrlAtS3 : Model -> String
 imageUrlAtS3 model = 
   case model.maybeFileData of  
       Nothing -> ""

@@ -5,6 +5,7 @@ import MiniLatex.MiniLatex as MiniLatex
 import MiniLatexTools
 import Document exposing(Document)
 import Html exposing(Html)
+import Element exposing(Element)
 
 type BigEditRecord msg =
   BigEditRecord (EditRecord (Html msg)) Int Int -- editRecord docId seed
@@ -40,5 +41,9 @@ getRenderedText : BigEditRecord msg -> List (Html msg)
 getRenderedText ber = 
    MiniLatex.getRenderedText (editRecord ber)
 
+
+getRenderedTextAsElements : BigEditRecord msg -> List (Element msg)
+getRenderedTextAsElements ber = 
+   MiniLatex.getRenderedText (editRecord ber) |> List.map Element.html
 
       

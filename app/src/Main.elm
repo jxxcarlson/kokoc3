@@ -40,7 +40,7 @@ type alias Flags =
 
 -- INIT
 
-init : Flags -> ( Model (Html Msg), Cmd Msg )
+init : Flags -> ( Model, Cmd Msg )
 init flags = 
     ( initialModel flags.location flags.width flags.height  SystemDocument.welcome 
     , Cmd.batch [ 
@@ -52,7 +52,7 @@ init flags =
 
 -- SUBSCRIPITONS
 
-autosaveSubscription : Model (Html Msg) -> Sub Msg
+autosaveSubscription : Model -> Sub Msg
 autosaveSubscription model =
    Time.every model.autosaveDuration SaveCurrentDocument
 

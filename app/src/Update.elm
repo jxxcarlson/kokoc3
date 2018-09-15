@@ -32,6 +32,7 @@ import AppUtility
 import ImageManager exposing (ImageMsg(..))
 import Mail
 import DocViewMsg exposing(DocViewMsg(..))
+import BigEditRecord
 
 
 
@@ -195,7 +196,7 @@ getInfoFromOutside tagger onError =
 -- link : msg -> List (Html.Attribute msg) -> List (Html msg) -> Html msg
 -- link href attrs children =
 --   Html.a (preventDefaultOn "click" (Decode.succeed (href, True)) :: attrs) children
-processInfoForElm : Model (Html Msg) -> InfoForElm -> (Model (Html Msg), Cmd Msg)
+processInfoForElm : Model -> InfoForElm -> (Model, Cmd Msg)
 processInfoForElm model infoForElm_ =
   case infoForElm_ of 
     DocumentDataFromOutside document -> 
@@ -324,7 +325,7 @@ preventDefaultOn string decoder =
 
 -- KEY COMMANDS
 
-keyGateway : Model (Html Msg) -> (List Key, Maybe Keyboard.KeyChange) -> ( Model (Html Msg), Cmd Msg )
+keyGateway : Model -> (List Key, Maybe Keyboard.KeyChange) -> ( Model, Cmd Msg )
 keyGateway model (pressedKeys, maybeKeyChange) =
     if List.member Control model.pressedKeys then
         handleKey { model | pressedKeys = pressedKeys} (headKey pressedKeys)
@@ -337,7 +338,7 @@ keyGateway model (pressedKeys, maybeKeyChange) =
        ( { model | pressedKeys = pressedKeys }, Cmd.none )
 
 
-handleKey : Model (Html Msg) -> Key -> (Model (Html Msg), Cmd Msg)
+handleKey : Model -> Key -> (Model, Cmd Msg)
 handleKey model key = 
   case key of 
     Character "s" -> saveCurrentDocument model
@@ -368,11 +369,11 @@ focusSearchBox =
 
 
 
-makeNewChildDocument : Model (Html Msg) -> (Model (Html Msg), Cmd Msg)
+makeNewChildDocument : Model -> (Model, Cmd Msg)
 makeNewChildDocument model = 
   (model, Cmd.map DocMsg (newChildDocument model))
 
-doSearch : Model (Html Msg) -> (Model (Html Msg), Cmd Msg)
+doSearch : Model -> (Model, Cmd Msg)
 doSearch model = 
   case model.appMode of 
         Reading -> 
@@ -389,7 +390,7 @@ doSearch model =
 
 -- UPDATE
 
-update : Msg -> Model (Html Msg) -> ( Model (Html Msg), Cmd Msg )
+update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         NoOp ->
@@ -704,6 +705,7 @@ update msg model =
                 Master ->   Cmd.map DocListMsg (DocumentList.loadMasterDocument model.maybeCurrentUser document.id)
               newModel = { model | 
                    currentDocument = document
+                 , bigEditRecord = BigEditRecord.updateFromDocument model.bigEditRecord document "" 0
                  , masterDocLoaded = masterDocLoaded
                  , deleteDocumentState = DeleteIsOnSafety
                  , documentList = documentList
@@ -1220,7 +1222,7 @@ imageAccessbilityToBool imageAccessibility =
     PublicImage -> True 
     PrivateImage -> False
 
-imageQuery : Model (Html Msg) -> String -> String 
+imageQuery : Model -> String -> String 
 imageQuery model basicQuery = 
   case model.maybeCurrentUser of 
     Nothing -> "123XY.uuk#m!!t"
@@ -1237,13 +1239,13 @@ imageQuery model basicQuery =
 {-| Handler: ListUsers
 -}
 
-searchForUsersCmdWithQuery : String -> Model (Html Msg) -> Cmd Msg 
+searchForUsersCmdWithQuery : String -> Model -> Cmd Msg 
 searchForUsersCmdWithQuery searchQueryString model = 
   Cmd.map UserMsg (User.getUsers <| searchQueryString)
   
 
 
-searchForUsersCmd : Model (Html Msg) -> Cmd Msg 
+searchForUsersCmd : Model -> Cmd Msg 
 searchForUsersCmd model = 
   case (String.contains "=" model.searchQueryString) of 
     True ->  Cmd.map UserMsg (User.getUsers <| model.searchQueryString)
@@ -1251,11 +1253,11 @@ searchForUsersCmd model =
   
 
 
-searchForUsers : Model (Html Msg) -> (Model (Html Msg), Cmd Msg)
+searchForUsers : Model -> (Model, Cmd Msg)
 searchForUsers model = 
   ( {model | toolMenuState = HideToolMenu, documentListSource = SearchResults}, searchForUsersCmd model) 
 
-searchForImages : Model (Html Msg) -> (Model (Html Msg), Cmd Msg)
+searchForImages : Model -> (Model, Cmd Msg)
 searchForImages model = 
   let 
     queryString = case model.searchQueryString == "" of 
@@ -1276,13 +1278,13 @@ goToStart model =
       , saveCurrentDocumentIfDirty model  
     )
 
-printDocument : Model (Html Msg) -> (Model (Html Msg), Cmd Msg)
+printDocument : Model -> (Model, Cmd Msg)
 printDocument model = 
   case model.currentDocument.textType of 
     MiniLatex -> printLatex model
     _ -> (model, sendDocumentForPrinting (Document.encodeString (Document.printUrl model.currentDocument))) 
 
-printLatex : Model (Html Msg) -> (Model (Html Msg), Cmd Msg)
+printLatex : Model -> (Model, Cmd Msg)
 printLatex model = 
   (model, 
       Cmd.batch [
@@ -1292,7 +1294,7 @@ printLatex model =
   )
 
 
-doNewStandardDocument : Model (Html Msg) -> (Model (Html Msg), Cmd Msg)
+doNewStandardDocument : Model -> (Model, Cmd Msg)
 doNewStandardDocument model = 
   case model.maybeCurrentUser of 
     Nothing -> (model, Cmd.none)
@@ -1307,7 +1309,7 @@ doNewStandardDocument model =
             , saveCurrentDocumentIfDirty model
           ] 
       )
-doNewMasterDocument : Model (Html Msg) -> (Model (Html Msg), Cmd Msg)
+doNewMasterDocument : Model -> (Model, Cmd Msg)
 doNewMasterDocument model = 
   case model.maybeCurrentUser of 
     Nothing -> (model, Cmd.none)
@@ -1323,7 +1325,7 @@ doNewMasterDocument model =
           ] 
       )
 
-toggleToolPanelState : Model (Html Msg) -> (Model (Html Msg), Cmd Msg)
+toggleToolPanelState : Model -> (Model, Cmd Msg)
 toggleToolPanelState model = 
   case model.maybeCurrentUser of 
     Nothing -> (model, Cmd.none)
@@ -1354,7 +1356,7 @@ toggleToolPanelState model =
         ( nextModel , Cmd.none)
 
 
-togglePreferences : Model (Html Msg) -> (Model (Html Msg), Cmd Msg)
+togglePreferences : Model -> (Model, Cmd Msg)
 togglePreferences model =
     case model.preferencesPanelState of 
         PreferencesPanelOff -> ({model | preferencesPanelState = PreferencesPanelOn
@@ -1365,7 +1367,7 @@ togglePreferences model =
               , appMode = Reading },Cmd.none)
 
 
-getPublicDocumentsRawQuery : Model (Html Msg) -> String -> (Model (Html Msg), Cmd Msg)
+getPublicDocumentsRawQuery : Model -> String -> (Model, Cmd Msg)
 getPublicDocumentsRawQuery model query = 
   ({ model | appMode = Reading
       , toolPanelState = HideToolPanel
@@ -1381,7 +1383,7 @@ getPublicDocumentsRawQuery model query =
              
   )
 
-goHome : Model (Html Msg) -> (Model (Html Msg), Cmd Msg)
+goHome : Model -> (Model, Cmd Msg)
 goHome model = 
   case model.maybeCurrentUser of 
     Nothing -> 
@@ -1403,7 +1405,7 @@ goHome model =
             , Cmd.map DocListMsg (DocumentList.findDocuments model.maybeCurrentUser queryString)
           )
 
-changeMode : Model (Html Msg) -> AppMode -> (Model (Html Msg), Cmd Msg)
+changeMode : Model -> AppMode -> (Model, Cmd Msg)
 changeMode model nextAppMode = 
   let 
     nextToolPaneState = if nextAppMode == Reading then 
@@ -1430,7 +1432,7 @@ changeMode model nextAppMode =
   in 
     ({model | appMode = nextAppMode, searchQueryString = searchQueryString, toolPanelState = nextToolPaneState, toolMenuState = HideToolMenu}, cmd)
 
-signOutCurrentUser : Model (Html Msg)  -> (Model (Html Msg), Cmd Msg)
+signOutCurrentUser : Model  -> (Model, Cmd Msg)
 signOutCurrentUser model = 
   let 
     freshModel = initialModel "" model.windowWidth model.windowHeight  SystemDocument.signedOut
@@ -1473,7 +1475,7 @@ toUtcString time =
   (String.fromInt (Time.toSecond Time.utc time) |> String.padLeft 2 '0')
   
 
-saveCurrentDocumentIfDirty : Model (Html Msg) -> Cmd Msg
+saveCurrentDocumentIfDirty : Model -> Cmd Msg
 saveCurrentDocumentIfDirty model = 
   case model.currentDocumentDirty of 
     False ->  Cmd.none
@@ -1483,7 +1485,7 @@ saveCurrentDocumentIfDirty model =
       in
          Cmd.map DocMsg <| Document.saveDocument token model.currentDocument 
         
-signIn : Model (Html Msg) -> (Model (Html Msg), Cmd Msg)
+signIn : Model -> (Model, Cmd Msg)
 signIn model = 
   case String.length model.password < 8 of 
     True -> ({model | message = "Password must contain at least 8 characters"}, Cmd.none)
@@ -1499,12 +1501,12 @@ signIn model =
               , eraseLocalStorage
           ]) 
 
-loadTexMacrosForDocument : Document -> Model (Html Msg) -> Cmd Msg 
+loadTexMacrosForDocument : Document -> Model -> Cmd Msg 
 loadTexMacrosForDocument document model =
   Cmd.map  DocDictMsg 
      <| DocumentDictionary.loadTexMacros (readToken model.maybeToken) document document.tags model.documentDictionary 
 
-selectDocumentWithId : Int -> Model (Html Msg) -> (Model (Html Msg), Cmd Msg)
+selectDocumentWithId : Int -> Model -> (Model, Cmd Msg)
 selectDocumentWithId  id model = 
   let 
       documents_  = model.documentList
@@ -1536,7 +1538,7 @@ headKey keyList =
       |> List.head 
       |> Maybe.withDefault F20
 
-getPublicDocuments : Model (Html Msg) -> String -> (Model (Html Msg), Cmd Msg)
+getPublicDocuments : Model -> String -> (Model, Cmd Msg)
 getPublicDocuments model queryString =
      ({ model |  appMode = Reading
                , toolPanelState = HideToolPanel
@@ -1552,7 +1554,7 @@ getPublicDocuments model queryString =
 
             
 
-getUserDocuments : Model (Html Msg) -> String -> (Model (Html Msg), Cmd Msg)   
+getUserDocuments : Model -> String -> (Model, Cmd Msg)   
 getUserDocuments model queryString =
   ({ model | toolPanelState = HideToolPanel
        , masterDocLoaded = False
@@ -1566,13 +1568,13 @@ getUserDocuments model queryString =
   )
 
 
-newDocument : Model (Html Msg) -> DocType -> Cmd DocMsg
+newDocument : Model -> DocType -> Cmd DocMsg
 newDocument model docType =
   case model.maybeCurrentUser of 
     Nothing -> Cmd.none
     Just user -> newDocumentForUser user model docType
 
-newDocumentForUser : User -> Model (Html Msg) -> DocType -> Cmd DocMsg
+newDocumentForUser : User -> Model -> DocType -> Cmd DocMsg
 newDocumentForUser user model docType =  
   let  
     headDocument = DocumentList.getFirst  model.documentList
@@ -1607,13 +1609,13 @@ makeNewDocument user docType =
             }
   
 
-newChildDocument : Model (Html Msg) ->Cmd DocMsg
+newChildDocument : Model ->Cmd DocMsg
 newChildDocument model =
   case model.maybeCurrentUser of 
     Nothing -> Cmd.none
     Just user -> newDocumentForUserWithParent user model
 
-newDocumentForUserWithParent : User -> Model (Html Msg) -> Cmd DocMsg
+newDocumentForUserWithParent : User -> Model -> Cmd DocMsg
 newDocumentForUserWithParent user model =  
   let  
     headDocument = DocumentList.getFirst  model.documentList
@@ -1669,7 +1671,7 @@ getViewPortOfRenderedText id =
 
 
 
-saveCurrentDocument : Model (Html Msg) -> (Model (Html Msg), Cmd Msg)
+saveCurrentDocument : Model -> (Model, Cmd Msg)
 saveCurrentDocument model = 
   case model.currentDocument.docType of
     Master -> saveCurrentMasterDocument model
@@ -1714,7 +1716,7 @@ digest str =
     Cmd.map DocListMsg (DocumentList.loadMasterDocument model.maybeCurrentUser model.currentDocument.id) /
     So this should be rewritten using Tasks and andThen.
 -}
-saveCurrentMasterDocument : Model (Html Msg) -> (Model (Html Msg), Cmd Msg) -- ###
+saveCurrentMasterDocument : Model -> (Model, Cmd Msg) -- ###
 saveCurrentMasterDocument model = 
     let  
         tokenString = User.getTokenStringFromMaybeUser model.maybeCurrentUser
@@ -1731,7 +1733,7 @@ saveCurrentMasterDocument model =
                   ])
 
 
-doIncrementVersion : Model (Html Msg) -> (Model (Html Msg), Cmd Msg)
+doIncrementVersion : Model -> (Model, Cmd Msg)
 doIncrementVersion model =
   let 
     currentDocument = model.currentDocument
@@ -1742,7 +1744,7 @@ doIncrementVersion model =
     )
 
 
-updateBigUserCmd : Model (Html Msg) -> Cmd Msg
+updateBigUserCmd : Model -> Cmd Msg
 updateBigUserCmd model = 
   case model.maybeBigUser of 
     Nothing -> Cmd.none
@@ -1752,7 +1754,7 @@ updateBigUserCmd model =
       in 
         Cmd.map UserMsg <| User.updateBigUser (User.getTokenStringFromMaybeUser model.maybeCurrentUser) nextBigUser
 
-putCurrentDocumentAtTopOfQueue : Model (Html Msg) -> (Model (Html Msg), Cmd Msg)
+putCurrentDocumentAtTopOfQueue : Model -> (Model, Cmd Msg)
 putCurrentDocumentAtTopOfQueue model = 
   ({model | recentDocumentQueue = Queue.enqueueUnique model.currentDocument model.recentDocumentQueue}, Cmd.none)
 

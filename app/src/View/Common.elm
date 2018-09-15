@@ -15,14 +15,14 @@ import Html exposing(Html)
 import BigEditRecord exposing(BigEditRecord)
 
 
-texMacros : Model (Html Msg) -> String
+texMacros : Model -> String
 texMacros model = 
   case DocumentDictionary.get "texmacros"  model.documentDictionary of 
     Nothing -> ""
     Just doc -> doc.content
 
 
-toggleToolsButton : Length -> Model (Html Msg) -> Element Msg    
+toggleToolsButton : Length -> Model -> Element Msg    
 toggleToolsButton width_ model = 
   case model.appMode  of 
     Writing -> 
@@ -41,7 +41,7 @@ toggleToolsTitle toolPanelState =
      HideToolPanel -> "Editor tools"
 
 
-documentViewData : Model (Html Msg) -> DocumentViewData
+documentViewData : Model -> DocumentViewData
 documentViewData model = 
   {
       viewport = model.viewport  
@@ -50,6 +50,7 @@ documentViewData model =
     , texMacros = texMacros model
     , document = model.currentDocument
     , bigEditRecord = BigEditRecord.empty 0 0
+    , seed = model.seed
   }
 
   

@@ -20,13 +20,13 @@ import AppUtility
 import View.Widget as Widget 
 
 
-view : Model (Html Msg) -> Element Msg
+view : Model -> Element Msg
 view model = 
   Element.row [width fill, height (px (model.windowHeight - 70)), Background.color Widget.white, centerX] [
      imageLeftColumn 2 model,  imageCenterColumn model.windowHeight 7 model, imageRightColumn 2 model
   ]
 
-imageLeftColumn : Int -> Model (Html Msg) -> Element Msg
+imageLeftColumn : Int -> Model -> Element Msg
 imageLeftColumn portion_ model = 
   Element.column [width (fillPortion portion_), height fill, 
     Background.color Widget.lightBlue, paddingXY 20 20, spacing 10] [ 
@@ -36,14 +36,14 @@ imageLeftColumn portion_ model =
        
   ]
 
-imageCenterColumn : Int -> Int -> Model (Html Msg) -> Element Msg
+imageCenterColumn : Int -> Int -> Model -> Element Msg
 imageCenterColumn windowHeight_ portion_  model  = 
   Element.column [width (fillPortion portion_), height (px (windowHeight_ - 73))
     , Background.color Widget.veryDarkGrey 
     , centerX, centerY
     ] [ loadOrViewImage model ]
 
-loadOrViewImage : Model (Html Msg) -> Element Msg
+loadOrViewImage : Model -> Element Msg
 loadOrViewImage model = 
   case model.imageMode of 
     LoadImage ->  viewImageToUpload model
@@ -51,7 +51,7 @@ loadOrViewImage model =
 
 
 
-imageRightColumn : Int -> Model (Html Msg) -> Element Msg
+imageRightColumn : Int -> Model -> Element Msg
 imageRightColumn portion_ model = 
   Element.column [width (fillPortion portion_), height fill, Background.color Widget.lightBlue, centerX] [
       
@@ -81,7 +81,7 @@ selectImageButton image =
     }
 
 
-imageCatalogueLink : Model (Html Msg) -> Element msg   
+imageCatalogueLink : Model -> Element msg   
 imageCatalogueLink model = 
   case model.maybeCurrentUser of  
     Nothing -> Element.none 
@@ -97,7 +97,7 @@ imageCatalogueLink model =
 
 -- IMAGE
 
-viewImageToUpload_ : Model (Html Msg) -> Html Msg
+viewImageToUpload_ : Model -> Html Msg
 viewImageToUpload_ model =
     Html.div [ 
                Html.Attributes.style "padding" "30px"
@@ -126,7 +126,7 @@ viewImageToUpload_ model =
             , Html.br [ ] [ ]
         ]
 
-viewLargeImage : Model (Html Msg) -> Element Msg
+viewLargeImage : Model -> Element Msg
 viewLargeImage model =  
   case 
     model.maybeCurrentImage of 
@@ -180,7 +180,7 @@ displayPdf : String -> Html msg
 displayPdf data =
     Html.iframe [ src data, Html.Attributes.width 460, Html.Attributes.height 460 ] []
 
-imageType : Model (Html Msg) -> String
+imageType : Model -> String
 imageType model = 
   let 
     imageString = ( model.maybeImageString |> Maybe.withDefault "- no image -" )
@@ -192,7 +192,7 @@ imageType model =
       False -> String.dropLeft 5 imageInfo
 
   
-viewImageToUpload : Model (Html Msg) -> Element Msg 
+viewImageToUpload : Model -> Element Msg 
 viewImageToUpload model = 
   case model.maybeCurrentUser of 
     Nothing -> 
@@ -208,15 +208,15 @@ imageNameInput model =
      , Html.Attributes.style "width" "200px"
      , Html.Events.onInput AcceptImageName ] []
 
-makeImageButton : Length -> Model (Html Msg) -> Html Msg    
+makeImageButton : Length -> Model -> Html Msg    
 makeImageButton width_ model = 
     Html.button [ Html.Events.onClick MakeImage ] [ Html.text "Save image data" ]
 
-toggleImageAccessibilityButton : Length -> Model (Html Msg) -> Html Msg    
+toggleImageAccessibilityButton : Length -> Model -> Html Msg    
 toggleImageAccessibilityButton width_ model = 
     Html.button [ Html.Events.onClick ToggleImageAccessibility ] [ Html.text (imageAccessibilityButtonTitle model) ]
 
-imageAccessibilityButtonTitle : Model (Html Msg) -> String 
+imageAccessibilityButtonTitle : Model -> String 
 imageAccessibilityButtonTitle model = 
   case model.imageAccessibility of 
      PublicImage -> "Public image"
@@ -236,7 +236,7 @@ decodeNodeFile toMsg =
 -- BUTTONS
 
 
-selectImagerLoaderButton : Model (Html Msg) -> Element Msg 
+selectImagerLoaderButton : Model -> Element Msg 
 selectImagerLoaderButton model = 
   Input.button (Widget.whiteButtonStyle (px 160)) {
     onPress =  Just SelectImageLoader
