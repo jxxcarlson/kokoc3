@@ -105,17 +105,15 @@ footer model =
         Element.el [width (px 240), Font.family [Font.typeface "Courier", Font.monospace]] (text model.message)
       , Element.el [documentDirtyIndicator  model, padding 5] (text ("id " ++ (String.fromInt model.currentDocument.id )))
       , Element.el [] (text <| docInfo model.currentDocument) 
-      , testButton model
+      -- , testButton model
       , printDocumentButton model 
       , exportDocumentlLink model
       , getAuthorsDocumentsButton (px 110) model
       -- , Element.el [] (text <| currentDeviceString model.viewport)
       , Element.el [] (text <| Configuration.client)
       -- , Element.el [] (text <| "access: " ++ (Document.accessDictToString model.currentDocument.access))
-      , Element.el [] (text <| viewportInfo model)
-      -- , Element.el [] (text <| String.fromInt model.seed) 
-      , Element.el [] (text <| "IDS: " ++ (BigEditRecord.idListAsString model.bigEditRecord)) 
-    
+      -- , Element.el [] (text <| viewportInfo model)
+      
   ] 
 
 viewportInfo : Model -> String 
