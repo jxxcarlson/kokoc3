@@ -13,11 +13,13 @@ import Element.Border as Border
 import Element.Lazy
 import Element.Keyed as Keyed
 import Mark
+import KVList 
 
 import Browser.Dom exposing(Viewport)
 
-import Configuration  
-import KVList 
+import Configuration 
+import MiniLatexTools 
+
 
 import MiniLatex.Differ exposing (EditRecord)
 import MiniLatex.MiniLatex as MiniLatex   
@@ -139,29 +141,10 @@ documentContentView_  dvd =
 
 viewMiniLatex : DocumentViewData -> Element msg
 viewMiniLatex dvd =
-    MiniLatex.getRenderedText (setupEditRecord dvd)
+    MiniLatex.getRenderedText (MiniLatexTools.setupEditRecord dvd.texMacros dvd.document)
         |> List.map (\x -> Element.paragraph [ width (px (texWidth dvd.viewport))] [ Element.html x ]) -- ###@@@
         |> Element.column [Element.htmlAttribute <| HA.attribute "id" "_renderedText_"]
 
-
-setupEditRecord dvd = 
-  let 
-    preamble = 
-      [  setCounterText dvd.document.tags 
-       , setDocId dvd.document.id 
-       , setClient
-       , ""
-      ] |> String.join("\n\n")
-
-    postlude = "\n\n\\bigskip\n\\bigskip\n\\bigskip\n\\bigskip\n\n"
-
-    source = if dvd.texMacros == "" then 
-                dvd.document.content 
-             else 
-                prependMacros dvd.texMacros dvd.document.content
-  in
-     MiniLatex.initializeEditRecord 0 (preamble ++ source ++ postlude) 
-  
 
 viewMarkdown : Document -> Element msg
 viewMarkdown document =
@@ -397,31 +380,3 @@ currentDevice  viewport =
 
   
 edge = {left = 0, right = 0, top = 0, bottom = 0}
-
-setCounterText : List String -> String 
-setCounterText tags = 
-  let 
-    maybeSectionNumber = KVList.intValueForKey "sectionNumber" tags
-  in 
-    case maybeSectionNumber of 
-      Nothing -> ""
-      Just sectionNumber -> "\\setcounter{section}{" ++ String.fromInt sectionNumber ++ "}\n\n"
-
-setDocId : Int -> String
-setDocId id = "\\setdocid{" ++ (String.fromInt id) ++ "}"
-
-setClient : String 
-setClient = 
-  "\\setclient{" ++ Configuration.client ++ "}"
-
-normalize : String -> String 
-normalize str = 
-  str |> String.lines |> List.filter (\x -> x /= "") |> String.join("\n") 
-
-   
-prependMacros  : String -> String -> String
-prependMacros macros_ sourceText = 
-  let
-    macros__ =  (macros_ |> normalize)
-  in
-    "$$\n" ++ macros__ ++ "\n$$\n\n" ++ sourceText 
