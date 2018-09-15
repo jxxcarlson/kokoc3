@@ -69,6 +69,7 @@ type ToolPanelState =
 
 type SignupMode = RegistrationMode | SigninMode 
 
+
 type alias Model a =
     {   message  : String
       , password : String

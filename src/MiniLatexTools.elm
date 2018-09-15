@@ -1,12 +1,16 @@
-module MiniLatexTools exposing(setupEditRecord)
+module MiniLatexTools exposing(setupEditRecord, updateEditRecord)
 
 
 import MiniLatex.Differ exposing (EditRecord)
 import MiniLatex.MiniLatex as MiniLatex 
 import KVList   
 import Configuration
+import Document exposing(Document)
+import Html exposing(Html)
 
-setupEditRecord texMacros document = 
+
+prepareText : String -> Document -> String 
+prepareText texMacros document = 
   let 
     preamble = 
       [  setCounterText document.tags 
@@ -22,8 +26,15 @@ setupEditRecord texMacros document =
              else 
                 prependMacros texMacros document.content
   in
-     MiniLatex.initializeEditRecord 0 (preamble ++ source ++ postlude) 
+    preamble ++ source ++ postlude
+
+setupEditRecord : String -> Document -> EditRecord (Html msg)
+setupEditRecord texMacros document = 
+     MiniLatex.initializeEditRecord 0 (prepareText texMacros document) 
   
+updateEditRecord : EditRecord (Html msg) -> Int ->  String -> Document -> EditRecord (Html msg) 
+updateEditRecord editRecord seed texMacros document = 
+     MiniLatex.updateEditRecord seed editRecord (prepareText texMacros document) 
 
 setCounterText : List String -> String 
 setCounterText tags = 
