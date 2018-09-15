@@ -14,13 +14,17 @@ empty : Int -> Int -> BigEditRecord msg
 empty docId_ seed_ = 
   BigEditRecord MiniLatex.emptyEditRecord docId_ seed_
 
+isEmpty : BigEditRecord msg -> Bool
+isEmpty ber = 
+  ber |> editRecord |> .paragraphs |> (\x -> x == [])
+
 fromText : String -> Int -> BigEditRecord msg
 fromText text docId_ =  
   BigEditRecord (MiniLatex.initializeEditRecord 0 text) docId_ 0
 
 fromDocument : Document -> String -> BigEditRecord msg
 fromDocument document texMacros = 
-  BigEditRecord (MiniLatexTools.setupEditRecord texMacros document) 0 document.id
+  BigEditRecord (MiniLatexTools.setupEditRecord texMacros document) document.id 0
 
 seed : BigEditRecord msg -> Int   
 seed (BigEditRecord editRecord_ docId_ seed_) = seed_
@@ -34,8 +38,8 @@ editRecord (BigEditRecord editRecord_ docId_ seed_) = editRecord_
 updateFromDocument : BigEditRecord msg -> Document -> String -> Int -> BigEditRecord msg
 updateFromDocument ber document texMacros seed_ = 
   case (docId ber) == document.id of  
-    True -> BigEditRecord (MiniLatexTools.updateEditRecord (editRecord ber) seed_ texMacros document) 0 document.id
-    False -> BigEditRecord (MiniLatexTools.setupEditRecord texMacros document) 0 document.id
+    True -> BigEditRecord (MiniLatexTools.updateEditRecord (editRecord ber) seed_ texMacros document) document.id seed_
+    False -> BigEditRecord (MiniLatexTools.setupEditRecord texMacros document) document.id 0
 
 getRenderedText : BigEditRecord msg -> List (Html msg)
 getRenderedText ber = 
@@ -46,4 +50,6 @@ getRenderedTextAsElements : BigEditRecord msg -> List (Element msg)
 getRenderedTextAsElements ber = 
    MiniLatex.getRenderedText (editRecord ber) |> List.map Element.html
 
-      
+idListAsString : BigEditRecord msg -> String   
+idListAsString ber = 
+  ber |> editRecord |> .idList |> String.join(", ")

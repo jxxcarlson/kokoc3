@@ -82,7 +82,7 @@ type alias Model =
       , maybeBigUser : Maybe BigUser
       , searchQueryString  : String
       , currentDocument : Document
-      , bigEditRecord : BigEditRecord (Html Msg)
+      , bigEditRecord : BigEditRecord  Msg
       , selectedDocumentId : Int
       , maybeMasterDocument : Maybe Document
       , documentList : DocumentList 

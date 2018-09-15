@@ -24,6 +24,7 @@ import Process
 import Random
 
 import Utility
+import View.Common as Common
 
 import FileUploadCredentials as Credentials exposing(FileData, Image)
 import User exposing(Token, UserMsg(..), readToken, stringFromMaybeToken, User, BigUser)
@@ -32,7 +33,7 @@ import AppUtility
 import ImageManager exposing (ImageMsg(..))
 import Mail
 import DocViewMsg exposing(DocViewMsg(..))
-import BigEditRecord
+import BigEditRecord exposing(BigEditRecord)
 
 
 
@@ -196,11 +197,12 @@ getInfoFromOutside tagger onError =
 -- link : msg -> List (Html.Attribute msg) -> List (Html msg) -> Html msg
 -- link href attrs children =
 --   Html.a (preventDefaultOn "click" (Decode.succeed (href, True)) :: attrs) children
-processInfoForElm : Model -> InfoForElm -> (Model, Cmd Msg)
+processInfoForElm : Model -> InfoForElm -> (Model, Cmd Msg)  -- SET CURRENT DOCUMENT
 processInfoForElm model infoForElm_ =
   case infoForElm_ of 
     DocumentDataFromOutside document -> 
-       ({model |    currentDocument = document  
+       ({model |    currentDocument = document 
+                  , bigEditRecord = updateBigEditRecord model document 
                   , documentList = DocumentList.make document []
                   , message = "!got doc from outside"
             }
@@ -491,10 +493,10 @@ update msg model =
             Err err -> 
                 ({model | message = httpErrorHandler err },   Cmd.none  ) 
 
-        DocMsg (ReceiveDocument result) ->
+        DocMsg (ReceiveDocument result) ->  -- SET CURRENT DOCUMENT
           case result of 
             Ok documentRecord -> 
-               ({ model | currentDocument = documentRecord.document}, 
+               ({ model | currentDocument = documentRecord.document, bigEditRecord = updateBigEditRecord model documentRecord.document}, 
                 Cmd.batch [ 
                    loadTexMacrosForDocument documentRecord.document model
                 ]
@@ -502,7 +504,7 @@ update msg model =
             Err err -> 
                 ({model | message = handleHttpError err},   Cmd.none  )
 
-        DocMsg (AcknowledgeDocumentDeleted result) ->
+        DocMsg (AcknowledgeDocumentDeleted result) ->  -- SET CURRENT DOCUMENT
           case result of 
             Ok reply -> 
               let 
@@ -526,6 +528,7 @@ update msg model =
                 nextDocumentQueue = Queue.removeWithPredicate (\doc -> doc.id == idOfDocumentToDelete)  model.recentDocumentQueue                       
                 nextModel = { model | message = "Document deleted: " ++ (String.fromInt indexOfDocumentToDelete) ++ ", Document selected: " ++ (String.fromInt documentSelectedId) 
                     , currentDocument = documentSelected 
+                    , bigEditRecord = updateBigEditRecord model documentSelected
                     , toolPanelState = HideToolPanel
                     , documentList = DocumentList.deleteItemInDocumentListAt idOfDocumentToDelete nextDocumentList_
                     , recentDocumentQueue = nextDocumentQueue
@@ -540,7 +543,7 @@ update msg model =
             Err err -> 
                 ({model | message = handleHttpError err},   Cmd.none  )
 
-        DocMsg (NewDocumentCreated result) ->
+        DocMsg (NewDocumentCreated result) ->  -- SET CURRENT DOCUMENT
           case result of 
             Ok documentRecord -> 
               let   
@@ -550,6 +553,7 @@ update msg model =
                 nextDocumentList_ = DocumentList.nextDocumentList selectedDocId_ nextDocument model.documentList  
                 nextDocumentQueue = Queue.enqueueUnique nextDocument model.recentDocumentQueue  
                 nextModel = { model | currentDocument = nextDocument
+                         , bigEditRecord = updateBigEditRecord model nextDocument
                          , sourceText = nextDocument.content
                          , documentList = nextDocumentList_
                          , recentDocumentQueue = nextDocumentQueue
@@ -570,7 +574,7 @@ update msg model =
              Err err -> 
                 ({model | message = handleHttpError err},   Cmd.none  )
 
-        DocListMsg (RestoreDocumentList result)->
+        DocListMsg (RestoreDocumentList result)->  -- SET CURRENT DOCUMENT
           case result of 
             Ok documentList -> 
               let 
@@ -584,6 +588,7 @@ update msg model =
                ({ model |       
                   documentList = DocumentList.select maybeCurrentDocument documentList
                  , currentDocument = currentDocument
+                 , bigEditRecord = updateBigEditRecord model currentDocument
                  , maybeMasterDocument = nextMaybeMasterDocument
                  }
                  ,  Cmd.batch [
@@ -620,7 +625,7 @@ update msg model =
             Err err -> 
                 ({model | message = handleHttpError err},   Cmd.none  )
 
-        DocListMsg (ReceiveDocumentListWithSelectedId result)->
+        DocListMsg (ReceiveDocumentListWithSelectedId result)->  -- SET
           case result of 
             Ok documentList -> 
               let 
@@ -631,7 +636,8 @@ update msg model =
               in
                ({ model | 
                    documentList = DocumentList.select (Just selectedDocument) documentList
-                 , currentDocument = selectedDocument  
+                 , currentDocument = selectedDocument 
+                 , bigEditRecord = updateBigEditRecord model selectedDocument 
                  }
                  ,  Cmd.batch [
                        loadTexMacrosForDocument selectedDocument model
@@ -642,7 +648,7 @@ update msg model =
             Err err -> 
                 ({model | message = handleHttpError err},   Cmd.none  )
 
-        DocListMsg (ReceiveDocumentList result)->
+        DocListMsg (ReceiveDocumentList result) ->  -- SET CURRENT DOCUMENT
           case result of 
             Ok documentList -> 
               let 
@@ -653,7 +659,8 @@ update msg model =
               in
                ({ model | 
                    documentList = DocumentList.selectFirst documentList
-                 , currentDocument = DocumentList.getFirst documentList
+                 , currentDocument = currentDocument 
+                 , bigEditRecord = updateBigEditRecord model currentDocument 
                  , maybeMasterDocument = nextMaybeMasterDocument
                  }
                  ,  Cmd.batch [
@@ -666,7 +673,7 @@ update msg model =
             Err err -> 
                 ({model | message = handleHttpError err},   Cmd.none  )
 
-        DocListMsg (ReceiveDocumentListAndPreserveCurrentSelection result)->
+        DocListMsg (ReceiveDocumentListAndPreserveCurrentSelection result)->  -- SET CURRENT DOCUMENT
           case result of 
             Ok documentList -> 
               let 
@@ -679,6 +686,7 @@ update msg model =
                 ({ model | 
                       documentList = nextDocumentList_
                     , maybeMasterDocument = nextMaybeMasterDocument 
+                    , bigEditRecord = updateBigEditRecord model currentDocument 
                     }
                     , Cmd.batch [
                           saveDocumentListToLocalStorage documentList
@@ -689,7 +697,7 @@ update msg model =
                 ({model | message = handleHttpError err},   Cmd.none  )
 
 
-        DocListViewMsg (SetCurrentDocument document) -> 
+        DocListViewMsg (SetCurrentDocument document) -> -- SET CURRENT DOCUMENT
             let  
               documentList = case model.documentListSource of 
                 SearchResults -> DocumentList.select (Just document) model.documentList
@@ -705,7 +713,7 @@ update msg model =
                 Master ->   Cmd.map DocListMsg (DocumentList.loadMasterDocument model.maybeCurrentUser document.id)
               newModel = { model | 
                    currentDocument = document
-                 , bigEditRecord = BigEditRecord.updateFromDocument model.bigEditRecord document "" 0
+                 , bigEditRecord = updateBigEditRecord model document 
                  , masterDocLoaded = masterDocLoaded
                  , deleteDocumentState = DeleteIsOnSafety
                  , documentList = documentList
@@ -839,6 +847,7 @@ update msg model =
                          , Cmd.batch [
                     cmd  
                   , saveDocToLocalStorage model.currentDocument
+                  , Random.generate NewSeed (Random.int 1 10000)
                   ]
                 )  
 
@@ -858,10 +867,17 @@ update msg model =
           let  
             currentDocument = model.currentDocument 
             nextCurrentDocument = { currentDocument | content = str }
+            -- ###BER
+            nextBigEditRecord = BigEditRecord.updateFromDocument model.bigEditRecord nextCurrentDocument (Common.texMacros model) model.seed
             nextDocumentList = DocumentList.updateDocument nextCurrentDocument model.documentList
             nextDocumentQueue = Queue.replaceUsingPredicate (\doc -> doc.id == nextCurrentDocument.id) nextCurrentDocument model.recentDocumentQueue
           in  
-            ( {model | currentDocument = nextCurrentDocument, recentDocumentQueue = nextDocumentQueue, documentList = nextDocumentList}, Cmd.none )
+            ( {model | currentDocument = nextCurrentDocument
+               , recentDocumentQueue = nextDocumentQueue
+               , documentList = nextDocumentList
+               , bigEditRecord = nextBigEditRecord
+               }
+              , Cmd.none )
 
         SaveCurrentDocument time ->
           let  
@@ -1216,6 +1232,10 @@ update msg model =
 
 -- HELPERS
 
+updateBigEditRecord : Model -> Document -> BigEditRecord Msg
+updateBigEditRecord model document =
+   BigEditRecord.updateFromDocument model.bigEditRecord document (Common.texMacros model) model.seed
+
 imageAccessbilityToBool : ImageAccessibility -> Bool 
 imageAccessbilityToBool imageAccessibility = 
   case imageAccessibility of 
@@ -1266,12 +1286,13 @@ searchForImages model =
   in
   ( {model | toolMenuState = HideToolMenu, documentListSource = SearchResults}, Cmd.map FileMsg (Credentials.getImages "" (imageQuery model queryString)))
 
-goToStart model = 
+goToStart model =  -- SET CURRENT DOCUMENT 
   let  
     doc = Document.basicDocument  
   in 
     ({model | currentDocument = { doc | title = "Welcome!" }
           , currentDocumentDirty = False
+          , bigEditRecord = updateBigEditRecord model { doc | title = "Welcome!" } 
           , appMode = Reading
           , toolMenuState = HideToolMenu
       }
@@ -1383,7 +1404,7 @@ getPublicDocumentsRawQuery model query =
              
   )
 
-goHome : Model -> (Model, Cmd Msg)
+goHome : Model -> (Model, Cmd Msg)  -- SET CURRENT DOCUMENT
 goHome model = 
   case model.maybeCurrentUser of 
     Nothing -> 
@@ -1391,6 +1412,7 @@ goHome model =
           doc = Document.basicDocument  
         in 
           ( { model | currentDocument = { doc | title = "Welcome!" }
+              , bigEditRecord = updateBigEditRecord model doc
               , currentDocumentDirty = False
             }
             , saveCurrentDocumentIfDirty model
@@ -1506,7 +1528,7 @@ loadTexMacrosForDocument document model =
   Cmd.map  DocDictMsg 
      <| DocumentDictionary.loadTexMacros (readToken model.maybeToken) document document.tags model.documentDictionary 
 
-selectDocumentWithId : Int -> Model -> (Model, Cmd Msg)
+selectDocumentWithId : Int -> Model -> (Model, Cmd Msg)  -- SET CURRENT DOCUMENT
 selectDocumentWithId  id model = 
   let 
       documents_  = model.documentList
@@ -1517,6 +1539,7 @@ selectDocumentWithId  id model =
       ({ model | 
           documentList = DocumentList.select (Just selectedDocument) documents_
         , currentDocument = selectedDocument 
+        , bigEditRecord = updateBigEditRecord model selectedDocument
         , counter = model.counter + 1 
         }
         ,  Cmd.batch [

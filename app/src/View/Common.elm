@@ -49,7 +49,7 @@ documentViewData model =
     , debounceCounter = model.debounceCounter 
     , texMacros = texMacros model
     , document = model.currentDocument
-    , bigEditRecord = BigEditRecord.empty 0 0
+    , bigEditRecord = model.bigEditRecord
     , seed = model.seed
   }
 

@@ -7,6 +7,7 @@ import Task
 import Time exposing(Posix)
 import Keyboard
 import Html exposing(Html)
+import Random
 
 import SystemDocument
 import View.View exposing(view)
@@ -19,7 +20,6 @@ import Update exposing(
     , getInfoFromOutside
     , getTimeInOneSecond
    )
-
 
 main =
     Browser.element
@@ -47,6 +47,7 @@ init flags =
           processUrl flags.location
         , getTimeInOneSecond
         , Task.perform GetViewport Dom.getViewport
+        , Random.generate NewSeed (Random.int 1 10000)
     ])
 
 

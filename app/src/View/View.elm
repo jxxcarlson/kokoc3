@@ -44,6 +44,7 @@ import View.Image as Image
 import View.Writer as Writer
 import View.Author as Author
 import View.Phone exposing(phoneView)
+import BigEditRecord
 
 import OnClickOutside
 
@@ -112,7 +113,8 @@ footer model =
       , Element.el [] (text <| Configuration.client)
       -- , Element.el [] (text <| "access: " ++ (Document.accessDictToString model.currentDocument.access))
       , Element.el [] (text <| viewportInfo model)
-      , Element.el [] (text <| String.fromInt model.debounceCounter) 
+      -- , Element.el [] (text <| String.fromInt model.seed) 
+      , Element.el [] (text <| "IDS: " ++ (BigEditRecord.idListAsString model.bigEditRecord)) 
     
   ] 
 

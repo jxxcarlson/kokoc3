@@ -133,10 +133,16 @@ documentContentView_  dvd =
 
 viewMiniLatex : DocumentViewData -> Element Msg
 viewMiniLatex dvd =
-  BigEditRecord.updateFromDocument dvd.bigEditRecord  dvd.document dvd.texMacros dvd.seed 
-    |> BigEditRecord.getRenderedTextAsElements
-    |> List.map (\x -> Element.paragraph [ width (px (texWidth dvd.viewport))] [ x ]) 
-    |> Element.column [Element.htmlAttribute <| HA.attribute "id" "_renderedText_"]
+  let   
+    bigEditRecord = if BigEditRecord.isEmpty dvd.bigEditRecord then 
+            BigEditRecord.updateFromDocument dvd.bigEditRecord dvd.document dvd.texMacros dvd.seed 
+          else  
+            dvd.bigEditRecord
+  in
+    bigEditRecord 
+      |> BigEditRecord.getRenderedTextAsElements
+      |> List.map (\x -> Element.paragraph [ width (px (texWidth dvd.viewport))] [ x ]) 
+      |> Element.column [Element.htmlAttribute <| HA.attribute "id" "_renderedText_"]
   
 
 
