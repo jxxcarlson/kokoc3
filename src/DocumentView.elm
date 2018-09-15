@@ -55,10 +55,11 @@ type alias DocumentViewData = {
 view : DocumentViewData -> Element DocViewMsg 
 view dvd = 
     Element.column [spacing 15, width (px <| texWidth dvd.viewport), centerX 
-        , Element.htmlAttribute <| HA.attribute "id" "_textViewParent_"] [
+        , Element.htmlAttribute <| HA.attribute "id" "_textViewParent_"] 
+        [
             titleLine dvd.document
-        , contentView dvd
-    ]
+          , contentView dvd
+        ]
 
 contentView : DocumentViewData -> Element DocViewMsg
 contentView dvd = 
@@ -111,15 +112,6 @@ loadChildrenButton  document =
     )  
 
     {- #################################### -}
-
-
-
-
-documentView : DocumentViewData -> DocumentView DocViewMsg
-documentView dvd = 
-  { title = dvd.document.title 
-    , content = documentContentView dvd
-  }
 
 
 documentContentView : DocumentViewData -> Element DocViewMsg 
