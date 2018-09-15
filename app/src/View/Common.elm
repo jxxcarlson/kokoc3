@@ -10,16 +10,17 @@ import DocumentList
 import DocumentView exposing(DocumentViewData)
 import Document exposing(DocType(..))
 import View.Widget as Widget
+import Html exposing(Html)
 
 
-texMacros : Model a -> String
+texMacros : Model (Html Msg) -> String
 texMacros model = 
   case DocumentDictionary.get "texmacros"  model.documentDictionary of 
     Nothing -> ""
     Just doc -> doc.content
 
 
-toggleToolsButton : Length -> Model a -> Element Msg    
+toggleToolsButton : Length -> Model (Html Msg) -> Element Msg    
 toggleToolsButton width_ model = 
   case model.appMode  of 
     Writing -> 
@@ -38,7 +39,7 @@ toggleToolsTitle toolPanelState =
      HideToolPanel -> "Editor tools"
 
 
-documentViewData : Model a -> DocumentViewData
+documentViewData : Model (Html Msg) -> DocumentViewData
 documentViewData model = 
   {
       viewport = model.viewport  

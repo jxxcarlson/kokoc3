@@ -47,13 +47,13 @@ import View.Phone exposing(phoneView)
 
 import OnClickOutside
 
-view : Model a -> Html Msg
+view : Model (Html Msg) -> Html Msg
 view model = 
   case (currentDevice model.viewport).class of 
     Phone -> phoneView model 
     _ -> nonPhoneView model
 
-nonPhoneView : Model a -> Html Msg
+nonPhoneView : Model (Html Msg) -> Html Msg
 nonPhoneView  model =
    Element.layout [Font.size 14, width fill, height fill, clipY] <|
         Element.column [ width fill, height (px model.windowHeight)] [
@@ -62,7 +62,7 @@ nonPhoneView  model =
             , footer model
         ]
         
-header : Model a -> Element Msg
+header : Model (Html Msg) -> Element Msg
 header model = 
   Element.row [width fill, Background.color Widget.grey, height (px 40), paddingXY 20 0, spacing 10, alignLeft] [
       Element.row [ spacing 10]  [
@@ -88,7 +88,7 @@ header model =
   ]
 
 
-body : Model a -> Element Msg 
+body : Model (Html Msg) -> Element Msg 
 body model =
   case model.appMode of 
     Reading -> Reader.view model 
@@ -98,7 +98,7 @@ body model =
     DisplayAuthors -> Author.view model
 
 
-footer : Model a -> Element Msg
+footer : Model (Html Msg) -> Element Msg
 footer model = 
   Element.row [moveUp 8, spacing 15, width fill, Background.color Widget.grey, height (px 40), paddingXY 20 0] [
         Element.el [width (px 240), Font.family [Font.typeface "Courier", Font.monospace]] (text model.message)
@@ -116,7 +116,7 @@ footer model =
     
   ] 
 
-viewportInfo : Model a -> String 
+viewportInfo : Model (Html Msg) -> String 
 viewportInfo model = 
   case model.viewPortOfRenderedText of 
     Nothing -> "--"
@@ -132,7 +132,7 @@ viewportInfo model =
       "x = " ++ x ++ ", y = " ++ y ++ ", h = "  ++ h ++ ", w = " ++ w ++ ", sw = " ++ sw ++ ", sh = " ++ sh
 
 
-yCoordinateForRenderedText : Model a -> Float 
+yCoordinateForRenderedText : Model (Html Msg) -> Float 
 yCoordinateForRenderedText model = 
   case model.viewPortOfRenderedText of 
     Nothing -> 0
@@ -180,7 +180,7 @@ spacer width_ =
 {-| 
   Not currently used.
 -}
-documentDictionaryInfo : Model a -> String 
+documentDictionaryInfo : Model (Html Msg) -> String 
 documentDictionaryInfo model = 
   let 
     k = model.documentDictionary |> DocumentDictionary.keys |> String.join ","
@@ -188,7 +188,7 @@ documentDictionaryInfo model =
   in  
     k ++ ":: " ++ v
 
-documentDirtyIndicator : Model a -> Attr decorative msg
+documentDirtyIndicator : Model (Html Msg) -> Attr decorative msg
 documentDirtyIndicator  model = 
   case model.currentDocumentDirty  of 
     False -> Background.color Widget.indicatorGood
@@ -206,7 +206,7 @@ label fontSize str =
 -- INPUTS
 
 
-searchInput : Model a -> Element Msg
+searchInput : Model (Html Msg) -> Element Msg
 searchInput model =
     Input.text ([htmlAttribute (Html.Attributes.id "search-box")
        , width (px 360), height (px 30) , Font.color black] 
@@ -218,7 +218,7 @@ searchInput model =
       , label = Input.labelLeft [ Font.size 14, Font.bold ] (text "")
     }
 
-searchPlaceHolderText : Model a -> String 
+searchPlaceHolderText : Model (Html Msg) -> String 
 searchPlaceHolderText model  =
   case model.appMode of 
     ImageEditing -> "Example: type 'aust', press Enter"
@@ -229,14 +229,14 @@ searchPlaceHolderText model  =
 -- BUTTONS AND LINKS
 
 
-prepareImagesButton : Model a -> Element Msg 
+prepareImagesButton : Model (Html Msg) -> Element Msg 
 prepareImagesButton model = 
     Input.button (Widget.buttonStyle  (px 115)) {
       onPress =  Just Test
     , label = Element.el [] (Element.text ("Prepare Images"))
     }
 
-testButton : Model a -> Element Msg 
+testButton : Model (Html Msg) -> Element Msg 
 testButton model = 
     Input.button (Widget.buttonStyle  (px 115)) {
       onPress =  Just Test
@@ -250,7 +250,7 @@ viewUserManualLink =
      , label = Element.el [Font.bold] (text "Manual") 
   }
 
-exportDocumentlLink : Model a -> Element msg   
+exportDocumentlLink : Model (Html Msg) -> Element msg   
 exportDocumentlLink model = 
   case model.maybeCurrentUser of  
     Nothing -> Element.none 
@@ -275,7 +275,7 @@ basicButton style_ label_ msg =
       , label = Element.el [] (Element.text label_)
       }
 
-xbutton : Model a -> List (Attribute msg) -> String -> msg -> Element msg    
+xbutton : Model (Html Msg) -> List (Attribute msg) -> String -> msg -> Element msg    
 xbutton model style_ label_ msg =  
     case model.maybeCurrentUser of 
     Nothing -> Element.none 
@@ -286,7 +286,7 @@ xbutton model style_ label_ msg =
       } 
 
  
-getRandomDocumentsButton : Length -> Model a -> Element Msg    
+getRandomDocumentsButton : Length -> Model (Html Msg) -> Element Msg    
 getRandomDocumentsButton width_ model = 
   Input.button (buttonStyle  width_) {
     onPress =  Just (randomItemMsg model)
@@ -294,21 +294,21 @@ getRandomDocumentsButton width_ model =
   } 
 
 
-randomItemMsg : Model a -> Msg
+randomItemMsg : Model (Html Msg) -> Msg
 randomItemMsg model =
   case model.appMode of 
     ImageEditing -> GetImages "random=yes" 
     _ -> GetPublicDocumentsRawQuery "random=public"
 
 
-getAuthorsDocumentsButton : Length -> Model a -> Element Msg  
+getAuthorsDocumentsButton : Length -> Model (Html Msg) -> Element Msg  
 getAuthorsDocumentsButton width_ model = 
   if model.currentDocument.id > 0 then 
     getAuthorsDocumentsButton_ width_ model 
   else 
     Element.none
 
-getAuthorsDocumentsButton_ : Length -> Model a -> Element Msg    
+getAuthorsDocumentsButton_ : Length -> Model (Html Msg) -> Element Msg    
 getAuthorsDocumentsButton_ width_ model = 
   let  
     authorname = model.currentDocument.authorName 
@@ -330,19 +330,19 @@ getAuthorsDocumentsButton_ width_ model =
 
 {-| Not used.
 -}
-saveCurrentDocumentButton : Length -> Model a -> Element Msg    
+saveCurrentDocumentButton : Length -> Model (Html Msg) -> Element Msg    
 saveCurrentDocumentButton width_ model =
   xbutton model (buttonStyle  width_) "Save" (SaveCurrentDocument (Time.millisToPosix 10))  
 
 
-startButton : Length -> Model a -> Element Msg    
+startButton : Length -> Model (Html Msg) -> Element Msg    
 startButton width_ model = 
   Input.button (titleButtonStyle  width_) {
     onPress =  Just (GoToStart)
   , label = Element.el [] (Element.text "kNode")
   } 
 
-homeButton : Length -> Model a -> Element Msg    
+homeButton : Length -> Model (Html Msg) -> Element Msg    
 homeButton width_ model = 
     case model.maybeCurrentUser of 
     Nothing -> Element.none 
@@ -352,14 +352,14 @@ homeButton width_ model =
       , label =  Element.el [] (Element.text "Home")
       } 
 
-readerModeButton : Length -> Model a -> Element Msg    
+readerModeButton : Length -> Model (Html Msg) -> Element Msg    
 readerModeButton width_ model = 
   Input.button (modeButtonStyle model.appMode Reading  width_) {
     onPress =  Just (ChangeMode Reading)
   , label = Element.el [] (Element.text "Read")
   } 
 
-writerModeButton : Length -> Model a -> Element Msg    
+writerModeButton : Length -> Model (Html Msg) -> Element Msg    
 writerModeButton width_ model = 
   case model.maybeCurrentUser of 
     Nothing -> Element.none 
@@ -369,7 +369,7 @@ writerModeButton width_ model =
       , label = Element.el [] (Element.text "Write")
       } 
 
-adminModeButton : Length -> Model a -> Element Msg    
+adminModeButton : Length -> Model (Html Msg) -> Element Msg    
 adminModeButton width_ model = 
   case model.maybeCurrentUser of 
     Nothing -> Element.none 
@@ -382,7 +382,7 @@ adminModeButton width_ model =
           , label = Element.el [] (Element.text "Admin")
           } 
 
-imageModeButton : Length -> Model a -> Element Msg    
+imageModeButton : Length -> Model (Html Msg) -> Element Msg    
 imageModeButton width_ model = 
   case model.maybeCurrentUser of 
     Nothing -> Element.none 
@@ -392,7 +392,7 @@ imageModeButton width_ model =
         , label = Element.el [] (Element.text "Image")
         } 
 
-authorDisplayModeButton : Length -> Model a -> Element Msg    
+authorDisplayModeButton : Length -> Model (Html Msg) -> Element Msg    
 authorDisplayModeButton width_ model = 
   case model.maybeCurrentUser of 
     Nothing -> Element.none 
@@ -415,7 +415,7 @@ printButton model =
     _ -> 
       Widget.linkButtonFat (Document.printUrl model.currentDocument) "Print" (px 45)
 
-printLatexButton : Model a -> Element Msg 
+printLatexButton : Model (Html Msg) -> Element Msg 
 printLatexButton model = 
     Input.button (Widget.buttonStyle  (px 45)) {
       onPress =  Just PrintDocument
@@ -450,14 +450,14 @@ docInfo document =
   in 
     "(" ++ access_ ++ ", " ++ wordCount ++ ")"
 
-showKeys : Model a -> String 
+showKeys : Model (Html Msg) -> String 
 showKeys model = 
   DocumentDictionary.keys model.documentDictionary |> String.join ", "
  
  -- INPUTS
 
 
-toolMenu : Model a -> Element Msg 
+toolMenu : Model (Html Msg) -> Element Msg 
 toolMenu model = 
   case model.maybeCurrentUser of 
     Nothing -> Element.none 
@@ -470,7 +470,7 @@ toolMenu model =
       ]
 
 
-displayMenuItems : Model a ->  Element Msg
+displayMenuItems : Model (Html Msg) ->  Element Msg
 displayMenuItems model =
   case model.toolMenuState of 
     HideToolMenu -> Element.none
@@ -513,7 +513,7 @@ saveCurrentDocumentItem =
     , label = Element.el [] (Element.text ("Save doc Ctrl-S"))
     }
 
-randomDocumentItem : Model a -> Element Msg
+randomDocumentItem : Model (Html Msg) -> Element Msg
 randomDocumentItem model = 
     Input.button (Widget.menuItemStyle  (px 160)) {
       onPress =  (Just (randomItemMsg model))
@@ -527,35 +527,35 @@ doSearchItem  =
     , label = Element.el [] (Element.text ("Search Enter"))
     }
 
-writerModeItem : Model a -> Element Msg
+writerModeItem : Model (Html Msg) -> Element Msg
 writerModeItem model = 
     Input.button (Widget.menuItemStyle  (px 160)) {
       onPress =  (Just (ChangeMode Writing))
     , label = Element.el [] (Element.text ("Write mode Ctrl-W"))
     }
 
-readerModeItem : Model a -> Element Msg
+readerModeItem : Model (Html Msg) -> Element Msg
 readerModeItem model = 
     Input.button (Widget.menuItemStyle  (px 160)) {
       onPress =  (Just (ChangeMode Reading))
     , label = Element.el [] (Element.text ("Read mode Ctrl-R"))
     }
 
-imageModeItem : Model a -> Element Msg
+imageModeItem : Model (Html Msg) -> Element Msg
 imageModeItem model = 
     Input.button (Widget.menuItemStyle  (px 160)) {
       onPress =  (Just (ChangeMode ImageEditing))
     , label = Element.el [] (Element.text ("Image upload Ctrl-I"))
     }
 
-authorModeItem : Model a -> Element Msg
+authorModeItem : Model (Html Msg) -> Element Msg
 authorModeItem model = 
     Input.button (Widget.menuItemStyle  (px 160)) {
       onPress =  (Just (ChangeMode DisplayAuthors))
     , label = Element.el [] (Element.text ("Author list Ctrl-A"))
     }
 
-homeItem : Model a -> Element Msg
+homeItem : Model (Html Msg) -> Element Msg
 homeItem model = 
     Input.button (Widget.menuItemStyle  (px 160)) {
       onPress =  (Just (GoHome))

@@ -43,14 +43,14 @@ import View.Widget as Widget exposing(..)
 
 -- READER
 
-view : Model a -> Element Msg
+view : Model (Html Msg) -> Element Msg
 view model = 
   Element.row [width (fillPortion 4), height fill, Background.color Widget.white, centerX] [
      leftColumn 2 model,  body model.viewport 7 model, rightColumn 2 model
   ]
 
 
-body : Viewport -> Int -> Model a -> Element Msg
+body : Viewport -> Int -> Model (Html Msg) -> Element Msg
 body viewport portion_  model  = 
   Element.column [width (fillPortion portion_), height (px (round <| viewport.viewport.height - 73)), paddingXY 20 20
     , Background.color Widget.lightGrey, centerX, clipX, clipY] [
@@ -58,7 +58,7 @@ body viewport portion_  model  =
     ]
 
 
-leftColumn : Int -> Model a -> Element Msg
+leftColumn : Int -> Model (Html Msg) -> Element Msg
 leftColumn portion_ model = 
   Element.column [width (fillPortion portion_), height fill, 
     Background.color Widget.lightBlue, paddingXY 20 20, spacing 10] [ 
@@ -68,7 +68,7 @@ leftColumn portion_ model =
   ]
 
 
-rightColumn : Int -> Model a -> Element Msg
+rightColumn : Int -> Model (Html Msg) -> Element Msg
 rightColumn portion_ model = 
   Element.column [width (fillPortion portion_), height fill, 
      Background.color Widget.lightBlue, centerX
@@ -87,7 +87,7 @@ loginOrSignUpPanel model =
     SigninMode ->  loginPanel model
     RegistrationMode -> signupPanel model
 
-loginPanel : Model a -> Element Msg 
+loginPanel : Model (Html Msg) -> Element Msg 
 loginPanel model = 
   case model.maybeCurrentUser of 
     Just _ -> Element.none 
@@ -112,7 +112,7 @@ filterMessageForSignIn str  =
     False -> str
 
               
-signupPanel : Model a -> Element Msg 
+signupPanel : Model (Html Msg) -> Element Msg 
 signupPanel model = 
   case model.maybeCurrentUser of 
     Just _ -> Element.none 
@@ -129,7 +129,7 @@ signupPanel model =
         , Element.paragraph [Font.color Widget.darkRed, width (px 160)] [text <| filterMessageForSignIn model.message]
       ]
 
-logoutPanel : Model a -> Element Msg 
+logoutPanel : Model (Html Msg) -> Element Msg 
 logoutPanel model = 
   case model.maybeCurrentUser of 
     Nothing -> Element.none 
@@ -143,14 +143,14 @@ logoutPanel model =
 
 
 
-signInButton : Length -> Model a -> Element Msg    
+signInButton : Length -> Model (Html Msg) -> Element Msg    
 signInButton width_ model = 
   Input.button (buttonStyle width_) {
     onPress =  Just SignIn
   , label = Element.el [] (Element.text "Sign in")
   } 
 
-resetPasswordLink :  Model a -> Element Msg    
+resetPasswordLink :  Model (Html Msg) -> Element Msg    
 resetPasswordLink  model = 
   case model.errorResponse of 
     ShowPasswordReset -> 
@@ -160,7 +160,7 @@ resetPasswordLink  model =
         }
     _ -> Element.none
  
-verifyUserLink :  Model a -> Element Msg    
+verifyUserLink :  Model (Html Msg) -> Element Msg    
 verifyUserLink  model = 
   case model.errorResponse of 
     ShowVerifyAccount -> 
@@ -172,14 +172,14 @@ verifyUserLink  model =
 
 
 
-registerUserButton : Length -> Model a -> Element Msg    
+registerUserButton : Length -> Model (Html Msg) -> Element Msg    
 registerUserButton width_ model = 
   Input.button (buttonStyle width_) {
     onPress =  Just RegisterUser
   , label = Element.el [] (Element.text "Sign up")
   } 
 
-cancelRegistrationButton : Length -> Model a -> Element Msg    
+cancelRegistrationButton : Length -> Model (Html Msg) -> Element Msg    
 cancelRegistrationButton width_ model = 
   Input.button (buttonStyle width_) {
     onPress =  Just (SetSignupMode SigninMode)
@@ -187,7 +187,7 @@ cancelRegistrationButton width_ model =
   } 
 
 
-gotoRegistrationButton : Length -> Model a -> Element Msg    
+gotoRegistrationButton : Length -> Model (Html Msg) -> Element Msg    
 gotoRegistrationButton width_ model = 
   Input.button (buttonStyle width_) {
     onPress =  Just (SetSignupMode RegistrationMode)
@@ -195,7 +195,7 @@ gotoRegistrationButton width_ model =
   }
 
 
-signoutButton : Length -> Model a -> Element Msg    
+signoutButton : Length -> Model (Html Msg) -> Element Msg    
 signoutButton width_ model = 
   case model.maybeCurrentUser of 
     Nothing -> Element.none 
@@ -206,7 +206,7 @@ signoutButton width_ model =
       } 
 
 
-passwordInput : Model a -> Element Msg
+passwordInput : Model (Html Msg) -> Element Msg
 passwordInput model =
     Input.newPassword [width (px 180), height (px 30) , Font.color black] {
         text = model.password 
@@ -216,7 +216,7 @@ passwordInput model =
       , label = Input.labelAbove [ Font.size 12, Font.bold, moveDown 0 ] (text "Password")
     }
 
-emailInput : Model a -> Element Msg
+emailInput : Model (Html Msg) -> Element Msg
 emailInput model =
     Input.text [width (px 180), height (px 30) , Font.color black] {
         text = model.email 
@@ -226,7 +226,7 @@ emailInput model =
     }
 
 
-usernameInput : Model a -> Element Msg
+usernameInput : Model (Html Msg) -> Element Msg
 usernameInput model =
     Input.text [width (px 180), height (px 30) , Font.color black] {
         text = model.username 
@@ -237,7 +237,7 @@ usernameInput model =
 
 -- AHEM!
 
-currentUserNameElement : Model a -> Element msg 
+currentUserNameElement : Model (Html Msg) -> Element msg 
 currentUserNameElement model = 
   case model.maybeCurrentUser of 
     Nothing -> Element.none 
@@ -259,7 +259,7 @@ userPreferencesPanel model =
        , updatePreferencesButton (px 90) model 
       ]
 
-togglePreferencesButton : Length -> Model a -> Element Msg    
+togglePreferencesButton : Length -> Model (Html Msg) -> Element Msg    
 togglePreferencesButton width_ model = 
   case model.maybeCurrentUser of 
     Nothing -> Element.none 
@@ -285,7 +285,7 @@ blurbInput model width_  height_ label_  =
           )
         ]
 
-updatePreferencesButton : Length -> Model a -> Element Msg    
+updatePreferencesButton : Length -> Model (Html Msg) -> Element Msg    
 updatePreferencesButton width_ model = 
   case model.maybeBigUser of 
     Nothing -> Element.none 
@@ -295,7 +295,7 @@ updatePreferencesButton width_ model =
       , label = Element.el [] (Element.text "Update")
       } 
 
-toggleUserPublicPrivateButton : Length -> Model a -> Element Msg    
+toggleUserPublicPrivateButton : Length -> Model (Html Msg) -> Element Msg    
 toggleUserPublicPrivateButton width_ model = 
   case model.maybeBigUser of 
     Nothing -> Element.none 
@@ -305,7 +305,7 @@ toggleUserPublicPrivateButton width_ model =
       , label = Element.el [] (Element.text <| toggleUserPublicPrivateButtonTitle model)
       } 
 
-toggleUserPublicPrivateButtonTitle : Model a -> String 
+toggleUserPublicPrivateButtonTitle : Model (Html Msg) -> String 
 toggleUserPublicPrivateButtonTitle model =
   case model.maybeBigUser of 
     Nothing -> "---"

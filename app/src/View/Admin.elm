@@ -9,23 +9,25 @@ import Http
 import Json.Encode as Encode
 import Json.Decode as Decode exposing (at, int, list, string, decodeString, Decoder)
 import Time exposing(Posix, utc, Month(..))
+import Html exposing(Html)
 
 import Model exposing(Model, Msg(..))
 import User exposing(Token, UserMsg(..), readToken, stringFromMaybeToken, User, BigUser)
 import View.Widget as Widget exposing(..)
 import Configuration
 
+
 type AdminMsg = 
     AcknowledgeUpdateOfDocument String
  
 
-view : Model a -> Element Msg
+view : Model (Html Msg) -> Element Msg
 view model = 
   Element.row [width (fillPortion 4), height fill, Background.color Widget.white, centerX] [
      adminLeftColumn 2 model,  adminCenterColumn model.windowHeight 4 model
   ]
 
-adminLeftColumn : Int -> Model a -> Element Msg
+adminLeftColumn : Int -> Model (Html Msg) -> Element Msg
 adminLeftColumn portion_ model = 
   Element.column [width (fillPortion portion_), height fill, 
     Background.color Widget.lightBlue, paddingXY 20 20, spacing 10] [ 
@@ -34,7 +36,7 @@ adminLeftColumn portion_ model =
       , emailPanel model 
   ]
 
-showUserCount : Model a -> Element msg 
+showUserCount : Model (Html Msg) -> Element msg 
 showUserCount model = 
   let 
     n = List.length model.userList
@@ -44,7 +46,7 @@ showUserCount model =
       False -> Element.el [] (Element.text <| "Users: " ++ String.fromInt n)
 
 
-adminCenterColumn : Int -> Int -> Model a -> Element Msg
+adminCenterColumn : Int -> Int -> Model (Html Msg) -> Element Msg
 adminCenterColumn windowHeight_ portion_  model  = 
   Element.column [width (fillPortion portion_), height (px (windowHeight_ - 73)), scrollbarY] [ viewUsers model.userList ]
 
@@ -153,7 +155,7 @@ boolToString boolValue =
     True -> "T"
     False -> "F"
 
-emailPanel : Model a -> Element Msg 
+emailPanel : Model (Html Msg) -> Element Msg 
 emailPanel model = 
   Element.column [spacing 10, padding 10, Background.color Widget.charcoal] [
       Element.el [Font.bold, Font.size 18, Font.color Widget.white] (Element.text "Email")
@@ -164,7 +166,7 @@ emailPanel model =
   ]
 
 
-emailSubjectInput : Model a -> Element Msg
+emailSubjectInput : Model (Html Msg) -> Element Msg
 emailSubjectInput model =
     Input.text [width (px 400), height (px 30) , Font.color black] {
         text = model.emailSubject 
@@ -175,21 +177,21 @@ emailSubjectInput model =
 
 -- HELPERS
 
-listUsersButton : Model a -> Element Msg 
+listUsersButton : Model (Html Msg) -> Element Msg 
 listUsersButton model = 
     Input.button (Widget.buttonStyle  (px 115)) {
       onPress =  Just GetUsers
     , label = Element.el [] (Element.text ("List users"))
     }
 
-sendEmailButton : Model a -> Element Msg 
+sendEmailButton : Model (Html Msg) -> Element Msg 
 sendEmailButton model = 
     Input.button (Widget.whiteButtonStyle (px 90) ) {
       onPress =  Just SendEmail
     , label = Element.el [] (Element.text ("Send email"))
     }
 
-textArea : Model a -> Int -> Int -> Element Msg
+textArea : Model (Html Msg) -> Int -> Int -> Element Msg
 textArea model width_ height_  =
     Keyed.row []
         [ ( (String.fromInt model.counter)
