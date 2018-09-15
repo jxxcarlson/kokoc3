@@ -350,7 +350,8 @@ handleKey model key =
     Character "r" -> changeMode model Reading
     Character "i" -> changeMode model ImageEditing
     Character "a" -> changeMode model DisplayAuthors
-    Character "f" -> (model, focusSearchBox)
+    -- Character "f" -> (model, focusSearchBox)
+    Character "f" -> doFullRender model
     Character "h" -> goHome model
     Character "j" -> makeNewChildDocument model
     Character "e" -> toggleToolPanelState model
@@ -1231,6 +1232,16 @@ update msg model =
 -- UPDATE END    
 
 -- HELPERS
+
+doFullRender : Model -> (Model, Cmd Msg)
+doFullRender model = 
+  ({ model | bigEditRecord = updateBigEditRecordFull model model.currentDocument}, 
+     Random.generate NewSeed (Random.int 1 10000))
+
+updateBigEditRecordFull : Model -> Document -> BigEditRecord Msg
+updateBigEditRecordFull model document =
+   BigEditRecord.updateFromDocument (BigEditRecord.empty 0 0) document (Common.texMacros model) model.seed
+
 
 updateBigEditRecord : Model -> Document -> BigEditRecord Msg
 updateBigEditRecord model document =
