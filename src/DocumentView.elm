@@ -39,11 +39,6 @@ type DocViewMsg =
   | LoadMasterWithCurrentSelection Int
   | GetPublicDocumentsRawQuery2 String
 
-type alias DocumentView msg = 
-  {    title: String
-     , content: Element msg 
-   }
-
 
 type alias DocumentViewData = {
     viewport : Viewport  
@@ -211,13 +206,6 @@ viewChild parentId child =
 -- HELPERS
 
 
-edges =
-    { top = 0
-    , right = 0
-    , bottom = 0
-    , left = 0
-    }
-
 texWidth : Viewport -> Int 
 texWidth viewport = 
   case (currentDevice viewport).class of 
@@ -233,4 +221,3 @@ currentDevice  viewport =
     classifyDevice {width = round width, height = round height}
 
   
-edge = {left = 0, right = 0, top = 0, bottom = 0}
