@@ -14,6 +14,7 @@ module Model exposing(
     , initialModel
     , ToolMenuState(..)
     , DocumentListSource(..)
+    , MiniLatexRenderMode(..)
   )
 
 import Browser.Dom exposing(Viewport)
@@ -128,6 +129,7 @@ type alias Model =
       , debugString : String 
       , focusedElement : FocusedElement 
       , seed : Int
+      , miniLatexRenderMode : MiniLatexRenderMode 
 
     }
 
@@ -277,6 +279,7 @@ initialModel locationHref windowWidth windowHeight document =
             , debugString = ""
             , focusedElement = NoFocus
             , seed = 0
+            , miniLatexRenderMode = RenderFull
         }
 
 type ToolMenuState = HideToolMenu| ShowToolMenu
@@ -284,3 +287,5 @@ type ToolMenuState = HideToolMenu| ShowToolMenu
 type DocumentListSource = SearchResults | RecentDocumentsQueue
 
 type FocusedElement = FocusOnSearchBox | NoFocus
+
+type MiniLatexRenderMode = RenderFull | RenderIncremental

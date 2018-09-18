@@ -52,7 +52,8 @@ import Model exposing(
     , initialModel
     , ToolMenuState(..)
     , DocumentListSource(..)
-    , FocusedElement(..) 
+    , FocusedElement(..)
+    , MiniLatexRenderMode(..) 
   )
 
 import Queue exposing(Queue)
@@ -329,9 +330,6 @@ preventDefaultOn string decoder =
 
 keyGateway : Model -> (List Key, Maybe Keyboard.KeyChange) -> ( Model, Cmd Msg )
 keyGateway model (pressedKeys, maybeKeyChange) =
-  let   
-    _ = Debug.log "pressedKeys" pressedKeys 
-  in
     if List.member Control model.pressedKeys then
         handleKey { model | pressedKeys = pressedKeys} (headKey pressedKeys)
     else if model.focusedElement == FocusOnSearchBox && List.member Enter model.pressedKeys then
@@ -344,10 +342,7 @@ keyGateway model (pressedKeys, maybeKeyChange) =
 
 
 handleKey : Model -> Key -> (Model, Cmd Msg)
-handleKey model key =
-  let   
-    _ = Debug.log "key" key  
-  in 
+handleKey model key = 
   case key of 
     Character "s" -> saveCurrentDocument model
     Character "=" -> saveCurrentDocument model    
@@ -874,8 +869,8 @@ update msg model =
           let  
             currentDocument = model.currentDocument 
             nextCurrentDocument = { currentDocument | content = str }
-            -- ###BER
-            nextBigEditRecord = BigEditRecord.updateFromDocument model.bigEditRecord nextCurrentDocument (Common.texMacros model) model.seed
+            -- ###
+            nextBigEditRecord = updateBigEditRecord model nextCurrentDocument
             nextDocumentList = DocumentList.updateDocument nextCurrentDocument model.documentList
             nextDocumentQueue = Queue.replaceUsingPredicate (\doc -> doc.id == nextCurrentDocument.id) nextCurrentDocument model.recentDocumentQueue
           in  
@@ -1251,7 +1246,11 @@ updateBigEditRecordFull model document =
 
 updateBigEditRecord : Model -> Document -> BigEditRecord Msg
 updateBigEditRecord model document =
-   BigEditRecord.updateFromDocument model.bigEditRecord document (Common.texMacros model) model.seed
+   case model.miniLatexRenderMode of  
+     RenderFull -> BigEditRecord.updateFromDocument (BigEditRecord.empty 0 0) document (Common.texMacros model) model.seed
+     RenderIncremental -> BigEditRecord.updateFromDocument (BigEditRecord.empty 0 0) document (Common.texMacros model) model.seed
+     -- BigEditRecord.updateFromDocument model.bigEditRecord document (Common.texMacros model) model.seed
+   
 
 imageAccessbilityToBool : ImageAccessibility -> Bool 
 imageAccessbilityToBool imageAccessibility = 
