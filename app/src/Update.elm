@@ -329,6 +329,9 @@ preventDefaultOn string decoder =
 
 keyGateway : Model -> (List Key, Maybe Keyboard.KeyChange) -> ( Model, Cmd Msg )
 keyGateway model (pressedKeys, maybeKeyChange) =
+  let   
+    _ = Debug.log "pressedKeys" pressedKeys 
+  in
     if List.member Control model.pressedKeys then
         handleKey { model | pressedKeys = pressedKeys} (headKey pressedKeys)
     else if model.focusedElement == FocusOnSearchBox && List.member Enter model.pressedKeys then
@@ -341,7 +344,10 @@ keyGateway model (pressedKeys, maybeKeyChange) =
 
 
 handleKey : Model -> Key -> (Model, Cmd Msg)
-handleKey model key = 
+handleKey model key =
+  let   
+    _ = Debug.log "key" key  
+  in 
   case key of 
     Character "s" -> saveCurrentDocument model
     Character "=" -> saveCurrentDocument model    
@@ -362,7 +368,7 @@ handleKey model key =
     Character "u" -> togglePreferences model
     Character "v" -> doIncrementVersion model
     Character "0" -> goToStart model
-
+    F20 -> (model, Cmd.none)
     _ -> (model, Cmd.none)
 
 focusSearchBox : Cmd Msg
@@ -1568,7 +1574,7 @@ pushDocument document =
 headKey : List Key -> Key
 headKey keyList =
     keyList 
-      |> List.filter (\item -> item /= Control)
+      |> List.filter (\item -> item /= Control && item /= Character "^")
       |> List.head 
       |> Maybe.withDefault F20
 
