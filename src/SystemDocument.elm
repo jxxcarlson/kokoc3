@@ -1,35 +1,41 @@
-module SystemDocument exposing(
-      newDocument
+module SystemDocument exposing
+    ( newDocument
     , newUser
     , signIn
-    , signedUp
     , signedOut
+    , signedUp
     , welcome
-   )
+    )
 
-import Configuration 
-import Document  exposing(Document, basicDocument)
+import Configuration
+import Document exposing (Document, basicDocument)
 
-newUser : Document 
-newUser = 
-  { basicDocument | title = "Welcome!", content = Configuration.newUserText }
 
-newDocument : Document 
-newDocument = 
-   { basicDocument | title = "New document", public = False, content = Configuration.newMiniLatexDocumentText }
+newUser : Document
+newUser =
+    { basicDocument | title = "Welcome!", content = Configuration.newUserText }
 
-welcome : Document 
-welcome = 
-  { basicDocument | title = "Welcome!" }
 
-signIn : Document 
-signIn = 
-  { basicDocument | title = "You are signed in", content = Configuration.signInText}
+newDocument : Document
+newDocument =
+    { basicDocument | title = "New document", public = False, content = Configuration.newMiniLatexDocumentText }
 
-signedOut : Document 
-signedOut = 
-  { basicDocument | title = "Signed out", content = Configuration.signedOutText}
 
-signedUp : Document 
-signedUp = 
-  { basicDocument | title = "Welcome to kNode!!", content = Configuration.signedUpText}
+welcome : Document
+welcome =
+    { basicDocument | title = "Welcome!" }
+
+
+signIn : Document
+signIn =
+    { basicDocument | title = "You are signed in", content = Configuration.signInText }
+
+
+signedOut : Document
+signedOut =
+    { basicDocument | title = "Signed out", content = Configuration.signedOutText }
+
+
+signedUp : Document
+signedUp =
+    { basicDocument | title = "Welcome to kNode!!", content = Configuration.signedUpText }

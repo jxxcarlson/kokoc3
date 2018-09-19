@@ -1,10 +1,9 @@
-module KVList
-    exposing
-        ( intValueForKey
-        , stringValueForKey
-        , removeKey
-        , setIntValueForKey
-        )
+module KVList exposing
+    ( intValueForKey
+    , removeKey
+    , setIntValueForKey
+    , stringValueForKey
+    )
 
 {-| Tags the form k:v define a key-value pair.
 The function extractValue key taglist resturns
@@ -30,7 +29,7 @@ intValueForKey key tags =
                 Just tag ->
                     keyValueIntHelper tag
     in
-        value
+    value
 
 
 stringValueForKey : String -> List String -> Maybe String
@@ -49,7 +48,7 @@ stringValueForKey key tags =
                 Just tag ->
                     keyValueStringHelper tag
     in
-        value
+    value
 
 
 removeKey : String -> List String -> List String
@@ -68,12 +67,12 @@ keyValueIntHelper tag =
         maybeIdString =
             tag |> String.split ":" |> List.drop 1 |> List.head
     in
-        case maybeIdString of
-            Nothing ->
-                Nothing
+    case maybeIdString of
+        Nothing ->
+            Nothing
 
-            Just idString ->
-                idString |> String.toInt 
+        Just idString ->
+            idString |> String.toInt
 
 
 keyValueStringHelper : String -> Maybe String

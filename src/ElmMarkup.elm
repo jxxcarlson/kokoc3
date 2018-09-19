@@ -1,24 +1,30 @@
-module ElmMarkup exposing(view)
+module ElmMarkup exposing (view)
 
+import Document exposing (Document)
 import Element exposing (..)
 import Element.Background as Background
+import Element.Border as Border
 import Element.Font as Font
 import Element.Keyed as Keyed
-import Element.Border as Border
 import Mark
-import Document exposing(Document)
 
-view : Document -> Element msg 
+
+view : Document -> Element msg
 view document =
-  let 
-    parsedElement = 
-      case Mark.parseWith options (document.content) of 
-        Ok parsedContent -> (parsedContent Element.none)
-        Err error -> Element.el [] (Element.text "Oops, Markup parse error")
-  in 
-    Element.row [ 
-           Element.paddingEach {top = 0, bottom = 120, left = 0, right = 0}
-         ] [parsedElement]
+    let
+        parsedElement =
+            case Mark.parseWith options document.content of
+                Ok parsedContent ->
+                    parsedContent Element.none
+
+                Err error ->
+                    Element.el [] (Element.text "Oops, Markup parse error")
+    in
+    Element.row
+        [ Element.paddingEach { top = 0, bottom = 120, left = 0, right = 0 }
+        ]
+        [ parsedElement ]
+
 
 options =
     { styling =
@@ -26,11 +32,12 @@ options =
     , blocks =
         Mark.defaultBlocks
     , inlines =
-         []
+        []
     }
 
 
-elmMarkupDefaults = { root =
+elmMarkupDefaults =
+    { root =
         [ Element.spacing 24
         , Element.width (Element.px 600)
         , Element.centerX
@@ -94,6 +101,7 @@ elmMarkupDefaults = { root =
         [ Font.size 36 ]
     }
 
+
 defaultListToken : Mark.Cursor -> Mark.ListIcon -> Element msg
 defaultListToken cursor symbol =
     let
@@ -146,10 +154,14 @@ defaultListToken cursor symbol =
 cursorLevel ( current, nested ) =
     List.length nested + 1
 
+
 mapCursor fn ( head, tail ) =
     List.map fn (head :: tail)
 
+
+
 -- HELPERS
+
 
 edges =
     { top = 0

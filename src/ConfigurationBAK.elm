@@ -1,55 +1,78 @@
-module Configuration exposing(
-    backend
-   , client
-   , autosaveDuration
-   , debounceDelay  
-   , coverArtUrl
-   , userManualId
-   , basicDocumentText
-   , newMiniLatexDocumentText
-   , newUserText
-   , signInText
-   , signedOutText
-   , signedUpText 
-   , welcomeText
-   , bucket
-   , timeout
-   , adminUsername)
+module Configuration exposing
+    ( adminUsername
+    , autosaveDuration
+    , backend
+    , basicDocumentText
+    , bucket
+    , client
+    , coverArtUrl
+    , debounceDelay
+    , newMiniLatexDocumentText
+    , newUserText
+    , signInText
+    , signedOutText
+    , signedUpText
+    , timeout
+    , userManualId
+    , welcomeText
+    )
 
 
-adminUsername : String 
-adminUsername = "jxxcarlson"
+adminUsername : String
+adminUsername =
+    "jxxcarlson"
 
-timeout : Float 
-timeout = 20000
+
+timeout : Float
+timeout =
+    20000
+
 
 backend : String
-backend = "https://nshost.herokuapp.com"
+backend =
+    "https://nshost.herokuapp.com"
 
-client : String 
-client = "https://knode.io"
+
+client : String
+client =
+    "https://knode.io"
 
 
 bucket : String
-bucket = "noteimages"
+bucket =
+    "noteimages"
 
-autosaveDuration : Float 
+
+autosaveDuration : Float
 autosaveDuration =
-  8*1000 -- in milliseconds
+    8 * 1000
+
+
+
+-- in milliseconds
+
 
 debounceDelay : Float
-debounceDelay = 250
+debounceDelay =
+    250
 
-coverArtUrl : String 
-coverArtUrl = "http://noteimages.s3.amazonaws.com/app_images/robin2.jpg"
 
-userManualId : Int  
-userManualId = 750
+coverArtUrl : String
+coverArtUrl =
+    "http://noteimages.s3.amazonaws.com/app_images/robin2.jpg"
+
+
+userManualId : Int
+userManualId =
+    750
+
+
 
 -- TEXT
 
-signInText = 
-   """
+
+signInText =
+    """
 This is localhost:8000, ready to run MiniLatex, Asciidoc, or Markdown.
 
 $$\\int_0^1 x^n dx = \\frac{1}{n+1}$$
@@ -57,15 +80,17 @@ $$\\int_0^1 x^n dx = \\frac{1}{n+1}$$
 Click on \\strong{Home} to go to your home page
 """
 
+
 signedOutText : String
-signedOutText = 
+signedOutText =
     """
 You are now signed out. See you later.
 """
 
+
 signedUpText : String
 signedUpText =
- """ 
+    """ 
 Welcome to localhost:8000.  We are ready to run MiniLatex, Asciidoc, or Markdown for you
 
 $$\\int_0^1 x^n dx = \\frac{1}{n+1}$$
@@ -74,12 +99,14 @@ Click on \\strong{Home} to go to your home page.
 Click on \\strong{Write} to create or edit a document.
 """
 
-newMiniLatexDocumentText = 
+
+newMiniLatexDocumentText =
     """
     NEW DOCUMENT: WRITE YOUR TEXT HERE
 """
 
-newMiniLatexDocumentText1 = 
+
+newMiniLatexDocumentText1 =
     """
 \\tableofcontents
 
@@ -103,7 +130,8 @@ $$\\int_0^1 x^n dx = \\frac{1}{n+1}$$
 \\href{\\https://nytimes.com}{The New York Times}
 """
 
-basicDocumentText = 
+
+basicDocumentText =
     """
 This is \\strong{localhost:8000}, ready to run MiniLatex,
 Asciidoc, Markdown, or just plain old text.
@@ -154,7 +182,8 @@ Jim Carlson: jxxcarlson at gmail.
 \\bigskip
 """
 
-newUserText = 
+
+newUserText =
     """
 Welcome!
 
@@ -177,7 +206,8 @@ the search box, e.g., \\italic{matt}, \\italic{wave}, or \\italic{snow}.
 \\image{https://noteimages.s3.amazonaws.com/app_images/vintage-typewriter-in-black-and-white-lynn-langmade.jpg}{}{width: 450}
 """
 
-welcomeText = 
+
+welcomeText =
     """
 \\section{Getting started}
 

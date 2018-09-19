@@ -1,48 +1,53 @@
-module OnClickOutside exposing(..) 
+module OnClickOutside exposing (withId)
+
+{-|
+
+@docs withId, succeedIfClickIsOustideOfId
+
+-}
 
 -- (withId, withIdElement,  succeedIfClickIsOutsideOfId)
 
-{-| @docs withId, succeedIfClickIsOustideOfId
--}
-
-import Html
-import Html.Attributes 
-import Html.Events
 import Element
+import Html
+import Html.Attributes
+import Html.Events
 import Json.Decode as Decode exposing (Decoder)
 
 
-
 succeedOrDecodeParent : String -> (String -> Decoder Bool)
-succeedOrDecodeParent targetId = 
-   \id -> 
-      if id == targetId then
-        Decode.succeed True
-      else
-        Decode.field "parentNode" (succeedIfBloodlineHasId targetId)
+succeedOrDecodeParent targetId =
+    \id ->
+        if id == targetId then
+            Decode.succeed True
+
+        else
+            Decode.field "parentNode" (succeedIfBloodlineHasId targetId)
+
 
 succeedIfBloodlineHasId : String -> Decoder Bool
 succeedIfBloodlineHasId targetId =
-       Decode.andThen (succeedOrDecodeParent targetId) (Decode.field "id" Decode.string)
-           
+    Decode.andThen (succeedOrDecodeParent targetId) (Decode.field "id" Decode.string)
+
 
 mapToBoolDecoder : Maybe a -> Decoder Bool
 mapToBoolDecoder maybe =
-   if maybe == Nothing then
-     Decode.succeed True
-   else
-     Decode.succeed False
-  
+    if maybe == Nothing then
+        Decode.succeed True
+
+    else
+        Decode.succeed False
+
+
 boolDecoder : Decoder a -> Decoder Bool
 boolDecoder decoder =
     Decode.andThen mapToBoolDecoder (Decode.maybe decoder)
-            
 
 
 {-| This is a Json.Decoder that you can use to decode a DOM
 [FocusEvent](https://developer.mozilla.org/en-US/docs/Web/API/FocusEvent).
 
-It will *fail* if `event.relatedTarget` or any of its ancestors have the
+It will _fail_ if `event.relatedTarget` or any of its ancestors have the
 given DOM id.
 
 It will succeed otherwise.
@@ -76,6 +81,7 @@ withId id onClickOutsideMsg =
     , Html.Events.on "focusout" <| Decode.map onClickOutsideMsg (succeedIfClickIsOutsideOfId id)
     ]
 
+
 withIdElement : String -> (Bool -> msg) -> List (Element.Attribute msg)
-withIdElement id onClickOutsideMsg = 
-  withId id onClickOutsideMsg |> List.map Element.htmlAttribute
+withIdElement id onClickOutsideMsg =
+    withId id onClickOutsideMsg |> List.map Element.htmlAttribute
