@@ -1,4 +1,7 @@
-module OnClickOutside exposing (withId)
+module OnClickOutside exposing
+    ( withId
+    , withIdElement
+    )
 
 {-|
 
