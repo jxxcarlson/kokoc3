@@ -233,7 +233,7 @@ type Msg
     | IncrementVersion
     | ToggleDocumentSource
     | UserClicksOutsideSearchBox Bool
-    | SetFocusOnSearchBox (Result Browser.Dom.Error ())
+    | SetFocusOnSearchBox (Result Dom.Error ())
     | GenerateSeed
     | NewSeed Int
 

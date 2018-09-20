@@ -372,12 +372,12 @@ preventDefaultOn string decoder =
 keyGateway : Model -> ( List Key, Maybe Keyboard.KeyChange ) -> ( Model, Cmd Msg )
 keyGateway model ( pressedKeys, maybeKeyChange ) =
     if List.member Control model.pressedKeys then
-        handleKey { model | pressedKeys = pressedKeys } (headKey pressedKeys)
+        handleKey { model | pressedKeys = []} (headKey pressedKeys)
 
     else if model.focusedElement == FocusOnSearchBox && List.member Enter model.pressedKeys then
         let
             newModel =
-                { model | pressedKeys = pressedKeys }
+                { model | pressedKeys = [] }
         in
         doSearch newModel
 
