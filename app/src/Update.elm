@@ -371,18 +371,22 @@ preventDefaultOn string decoder =
 
 keyGateway : Model -> ( List Key, Maybe Keyboard.KeyChange ) -> ( Model, Cmd Msg )
 keyGateway model ( pressedKeys, maybeKeyChange ) =
-    if List.member Control model.pressedKeys then
-        handleKey { model | pressedKeys = []} (headKey pressedKeys)
+    -- let
+    --     _ =
+    --         Debug.log "PK" pressedKeys
+    -- in
+        if List.member Control model.pressedKeys then
+            handleKey { model | pressedKeys = [] } (headKey pressedKeys)
 
-    else if model.focusedElement == FocusOnSearchBox && List.member Enter model.pressedKeys then
-        let
-            newModel =
-                { model | pressedKeys = [] }
-        in
-        doSearch newModel
+        else if model.focusedElement == FocusOnSearchBox && List.member Enter model.pressedKeys then
+            let
+                newModel =
+                    { model | pressedKeys = [] }
+            in
+            doSearch newModel
 
-    else
-        ( { model | pressedKeys = pressedKeys }, Cmd.none )
+        else
+            ( { model | pressedKeys = pressedKeys }, Cmd.none )
 
 
 handleKey : Model -> Key -> ( Model, Cmd Msg )
@@ -2218,7 +2222,7 @@ newDocumentForUserWithParent user model =
         selectedDocumentId =
             case DocumentList.selected model.documentList of
                 Nothing ->
-                    0
+                    parentId
 
                 Just selectedDoc ->
                     selectedDoc.id
