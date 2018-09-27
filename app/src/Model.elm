@@ -236,6 +236,7 @@ type Msg
     | SetFocusOnSearchBox (Result Dom.Error ())
     | GenerateSeed
     | NewSeed Int
+    | DoFullRender
 
 
 initialModel : String -> Int -> Int -> Document -> Model
@@ -299,7 +300,7 @@ initialModel locationHref windowWidth windowHeight document =
     , debugString = ""
     , focusedElement = NoFocus
     , seed = 0
-    , miniLatexRenderMode = RenderFull
+    , miniLatexRenderMode = RenderIncremental
     }
 
 

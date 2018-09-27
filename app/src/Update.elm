@@ -375,18 +375,18 @@ keyGateway model ( pressedKeys, maybeKeyChange ) =
     --     _ =
     --         Debug.log "PK" pressedKeys
     -- in
-        if List.member Control model.pressedKeys then
-            handleKey { model | pressedKeys = [] } (headKey pressedKeys)
+    if List.member Control model.pressedKeys then
+        handleKey { model | pressedKeys = [] } (headKey pressedKeys)
 
-        else if model.focusedElement == FocusOnSearchBox && List.member Enter model.pressedKeys then
-            let
-                newModel =
-                    { model | pressedKeys = [] }
-            in
-            doSearch newModel
+    else if model.focusedElement == FocusOnSearchBox && List.member Enter model.pressedKeys then
+        let
+            newModel =
+                { model | pressedKeys = [] }
+        in
+        doSearch newModel
 
-        else
-            ( { model | pressedKeys = pressedKeys }, Cmd.none )
+    else
+        ( { model | pressedKeys = pressedKeys }, Cmd.none )
 
 
 handleKey : Model -> Key -> ( Model, Cmd Msg )
@@ -1619,6 +1619,9 @@ update msg model =
         NewSeed newSeed ->
             ( { model | seed = newSeed }, Cmd.none )
 
+        DoFullRender -> 
+           doFullRender model
+
 
 
 -- UPDATE END
@@ -1627,7 +1630,7 @@ update msg model =
 
 doFullRender : Model -> ( Model, Cmd Msg )
 doFullRender model =
-    ( { model | bigEditRecord = updateBigEditRecordFull model model.currentDocument }
+    ( { model | bigEditRecord = updateBigEditRecordFull model model.currentDocument, toolMenuState = HideToolMenu }
     , Random.generate NewSeed (Random.int 1 10000)
     )
 
@@ -1644,7 +1647,7 @@ updateBigEditRecord model document =
             BigEditRecord.updateFromDocument (BigEditRecord.empty 0 0) document (Common.texMacros model) model.seed
 
         RenderIncremental ->
-            BigEditRecord.updateFromDocument (BigEditRecord.empty 0 0) document (Common.texMacros model) model.seed
+            BigEditRecord.updateFromDocument model.bigEditRecord document (Common.texMacros model) model.seed
 
 
 

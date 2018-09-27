@@ -624,6 +624,8 @@ displayMenuItems model =
                 , newSubDocumentItem
                 , incrementVersionItem
                 , separator
+                , fullRenderItem
+                , separator
                 , toggleEditPanelItem
                 , toggleUserPreferencesItem
                 , printItem
@@ -767,4 +769,12 @@ toggleUserPreferencesItem =
     Input.button (Widget.menuItemStyle (px 160))
         { onPress = Just TogglePreferencesPanel
         , label = Element.el [] (Element.text "User preferences Ctrl-U")
+        }
+
+
+fullRenderItem : Element Msg
+fullRenderItem =
+    Input.button (Widget.menuItemStyle (px 160))
+        { onPress = Just DoFullRender
+        , label = Element.el [] (Element.text "Full Render Ctrl-F")
         }
