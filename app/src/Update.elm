@@ -1281,7 +1281,7 @@ update msg model =
             ( { model | currentDocument = nextCurrentDocument }, Cmd.none )
 
         Test ->
-            ( model, getViewPortOfRenderedText "p.0.10" )
+            ( model, getViewPortOfRenderedText "_textView_" )
 
         -- (model, Cmd.map ImageMsg <| ImageManager.getImageList model.currentDocument)
         ReadImage v ->
@@ -1619,8 +1619,8 @@ update msg model =
         NewSeed newSeed ->
             ( { model | seed = newSeed }, Cmd.none )
 
-        DoFullRender -> 
-           doFullRender model
+        DoFullRender ->
+            doFullRender model
 
 
 

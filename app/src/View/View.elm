@@ -118,8 +118,7 @@ footer model =
         [ Element.el [ width (px 240), Font.family [ Font.typeface "Courier", Font.monospace ] ] (text model.message)
         , Element.el [ documentDirtyIndicator model, padding 5 ] (text ("id " ++ String.fromInt model.currentDocument.id))
         , Element.el [] (text <| docInfo model.currentDocument)
-
-        -- , testButton model
+        , testButton model
         , printDocumentButton model
         , exportDocumentlLink model
         , getAuthorsDocumentsButton (px 110) model
@@ -128,7 +127,7 @@ footer model =
         , Element.el [] (text <| Configuration.client)
 
         -- , Element.el [] (text <| "access: " ++ (Document.accessDictToString model.currentDocument.access))
-        -- , Element.el [] (text <| viewportInfo model)
+        , Element.el [] (text <| viewportInfo model)
         ]
 
 
@@ -144,7 +143,7 @@ viewportInfo model =
                     vp.viewport.x |> String.fromFloat
 
                 y =
-                    vp.viewport.x |> String.fromFloat
+                    vp.viewport.y |> String.fromFloat
 
                 h =
                     vp.viewport.height |> String.fromFloat
@@ -158,7 +157,7 @@ viewportInfo model =
                 sh =
                     vp.scene.height |> String.fromFloat
             in
-            "x = " ++ x ++ ", y = " ++ y ++ ", h = " ++ h ++ ", w = " ++ w ++ ", sw = " ++ sw ++ ", sh = " ++ sh
+            "y = " ++ y ++ ", h = " ++ h ++ ", sh = " ++ sh
 
 
 yCoordinateForRenderedText : Model -> Float
