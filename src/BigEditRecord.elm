@@ -14,7 +14,7 @@ type BigEditRecord msg
 
 empty : Int -> Int -> BigEditRecord msg
 empty docId_ seed_ =
-    BigEditRecord MiniLatex.emptyEditRecord docId_ seed_
+    BigEditRecord MiniLatex.emptyStringRecord docId_ seed_
 
 
 isEmpty : BigEditRecord msg -> Bool
