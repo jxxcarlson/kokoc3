@@ -14,7 +14,7 @@ import Browser.Dom as Dom
 import Configuration
 import Debounce exposing (Debounce)
 import DocViewMsg exposing (DocViewMsg(..))
-import Document exposing (DocMsg(..), DocType(..), Document, TextType(..), printUrl)
+import Document exposing (DocMsg(..), DocType(..), Document, TextType(..), printUrl, DocumentRecord)
 import DocumentDictionary exposing (DocDictMsg(..), DocumentDictionary)
 import DocumentList
     exposing
@@ -36,6 +36,7 @@ import Keyboard exposing (Key(..))
 import Keyboard.Arrows
 import List.Extra
 import Mail
+import Task exposing(Task)
 import Model
     exposing
         ( AppMode(..)
@@ -1763,7 +1764,7 @@ doNewStandardDocument model =
         Nothing ->
             ( model, Cmd.none )
 
-        Just _ ->
+        Just user ->
             ( { model
                 | toolPanelState = ShowToolPanel
                 , documentTitle = "NEW DOCUMENT"
@@ -1771,10 +1772,17 @@ doNewStandardDocument model =
                 , toolMenuState = HideToolMenu
                 , appMode = Writing
               }
-            , Cmd.batch
-                [ Cmd.map DocMsg (newDocument model Standard)
-                , saveCurrentDocumentIfDirty model
-                ]
+            , 
+            Task.attempt 
+              (DocMsg << NewDocumentCreated)
+              ((saveCurrentDocumentIfDirtyTask model)
+                  |> Task.andThen
+                  (\_ -> newDocumentForUserTask user model Standard))
+              
+            -- Cmd.batch
+            --     [ Cmd.map DocMsg (newDocument model Standard)
+            --     , saveCurrentDocumentIfDirty model
+            --     ]
             )
 
 
@@ -2020,6 +2028,19 @@ saveCurrentDocumentIfDirty model =
             in
             Cmd.map DocMsg <| Document.saveDocument token model.currentDocument
 
+saveCurrentDocumentIfDirtyTask : Model -> Task Http.Error DocumentRecord
+saveCurrentDocumentIfDirtyTask model =
+    case model.currentDocumentDirty of
+        False ->
+           Task.succeed { document = SystemDocument.empty} 
+
+        True ->
+            let
+                token =
+                    User.getTokenStringFromMaybeUser model.maybeCurrentUser
+            in
+              Document.saveDocumentTask token model.currentDocument
+
 
 signIn : Model -> ( Model, Cmd Msg )
 signIn model =
@@ -2140,6 +2161,14 @@ newDocument model docType =
         Just user ->
             newDocumentForUser user model docType
 
+-- newDocumentTask : Model -> DocType -> Task Http.Error DocumentRecord
+-- newDocumentTask model docType =
+--     case model.maybeCurrentUser of
+--         Nothing ->
+--            Task.none
+
+--         Just user ->
+--             newDocumentForUser user model docType
 
 newDocumentForUser : User -> Model -> DocType -> Cmd DocMsg
 newDocumentForUser user model docType =
@@ -2164,6 +2193,31 @@ newDocumentForUser user model docType =
                     selectedDoc.id
     in
     Document.createDocument (User.getTokenString user) (makeNewDocument user docType)
+
+newDocumentForUserTask : User -> Model -> DocType ->Task Http.Error DocumentRecord
+newDocumentForUserTask user model docType =
+    let
+        headDocument =
+            DocumentList.getFirst model.documentList
+
+        parentId =
+            case headDocument.docType of
+                Master ->
+                    headDocument.id
+
+                Standard ->
+                    0
+
+        selectedDocumentId =
+            case DocumentList.selected model.documentList of
+                Nothing ->
+                    0
+
+                Just selectedDoc ->
+                    selectedDoc.id
+    in
+    Document.createDocumentTask (User.getTokenString user) (makeNewDocument user docType)
+
 
 
 makeNewDocument : User -> DocType -> Document

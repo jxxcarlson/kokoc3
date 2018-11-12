@@ -91,8 +91,11 @@ type SignupMode
     | SigninMode
 
 
+{-| 57 components
+-}
 type alias Model =
     { message : String
+    -- USER
     , password : String
     , username : String
     , email : String
@@ -100,7 +103,14 @@ type alias Model =
     , maybeToken : Maybe Token
     , maybeCurrentUser : Maybe User
     , maybeBigUser : Maybe BigUser
+    , userList : List BigUser
+    , sharingString : String
+    , blurb : String
+    , emailSubject : String
+    , emailText : String
+    -- SEARCH
     , searchQueryString : String
+    -- DOCUMENT
     , currentDocument : Document
     , bigEditRecord : BigEditRecord Msg
     , selectedDocumentId : Int
@@ -110,11 +120,18 @@ type alias Model =
     , documentDictionary : DocumentDictionary
     , counter : Int
     , debounceCounter : Int
-    , appMode : AppMode
     , debounce : Debounce String
     , sourceText : String
     , currentDocumentDirty : Bool
     , autosaveDuration : Float
+    , deleteDocumentState : DeleteDocumentState
+    , miniLatexRenderMode : MiniLatexRenderMode
+    , masterDocLoaded : Bool
+    , recentDocumentQueue : Queue Document
+    , documentListSource : DocumentListSource
+    , seed : Int
+    -- UI
+    , appMode : AppMode
     , toolPanelState : ToolPanelState
     , documentTitle : String
     , tagString : String
@@ -122,121 +139,115 @@ type alias Model =
     , windowHeight : Int
     , viewport : Viewport
     , viewPortOfRenderedText : Maybe Viewport
-    , deleteDocumentState : DeleteDocumentState
     , pressedKeys : List Key
     , locationHref : String
-    , masterDocLoaded : Bool
+    , errorResponse : ErrorResponse
+    , preferencesPanelState : PreferencesPanelState
+    , toolMenuState : ToolMenuState
+    , debugString : String
+    , focusedElement : FocusedElement
+    -- IMAGE
     , maybeImageString : Maybe String
     , maybeFileData : Maybe FileData
     , fileValue : Encode.Value
     , psurl : String
-    , userList : List BigUser
     , imageName : String
     , imageList : List Image
     , imageMode : ImageMode
     , maybeCurrentImage : Maybe Image
     , imageAccessibility : ImageAccessibility
-    , emailSubject : String
-    , emailText : String
-    , errorResponse : ErrorResponse
-    , blurb : String
-    , preferencesPanelState : PreferencesPanelState
-    , sharingString : String
-    , toolMenuState : ToolMenuState
-    , recentDocumentQueue : Queue Document
-    , documentListSource : DocumentListSource
-    , debugString : String
-    , focusedElement : FocusedElement
-    , seed : Int
-    , miniLatexRenderMode : MiniLatexRenderMode
     }
 
 
 
--- MSG
+-- MSG (80)
 
 
 type Msg
     = NoOp
     | Test
+    -- USER
     | AcceptPassword String
     | AcceptEmail String
     | AcceptUserName String
     | AcceptSearchQuery String
-    | Search
-    | AcceptDocumenTitle String
-    | AcceptDocumentTagString String
-    | AcceptSharingString String
-    | AcceptImageName String
-    | AcceptEmailSubject String
-    | AcceptEmailText String
-    | AcceptBlurb String
     | SendEmail
     | SignIn
     | SignOut
     | RegisterUser
     | SetSignupMode SignupMode
+    | AcceptEmailSubject String
+    | AcceptEmailText String
+    | AcceptBlurb String
+    | UserMsg User.UserMsg
+    | SessionStatus Posix
+    | GetUsers
+    | GetBigUser
+    | UpdateBigUser
+    -- DOCUMENBT
+    | Search
+    | AcceptDocumenTitle String
+    | AcceptDocumentTagString String
+    | AcceptSharingString String
+    | AcceptImageName String
+    | SetDocumentTextType TextType
+    | SetDocumentType DocType
     | GetDocumentById Int
     | GetPublicDocuments String
     | GetPublicDocumentsRawQuery String
-    | GetImages String
     | GetUserDocuments String
     | LoadMasterDocument String
-    | UserMsg User.UserMsg
     | DocMsg Document.DocMsg
-    | ImageMsg ImageManager.ImageMsg
-    | MailMsg Mail.MailMsg
-    | FileMsg Credentials.FileMsg
     | DocListMsg DocumentList.DocListMsg
     | DocListViewMsg DocumentListView.DocListViewMsg
     | DocViewMsg DocViewMsg
     | DocDictMsg DocumentDictionary.DocDictMsg
+    | GetContent String
+    | UpdateEditorContent String
+    | SaveCurrentDocument Posix
+    | UpdateCurrentDocument
+    | NewDocument
+    | NewMasterDocument
+    | NewChildDocument
+    | FindViewportOfRenderedText (Result Dom.Error Dom.Viewport)
+    | DeleteCurrentDocument
+    | CancelDeleteCurrentDocument
+    | SetDocumentPublic Bool
+    | IncrementVersion
+    | ToggleDocumentSource
+    | PrintDocument
+    | GenerateSeed
+    | NewSeed Int
+    | DoFullRender
+    -- IMAGE
+    | GetImages String
+    | ImageMsg ImageManager.ImageMsg
+    | MailMsg Mail.MailMsg
+    | FileMsg Credentials.FileMsg
+    | ReadImage Value
+    | ImageRead Value
+    | MakeImage
+    | SelectImage Image
+    | SelectImageLoader
+    | ToggleImageAccessibility
+    -- UI
     | GoToStart
     | GoHome
     | GoToUsersHomePage BigUser
     | ChangeMode AppMode
     | DebounceMsg Debounce.Msg
-    | GetContent String
-    | UpdateEditorContent String
-    | SaveCurrentDocument Posix
-    | UpdateCurrentDocument
     | Outside InfoForElm
     | LogErr String
     | ToggleToolPanelState
-    | NewDocument
-    | NewChildDocument
-    | SetDocumentTextType TextType
-    | SetDocumentType DocType
     | GetViewport Dom.Viewport
-    | FindViewportOfRenderedText (Result Dom.Error Dom.Viewport)
-    | DeleteCurrentDocument
-    | CancelDeleteCurrentDocument
     | KeyMsg Keyboard.Msg
     | GetUserManual
     | UrlChanged String
-    | SetDocumentPublic Bool
-    | ReadImage Value
-    | ImageRead Value
-    | SessionStatus Posix
-    | PrintDocument
-    | GetUsers
-    | GetBigUser
-    | UpdateBigUser
-    | MakeImage
-    | SelectImage Image
-    | SelectImageLoader
-    | ToggleImageAccessibility
     | TogglePreferencesPanel
     | ToggleUserPublicPrivate
-    | NewMasterDocument
     | ToggleToolMenu
-    | IncrementVersion
-    | ToggleDocumentSource
     | UserClicksOutsideSearchBox Bool
     | SetFocusOnSearchBox (Result Dom.Error ())
-    | GenerateSeed
-    | NewSeed Int
-    | DoFullRender
 
 
 initialModel : String -> Int -> Int -> Document -> Model

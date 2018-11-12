@@ -5,11 +5,15 @@ module SystemDocument exposing
     , signedOut
     , signedUp
     , welcome
+    , empty
     )
 
 import Configuration
 import Document exposing (Document, basicDocument)
 
+empty : Document
+empty = 
+   { basicDocument | title = "Empty", content = "empty" }
 
 newUser : Document
 newUser =

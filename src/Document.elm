@@ -9,6 +9,8 @@ module Document exposing
     , attachDocumentToMasterBelowCmd
     , basicDocument
     , createDocument
+    , createDocumentTask
+    , saveDocumentTask
     , decodeDocumentFromOutside
     , deleteDocument
     , documentDecoder
@@ -35,6 +37,7 @@ import Json.Encode as Encode
 import List.Extra
 import Time exposing (Posix)
 import Utility
+import Task exposing(Task)
 
 
 
@@ -717,6 +720,12 @@ createDocument tokenString document =
     Http.send NewDocumentCreated <| createDocumentRequest tokenString document
 
 
+createDocumentTask : String -> Document -> Task Http.Error DocumentRecord
+createDocumentTask tokenString document =
+    createDocumentRequest tokenString document
+      |> Http.toTask
+
+
 deleteDocumentRequest : String -> Document -> Http.Request String
 deleteDocumentRequest tokenString document =
     Http.request
@@ -739,6 +748,10 @@ saveDocument : String -> Document -> Cmd DocMsg
 saveDocument tokenString document =
     Http.send AcknowledgeUpdateOfDocument <| saveDocumentRequest tokenString document
 
+saveDocumentTask : String -> Document -> Task Http.Error DocumentRecord
+saveDocumentTask tokenString document =
+    saveDocumentRequest tokenString document
+      |> Http.toTask
 
 updateDocumentWithQueryString : String -> String -> Document -> Cmd DocMsg
 updateDocumentWithQueryString tokenString queryString document =
