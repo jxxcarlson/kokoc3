@@ -1778,11 +1778,6 @@ doNewStandardDocument model =
               ((saveCurrentDocumentIfDirtyTask model)
                   |> Task.andThen
                   (\_ -> newDocumentForUserTask user model Standard))
-              
-            -- Cmd.batch
-            --     [ Cmd.map DocMsg (newDocument model Standard)
-            --     , saveCurrentDocumentIfDirty model
-            --     ]
             )
 
 
@@ -1792,7 +1787,7 @@ doNewMasterDocument model =
         Nothing ->
             ( model, Cmd.none )
 
-        Just _ ->
+        Just user ->
             ( { model
                 | toolPanelState = ShowToolPanel
                 , documentTitle = "NEW MASTER DOCUMENT"
@@ -1800,10 +1795,12 @@ doNewMasterDocument model =
                 , toolMenuState = HideToolMenu
                 , appMode = Writing
               }
-            , Cmd.batch
-                [ Cmd.map DocMsg (newDocument model Master)
-                , saveCurrentDocumentIfDirty model
-                ]
+            , 
+            Task.attempt 
+              (DocMsg << NewDocumentCreated)
+              ((saveCurrentDocumentIfDirtyTask model)
+                  |> Task.andThen
+                  (\_ -> newDocumentForUserTask user model Master))
             )
 
 
@@ -2150,49 +2147,6 @@ getUserDocuments model queryString =
         , saveCurrentDocumentIfDirty model
         ]
     )
-
-
-newDocument : Model -> DocType -> Cmd DocMsg
-newDocument model docType =
-    case model.maybeCurrentUser of
-        Nothing ->
-            Cmd.none
-
-        Just user ->
-            newDocumentForUser user model docType
-
--- newDocumentTask : Model -> DocType -> Task Http.Error DocumentRecord
--- newDocumentTask model docType =
---     case model.maybeCurrentUser of
---         Nothing ->
---            Task.none
-
---         Just user ->
---             newDocumentForUser user model docType
-
-newDocumentForUser : User -> Model -> DocType -> Cmd DocMsg
-newDocumentForUser user model docType =
-    let
-        headDocument =
-            DocumentList.getFirst model.documentList
-
-        parentId =
-            case headDocument.docType of
-                Master ->
-                    headDocument.id
-
-                Standard ->
-                    0
-
-        selectedDocumentId =
-            case DocumentList.selected model.documentList of
-                Nothing ->
-                    0
-
-                Just selectedDoc ->
-                    selectedDoc.id
-    in
-    Document.createDocument (User.getTokenString user) (makeNewDocument user docType)
 
 newDocumentForUserTask : User -> Model -> DocType ->Task Http.Error DocumentRecord
 newDocumentForUserTask user model docType =
