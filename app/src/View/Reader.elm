@@ -61,7 +61,7 @@ body viewport portion_ model =
         , clipX
         , clipY
         ]
-        [ DocumentView.view <| Common.documentViewData model
+        [ DocumentView.view model
         ]
 
 

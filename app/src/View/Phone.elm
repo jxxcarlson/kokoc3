@@ -95,7 +95,7 @@ body model =
         , clipX
         , clipY
         ]
-        [ DocumentView.view <| Common.documentViewData model
+        [ DocumentView.view model
         ]
 
 

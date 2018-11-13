@@ -70,6 +70,7 @@ type alias Document =
     , lastViewed : Posix
     , created : Posix
     , modified : Posix
+    , randomInt : Int
     }
 
 
@@ -150,6 +151,7 @@ basicDocument =
         (Time.millisToPosix 0)
         (Time.millisToPosix 0)
         (Time.millisToPosix 0)
+        0
 
 
 newDocument : Document
@@ -196,6 +198,7 @@ documentDecoder =
         |> JPipeline.required "lastViewed" (Decode.map Time.millisToPosix Decode.int)
         |> JPipeline.required "created" (Decode.map Time.millisToPosix Decode.int)
         |> JPipeline.required "lastModified" (Decode.map Time.millisToPosix Decode.int)
+        |> JPipeline.hardcoded 0
 
 
 stringDecoder : Decoder String
@@ -283,6 +286,7 @@ decodeDocumentFromOutside =
         |> JPipeline.required "lastViewed" (Decode.map Time.millisToPosix Decode.int)
         |> JPipeline.required "created" (Decode.map Time.millisToPosix Decode.int)
         |> JPipeline.required "lastModified" (Decode.map Time.millisToPosix Decode.int)
+        |> JPipeline.hardcoded 0
 
 
 

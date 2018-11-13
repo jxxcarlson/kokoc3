@@ -1,4 +1,4 @@
-module DocumentView exposing (DocumentViewData, view)
+module DocumentView exposing (view)
 
 import BigEditRecord exposing (BigEditRecord)
 import Browser.Dom exposing (Viewport)
@@ -22,43 +22,33 @@ import MarkdownTools
 import MiniLatex.Differ exposing (EditRecord)
 import MiniLatex.MiniLatex as MiniLatex
 import MiniLatexTools
-import Model exposing (Msg)
+import Model exposing (Msg, Model)
 import View.Widget as Widget exposing (..)
+import DocumentDictionary
 
 
-type alias DocumentViewData =
-    { viewport : Viewport
-    , counter : Int
-    , debounceCounter : Int
-    , seed : Int
-    , texMacros : String
-    , document : Document
-    , bigEditRecord : BigEditRecord Msg
-    }
-
-
-view : DocumentViewData -> Element Msg
-view dvd =
+view : Model -> Element Msg
+view model =
     Element.column
         [ spacing 15
-        , width (px <| texWidth dvd.viewport)
+        , width (px <| texWidth model.viewport)
         , centerX
         , Element.htmlAttribute <| HA.attribute "id" "_textViewParent_"
         ]
-        [ titleLine dvd.document
-        , contentView dvd
+        [ titleLine model.currentDocument
+        , contentView model
         ]
 
 
-contentView : DocumentViewData -> Element Msg
-contentView dvd =
+contentView : Model -> Element Msg
+contentView model =
     Keyed.el
-        [ height (px (round <| dvd.viewport.viewport.height - 150))
+        [ height (px (round <| model.viewport.viewport.height - 150))
         , scrollbarY
         , clipX
         , Element.htmlAttribute <| HA.attribute "id" "_textView_"
         ]
-        ( String.fromInt dvd.counter, documentContentView dvd )
+        ( String.fromInt model.counter, documentContentView model )
 
 
 titleLine : Document -> Element Msg
@@ -116,53 +106,53 @@ loadChildrenButton document =
 {- #################################### -}
 
 
-documentContentView : DocumentViewData -> Element Msg
-documentContentView dvd =
-    case dvd.document.docType of
+documentContentView : Model -> Element Msg
+documentContentView model =
+    case model.currentDocument.docType of
         Master ->
-            Element.map Model.DocViewMsg <| viewCoverArt dvd.document
+            Element.map Model.DocViewMsg <| viewCoverArt model.currentDocument
 
         -- viewChildren document
         Standard ->
-            documentContentView_ dvd
+            documentContentView_ model
 
 
-documentContentView_ : DocumentViewData -> Element Msg
-documentContentView_ dvd =
-    case dvd.document.textType of
+documentContentView_ : Model -> Element Msg
+documentContentView_ model =
+    case model.currentDocument.textType of
         -- MiniLatex -> Element.el [] (Element.text "foo")
         MiniLatex ->
-            viewMiniLatex dvd
+            viewMiniLatex model
 
         Markdown ->
-            viewMarkdown dvd.document
+            viewMarkdown model.currentDocument
 
         Asciidoc ->
-            viewAsciidoc dvd.debounceCounter dvd.document.content
+            viewAsciidoc model.debounceCounter model.currentDocument.content
 
         AsciidocLatex ->
-            viewAsciidoc dvd.debounceCounter dvd.document.content
+            viewAsciidoc model.debounceCounter model.currentDocument.content
 
         PlainText ->
-            viewPlainText dvd.document
+            viewPlainText model.currentDocument
 
         ElmMarkup ->
-            ElmMarkup.view dvd.document
+            ElmMarkup.view model.currentDocument
 
 
-viewMiniLatex : DocumentViewData -> Element Msg
-viewMiniLatex dvd =
+viewMiniLatex : Model -> Element Msg
+viewMiniLatex model =
     let
         bigEditRecord =
-            if BigEditRecord.isEmpty dvd.bigEditRecord then
-                BigEditRecord.updateFromDocument dvd.bigEditRecord dvd.document dvd.texMacros dvd.seed
+            if BigEditRecord.isEmpty model.bigEditRecord then
+                BigEditRecord.updateFromDocument model.bigEditRecord model.currentDocument model.texMacros model.seed
 
             else
-                dvd.bigEditRecord
+                model.bigEditRecord
     in
     bigEditRecord
         |> BigEditRecord.getRenderedTextAsElements
-        |> List.map (\x -> Element.paragraph [ width (px (texWidth dvd.viewport)) ] [ x ])
+        |> List.map (\x -> Element.paragraph [ width (px (texWidth model.viewport)) ] [ x ])
         |> Element.column [ Element.htmlAttribute <| HA.attribute "id" "_renderedText_" ]
 
 

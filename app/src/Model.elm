@@ -112,6 +112,7 @@ type alias Model =
     , searchQueryString : String
     -- DOCUMENT
     , currentDocument : Document
+    , texMacros : String
     , bigEditRecord : BigEditRecord Msg
     , selectedDocumentId : Int
     , maybeMasterDocument : Maybe Document
@@ -262,6 +263,7 @@ initialModel locationHref windowWidth windowHeight document =
     , maybeCurrentUser = Nothing
     , maybeBigUser = Nothing
     , currentDocument = document
+    , texMacros = ""
     , bigEditRecord = BigEditRecord.empty 0 0
     , selectedDocumentId = 0
     , maybeMasterDocument = Nothing

@@ -1,4 +1,4 @@
-module BigEditRecord exposing (BigEditRecord(..), docId, editRecord, empty, fromDocument, fromText, getRenderedText, getRenderedTextAsElements, idListAsString, isEmpty, seed, updateFromDocument)
+module BigEditRecord exposing (BigEditRecord(..), docId, incrementSeed,editRecord, empty, fromDocument, fromText, getRenderedText, getRenderedTextAsElements, idListAsString, isEmpty, seed, updateFromDocument)
 
 import Document exposing (Document)
 import Element exposing (Element)
@@ -35,6 +35,10 @@ fromDocument document texMacros =
 seed : BigEditRecord msg -> Int
 seed (BigEditRecord editRecord_ docId_ seed_) =
     seed_
+
+incrementSeed : BigEditRecord msg -> BigEditRecord msg
+incrementSeed (BigEditRecord er docId_ seed_) = 
+  BigEditRecord er docId_ (seed_ + 1)
 
 
 docId : BigEditRecord msg -> Int

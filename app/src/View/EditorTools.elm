@@ -494,5 +494,5 @@ bodyReaderColumn viewport portion_ model =
         , Background.color Widget.lightGrey
         , centerX
         ]
-        [ DocumentView.view <| Common.documentViewData model
+        [ DocumentView.view model
         ]

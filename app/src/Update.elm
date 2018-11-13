@@ -77,6 +77,7 @@ import Utility
 import View.Common as Common
 import View.EditorTools as EditorTools
 import VirtualDom exposing (Handler(..))
+import BigEditRecord
 
 
 port readImage : Value -> Cmd msg
@@ -1072,10 +1073,22 @@ update msg model =
                         dict =
                             model.documentDictionary
 
-                        doc =
+                        texdoc =
                             documentRecord.document
+
+                        texMacros = texdoc.content
+
+                        -- bigEditRecord = BigEditRecord.updateBigEditRecord model document
+                        -- bigEditRecord = BigEditRecord.fromDocument model.currentDocument texmacros  
+                        -- bigEditRecord = BigEditRecord.fromDocument model.currentDocument documentRecord.document.content
+
+
                     in
-                    ( { model | documentDictionary = DocumentDictionary.put "texmacros" doc dict }, Cmd.none )
+                    ( { model | documentDictionary = DocumentDictionary.put "texmacros" texdoc dict
+                                 , texMacros = texMacros
+                                  }
+                                 , Cmd.none
+                    )
 
                 Err err ->
                     ( { model | message = handleHttpError err }, Cmd.none )
@@ -1638,21 +1651,17 @@ doFullRender model =
 
 updateBigEditRecordFull : Model -> Document -> BigEditRecord Msg
 updateBigEditRecordFull model document =
-    BigEditRecord.updateFromDocument (BigEditRecord.empty 0 0) document (Common.texMacros model) model.seed
+    BigEditRecord.updateFromDocument (BigEditRecord.empty 0 0) document model.texMacros model.seed
 
 
 updateBigEditRecord : Model -> Document -> BigEditRecord Msg
 updateBigEditRecord model document =
     case model.miniLatexRenderMode of
         RenderFull ->
-            BigEditRecord.updateFromDocument (BigEditRecord.empty 0 0) document (Common.texMacros model) model.seed
+            BigEditRecord.updateFromDocument (BigEditRecord.empty 0 0) document model.texMacros model.seed
 
         RenderIncremental ->
-            BigEditRecord.updateFromDocument model.bigEditRecord document (Common.texMacros model) model.seed
-
-
-
--- BigEditRecord.updateFromDocument model.bigEditRecord document (Common.texMacros model) model.seed
+            BigEditRecord.updateFromDocument model.bigEditRecord document model.texMacros model.seed
 
 
 imageAccessbilityToBool : ImageAccessibility -> Bool

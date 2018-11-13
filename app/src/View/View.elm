@@ -128,6 +128,7 @@ footer model =
 
         -- , Element.el [] (text <| "access: " ++ (Document.accessDictToString model.currentDocument.access))
         , Element.el [] (text <| viewportInfo model)
+        , Element.el [] (text <| "TMX: " ++ (String.fromInt <| String.length <| model.texMacros))
         ]
 
 
