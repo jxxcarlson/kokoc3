@@ -18,6 +18,7 @@ module DocumentList exposing
     , intListForDocumentQueueDecoder
     , intListFromDocumentList
     , loadMasterDocument
+    , loadMasterDocumentTask
     , loadMasterDocumentAndSelect
     , loadMasterDocumentWithCurrentSelection
     , make
@@ -43,6 +44,7 @@ import List.Extra
 import Queue exposing (Queue)
 import User exposing (User)
 import Utility
+import Task exposing(Task)
 
 
 type DocumentList
@@ -312,6 +314,10 @@ retrievRecentDocumentQueueFromIntListAtSignIn maybeUser intList =
 loadMasterDocument : Maybe User -> Int -> Cmd DocListMsg
 loadMasterDocument maybeUser docId =
     Http.send ReceiveDocumentList <| loadMasterDocumentRequest maybeUser docId
+
+loadMasterDocumentTask : Maybe User -> Int -> Task Http.Error DocumentList
+loadMasterDocumentTask maybeUser docId =
+    Http.toTask (loadMasterDocumentRequest maybeUser docId)
 
 
 loadMasterDocumentAndSelect : Maybe User -> Int -> Cmd DocListMsg

@@ -2365,11 +2365,7 @@ digest str =
         |> (\x -> String.left 3 x ++ "..." ++ String.right 3 x)
 
 
-{-| Cmd.map DocMsg <| Document.saveDocument tokenString model.currentDocument
-should be executed and complete first so that it doesn't clash with
-Cmd.map DocListMsg (DocumentList.loadMasterDocument model.maybeCurrentUser model.currentDocument.id) /
-So this should be rewritten using Tasks and andThen.
--}
+
 saveCurrentMasterDocument :
     Model
     -> ( Model, Cmd Msg ) -- ###
@@ -2386,8 +2382,11 @@ saveCurrentMasterDocument model =
       }
     , Cmd.batch
         [ getTime
-        , Cmd.map DocListMsg (DocumentList.loadMasterDocument model.maybeCurrentUser model.currentDocument.id)
-        , Cmd.map DocMsg <| Document.saveDocument tokenString model.currentDocument
+
+       , Task.attempt 
+           (DocListMsg << ReceiveDocumentList) ((Document.saveDocumentTask tokenString model.currentDocument)
+             |> Task.andThen 
+                (\_ -> DocumentList.loadMasterDocumentTask model.maybeCurrentUser model.currentDocument.id))
         ]
     )
 
