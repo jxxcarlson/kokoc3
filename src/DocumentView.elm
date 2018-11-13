@@ -114,13 +114,12 @@ documentContentView model =
 
         -- viewChildren document
         Standard ->
-            documentContentView_ model
+            standardDocumentContentView model
 
 
-documentContentView_ : Model -> Element Msg
-documentContentView_ model =
+standardDocumentContentView : Model -> Element Msg
+standardDocumentContentView model =
     case model.currentDocument.textType of
-        -- MiniLatex -> Element.el [] (Element.text "foo")
         MiniLatex ->
             viewMiniLatex model
 
@@ -144,11 +143,11 @@ viewMiniLatex : Model -> Element Msg
 viewMiniLatex model =
     let
         bigEditRecord =
-            if BigEditRecord.isEmpty model.bigEditRecord then
+            -- if BigEditRecord.isEmpty model.bigEditRecord then
                 BigEditRecord.updateFromDocument model.bigEditRecord model.currentDocument model.texMacros model.seed
 
-            else
-                model.bigEditRecord
+            -- else
+            --    model.bigEditRecord
     in
     bigEditRecord
         |> BigEditRecord.getRenderedTextAsElements
