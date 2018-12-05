@@ -1,4 +1,4 @@
-module MiniLatexTools exposing (setupEditRecord, updateEditRecord)
+module MiniLatexTools exposing (makePreamble, setupEditRecord, updateEditRecord)
 
 import Configuration
 import Document exposing (Document)
@@ -12,12 +12,7 @@ prepareText : String -> Document -> String
 prepareText texMacros document =
     let
         preamble =
-            [ setCounterText document.tags
-            , setDocId document.id
-            , setClient
-            , ""
-            ]
-                |> String.join "\n\n"
+            makePreamble document
 
         postlude =
             "\n\n\\bigskip\n\\bigskip\n\\bigskip\n\\bigskip\n\n"
@@ -25,11 +20,20 @@ prepareText texMacros document =
         source =
             if texMacros == "" then
                 document.content
-
             else
                 prependMacros texMacros document.content
     in
-    preamble ++ source ++ postlude
+        preamble ++ source ++ postlude
+
+
+makePreamble : Document -> String
+makePreamble document =
+    [ setCounterText document.tags
+    , setDocId document.id
+    , setClient
+    , ""
+    ]
+        |> String.join "\n\n"
 
 
 setupEditRecord : String -> Document -> EditRecord (Html msg)
@@ -48,12 +52,12 @@ setCounterText tags =
         maybeSectionNumber =
             KVList.intValueForKey "sectionNumber" tags
     in
-    case maybeSectionNumber of
-        Nothing ->
-            ""
+        case maybeSectionNumber of
+            Nothing ->
+                ""
 
-        Just sectionNumber ->
-            "\\setcounter{section}{" ++ String.fromInt sectionNumber ++ "}\n\n"
+            Just sectionNumber ->
+                "\\setcounter{section}{" ++ String.fromInt sectionNumber ++ "}\n\n"
 
 
 setDocId : Int -> String
@@ -77,4 +81,4 @@ prependMacros macros_ sourceText =
         macros__ =
             macros_ |> normalize
     in
-    "$$\n" ++ macros__ ++ "\n$$\n\n" ++ sourceText
+        "$$\n" ++ macros__ ++ "\n$$\n\n" ++ sourceText

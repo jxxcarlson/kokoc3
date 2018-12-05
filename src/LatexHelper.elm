@@ -86,8 +86,10 @@ latexPreamble =
 \\newcommand{\\term}[1]{{\\sl #1}}
 \\newtheorem{remark}{Remark}
 
-%% Nulll commands in MiniLatex
-\\newcommand{\\innertableofcontents}{}
+%% Null commands in MiniLatex
+\\newcommand{\\innertableofcontents}[1]{}
+\\newcommand{\\setdocid}[1]{}   %% Needed?
+\\newcommand{\\setclient}[1]{}  %% Needed?
 
 \\parindent0pt
 \\parskip10pt

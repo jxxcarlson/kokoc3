@@ -12,6 +12,8 @@ port module Update
 -- IMPORTS
 
 import File.Download as Download
+import MiniLatex.Export as Export
+import MiniLatexTools
 import AppUtility
 import BigEditRecord exposing (BigEditRecord)
 import Browser.Dom as Dom
@@ -1638,7 +1640,7 @@ update msg model =
             doFullRender model
 
         ExportLatex ->
-            ( model, downloadLatex model.currentDocument.title model.currentDocument.content )
+            ( model, downloadLatex model.currentDocument model.texMacros )
 
 
 
@@ -1646,16 +1648,25 @@ update msg model =
 -- HELPERS
 
 
-downloadLatex : String -> String -> Cmd msg
-downloadLatex documentTitle documentContent =
+downloadLatex : Document -> String -> Cmd msg
+downloadLatex document texMacros =
     let
-        documentTitle_ =
-            (String.replace " " "_" documentTitle) ++ ".tex"
+        documentTitle =
+            (String.replace " " "_" document.title) ++ ".tex"
 
-        documentContent_ =
-            LatexHelper.makeDocument documentContent
+        prepend : String -> String -> String
+        prepend prefix str =
+            prefix ++ "\n\n" ++ str
+
+        -- model.texMacros
+        documentContent =
+            document.content
+                |> Export.transform
+                |> prepend texMacros
+                |> prepend (MiniLatexTools.makePreamble document)
+                |> LatexHelper.makeDocument
     in
-        Download.string documentTitle_ "application/text" documentContent_
+        Download.string documentTitle "application/text" documentContent
 
 
 doFullRender : Model -> ( Model, Cmd Msg )
