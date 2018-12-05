@@ -135,6 +135,8 @@ type alias Model =
     , recentDocumentQueue : Queue Document
     , documentListSource : DocumentListSource
     , seed : Int
+    , exportText : String
+    , imageUrlList : List String
 
     -- UI
     , appMode : AppMode
@@ -321,6 +323,8 @@ initialModel locationHref windowWidth windowHeight document =
     , focusedElement = NoFocus
     , seed = 0
     , miniLatexRenderMode = RenderIncremental
+    , exportText = ""
+    , imageUrlList = []
     }
 
 

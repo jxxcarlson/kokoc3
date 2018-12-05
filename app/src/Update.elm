@@ -1640,7 +1640,7 @@ update msg model =
             doFullRender model
 
         ExportLatex ->
-            ( model, downloadLatex model.currentDocument model.texMacros )
+            downloadCurrentLatexDocument model
 
 
 
@@ -1648,9 +1648,12 @@ update msg model =
 -- HELPERS
 
 
-downloadLatex : Document -> String -> Cmd msg
-downloadLatex document texMacros =
+downloadCurrentLatexDocument : Model -> ( Model, Cmd Msg )
+downloadCurrentLatexDocument model =
     let
+        document =
+            model.currentDocument
+
         documentTitle =
             (String.replace " " "_" document.title) ++ ".tex"
 
@@ -1658,16 +1661,34 @@ downloadLatex document texMacros =
         prepend prefix str =
             prefix ++ "\n\n" ++ str
 
-        ( documentContent_, imageList ) =
+        ( documentContent, imageUrlList ) =
             document.content |> Export.transform
 
-        documentContent =
-            documentContent_
-                |> prepend texMacros
+        preparedDocumentContent =
+            documentContent
+                |> prepend model.texMacros
                 |> prepend (MiniLatexTools.makePreamble document)
                 |> LatexHelper.makeDocument
     in
-        Download.string documentTitle "application/text" documentContent
+        if List.length imageUrlList == 0 then
+            ( model, Download.string documentTitle "application/text" preparedDocumentContent )
+        else
+            let
+                nextModel =
+                    { model
+                        | exportText = preparedDocumentContent
+                        , imageUrlList = imageUrlList
+                    }
+            in
+                downloadImages nextModel
+
+
+downloadImages : Model -> ( Model, Cmd Msg )
+downloadImages model =
+    -- if List.length model.imageUrlList == 0 then
+    --     ( { model | exportText = "" }, Download.string currentDocument.title "application/text" model.exportText )
+    -- else
+    ( model, Cmd.none )
 
 
 doFullRender : Model -> ( Model, Cmd Msg )
