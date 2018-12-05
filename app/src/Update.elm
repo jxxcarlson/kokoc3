@@ -1658,10 +1658,11 @@ downloadLatex document texMacros =
         prepend prefix str =
             prefix ++ "\n\n" ++ str
 
-        -- model.texMacros
+        ( documentContent_, imageList ) =
+            document.content |> Export.transform
+
         documentContent =
-            document.content
-                |> Export.transform
+            documentContent_
                 |> prepend texMacros
                 |> prepend (MiniLatexTools.makePreamble document)
                 |> LatexHelper.makeDocument

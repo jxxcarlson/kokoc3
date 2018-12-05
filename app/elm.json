@@ -22,7 +22,7 @@
             "elm/virtual-dom": "1.0.2",
             "elm-community/list-extra": "8.1.0",
             "jinjor/elm-debounce": "3.0.0",
-            "jxxcarlson/meenylatex": "6.0.0",
+            "jxxcarlson/meenylatex": "7.0.0",
             "mdgriffith/elm-markup": "1.0.0",
             "mdgriffith/elm-ui": "1.1.0",
             "ohanhi/keyboard": "1.0.0",
@@ -31,7 +31,8 @@
             "truqu/elm-base64": "2.0.4"
         },
         "indirect": {
-            "elm/bytes": "1.0.7"
+            "elm/bytes": "1.0.7",
+            "elm-community/maybe-extra": "5.0.0"
         }
     },
     "test-dependencies": {
