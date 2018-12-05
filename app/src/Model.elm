@@ -1,21 +1,22 @@
-module Model exposing
-    ( AppMode(..)
-    , DeleteDocumentState(..)
-    , DocumentListSource(..)
-    , ErrorResponse(..)
-    , FocusedElement(..)
-    , ImageAccessibility(..)
-    , ImageMode(..)
-    , InfoForElm(..)
-    , MiniLatexRenderMode(..)
-    , Model
-    , Msg(..)
-    , PreferencesPanelState(..)
-    , SignupMode(..)
-    , ToolMenuState(..)
-    , ToolPanelState(..)
-    , initialModel
-    )
+module Model
+    exposing
+        ( AppMode(..)
+        , DeleteDocumentState(..)
+        , DocumentListSource(..)
+        , ErrorResponse(..)
+        , FocusedElement(..)
+        , ImageAccessibility(..)
+        , ImageMode(..)
+        , InfoForElm(..)
+        , MiniLatexRenderMode(..)
+        , Model
+        , Msg(..)
+        , PreferencesPanelState(..)
+        , SignupMode(..)
+        , ToolMenuState(..)
+        , ToolPanelState(..)
+        , initialModel
+        )
 
 import BigEditRecord exposing (BigEditRecord)
 import Browser.Dom as Dom exposing (Viewport)
@@ -95,6 +96,7 @@ type SignupMode
 -}
 type alias Model =
     { message : String
+
     -- USER
     , password : String
     , username : String
@@ -108,8 +110,10 @@ type alias Model =
     , blurb : String
     , emailSubject : String
     , emailText : String
+
     -- SEARCH
     , searchQueryString : String
+
     -- DOCUMENT
     , currentDocument : Document
     , texMacros : String
@@ -131,6 +135,7 @@ type alias Model =
     , recentDocumentQueue : Queue Document
     , documentListSource : DocumentListSource
     , seed : Int
+
     -- UI
     , appMode : AppMode
     , toolPanelState : ToolPanelState
@@ -147,6 +152,7 @@ type alias Model =
     , toolMenuState : ToolMenuState
     , debugString : String
     , focusedElement : FocusedElement
+
     -- IMAGE
     , maybeImageString : Maybe String
     , maybeFileData : Maybe FileData
@@ -167,7 +173,7 @@ type alias Model =
 type Msg
     = NoOp
     | Test
-    -- USER
+      -- USER
     | AcceptPassword String
     | AcceptEmail String
     | AcceptUserName String
@@ -185,7 +191,7 @@ type Msg
     | GetUsers
     | GetBigUser
     | UpdateBigUser
-    -- DOCUMENBT
+      -- DOCUMENT
     | Search
     | AcceptDocumenTitle String
     | AcceptDocumentTagString String
@@ -220,7 +226,8 @@ type Msg
     | GenerateSeed
     | NewSeed Int
     | DoFullRender
-    -- IMAGE
+    | ExportLatex
+      -- IMAGE
     | GetImages String
     | ImageMsg ImageManager.ImageMsg
     | MailMsg Mail.MailMsg
@@ -231,7 +238,7 @@ type Msg
     | SelectImage Image
     | SelectImageLoader
     | ToggleImageAccessibility
-    -- UI
+      -- UI
     | GoToStart
     | GoHome
     | GoToUsersHomePage BigUser

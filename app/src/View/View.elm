@@ -128,7 +128,8 @@ footer model =
 
         -- , Element.el [] (text <| "access: " ++ (Document.accessDictToString model.currentDocument.access))
         , Element.el [] (text <| viewportInfo model)
-       --  , Element.el [] (text <| "TMX: " ++ (String.fromInt <| String.length <| model.texMacros))
+
+        --  , Element.el [] (text <| "TMX: " ++ (String.fromInt <| String.length <| model.texMacros))
         ]
 
 
@@ -158,7 +159,7 @@ viewportInfo model =
                 sh =
                     vp.scene.height |> String.fromFloat
             in
-            "y = " ++ y ++ ", h = " ++ h ++ ", sh = " ++ sh
+                "y = " ++ y ++ ", h = " ++ h ++ ", sh = " ++ sh
 
 
 yCoordinateForRenderedText : Model -> Float
@@ -206,7 +207,7 @@ currentDevice viewport =
         height =
             viewport.viewport.height
     in
-    classifyDevice { width = round width, height = round height }
+        classifyDevice { width = round width, height = round height }
 
 
 currentDeviceString : Viewport -> String
@@ -233,7 +234,7 @@ documentDictionaryInfo model =
         v =
             model.documentDictionary |> DocumentDictionary.values |> String.join ","
     in
-    k ++ ":: " ++ v
+        k ++ ":: " ++ v
 
 
 documentDirtyIndicator : Model -> Attr decorative msg
@@ -320,7 +321,7 @@ viewUserManualLink =
         }
 
 
-exportDocumentlLink : Model -> Element msg
+exportDocumentlLink : Model -> Element Msg
 exportDocumentlLink model =
     case model.maybeCurrentUser of
         Nothing ->
@@ -332,7 +333,19 @@ exportDocumentlLink model =
                     Element.none
 
                 True ->
-                    Widget.linkButtonFat (exportUrl model.currentDocument) "Export" (px 60)
+                    exportDocumentButton (px 90) model
+
+
+
+-- Widget.linkButtonFat (exportUrl model.currentDocument) "Export" (px 60)
+
+
+exportDocumentButton : Length -> Model -> Element Msg
+exportDocumentButton width_ model =
+    Input.button (buttonStyle width_)
+        { onPress = Just ExportLatex
+        , label = Element.el [] (Element.text "Export")
+        }
 
 
 modeButtonStyle appMode buttonMode width_ =
@@ -387,7 +400,6 @@ getAuthorsDocumentsButton : Length -> Model -> Element Msg
 getAuthorsDocumentsButton width_ model =
     if model.currentDocument.id > 0 then
         getAuthorsDocumentsButton_ width_ model
-
     else
         Element.none
 
@@ -398,23 +410,23 @@ getAuthorsDocumentsButton_ width_ model =
         authorname =
             model.currentDocument.authorName
     in
-    case authorname == "" of
-        True ->
-            Element.none
+        case authorname == "" of
+            True ->
+                Element.none
 
-        False ->
-            case authorname == User.usernameFromMaybeUser model.maybeCurrentUser of
-                False ->
-                    Input.button (buttonStyle width_ ++ [ Font.center ])
-                        { onPress = Just (GetPublicDocumentsRawQuery ("authorname=" ++ authorname ++ "&sort=title"))
-                        , label = Element.el [] (Element.text authorname)
-                        }
+            False ->
+                case authorname == User.usernameFromMaybeUser model.maybeCurrentUser of
+                    False ->
+                        Input.button (buttonStyle width_ ++ [ Font.center ])
+                            { onPress = Just (GetPublicDocumentsRawQuery ("authorname=" ++ authorname ++ "&sort=title"))
+                            , label = Element.el [] (Element.text authorname)
+                            }
 
-                True ->
-                    Input.button (buttonStyle width_ ++ [ Font.center ])
-                        { onPress = Just (GetUserDocuments ("authorname=" ++ authorname ++ "&sort=title" ++ "&docs=any"))
-                        , label = Element.el [] (Element.text authorname)
-                        }
+                    True ->
+                        Input.button (buttonStyle width_ ++ [ Font.center ])
+                            { onPress = Just (GetUserDocuments ("authorname=" ++ authorname ++ "&sort=title" ++ "&docs=any"))
+                            , label = Element.el [] (Element.text authorname)
+                            }
 
 
 {-| Not used.
@@ -574,7 +586,7 @@ docInfo document =
         access_ =
             access document
     in
-    "(" ++ access_ ++ ", " ++ wordCount ++ ")"
+        "(" ++ access_ ++ ", " ++ wordCount ++ ")"
 
 
 showKeys : Model -> String

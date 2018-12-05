@@ -1,13 +1,17 @@
-port module Update exposing
-    ( getInfoFromOutside
-    , getTimeInOneSecond
-    , getViewPort
-    , imageRead
-    , onUrlChange
-    , processUrl
-    , update
-    )
+port module Update
+    exposing
+        ( getInfoFromOutside
+        , getTimeInOneSecond
+        , getViewPort
+        , imageRead
+        , onUrlChange
+        , processUrl
+        , update
+        )
 
+-- IMPORTS
+
+import File.Download as Download
 import AppUtility
 import BigEditRecord exposing (BigEditRecord)
 import Browser.Dom as Dom
@@ -26,6 +30,7 @@ import DocumentList
 import DocumentListView exposing (DocListViewMsg(..))
 import DocumentView exposing (view)
 import FileUploadCredentials as Credentials exposing (FileData, Image)
+import LatexHelper
 import Html exposing (Html)
 import Html.Attributes
 import Http
@@ -36,7 +41,7 @@ import Keyboard exposing (Key(..))
 import Keyboard.Arrows
 import List.Extra
 import Mail
-import Task exposing(Task)
+import Task exposing (Task)
 import Model
     exposing
         ( AppMode(..)
@@ -379,14 +384,12 @@ keyGateway model ( pressedKeys, maybeKeyChange ) =
     -- in
     if List.member Control model.pressedKeys then
         handleKey { model | pressedKeys = [] } (headKey pressedKeys)
-
     else if model.focusedElement == FocusOnSearchBox && List.member Enter model.pressedKeys then
         let
             newModel =
                 { model | pressedKeys = [] }
         in
-        doSearch newModel
-
+            doSearch newModel
     else
         ( { model | pressedKeys = pressedKeys }, Cmd.none )
 
@@ -534,7 +537,7 @@ update msg model =
                 nextDocument =
                     { currentDocument | title = str }
             in
-            ( { model | documentTitle = str, currentDocument = nextDocument, currentDocumentDirty = True }, Cmd.none )
+                ( { model | documentTitle = str, currentDocument = nextDocument, currentDocumentDirty = True }, Cmd.none )
 
         AcceptDocumentTagString str ->
             let
@@ -547,7 +550,7 @@ update msg model =
                 nextDocument =
                     { currentDocument | tags = nextTags }
             in
-            ( { model | tagString = str, currentDocument = nextDocument, currentDocumentDirty = True }, Cmd.none )
+                ( { model | tagString = str, currentDocument = nextDocument, currentDocumentDirty = True }, Cmd.none )
 
         AcceptSharingString str ->
             let
@@ -560,7 +563,7 @@ update msg model =
                 nextDocument =
                     { currentDocument | access = nextAccessDict }
             in
-            ( { model | sharingString = str, currentDocument = nextDocument, currentDocumentDirty = True }, Cmd.none )
+                ( { model | sharingString = str, currentDocument = nextDocument, currentDocumentDirty = True }, Cmd.none )
 
         AcceptImageName str ->
             ( { model | imageName = str }, Cmd.none )
@@ -583,19 +586,19 @@ update msg model =
                                 Just user ->
                                     Cmd.map UserMsg <| User.getBigUserRecordAtSignIn (User.userId user)
                     in
-                    ( { model
-                        | maybeToken = maybeToken
-                        , maybeCurrentUser = maybeCurrentUser
-                        , message = "Signed in"
-                        , email = ""
-                        , password = ""
-                        , username = ""
-                      }
-                    , Cmd.batch
-                        [ sendMaybeUserDataToLocalStorage maybeCurrentUser
-                        , bigUserCmd
-                        ]
-                    )
+                        ( { model
+                            | maybeToken = maybeToken
+                            , maybeCurrentUser = maybeCurrentUser
+                            , message = "Signed in"
+                            , email = ""
+                            , password = ""
+                            , username = ""
+                          }
+                        , Cmd.batch
+                            [ sendMaybeUserDataToLocalStorage maybeCurrentUser
+                            , bigUserCmd
+                            ]
+                        )
 
                 Err err ->
                     let
@@ -605,14 +608,12 @@ update msg model =
                         errorResponse =
                             if errorMessage == "Incorrect email or password" then
                                 ShowPasswordReset
-
                             else if errorMessage == "Account not verified" then
                                 ShowVerifyAccount
-
                             else
                                 NoErrorResponse
                     in
-                    ( { model | message = errorMessage, errorResponse = errorResponse }, Cmd.none )
+                        ( { model | message = errorMessage, errorResponse = errorResponse }, Cmd.none )
 
         UserMsg (RespondToNewUser result) ->
             case result of
@@ -624,17 +625,17 @@ update msg model =
                         maybeCurrentUser =
                             User.maybeUserFromEmailAndToken model.email (User.stringFromToken token)
                     in
-                    ( { model
-                        | maybeToken = maybeToken
-                        , maybeCurrentUser = maybeCurrentUser
-                        , message = "Signed up"
-                        , email = ""
-                        , password = ""
-                        , username = ""
-                        , currentDocument = SystemDocument.newUser
-                      }
-                    , sendMaybeUserDataToLocalStorage maybeCurrentUser
-                    )
+                        ( { model
+                            | maybeToken = maybeToken
+                            , maybeCurrentUser = maybeCurrentUser
+                            , message = "Signed up"
+                            , email = ""
+                            , password = ""
+                            , username = ""
+                            , currentDocument = SystemDocument.newUser
+                          }
+                        , sendMaybeUserDataToLocalStorage maybeCurrentUser
+                        )
 
                 Err err ->
                     ( { model | message = httpErrorHandler err }, Cmd.none )
@@ -717,12 +718,12 @@ update msg model =
                                 , recentDocumentQueue = nextDocumentQueue
                             }
                     in
-                    ( nextModel
-                    , Cmd.batch
-                        [ updateBigUserCmd nextModel
-                        , saveRecentDocumentQueueToLocalStorage nextDocumentQueue
-                        ]
-                    )
+                        ( nextModel
+                        , Cmd.batch
+                            [ updateBigUserCmd nextModel
+                            , saveRecentDocumentQueueToLocalStorage nextDocumentQueue
+                            ]
+                        )
 
                 Err err ->
                     ( { model | message = handleHttpError err }, Cmd.none )
@@ -756,12 +757,12 @@ update msg model =
                                 , recentDocumentQueue = nextDocumentQueue
                             }
                     in
-                    ( nextModel
-                    , Cmd.batch
-                        [ updateBigUserCmd nextModel
-                        , saveRecentDocumentQueueToLocalStorage nextDocumentQueue
-                        ]
-                    )
+                        ( nextModel
+                        , Cmd.batch
+                            [ updateBigUserCmd nextModel
+                            , saveRecentDocumentQueueToLocalStorage nextDocumentQueue
+                            ]
+                        )
 
                 Err err ->
                     ( { model | message = handleHttpError err }, Cmd.none )
@@ -796,17 +797,17 @@ update msg model =
                                 Master ->
                                     Just currentDocument
                     in
-                    ( { model
-                        | documentList = DocumentList.select maybeCurrentDocument documentList
-                        , currentDocument = currentDocument
-                        , bigEditRecord = updateBigEditRecord model currentDocument
-                        , maybeMasterDocument = nextMaybeMasterDocument
-                      }
-                    , Cmd.batch
-                        [ loadTexMacrosForDocument currentDocument model
-                        , saveDocumentListToLocalStorage documentList
-                        ]
-                    )
+                        ( { model
+                            | documentList = DocumentList.select maybeCurrentDocument documentList
+                            , currentDocument = currentDocument
+                            , bigEditRecord = updateBigEditRecord model currentDocument
+                            , maybeMasterDocument = nextMaybeMasterDocument
+                          }
+                        , Cmd.batch
+                            [ loadTexMacrosForDocument currentDocument model
+                            , saveDocumentListToLocalStorage documentList
+                            ]
+                        )
 
                 Err err ->
                     ( { model | message = handleHttpError err }, Cmd.none )
@@ -855,17 +856,17 @@ update msg model =
                         selectedDocument =
                             List.Extra.getAt indexOfSelectedDocument documents_ |> Maybe.withDefault Document.basicDocument
                     in
-                    ( { model
-                        | documentList = DocumentList.select (Just selectedDocument) documentList
-                        , currentDocument = selectedDocument
-                        , bigEditRecord = updateBigEditRecord model selectedDocument
-                      }
-                    , Cmd.batch
-                        [ loadTexMacrosForDocument selectedDocument model
-                        , saveDocumentListToLocalStorage documentList
-                        , pushDocument selectedDocument
-                        ]
-                    )
+                        ( { model
+                            | documentList = DocumentList.select (Just selectedDocument) documentList
+                            , currentDocument = selectedDocument
+                            , bigEditRecord = updateBigEditRecord model selectedDocument
+                          }
+                        , Cmd.batch
+                            [ loadTexMacrosForDocument selectedDocument model
+                            , saveDocumentListToLocalStorage documentList
+                            , pushDocument selectedDocument
+                            ]
+                        )
 
                 Err err ->
                     ( { model | message = handleHttpError err }, Cmd.none )
@@ -886,19 +887,19 @@ update msg model =
                                 Master ->
                                     ( Just currentDocument, loadTexMacrosForDocument currentDocument model )
                     in
-                    ( { model
-                        | documentList = DocumentList.selectFirst documentList
-                        , currentDocument = currentDocument
-                        , bigEditRecord = updateBigEditRecord model currentDocument
-                        , maybeMasterDocument = nextMaybeMasterDocument
-                      }
-                    , Cmd.batch
-                        [ loadTexMacrosForDocument currentDocument model
-                        , loadTexMacrosForMasterDocument
-                        , saveDocumentListToLocalStorage documentList
-                        , pushDocument currentDocument
-                        ]
-                    )
+                        ( { model
+                            | documentList = DocumentList.selectFirst documentList
+                            , currentDocument = currentDocument
+                            , bigEditRecord = updateBigEditRecord model currentDocument
+                            , maybeMasterDocument = nextMaybeMasterDocument
+                          }
+                        , Cmd.batch
+                            [ loadTexMacrosForDocument currentDocument model
+                            , loadTexMacrosForMasterDocument
+                            , saveDocumentListToLocalStorage documentList
+                            , pushDocument currentDocument
+                            ]
+                        )
 
                 Err err ->
                     ( { model | message = handleHttpError err }, Cmd.none )
@@ -922,16 +923,16 @@ update msg model =
                         nextDocumentList_ =
                             DocumentList.select (Just model.currentDocument) documentList
                     in
-                    ( { model
-                        | documentList = nextDocumentList_
-                        , maybeMasterDocument = nextMaybeMasterDocument
-                        , bigEditRecord = updateBigEditRecord model currentDocument
-                      }
-                    , Cmd.batch
-                        [ saveDocumentListToLocalStorage documentList
-                        , loadTexMacrosForDocument currentDocument model
-                        ]
-                    )
+                        ( { model
+                            | documentList = nextDocumentList_
+                            , maybeMasterDocument = nextMaybeMasterDocument
+                            , bigEditRecord = updateBigEditRecord model currentDocument
+                          }
+                        , Cmd.batch
+                            [ saveDocumentListToLocalStorage documentList
+                            , loadTexMacrosForDocument currentDocument model
+                            ]
+                        )
 
                 Err err ->
                     ( { model | message = handleHttpError err }, Cmd.none )
@@ -983,17 +984,17 @@ update msg model =
                         , counter = model.counter + 1
                     }
             in
-            ( newModel
-            , Cmd.batch
-                [ loadMasterCommand
-                , saveDocToLocalStorage document
-                , saveRecentDocumentQueueToLocalStorage nextDocumentQueue
-                , saveDocumentListToLocalStorage documentList
-                , updateBigUserCmd newModel
-                , loadTexMacrosForDocument document newModel
-                , pushDocument document
-                ]
-            )
+                ( newModel
+                , Cmd.batch
+                    [ loadMasterCommand
+                    , saveDocToLocalStorage document
+                    , saveRecentDocumentQueueToLocalStorage nextDocumentQueue
+                    , saveDocumentListToLocalStorage documentList
+                    , updateBigUserCmd newModel
+                    , loadTexMacrosForDocument document newModel
+                    , pushDocument document
+                    ]
+                )
 
         DocViewMsg (LoadMaster docId) ->
             ( { model | masterDocLoaded = True, documentListSource = SearchResults }, Cmd.map DocListMsg (DocumentList.loadMasterDocument model.maybeCurrentUser docId) )
@@ -1076,19 +1077,19 @@ update msg model =
                         texdoc =
                             documentRecord.document
 
-                        texMacros = texdoc.content
+                        texMacros =
+                            texdoc.content
 
                         -- bigEditRecord = BigEditRecord.updateBigEditRecord model document
-                        -- bigEditRecord = BigEditRecord.fromDocument model.currentDocument texmacros  
+                        -- bigEditRecord = BigEditRecord.fromDocument model.currentDocument texmacros
                         -- bigEditRecord = BigEditRecord.fromDocument model.currentDocument documentRecord.document.content
-
-
                     in
-                    ( { model | documentDictionary = DocumentDictionary.put "texmacros" texdoc dict
-                                 , texMacros = texMacros
-                                  }
-                                 , Cmd.none
-                    )
+                        ( { model
+                            | documentDictionary = DocumentDictionary.put "texmacros" texdoc dict
+                            , texMacros = texMacros
+                          }
+                        , Cmd.none
+                        )
 
                 Err err ->
                     ( { model | message = handleHttpError err }, Cmd.none )
@@ -1104,12 +1105,12 @@ update msg model =
                 queryString =
                     "authorname=" ++ bigUser.username ++ "&key=home"
             in
-            ( { model
-                | appMode = Reading
-                , toolPanelState = HideToolPanel
-              }
-            , Cmd.map DocListMsg (DocumentList.findDocuments Nothing queryString)
-            )
+                ( { model
+                    | appMode = Reading
+                    , toolPanelState = HideToolPanel
+                  }
+                , Cmd.map DocListMsg (DocumentList.findDocuments Nothing queryString)
+                )
 
         ChangeMode nextAppMode ->
             changeMode model nextAppMode
@@ -1122,31 +1123,31 @@ update msg model =
                 tokenString =
                     User.getTokenStringFromMaybeUser model.maybeCurrentUser
             in
-            ( { model
-                | debounce = debounce
-                , debounceCounter = model.debounceCounter + 1
+                ( { model
+                    | debounce = debounce
+                    , debounceCounter = model.debounceCounter + 1
 
-                --, message = "debounce: " ++ (String.fromInt model.debounceCounter)
-              }
-            , Cmd.batch
-                [ cmd
-                , saveDocToLocalStorage model.currentDocument
-                , Random.generate NewSeed (Random.int 1 10000)
-                ]
-            )
+                    --, message = "debounce: " ++ (String.fromInt model.debounceCounter)
+                  }
+                , Cmd.batch
+                    [ cmd
+                    , saveDocToLocalStorage model.currentDocument
+                    , Random.generate NewSeed (Random.int 1 10000)
+                    ]
+                )
 
         GetContent str ->
             let
                 ( debounce, cmd ) =
                     Debounce.push debounceConfig str model.debounce
             in
-            ( { model
-                | sourceText = str
-                , currentDocumentDirty = True
-                , debounce = debounce
-              }
-            , cmd
-            )
+                ( { model
+                    | sourceText = str
+                    , currentDocumentDirty = True
+                    , debounce = debounce
+                  }
+                , cmd
+                )
 
         UpdateEditorContent str ->
             let
@@ -1166,34 +1167,34 @@ update msg model =
                 nextDocumentQueue =
                     Queue.replaceUsingPredicate (\doc -> doc.id == nextCurrentDocument.id) nextCurrentDocument model.recentDocumentQueue
             in
-            ( { model
-                | currentDocument = nextCurrentDocument
-                , recentDocumentQueue = nextDocumentQueue
-                , documentList = nextDocumentList
-                , bigEditRecord = nextBigEditRecord
-              }
-            , Cmd.none
-            )
+                ( { model
+                    | currentDocument = nextCurrentDocument
+                    , recentDocumentQueue = nextDocumentQueue
+                    , documentList = nextDocumentList
+                    , bigEditRecord = nextBigEditRecord
+                  }
+                , Cmd.none
+                )
 
         SaveCurrentDocument time ->
             let
                 tokenString =
                     User.getTokenStringFromMaybeUser model.maybeCurrentUser
             in
-            case model.currentDocument.docType of
-                Master ->
-                    ( { model | message = "Autosave (no, M)" }, getTime )
+                case model.currentDocument.docType of
+                    Master ->
+                        ( { model | message = "Autosave (no, M)" }, getTime )
 
-                -- do not autosave master documents
-                Standard ->
-                    ( { model
-                        | currentDocumentDirty = False
-                        , message = "Autosaved doc " ++ String.fromInt model.debounceCounter
-                        , documentList = DocumentList.updateDocument model.currentDocument model.documentList
-                        , recentDocumentQueue = Queue.replaceUsingPredicate (\doc -> doc.id == model.currentDocument.id) model.currentDocument model.recentDocumentQueue
-                      }
-                    , Cmd.batch [ saveCurrentDocumentIfDirty model, getTime ]
-                    )
+                    -- do not autosave master documents
+                    Standard ->
+                        ( { model
+                            | currentDocumentDirty = False
+                            , message = "Autosaved doc " ++ String.fromInt model.debounceCounter
+                            , documentList = DocumentList.updateDocument model.currentDocument model.documentList
+                            , recentDocumentQueue = Queue.replaceUsingPredicate (\doc -> doc.id == model.currentDocument.id) model.currentDocument model.recentDocumentQueue
+                          }
+                        , Cmd.batch [ saveCurrentDocumentIfDirty model, getTime ]
+                        )
 
         UpdateCurrentDocument ->
             saveCurrentDocument model
@@ -1221,7 +1222,7 @@ update msg model =
                 nextDocument =
                     { document | textType = textType }
             in
-            ( { model | currentDocument = nextDocument, currentDocumentDirty = True }, Cmd.none )
+                ( { model | currentDocument = nextDocument, currentDocumentDirty = True }, Cmd.none )
 
         SetDocumentType docType ->
             let
@@ -1231,7 +1232,7 @@ update msg model =
                 nextDocument =
                     { document | docType = docType }
             in
-            ( { model | currentDocument = nextDocument, currentDocumentDirty = True }, Cmd.none )
+                ( { model | currentDocument = nextDocument, currentDocumentDirty = True }, Cmd.none )
 
         GetViewport viewport ->
             ( { model | viewport = viewport }, Cmd.none )
@@ -1249,12 +1250,12 @@ update msg model =
                 tokenString =
                     User.getTokenStringFromMaybeUser model.maybeCurrentUser
             in
-            case model.deleteDocumentState of
-                DeleteIsOnSafety ->
-                    ( { model | deleteDocumentState = DeleteIsArmed }, Cmd.none )
+                case model.deleteDocumentState of
+                    DeleteIsOnSafety ->
+                        ( { model | deleteDocumentState = DeleteIsArmed }, Cmd.none )
 
-                DeleteIsArmed ->
-                    ( { model | deleteDocumentState = DeleteIsOnSafety }, Cmd.map DocMsg (Document.deleteDocument tokenString model.currentDocument) )
+                    DeleteIsArmed ->
+                        ( { model | deleteDocumentState = DeleteIsOnSafety }, Cmd.map DocMsg (Document.deleteDocument tokenString model.currentDocument) )
 
         CancelDeleteCurrentDocument ->
             ( { model | deleteDocumentState = DeleteIsOnSafety }, Cmd.none )
@@ -1271,7 +1272,7 @@ update msg model =
                         keyMsg
                         model.pressedKeys
             in
-            keyGateway model ( pressedKeys, maybeKeyChange )
+                keyGateway model ( pressedKeys, maybeKeyChange )
 
         GetUserManual ->
             ( model, Cmd.map DocMsg (Document.getDocumentById Configuration.userManualId Nothing) )
@@ -1292,7 +1293,7 @@ update msg model =
                 nextCurrentDocument =
                     { currentDocument | public = value }
             in
-            ( { model | currentDocument = nextCurrentDocument }, Cmd.none )
+                ( { model | currentDocument = nextCurrentDocument }, Cmd.none )
 
         Test ->
             ( model, getViewPortOfRenderedText "_textView_" )
@@ -1326,7 +1327,7 @@ update msg model =
                 cmd =
                     Credentials.getS3PresignedUrl (stringFromMaybeToken model.maybeToken) "noteimages" path_ fileInfo.mimetype
             in
-            ( { model | message = fileInfo.filename, maybeFileData = maybeFileData, fileValue = v }, Cmd.map FileMsg cmd )
+                ( { model | message = fileInfo.filename, maybeFileData = maybeFileData, fileValue = v }, Cmd.map FileMsg cmd )
 
         FileMsg (Credentials.ReceiveFileCredentials result) ->
             let
@@ -1338,7 +1339,7 @@ update msg model =
                         Err _ ->
                             Cmd.none
             in
-            ( model, cmd )
+                ( model, cmd )
 
         FileMsg (Credentials.ReceivePresignedUrl result) ->
             let
@@ -1350,24 +1351,24 @@ update msg model =
                         Just fileData ->
                             Credentials.encodeFileData fileData
             in
-            case result of
-                Ok url ->
-                    ( { model | message = "psurl: " ++ url, psurl = url }
-                    , Cmd.batch
-                        [ readImage (Credentials.encodeFileValueWithUrl model.fileValue url)
-                        , uploadImage (Credentials.encodeFileValueWithUrl model.fileValue url)
-                        ]
-                    )
+                case result of
+                    Ok url ->
+                        ( { model | message = "psurl: " ++ url, psurl = url }
+                        , Cmd.batch
+                            [ readImage (Credentials.encodeFileValueWithUrl model.fileValue url)
+                            , uploadImage (Credentials.encodeFileValueWithUrl model.fileValue url)
+                            ]
+                        )
 
-                Err err ->
-                    ( { model | message = handleHttpError err }, Cmd.none )
+                    Err err ->
+                        ( { model | message = handleHttpError err }, Cmd.none )
 
         ImageRead v ->
             let
                 nextImageString =
                     Decode.decodeValue Decode.string v |> Result.toMaybe
             in
-            ( { model | maybeImageString = nextImageString, message = "ImageRead" }, Cmd.map UserMsg <| User.incrementMediaCountForMaybeUser model.maybeCurrentUser )
+                ( { model | maybeImageString = nextImageString, message = "ImageRead" }, Cmd.map UserMsg <| User.incrementMediaCountForMaybeUser model.maybeCurrentUser )
 
         DocMsg (ReceiveWorkerReply result) ->
             case result of
@@ -1403,12 +1404,12 @@ update msg model =
                         False ->
                             "UTC " ++ toUtcString t
             in
-            case ( sessionExpired, model.maybeCurrentUser ) of
-                ( True, Just _ ) ->
-                    signOutCurrentUser model
+                case ( sessionExpired, model.maybeCurrentUser ) of
+                    ( True, Just _ ) ->
+                        signOutCurrentUser model
 
-                ( _, _ ) ->
-                    ( { model | message = sessionString }, Cmd.none )
+                    ( _, _ ) ->
+                        ( { model | message = sessionString }, Cmd.none )
 
         PrintDocument ->
             case model.currentDocument.textType of
@@ -1636,10 +1637,25 @@ update msg model =
         DoFullRender ->
             doFullRender model
 
+        ExportLatex ->
+            ( model, downloadLatex model.currentDocument.title model.currentDocument.content )
+
 
 
 -- UPDATE END
 -- HELPERS
+
+
+downloadLatex : String -> String -> Cmd msg
+downloadLatex documentTitle documentContent =
+    let
+        documentTitle_ =
+            (String.replace " " "_" documentTitle) ++ ".tex"
+
+        documentContent_ =
+            LatexHelper.makeDocument documentContent
+    in
+        Download.string documentTitle_ "application/text" documentContent_
 
 
 doFullRender : Model -> ( Model, Cmd Msg )
@@ -1727,7 +1743,7 @@ searchForImages model =
                 False ->
                     model.searchQueryString
     in
-    ( { model | toolMenuState = HideToolMenu, documentListSource = SearchResults }, Cmd.map FileMsg (Credentials.getImages "" (imageQuery model queryString)) )
+        ( { model | toolMenuState = HideToolMenu, documentListSource = SearchResults }, Cmd.map FileMsg (Credentials.getImages "" (imageQuery model queryString)) )
 
 
 goToStart model =
@@ -1736,15 +1752,15 @@ goToStart model =
         doc =
             Document.basicDocument
     in
-    ( { model
-        | currentDocument = { doc | title = "Welcome!" }
-        , currentDocumentDirty = False
-        , bigEditRecord = updateBigEditRecord model { doc | title = "Welcome!" }
-        , appMode = Reading
-        , toolMenuState = HideToolMenu
-      }
-    , saveCurrentDocumentIfDirty model
-    )
+        ( { model
+            | currentDocument = { doc | title = "Welcome!" }
+            , currentDocumentDirty = False
+            , bigEditRecord = updateBigEditRecord model { doc | title = "Welcome!" }
+            , appMode = Reading
+            , toolMenuState = HideToolMenu
+          }
+        , saveCurrentDocumentIfDirty model
+        )
 
 
 printDocument : Model -> ( Model, Cmd Msg )
@@ -1781,12 +1797,12 @@ doNewStandardDocument model =
                 , toolMenuState = HideToolMenu
                 , appMode = Writing
               }
-            , 
-            Task.attempt 
-              (DocMsg << NewDocumentCreated)
-              ((saveCurrentDocumentIfDirtyTask model)
-                  |> Task.andThen
-                  (\_ -> newDocumentForUserTask user model Standard))
+            , Task.attempt
+                (DocMsg << NewDocumentCreated)
+                ((saveCurrentDocumentIfDirtyTask model)
+                    |> Task.andThen
+                        (\_ -> newDocumentForUserTask user model Standard)
+                )
             )
 
 
@@ -1804,12 +1820,12 @@ doNewMasterDocument model =
                 , toolMenuState = HideToolMenu
                 , appMode = Writing
               }
-            , 
-            Task.attempt 
-              (DocMsg << NewDocumentCreated)
-              ((saveCurrentDocumentIfDirtyTask model)
-                  |> Task.andThen
-                  (\_ -> newDocumentForUserTask user model Master))
+            , Task.attempt
+                (DocMsg << NewDocumentCreated)
+                ((saveCurrentDocumentIfDirtyTask model)
+                    |> Task.andThen
+                        (\_ -> newDocumentForUserTask user model Master)
+                )
             )
 
 
@@ -1842,7 +1858,7 @@ toggleToolPanelState model =
                                 nextDocumentQueue =
                                     Queue.replaceUsingPredicate (\doc -> doc.id == model.currentDocument.id) model.currentDocument model.recentDocumentQueue
                             in
-                            { model | toolPanelState = nextToolPanelState, documentList = nextDocList_, recentDocumentQueue = nextDocumentQueue, toolMenuState = HideToolMenu }
+                                { model | toolPanelState = nextToolPanelState, documentList = nextDocList_, recentDocumentQueue = nextDocumentQueue, toolMenuState = HideToolMenu }
 
                         ShowToolPanel ->
                             { model
@@ -1853,7 +1869,7 @@ toggleToolPanelState model =
                                 , toolMenuState = HideToolMenu
                             }
             in
-            ( nextModel, Cmd.none )
+                ( nextModel, Cmd.none )
 
 
 togglePreferences : Model -> ( Model, Cmd Msg )
@@ -1905,25 +1921,25 @@ goHome model =
                 doc =
                     Document.basicDocument
             in
-            ( { model
-                | currentDocument = { doc | title = "Welcome!" }
-                , bigEditRecord = updateBigEditRecord model doc
-                , currentDocumentDirty = False
-              }
-            , saveCurrentDocumentIfDirty model
-            )
+                ( { model
+                    | currentDocument = { doc | title = "Welcome!" }
+                    , bigEditRecord = updateBigEditRecord model doc
+                    , currentDocumentDirty = False
+                  }
+                , saveCurrentDocumentIfDirty model
+                )
 
         Just user ->
             let
                 queryString =
                     "authorname=" ++ User.username user ++ "&key=home"
             in
-            ( { model
-                | appMode = Reading
-                , toolPanelState = HideToolPanel
-              }
-            , Cmd.map DocListMsg (DocumentList.findDocuments model.maybeCurrentUser queryString)
-            )
+                ( { model
+                    | appMode = Reading
+                    , toolPanelState = HideToolPanel
+                  }
+                , Cmd.map DocListMsg (DocumentList.findDocuments model.maybeCurrentUser queryString)
+                )
 
 
 changeMode : Model -> AppMode -> ( Model, Cmd Msg )
@@ -1932,7 +1948,6 @@ changeMode model nextAppMode =
         nextToolPaneState =
             if nextAppMode == Reading then
                 HideToolPanel
-
             else
                 model.toolPanelState
 
@@ -1973,7 +1988,7 @@ changeMode model nextAppMode =
                 _ ->
                     ""
     in
-    ( { model | appMode = nextAppMode, searchQueryString = searchQueryString, toolPanelState = nextToolPaneState, toolMenuState = HideToolMenu }, cmd )
+        ( { model | appMode = nextAppMode, searchQueryString = searchQueryString, toolPanelState = nextToolPaneState, toolMenuState = HideToolMenu }, cmd )
 
 
 signOutCurrentUser : Model -> ( Model, Cmd Msg )
@@ -1982,17 +1997,17 @@ signOutCurrentUser model =
         freshModel =
             initialModel "" model.windowWidth model.windowHeight SystemDocument.signedOut
     in
-    ( { freshModel
-        | maybeCurrentUser = Nothing
-        , maybeToken = Nothing
-        , message = "Signed out"
-        , currentDocumentDirty = False
-      }
-    , Cmd.batch
-        [ eraseLocalStorage
-        , saveCurrentDocumentIfDirty model
-        ]
-    )
+        ( { freshModel
+            | maybeCurrentUser = Nothing
+            , maybeToken = Nothing
+            , message = "Signed out"
+            , currentDocumentDirty = False
+          }
+        , Cmd.batch
+            [ eraseLocalStorage
+            , saveCurrentDocumentIfDirty model
+            ]
+        )
 
 
 getTime : Cmd Msg
@@ -2032,20 +2047,21 @@ saveCurrentDocumentIfDirty model =
                 token =
                     User.getTokenStringFromMaybeUser model.maybeCurrentUser
             in
-            Cmd.map DocMsg <| Document.saveDocument token model.currentDocument
+                Cmd.map DocMsg <| Document.saveDocument token model.currentDocument
+
 
 saveCurrentDocumentIfDirtyTask : Model -> Task Http.Error DocumentRecord
 saveCurrentDocumentIfDirtyTask model =
     case model.currentDocumentDirty of
         False ->
-           Task.succeed { document = SystemDocument.empty} 
+            Task.succeed { document = SystemDocument.empty }
 
         True ->
             let
                 token =
                     User.getTokenStringFromMaybeUser model.maybeCurrentUser
             in
-              Document.saveDocumentTask token model.currentDocument
+                Document.saveDocumentTask token model.currentDocument
 
 
 signIn : Model -> ( Model, Cmd Msg )
@@ -2068,12 +2084,12 @@ signIn model =
                 documentListSource =
                     RecentDocumentsQueue
             in
-            ( freshModel
-            , Cmd.batch
-                [ Cmd.map UserMsg (User.getTokenCmd model.email model.password)
-                , eraseLocalStorage
-                ]
-            )
+                ( freshModel
+                , Cmd.batch
+                    [ Cmd.map UserMsg (User.getTokenCmd model.email model.password)
+                    , eraseLocalStorage
+                    ]
+                )
 
 
 loadTexMacrosForDocument : Document -> Model -> Cmd Msg
@@ -2100,17 +2116,17 @@ selectDocumentWithId id model =
         selectedDocument =
             List.Extra.getAt indexOfSelectedDocument documentList |> Maybe.withDefault Document.basicDocument
     in
-    ( { model
-        | documentList = DocumentList.select (Just selectedDocument) documents_
-        , currentDocument = selectedDocument
-        , bigEditRecord = updateBigEditRecord model selectedDocument
-        , counter = model.counter + 1
-      }
-    , Cmd.batch
-        [ loadTexMacrosForDocument selectedDocument model
-        , saveDocumentListToLocalStorage documents_
-        ]
-    )
+        ( { model
+            | documentList = DocumentList.select (Just selectedDocument) documents_
+            , currentDocument = selectedDocument
+            , bigEditRecord = updateBigEditRecord model selectedDocument
+            , counter = model.counter + 1
+          }
+        , Cmd.batch
+            [ loadTexMacrosForDocument selectedDocument model
+            , saveDocumentListToLocalStorage documents_
+            ]
+        )
 
 
 pushDocument : Document -> Cmd Msg
@@ -2157,7 +2173,8 @@ getUserDocuments model queryString =
         ]
     )
 
-newDocumentForUserTask : User -> Model -> DocType ->Task Http.Error DocumentRecord
+
+newDocumentForUserTask : User -> Model -> DocType -> Task Http.Error DocumentRecord
 newDocumentForUserTask user model docType =
     let
         headDocument =
@@ -2179,8 +2196,7 @@ newDocumentForUserTask user model docType =
                 Just selectedDoc ->
                     selectedDoc.id
     in
-    Document.createDocumentTask (User.getTokenString user) (makeNewDocument user docType)
-
+        Document.createDocumentTask (User.getTokenString user) (makeNewDocument user docType)
 
 
 makeNewDocument : User -> DocType -> Document
@@ -2189,22 +2205,22 @@ makeNewDocument user docType =
         newDocument_ =
             SystemDocument.newDocument
     in
-    case docType of
-        Standard ->
-            { newDocument_
-                | authorId = User.userId user
-                , authorName = User.username user
-                , title = "NEW DOCUMENT"
-            }
+        case docType of
+            Standard ->
+                { newDocument_
+                    | authorId = User.userId user
+                    , authorName = User.username user
+                    , title = "NEW DOCUMENT"
+                }
 
-        Master ->
-            { newDocument_
-                | authorId = User.userId user
-                , authorName = User.username user
-                , title = "NEW MASTER DOCUMENT"
-                , content = "Add new sections by using the text '== 1234' to add the document with ID 1234.  Add one document per line."
-                , docType = Master
-            }
+            Master ->
+                { newDocument_
+                    | authorId = User.userId user
+                    , authorName = User.username user
+                    , title = "NEW MASTER DOCUMENT"
+                    , content = "Add new sections by using the text '== 1234' to add the document with ID 1234.  Add one document per line."
+                    , docType = Master
+                }
 
 
 newChildDocument : Model -> Cmd DocMsg
@@ -2247,7 +2263,7 @@ newDocumentForUserWithParent user model =
                 Just selectedDoc ->
                     selectedDoc.id
     in
-    Document.createDocument (User.getTokenString user) (makeNewDocumentWithParent parentId parentTitle selectedDocumentId user)
+        Document.createDocument (User.getTokenString user) (makeNewDocumentWithParent parentId parentTitle selectedDocumentId user)
 
 
 {-| NOTE: don't mess with the text ", placeUnder:"
@@ -2260,14 +2276,14 @@ makeNewDocumentWithParent parentId parentTitle selectedDocumentId user =
         newDocument_ =
             Document.basicDocument
     in
-    { newDocument_
-        | title = "New Child Document"
-        , authorId = User.userId user
-        , authorName = User.username user
-        , parentId = parentId
-        , parentTitle = parentTitle
-        , content = "New Child Document of " ++ parentTitle ++ ", placeUnder:" ++ String.fromInt selectedDocumentId
-    }
+        { newDocument_
+            | title = "New Child Document"
+            , authorId = User.userId user
+            , authorName = User.username user
+            , parentId = parentId
+            , parentTitle = parentTitle
+            , content = "New Child Document of " ++ parentTitle ++ ", placeUnder:" ++ String.fromInt selectedDocumentId
+        }
 
 
 displayCurrentMasterDocument model =
@@ -2345,25 +2361,24 @@ saveCurrentDocument model =
                 nextDocumentQueue =
                     Queue.replaceUsingPredicate (\doc -> doc.id == currentDocument.id) currentDocument model.recentDocumentQueue
             in
-            ( { model
-                | currentDocumentDirty = False
-                , message = "(s)" ++ digest nextCurrentDocument.content
-                , currentDocument = nextCurrentDocument
-                , documentList = nextDocumentList
-                , recentDocumentQueue = nextDocumentQueue
-                , toolMenuState = HideToolMenu
+                ( { model
+                    | currentDocumentDirty = False
+                    , message = "(s)" ++ digest nextCurrentDocument.content
+                    , currentDocument = nextCurrentDocument
+                    , documentList = nextDocumentList
+                    , recentDocumentQueue = nextDocumentQueue
+                    , toolMenuState = HideToolMenu
 
-                -- , debugString = "TSL = " ++ tagLengthString ++ ", TS = " ++ tagStringSaved
-              }
-            , Cmd.map DocMsg <| Document.saveDocument tokenString nextCurrentDocument
-            )
+                    -- , debugString = "TSL = " ++ tagLengthString ++ ", TS = " ++ tagStringSaved
+                  }
+                , Cmd.map DocMsg <| Document.saveDocument tokenString nextCurrentDocument
+                )
 
 
 digest str =
     str
         |> String.replace "\n" ""
         |> (\x -> String.left 3 x ++ "..." ++ String.right 3 x)
-
 
 
 saveCurrentMasterDocument :
@@ -2374,21 +2389,22 @@ saveCurrentMasterDocument model =
         tokenString =
             User.getTokenStringFromMaybeUser model.maybeCurrentUser
     in
-    ( { model
-        | currentDocumentDirty = False
-        , message = "(m)" ++ digest model.currentDocument.content
-        , documentList = DocumentList.updateDocument model.currentDocument model.documentList
-        , recentDocumentQueue = Queue.replaceUsingPredicate (\doc -> doc.id == model.currentDocument.id) model.currentDocument model.recentDocumentQueue
-      }
-    , Cmd.batch
-        [ getTime
-
-       , Task.attempt 
-           (DocListMsg << ReceiveDocumentList) ((Document.saveDocumentTask tokenString model.currentDocument)
-             |> Task.andThen 
-                (\_ -> DocumentList.loadMasterDocumentTask model.maybeCurrentUser model.currentDocument.id))
-        ]
-    )
+        ( { model
+            | currentDocumentDirty = False
+            , message = "(m)" ++ digest model.currentDocument.content
+            , documentList = DocumentList.updateDocument model.currentDocument model.documentList
+            , recentDocumentQueue = Queue.replaceUsingPredicate (\doc -> doc.id == model.currentDocument.id) model.currentDocument model.recentDocumentQueue
+          }
+        , Cmd.batch
+            [ getTime
+            , Task.attempt
+                (DocListMsg << ReceiveDocumentList)
+                ((Document.saveDocumentTask tokenString model.currentDocument)
+                    |> Task.andThen
+                        (\_ -> DocumentList.loadMasterDocumentTask model.maybeCurrentUser model.currentDocument.id)
+                )
+            ]
+        )
 
 
 doIncrementVersion : Model -> ( Model, Cmd Msg )
@@ -2400,9 +2416,9 @@ doIncrementVersion model =
         nextCurrentDocument =
             { currentDocument | version = currentDocument.version + 1 }
     in
-    ( { model | toolMenuState = HideToolMenu, currentDocument = nextCurrentDocument }
-    , incrementVersion (EditorTools.newVersionUrl model.currentDocument)
-    )
+        ( { model | toolMenuState = HideToolMenu, currentDocument = nextCurrentDocument }
+        , incrementVersion (EditorTools.newVersionUrl model.currentDocument)
+        )
 
 
 updateBigUserCmd : Model -> Cmd Msg
@@ -2416,7 +2432,7 @@ updateBigUserCmd model =
                 nextBigUser =
                     { bigUser | blurb = model.blurb, documentIds = List.map .id <| Queue.list model.recentDocumentQueue }
             in
-            Cmd.map UserMsg <| User.updateBigUser (User.getTokenStringFromMaybeUser model.maybeCurrentUser) nextBigUser
+                Cmd.map UserMsg <| User.updateBigUser (User.getTokenStringFromMaybeUser model.maybeCurrentUser) nextBigUser
 
 
 putCurrentDocumentAtTopOfQueue : Model -> ( Model, Cmd Msg )
