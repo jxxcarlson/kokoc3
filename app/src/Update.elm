@@ -9,7 +9,7 @@ port module Update
         , update
         )
 
--- IMPORTS
+-- IMPORT
 
 import File.Download as Download
 import MiniLatex.Export as Export
@@ -86,6 +86,7 @@ import View.EditorTools as EditorTools
 import VirtualDom exposing (Handler(..))
 import BigEditRecord
 import Bozo.Update
+import Update.HttpError as HttpError
 
 
 port readImage : Value -> Cmd msg
@@ -609,7 +610,7 @@ update msg model =
                 Err err ->
                     let
                         errorMessage =
-                            String.trim <| httpErrorHandler err
+                            String.trim <| HttpError.handle err
 
                         errorResponse =
                             if errorMessage == "Incorrect email or password" then
@@ -644,7 +645,7 @@ update msg model =
                         )
 
                 Err err ->
-                    ( { model | message = httpErrorHandler err }, Cmd.none )
+                    ( { model | message = HttpError.handle err }, Cmd.none )
 
         DocMsg (ReceiveDocument result) ->
             -- SET CURRENT DOCUMENT
@@ -657,7 +658,7 @@ update msg model =
                     )
 
                 Err err ->
-                    ( { model | message = handleHttpError err }, Cmd.none )
+                    ( { model | message = HttpError.handle err }, Cmd.none )
 
         DocMsg (AcknowledgeDocumentDeleted result) ->
             -- SET CURRENT DOCUMENT
@@ -732,7 +733,7 @@ update msg model =
                         )
 
                 Err err ->
-                    ( { model | message = handleHttpError err }, Cmd.none )
+                    ( { model | message = HttpError.handle err }, Cmd.none )
 
         DocMsg (NewDocumentCreated result) ->
             -- SET CURRENT DOCUMENT
@@ -771,7 +772,7 @@ update msg model =
                         )
 
                 Err err ->
-                    ( { model | message = handleHttpError err }, Cmd.none )
+                    ( { model | message = HttpError.handle err }, Cmd.none )
 
         DocMsg (AcknowledgeUpdateOfDocument result) ->
             case result of
@@ -779,7 +780,7 @@ update msg model =
                     ( model, Cmd.none )
 
                 Err err ->
-                    ( { model | message = handleHttpError err }, Cmd.none )
+                    ( { model | message = HttpError.handle err }, Cmd.none )
 
         DocListMsg (RestoreDocumentList result) ->
             -- SET CURRENT DOCUMENT
@@ -816,21 +817,21 @@ update msg model =
                         )
 
                 Err err ->
-                    ( { model | message = handleHttpError err }, Cmd.none )
+                    ( { model | message = HttpError.handle err }, Cmd.none )
 
         -- DocListMsg (RestoreRecentDocumentQueue result) ->
         --   case result of
         --     Ok documentList ->
         --       (model, Cmd.none)
         --     Err err ->
-        --         ({model | message = handleHttpError err},   Cmd.none  )
+        --         ({model | message = HttpError.handle err},   Cmd.none  )
         DocListMsg (RestoreRecentDocumentQueue result) ->
             case result of
                 Ok restoredDocumentQueue ->
                     ( { model | recentDocumentQueue = restoredDocumentQueue }, Cmd.none )
 
                 Err err ->
-                    ( { model | message = handleHttpError err }, Cmd.none )
+                    ( { model | message = HttpError.handle err }, Cmd.none )
 
         DocListMsg (RestoreRecentDocumentQueueAtSignIn result) ->
             case result of
@@ -843,7 +844,7 @@ update msg model =
                     )
 
                 Err err ->
-                    ( { model | message = handleHttpError err }, Cmd.none )
+                    ( { model | message = HttpError.handle err }, Cmd.none )
 
         DocListMsg (ReceiveDocumentListWithSelectedId result) ->
             -- SET
@@ -875,7 +876,7 @@ update msg model =
                         )
 
                 Err err ->
-                    ( { model | message = handleHttpError err }, Cmd.none )
+                    ( { model | message = HttpError.handle err }, Cmd.none )
 
         DocListMsg (ReceiveDocumentList result) ->
             -- SET CURRENT DOCUMENT
@@ -908,7 +909,7 @@ update msg model =
                         )
 
                 Err err ->
-                    ( { model | message = handleHttpError err }, Cmd.none )
+                    ( { model | message = HttpError.handle err }, Cmd.none )
 
         DocListMsg (ReceiveDocumentListAndPreserveCurrentSelection result) ->
             -- SET CURRENT DOCUMENT
@@ -941,7 +942,7 @@ update msg model =
                         )
 
                 Err err ->
-                    ( { model | message = handleHttpError err }, Cmd.none )
+                    ( { model | message = HttpError.handle err }, Cmd.none )
 
         DocListViewMsg (SetCurrentDocument document) ->
             -- SET CURRENT DOCUMENT
@@ -1098,7 +1099,7 @@ update msg model =
                         )
 
                 Err err ->
-                    ( { model | message = handleHttpError err }, Cmd.none )
+                    ( { model | message = HttpError.handle err }, Cmd.none )
 
         GoToStart ->
             goToStart model
@@ -1367,7 +1368,7 @@ update msg model =
                         )
 
                     Err err ->
-                        ( { model | message = handleHttpError err }, Cmd.none )
+                        ( { model | message = HttpError.handle err }, Cmd.none )
 
         ImageRead v ->
             let
@@ -1382,7 +1383,7 @@ update msg model =
                     ( { model | message = pdfFileName }, sendPdfFileName (Document.encodeString pdfFileName) )
 
                 Err err ->
-                    ( { model | message = httpErrorHandler err }, Cmd.none )
+                    ( { model | message = HttpError.handle err }, Cmd.none )
 
         DocMsg (ReceiveLatexExportText result) ->
             case result of
@@ -1390,7 +1391,7 @@ update msg model =
                     ( { model | message = "Export file: " ++ String.fromInt (String.length str) }, Cmd.map DocMsg <| Document.sendToWorker str )
 
                 Err err ->
-                    ( { model | message = httpErrorHandler err }, Cmd.none )
+                    ( { model | message = HttpError.handle err }, Cmd.none )
 
         SessionStatus t ->
             let
@@ -1436,7 +1437,7 @@ update msg model =
                     )
 
                 Err err ->
-                    ( { model | message = httpErrorHandler err }, Cmd.none )
+                    ( { model | message = HttpError.handle err }, Cmd.none )
 
         ImageMsg (ReceiveImageListReply result) ->
             case result of
@@ -1444,7 +1445,7 @@ update msg model =
                     ( { model | message = "RIL: " ++ str }, Cmd.none )
 
                 Err err ->
-                    ( { model | message = httpErrorHandler err }, Cmd.none )
+                    ( { model | message = HttpError.handle err }, Cmd.none )
 
         -- Err err -> ( { model | message = "RIL Error" }, Cmd.none )
         UserMsg (ListUsers result) ->
@@ -1453,7 +1454,7 @@ update msg model =
                     ( { model | userList = userList, message = "Users: " ++ (String.fromInt <| List.length userList) }, Cmd.none )
 
                 Err error ->
-                    ( { model | message = httpErrorHandler error }, Cmd.none )
+                    ( { model | message = HttpError.handle error }, Cmd.none )
 
         GetUsers ->
             searchForUsers model
@@ -1464,7 +1465,7 @@ update msg model =
                     ( { model | message = reply }, Cmd.none )
 
                 Err error ->
-                    ( { model | message = httpErrorHandler error }, Cmd.none )
+                    ( { model | message = HttpError.handle error }, Cmd.none )
 
         MakeImage ->
             case model.maybeCurrentUser of
@@ -1488,7 +1489,7 @@ update msg model =
                     ( { model | message = reply }, Cmd.none )
 
                 Err error ->
-                    ( { model | message = handleHttpError error }, Cmd.none )
+                    ( { model | message = HttpError.handle error }, Cmd.none )
 
         FileMsg (Credentials.ReceiveImageList result) ->
             case result of
@@ -1496,7 +1497,7 @@ update msg model =
                     ( { model | imageList = imageList, message = "Images: " ++ (String.fromInt <| List.length imageList) }, Cmd.none )
 
                 Err error ->
-                    ( { model | message = handleHttpError error }, Cmd.none )
+                    ( { model | message = HttpError.handle error }, Cmd.none )
 
         SelectImage image ->
             ( { model | message = "Image: " ++ image.name, maybeCurrentImage = Just image, imageMode = ViewImage }, Cmd.none )
@@ -1550,7 +1551,7 @@ update msg model =
                     )
 
                 Err error ->
-                    ( { model | blurb = "No blurb", message = httpErrorHandler error }, Cmd.none )
+                    ( { model | blurb = "No blurb", message = HttpError.handle error }, Cmd.none )
 
         UserMsg (ReceiveBigUserRecordAtSignIn result) ->
             case result of
@@ -1563,7 +1564,7 @@ update msg model =
                     )
 
                 Err error ->
-                    ( { model | blurb = "No blurb", message = httpErrorHandler error }, Cmd.none )
+                    ( { model | blurb = "No blurb", message = HttpError.handle error }, Cmd.none )
 
         UserMsg (AcknowlegeBigUserUpdate result) ->
             case result of
@@ -2475,51 +2476,3 @@ updateBigUserCmd model =
 putCurrentDocumentAtTopOfQueue : Model -> ( Model, Cmd Msg )
 putCurrentDocumentAtTopOfQueue model =
     ( { model | recentDocumentQueue = Queue.enqueueUnique model.currentDocument model.recentDocumentQueue }, Cmd.none )
-
-
-httpErrorHandler : Http.Error -> String
-httpErrorHandler error =
-    case error of
-        Http.BadPayload errorString response ->
-            "Bad Payload"
-
-        -- errorString
-        --   |> Utility.getEnclosedText "{" "}"
-        --   |> String.split ":"
-        --   |> List.drop 1
-        --   |> List.head
-        --   |> Maybe.withDefault ""
-        --   |> String.replace "\"" ""
-        -- |> (\x -> "Bad payload: " ++ x)
-        -- Debug.toString response
-        Http.BadUrl str ->
-            "Bad url: " ++ str
-
-        Http.Timeout ->
-            "timeout"
-
-        Http.NetworkError ->
-            "Network error"
-
-        Http.BadStatus resp ->
-            "Bad status: " ++ "darn!"
-
-
-handleHttpError : Http.Error -> String
-handleHttpError error =
-    case error of
-        Http.BadUrl str ->
-            str
-
-        Http.Timeout ->
-            "timeout"
-
-        Http.NetworkError ->
-            "Network error"
-
-        Http.BadStatus resp ->
-            "Bad status (" ++ String.fromInt resp.status.code ++ "): " ++ resp.status.message
-
-        -- (decodeResponse resp) --  ++ "darn! "
-        Http.BadPayload str1 resp ->
-            "Bad payload: " ++ str1 ++ ", payload = " ++ "bad payload"
