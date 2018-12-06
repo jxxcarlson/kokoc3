@@ -233,33 +233,7 @@ processInfoForElm model infoForElm_ =
                     )
 
 
-saveDocToLocalStorage : Document -> Cmd msg
-saveDocToLocalStorage document =
-    Outside.sendInfoOutside (DocumentData (Document.encodeDocumentForOutside document))
 
-
-saveDocumentListToLocalStorage : DocumentList -> Cmd msg
-saveDocumentListToLocalStorage documentList =
-    Outside.sendInfoOutside (DocumentListData (DocumentList.documentListEncoder documentList))
-
-
-saveRecentDocumentQueueToLocalStorage : Queue Document -> Cmd msg
-saveRecentDocumentQueueToLocalStorage documentQueue =
-    Outside.sendInfoOutside (DocumentQueueData (DocumentList.encodeDocumentQueue documentQueue))
-
-
-sendMaybeUserDataToLocalStorage : Maybe User -> Cmd msg
-sendMaybeUserDataToLocalStorage maybeUser =
-    case maybeUser of
-        Nothing ->
-            Cmd.none
-
-        Just user ->
-            Outside.sendInfoOutside (UserData (User.encodeUserForOutside user))
-
-
-
--- LOCALSTORAGE
 -- DEBOUNCE
 -- This defines how the debouncer should work.
 -- Choose the strategy for your use case.
@@ -559,7 +533,7 @@ update msg model =
                             , username = ""
                           }
                         , Cmd.batch
-                            [ sendMaybeUserDataToLocalStorage maybeCurrentUser
+                            [ Outside.sendMaybeUserDataToLocalStorage maybeCurrentUser
                             , bigUserCmd
                             ]
                         )
@@ -598,7 +572,7 @@ update msg model =
                             , username = ""
                             , currentDocument = SystemDocument.newUser
                           }
-                        , sendMaybeUserDataToLocalStorage maybeCurrentUser
+                        , Outside.sendMaybeUserDataToLocalStorage maybeCurrentUser
                         )
 
                 Err err ->
@@ -685,7 +659,7 @@ update msg model =
                         ( nextModel
                         , Cmd.batch
                             [ updateBigUserCmd nextModel
-                            , saveRecentDocumentQueueToLocalStorage nextDocumentQueue
+                            , Outside.saveRecentDocumentQueueToLocalStorage nextDocumentQueue
                             ]
                         )
 
@@ -724,7 +698,7 @@ update msg model =
                         ( nextModel
                         , Cmd.batch
                             [ updateBigUserCmd nextModel
-                            , saveRecentDocumentQueueToLocalStorage nextDocumentQueue
+                            , Outside.saveRecentDocumentQueueToLocalStorage nextDocumentQueue
                             ]
                         )
 
@@ -769,7 +743,7 @@ update msg model =
                           }
                         , Cmd.batch
                             [ loadTexMacrosForDocument currentDocument model
-                            , saveDocumentListToLocalStorage documentList
+                            , Outside.saveDocumentListToLocalStorage documentList
                             ]
                         )
 
@@ -797,7 +771,7 @@ update msg model =
                         | recentDocumentQueue = restoredDocumentQueue
                         , documentListSource = RecentDocumentsQueue
                       }
-                    , saveRecentDocumentQueueToLocalStorage restoredDocumentQueue
+                    , Outside.saveRecentDocumentQueueToLocalStorage restoredDocumentQueue
                     )
 
                 Err err ->
@@ -827,7 +801,7 @@ update msg model =
                           }
                         , Cmd.batch
                             [ loadTexMacrosForDocument selectedDocument model
-                            , saveDocumentListToLocalStorage documentList
+                            , Outside.saveDocumentListToLocalStorage documentList
                             , pushDocument selectedDocument
                             ]
                         )
@@ -860,7 +834,7 @@ update msg model =
                         , Cmd.batch
                             [ loadTexMacrosForDocument currentDocument model
                             , loadTexMacrosForMasterDocument
-                            , saveDocumentListToLocalStorage documentList
+                            , Outside.saveDocumentListToLocalStorage documentList
                             , pushDocument currentDocument
                             ]
                         )
@@ -893,7 +867,7 @@ update msg model =
                             , bigEditRecord = updateBigEditRecord model currentDocument
                           }
                         , Cmd.batch
-                            [ saveDocumentListToLocalStorage documentList
+                            [ Outside.saveDocumentListToLocalStorage documentList
                             , loadTexMacrosForDocument currentDocument model
                             ]
                         )
@@ -951,9 +925,9 @@ update msg model =
                 ( newModel
                 , Cmd.batch
                     [ loadMasterCommand
-                    , saveDocToLocalStorage document
-                    , saveRecentDocumentQueueToLocalStorage nextDocumentQueue
-                    , saveDocumentListToLocalStorage documentList
+                    , Outside.saveDocToLocalStorage document
+                    , Outside.saveRecentDocumentQueueToLocalStorage nextDocumentQueue
+                    , Outside.saveDocumentListToLocalStorage documentList
                     , updateBigUserCmd newModel
                     , loadTexMacrosForDocument document newModel
                     , pushDocument document
@@ -1095,7 +1069,7 @@ update msg model =
                   }
                 , Cmd.batch
                     [ cmd
-                    , saveDocToLocalStorage model.currentDocument
+                    , Outside.saveDocToLocalStorage model.currentDocument
                     , Random.generate NewSeed (Random.int 1 10000)
                     ]
                 )
@@ -2082,7 +2056,7 @@ signIn model =
                 ( freshModel
                 , Cmd.batch
                     [ Cmd.map UserMsg (User.getTokenCmd model.email model.password)
-                    , c
+                    , Outside.eraseLocalStorage
                     ]
                 )
 
@@ -2119,7 +2093,7 @@ selectDocumentWithId id model =
           }
         , Cmd.batch
             [ loadTexMacrosForDocument selectedDocument model
-            , saveDocumentListToLocalStorage documents_
+            , Outside.saveDocumentListToLocalStorage documents_
             ]
         )
 
@@ -2436,4 +2410,4 @@ putCurrentDocumentAtTopOfQueue model =
 
 
 
--- maybeDocumentAboveDeleteDocument
+-- BOTTOM

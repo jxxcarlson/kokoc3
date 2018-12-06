@@ -4,12 +4,17 @@ port module Update.Outside
         , InfoForElm(..)
         , sendInfoOutside
         , eraseLocalStorage
+        , saveDocToLocalStorage
+        , sendMaybeUserDataToLocalStorage
+        , saveRecentDocumentQueueToLocalStorage
+        , saveDocumentListToLocalStorage
         )
 
 import Json.Encode as Encode
 import User exposing (User)
 import Document exposing (Document)
-import DocumentList
+import DocumentList exposing (DocumentList)
+import Queue exposing (Queue)
 
 
 port infoForOutside : GenericOutsideData -> Cmd msg
@@ -82,3 +87,18 @@ sendMaybeUserDataToLocalStorage maybeUser =
 
         Just user ->
             sendInfoOutside (UserData (User.encodeUserForOutside user))
+
+
+saveDocToLocalStorage : Document -> Cmd msg
+saveDocToLocalStorage document =
+    sendInfoOutside (DocumentData (Document.encodeDocumentForOutside document))
+
+
+saveRecentDocumentQueueToLocalStorage : Queue Document -> Cmd msg
+saveRecentDocumentQueueToLocalStorage documentQueue =
+    sendInfoOutside (DocumentQueueData (DocumentList.encodeDocumentQueue documentQueue))
+
+
+saveDocumentListToLocalStorage : DocumentList -> Cmd msg
+saveDocumentListToLocalStorage documentList =
+    sendInfoOutside (DocumentListData (DocumentList.documentListEncoder documentList))
