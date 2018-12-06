@@ -11,6 +11,7 @@ port module Update
 
 -- IMPORT
 
+import Update.Outside as Outside exposing (InfoForOutside(..), InfoForElm(..))
 import File.Download as Download
 import MiniLatex.Export as Export
 import MiniLatexTools
@@ -53,7 +54,6 @@ import Model
         , FocusedElement(..)
         , ImageAccessibility(..)
         , ImageMode(..)
-        , InfoForElm(..)
         , MiniLatexRenderMode(..)
         , Model
         , Msg(..)
@@ -126,51 +126,8 @@ port infoForOutside : GenericOutsideData -> Cmd msg
 port infoForElm : (GenericOutsideData -> msg) -> Sub msg
 
 
-type InfoForOutside
-    = DocumentData Encode.Value
-    | DocumentListData Encode.Value
-    | DocumentQueueData Encode.Value
-    | AskToReconnectDocument Encode.Value
-    | AskToReconnectDocumentList Encode.Value
-    | AskToReconnectRecentDocumentQueue Encode.Value
-    | UserData Encode.Value
-    | AskToReconnectUser Encode.Value
-    | AskToEraseLocalStorage Encode.Value
-
-
 type alias GenericOutsideData =
     { tag : String, data : Encode.Value }
-
-
-sendInfoOutside : InfoForOutside -> Cmd msg
-sendInfoOutside info =
-    case info of
-        DocumentData value ->
-            infoForOutside { tag = "DocumentData", data = value }
-
-        DocumentListData value ->
-            infoForOutside { tag = "DocumentListData", data = value }
-
-        DocumentQueueData value ->
-            infoForOutside { tag = "DocumentQueueData", data = value }
-
-        UserData value ->
-            infoForOutside { tag = "UserData", data = value }
-
-        AskToReconnectDocument value ->
-            infoForOutside { tag = "AskToReconnectDocument", data = Encode.null }
-
-        AskToReconnectDocumentList value ->
-            infoForOutside { tag = "AskToReconnectDocumentList", data = Encode.null }
-
-        AskToReconnectRecentDocumentQueue value ->
-            infoForOutside { tag = "AskToReconnectRecentDocumentQueue", data = Encode.null }
-
-        AskToReconnectUser value ->
-            infoForOutside { tag = "AskToReconnectUser", data = Encode.null }
-
-        AskToEraseLocalStorage value ->
-            infoForOutside { tag = "AskToEraseLocalStorage", data = Encode.null }
 
 
 bigUserCmd2 maybeCurrentUser =
@@ -180,6 +137,10 @@ bigUserCmd2 maybeCurrentUser =
 
         Just user ->
             Cmd.map UserMsg <| User.getBigUserRecord (User.userId user)
+
+
+
+-- ABC
 
 
 getInfoFromOutside : (InfoForElm -> msg) -> (String -> msg) -> Sub msg
@@ -274,17 +235,17 @@ processInfoForElm model infoForElm_ =
 
 saveDocToLocalStorage : Document -> Cmd msg
 saveDocToLocalStorage document =
-    sendInfoOutside (DocumentData (Document.encodeDocumentForOutside document))
+    Outside.sendInfoOutside (DocumentData (Document.encodeDocumentForOutside document))
 
 
 saveDocumentListToLocalStorage : DocumentList -> Cmd msg
 saveDocumentListToLocalStorage documentList =
-    sendInfoOutside (DocumentListData (DocumentList.documentListEncoder documentList))
+    Outside.sendInfoOutside (DocumentListData (DocumentList.documentListEncoder documentList))
 
 
 saveRecentDocumentQueueToLocalStorage : Queue Document -> Cmd msg
 saveRecentDocumentQueueToLocalStorage documentQueue =
-    sendInfoOutside (DocumentQueueData (DocumentList.encodeDocumentQueue documentQueue))
+    Outside.sendInfoOutside (DocumentQueueData (DocumentList.encodeDocumentQueue documentQueue))
 
 
 sendMaybeUserDataToLocalStorage : Maybe User -> Cmd msg
@@ -294,15 +255,11 @@ sendMaybeUserDataToLocalStorage maybeUser =
             Cmd.none
 
         Just user ->
-            sendInfoOutside (UserData (User.encodeUserForOutside user))
-
-
-eraseLocalStorage : Cmd msg
-eraseLocalStorage =
-    sendInfoOutside (AskToEraseLocalStorage Encode.null)
+            Outside.sendInfoOutside (UserData (User.encodeUserForOutside user))
 
 
 
+-- LOCALSTORAGE
 -- DEBOUNCE
 -- This defines how the debouncer should work.
 -- Choose the strategy for your use case.
@@ -329,26 +286,26 @@ processUrl urlString =
     case UrlAppParser.toRoute urlString of
         NotFound ->
             Cmd.batch
-                [ sendInfoOutside (AskToReconnectDocument Encode.null)
-                , sendInfoOutside (AskToReconnectDocumentList Encode.null)
-                , sendInfoOutside (AskToReconnectRecentDocumentQueue Encode.null)
-                , sendInfoOutside (AskToReconnectUser Encode.null)
+                [ Outside.sendInfoOutside (AskToReconnectDocument Encode.null)
+                , Outside.sendInfoOutside (AskToReconnectDocumentList Encode.null)
+                , Outside.sendInfoOutside (AskToReconnectRecentDocumentQueue Encode.null)
+                , Outside.sendInfoOutside (AskToReconnectUser Encode.null)
                 ]
 
         DocumentIdRef docId ->
             Cmd.batch
-                [ sendInfoOutside (AskToReconnectUser Encode.null)
-                , sendInfoOutside (AskToReconnectRecentDocumentQueue Encode.null)
+                [ Outside.sendInfoOutside (AskToReconnectUser Encode.null)
+                , Outside.sendInfoOutside (AskToReconnectRecentDocumentQueue Encode.null)
 
-                --, sendInfoOutside (AskToReconnectDocumentList Encode.null)
+                --, Outside.sendInfoOutside (AskToReconnectDocumentList Encode.null)
                 , Cmd.map DocMsg (Document.getDocumentById docId Nothing)
                 , Cmd.map DocListMsg (DocumentList.findDocuments Nothing <| "id=" ++ String.fromInt docId)
                 ]
 
         HomeRef username ->
             Cmd.batch
-                [ sendInfoOutside (AskToReconnectUser Encode.null)
-                , sendInfoOutside (AskToReconnectRecentDocumentQueue Encode.null)
+                [ Outside.sendInfoOutside (AskToReconnectUser Encode.null)
+                , Outside.sendInfoOutside (AskToReconnectRecentDocumentQueue Encode.null)
                 , Cmd.map DocListMsg (DocumentList.findDocuments Nothing ("key=home&authorname=" ++ username))
                 ]
 
@@ -2042,7 +1999,7 @@ signOutCurrentUser model =
             , currentDocumentDirty = False
           }
         , Cmd.batch
-            [ eraseLocalStorage
+            [ Outside.eraseLocalStorage
             , saveCurrentDocumentIfDirty model
             ]
         )
@@ -2125,7 +2082,7 @@ signIn model =
                 ( freshModel
                 , Cmd.batch
                     [ Cmd.map UserMsg (User.getTokenCmd model.email model.password)
-                    , eraseLocalStorage
+                    , c
                     ]
                 )
 
@@ -2476,3 +2433,7 @@ updateBigUserCmd model =
 putCurrentDocumentAtTopOfQueue : Model -> ( Model, Cmd Msg )
 putCurrentDocumentAtTopOfQueue model =
     ( { model | recentDocumentQueue = Queue.enqueueUnique model.currentDocument model.recentDocumentQueue }, Cmd.none )
+
+
+
+-- maybeDocumentAboveDeleteDocument

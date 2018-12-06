@@ -7,7 +7,6 @@ module Model
         , FocusedElement(..)
         , ImageAccessibility(..)
         , ImageMode(..)
-        , InfoForElm(..)
         , MiniLatexRenderMode(..)
         , Model
         , Msg(..)
@@ -18,6 +17,7 @@ module Model
         , initialModel
         )
 
+import Update.Outside exposing (InfoForElm(..))
 import BigEditRecord exposing (BigEditRecord)
 import Browser.Dom as Dom exposing (Viewport)
 import Configuration
@@ -40,13 +40,6 @@ import Queue exposing (Queue)
 import Time exposing (Posix)
 import User exposing (BigUser, Token, User, UserMsg(..))
 import Bozo.Model exposing (BozoModel, BozoMsg)
-
-
-type InfoForElm
-    = DocumentDataFromOutside Document
-    | DocumentListDataFromOutside DocumentList.IntList
-    | RecentDocumentQueueDataFromOutside (List Int)
-    | UserDataFromOutside User
 
 
 type ErrorResponse
