@@ -11,13 +11,13 @@ import Task
 import Time exposing (Posix)
 import Update
     exposing
-        ( getInfoFromOutside
-        , getTimeInOneSecond
+        ( getTimeInOneSecond
         , imageRead
         , onUrlChange
         , processUrl
         , update
         )
+import Update.Outside exposing (getInfoFromOutside)
 import View.View exposing (view)
 
 

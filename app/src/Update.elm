@@ -1,7 +1,6 @@
 port module Update
     exposing
-        ( getInfoFromOutside
-        , getTimeInOneSecond
+        ( getTimeInOneSecond
         , getViewPort
         , imageRead
         , onUrlChange
@@ -120,16 +119,6 @@ port incrementVersion : String -> Cmd msg
 -- OUTSIDE
 
 
-port infoForOutside : GenericOutsideData -> Cmd msg
-
-
-port infoForElm : (GenericOutsideData -> msg) -> Sub msg
-
-
-type alias GenericOutsideData =
-    { tag : String, data : Encode.Value }
-
-
 bigUserCmd2 maybeCurrentUser =
     case maybeCurrentUser of
         Nothing ->
@@ -141,52 +130,6 @@ bigUserCmd2 maybeCurrentUser =
 
 
 -- ABC
-
-
-getInfoFromOutside : (InfoForElm -> msg) -> (String -> msg) -> Sub msg
-getInfoFromOutside tagger onError =
-    infoForElm
-        (\outsideInfo ->
-            case outsideInfo.tag of
-                "ReconnectDocument" ->
-                    case Decode.decodeValue Document.decodeDocumentFromOutside outsideInfo.data of
-                        Ok result ->
-                            tagger <| DocumentDataFromOutside result
-
-                        Err e ->
-                            onError <| "No doc to retrieve"
-
-                "ReconnectDocumentList" ->
-                    case Decode.decodeValue DocumentList.intListDecoder outsideInfo.data of
-                        Ok result ->
-                            tagger <| DocumentListDataFromOutside result
-
-                        Err e ->
-                            onError <| "No doc to retrieve"
-
-                "ReconnectDocumentQueue" ->
-                    case Decode.decodeValue DocumentList.intListForDocumentQueueDecoder outsideInfo.data of
-                        Ok result ->
-                            tagger <| RecentDocumentQueueDataFromOutside result
-
-                        Err e ->
-                            onError <| "No document queue to retrieve"
-
-                "ReconnectUser" ->
-                    case Decode.decodeValue User.decodeUserFromOutside outsideInfo.data of
-                        Ok result ->
-                            tagger <| UserDataFromOutside result
-
-                        Err e ->
-                            onError <| ""
-
-                --   "Bad decode (getInfoFromOutside)"  ++ (Decode.errorToString e))
-                _ ->
-                    onError <| "Unexpected info from outside"
-        )
-
-
-
 -- link : msg -> List (Html.Attribute msg) -> List (Html msg) -> Html msg
 -- link href attrs children =
 --   Html.a (preventDefaultOn "click" (Decode.succeed (href, True)) :: attrs) children

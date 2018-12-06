@@ -3,6 +3,7 @@ port module Update.Outside
         ( InfoForOutside(..)
         , InfoForElm(..)
         , sendInfoOutside
+        , getInfoFromOutside
         , eraseLocalStorage
         , saveDocToLocalStorage
         , sendMaybeUserDataToLocalStorage
@@ -11,6 +12,7 @@ port module Update.Outside
         )
 
 import Json.Encode as Encode
+import Json.Decode as Decode
 import User exposing (User)
 import Document exposing (Document)
 import DocumentList exposing (DocumentList)
@@ -18,6 +20,13 @@ import Queue exposing (Queue)
 
 
 port infoForOutside : GenericOutsideData -> Cmd msg
+
+
+port infoForElm : (GenericOutsideData -> msg) -> Sub msg
+
+
+type alias GenericOutsideData =
+    { tag : String, data : Encode.Value }
 
 
 type InfoForElm
@@ -39,8 +48,47 @@ type InfoForOutside
     | AskToEraseLocalStorage Encode.Value
 
 
-type alias GenericOutsideData =
-    { tag : String, data : Encode.Value }
+getInfoFromOutside : (InfoForElm -> msg) -> (String -> msg) -> Sub msg
+getInfoFromOutside tagger onError =
+    infoForElm
+        (\outsideInfo ->
+            case outsideInfo.tag of
+                "ReconnectDocument" ->
+                    case Decode.decodeValue Document.decodeDocumentFromOutside outsideInfo.data of
+                        Ok result ->
+                            tagger <| DocumentDataFromOutside result
+
+                        Err e ->
+                            onError <| "No doc to retrieve"
+
+                "ReconnectDocumentList" ->
+                    case Decode.decodeValue DocumentList.intListDecoder outsideInfo.data of
+                        Ok result ->
+                            tagger <| DocumentListDataFromOutside result
+
+                        Err e ->
+                            onError <| "No doc to retrieve"
+
+                "ReconnectDocumentQueue" ->
+                    case Decode.decodeValue DocumentList.intListForDocumentQueueDecoder outsideInfo.data of
+                        Ok result ->
+                            tagger <| RecentDocumentQueueDataFromOutside result
+
+                        Err e ->
+                            onError <| "No document queue to retrieve"
+
+                "ReconnectUser" ->
+                    case Decode.decodeValue User.decodeUserFromOutside outsideInfo.data of
+                        Ok result ->
+                            tagger <| UserDataFromOutside result
+
+                        Err e ->
+                            onError <| ""
+
+                --   "Bad decode (getInfoFromOutside)"  ++ (Decode.errorToString e))
+                _ ->
+                    onError <| "Unexpected info from outside"
+        )
 
 
 sendInfoOutside : InfoForOutside -> Cmd msg
