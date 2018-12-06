@@ -85,6 +85,7 @@ import View.Common as Common
 import View.EditorTools as EditorTools
 import VirtualDom exposing (Handler(..))
 import BigEditRecord
+import Bozo.Update
 
 
 port readImage : Value -> Cmd msg
@@ -513,6 +514,9 @@ update msg model =
     case msg of
         NoOp ->
             ( model, Cmd.none )
+
+        Bozo bozoMsg ->
+            Bozo.Update.update bozoMsg model
 
         AcceptPassword str ->
             ( { model | password = str }, Cmd.none )

@@ -39,6 +39,7 @@ import MiniLatex.MiniLatex as MiniLatex
 import Queue exposing (Queue)
 import Time exposing (Posix)
 import User exposing (BigUser, Token, User, UserMsg(..))
+import Bozo.Model exposing (BozoModel, BozoMsg)
 
 
 type InfoForElm
@@ -96,6 +97,7 @@ type SignupMode
 -}
 type alias Model =
     { message : String
+    , bozo : BozoModel
 
     -- USER
     , password : String
@@ -175,6 +177,7 @@ type alias Model =
 type Msg
     = NoOp
     | Test
+    | Bozo BozoMsg
       -- USER
     | AcceptPassword String
     | AcceptEmail String
@@ -263,6 +266,7 @@ type Msg
 initialModel : String -> Int -> Int -> Document -> Model
 initialModel locationHref windowWidth windowHeight document =
     { message = "Not signed in"
+    , bozo = Bozo.Model.init
     , password = ""
     , username = ""
     , email = ""
