@@ -274,29 +274,6 @@ update msg model =
             , Cmd.none
             )
 
-        AcceptDocumenTitle str ->
-            let
-                currentDocument =
-                    model.currentDocument
-
-                nextDocument =
-                    { currentDocument | title = str }
-            in
-                ( { model | documentTitle = str, currentDocument = nextDocument, currentDocumentDirty = True }, Cmd.none )
-
-        AcceptDocumentTagString str ->
-            let
-                currentDocument =
-                    model.currentDocument
-
-                nextTags =
-                    str |> String.split "," |> List.map String.trim
-
-                nextDocument =
-                    { currentDocument | tags = nextTags }
-            in
-                ( { model | tagString = str, currentDocument = nextDocument, currentDocumentDirty = True }, Cmd.none )
-
         AcceptSharingString str ->
             let
                 currentDocument =

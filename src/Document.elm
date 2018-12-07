@@ -1,32 +1,33 @@
-module Document exposing
-    ( Child
-    , DocMsg(..)
-    , DocType(..)
-    , Document
-    , DocumentRecord
-    , TextType(..)
-    , accessDictToString
-    , attachDocumentToMasterBelowCmd
-    , basicDocument
-    , createDocument
-    , createDocumentTask
-    , saveDocumentTask
-    , decodeDocumentFromOutside
-    , deleteDocument
-    , documentDecoder
-    , encodeDocumentForOutside
-    , encodeString
-    , getDocumentById
-    , getDocumentByIdRequest
-    , getExportLatex
-    , newDocument
-    , printUrl
-    , saveDocument
-    , selectedDocId
-    , sendToWorker
-    , stringToAccessDict
-    , wordCount
-    )
+module Document
+    exposing
+        ( Child
+        , DocMsg(..)
+        , DocType(..)
+        , Document
+        , DocumentRecord
+        , TextType(..)
+        , accessDictToString
+        , attachDocumentToMasterBelowCmd
+        , basicDocument
+        , createDocument
+        , createDocumentTask
+        , saveDocumentTask
+        , decodeDocumentFromOutside
+        , deleteDocument
+        , documentDecoder
+        , encodeDocumentForOutside
+        , encodeString
+        , getDocumentById
+        , getDocumentByIdRequest
+        , getExportLatex
+        , newDocument
+        , printUrl
+        , saveDocument
+        , selectedDocId
+        , sendToWorker
+        , stringToAccessDict
+        , wordCount
+        )
 
 import Configuration
 import Dict exposing (Dict)
@@ -37,8 +38,7 @@ import Json.Encode as Encode
 import List.Extra
 import Time exposing (Posix)
 import Utility
-import Task exposing(Task)
-
+import Task exposing (Task)
 
 
 -- TYPES
@@ -115,7 +115,9 @@ type TextType
 
 
 type DocMsg
-    = ReceiveDocument (Result Http.Error DocumentRecord)
+    = AcceptDocumenTitle String
+    | AcceptDocumentTagString String
+    | ReceiveDocument (Result Http.Error DocumentRecord)
     | NewDocumentCreated (Result Http.Error DocumentRecord)
     | AcknowledgeUpdateOfDocument (Result Http.Error DocumentRecord)
     | AcknowledgeDocumentDeleted (Result Http.Error String)
@@ -495,7 +497,6 @@ pairToKVTuple : List String -> ( String, AccessType )
 pairToKVTuple list =
     if List.length list /= 2 then
         ( "bozo", NotShared )
-
     else
         let
             key =
@@ -504,7 +505,7 @@ pairToKVTuple list =
             value =
                 List.Extra.getAt 1 list |> Maybe.withDefault "" |> stringToAccessType
         in
-        ( key, value )
+            ( key, value )
 
 
 kvTupleToString : ( String, AccessType ) -> String
@@ -529,15 +530,15 @@ getDocumentByIdRequest id maybeTokenString =
                     , [ Http.header "APIVersion" "V2", Http.header "Authorization" ("Bearer " ++ tokenString) ]
                     )
     in
-    Http.request
-        { method = "Get"
-        , headers = headers
-        , url = Configuration.backend ++ route
-        , body = Http.jsonBody Encode.null
-        , expect = Http.expectJson documentRecordDecoder
-        , timeout = Just Configuration.timeout
-        , withCredentials = False
-        }
+        Http.request
+            { method = "Get"
+            , headers = headers
+            , url = Configuration.backend ++ route
+            , body = Http.jsonBody Encode.null
+            , expect = Http.expectJson documentRecordDecoder
+            , timeout = Just Configuration.timeout
+            , withCredentials = False
+            }
 
 
 getDocumentById : Int -> Maybe String -> Cmd DocMsg
@@ -665,12 +666,12 @@ attachDocumentToMasterBelowCmd_ tokenString selectedDocId_ childDocument masterD
         query =
             "attach=below&child=" ++ String.fromInt childDocument.id ++ "&current=" ++ String.fromInt selectedDocId_
     in
-    case masterDocumentId == masterDocument.id of
-        False ->
-            Cmd.none
+        case masterDocumentId == masterDocument.id of
+            False ->
+                Cmd.none
 
-        True ->
-            updateDocumentWithQueryString tokenString query masterDocument
+            True ->
+                updateDocumentWithQueryString tokenString query masterDocument
 
 
 sendToWorkerRequest : String -> Http.Request String
@@ -727,7 +728,7 @@ createDocument tokenString document =
 createDocumentTask : String -> Document -> Task Http.Error DocumentRecord
 createDocumentTask tokenString document =
     createDocumentRequest tokenString document
-      |> Http.toTask
+        |> Http.toTask
 
 
 deleteDocumentRequest : String -> Document -> Http.Request String
@@ -752,10 +753,12 @@ saveDocument : String -> Document -> Cmd DocMsg
 saveDocument tokenString document =
     Http.send AcknowledgeUpdateOfDocument <| saveDocumentRequest tokenString document
 
+
 saveDocumentTask : String -> Document -> Task Http.Error DocumentRecord
 saveDocumentTask tokenString document =
     saveDocumentRequest tokenString document
-      |> Http.toTask
+        |> Http.toTask
+
 
 updateDocumentWithQueryString : String -> String -> Document -> Cmd DocMsg
 updateDocumentWithQueryString tokenString queryString document =

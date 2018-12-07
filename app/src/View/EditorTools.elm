@@ -113,7 +113,7 @@ docListTitle model =
                 Master ->
                     "Contents"
     in
-    title ++ " (" ++ String.fromInt documentCount ++ ")"
+        title ++ " (" ++ String.fromInt documentCount ++ ")"
 
 
 toolsPanel model =
@@ -140,10 +140,11 @@ versionsPanel model =
 
 
 tagInputPane model width_ height_ label_ =
-    Element.column []
-        [ Element.el [ Font.bold ] (text label_)
-        , tagInputPane_ model width_ height_ label_
-        ]
+    Element.map DocMsg <|
+        Element.column []
+            [ Element.el [ Font.bold ] (text label_)
+            , tagInputPane_ model width_ height_ label_
+            ]
 
 
 tagInputPane_ model width_ height_ label_ =
@@ -212,12 +213,13 @@ documentTypePanel model =
 
 documentTitleInput : Model -> Element Msg
 documentTitleInput model =
-    Input.text [ htmlAttribute (Html.Attributes.id "title-input"), width (px 250), height (px 30), Font.color black ]
-        { text = model.documentTitle
-        , placeholder = Nothing
-        , onChange = \str -> AcceptDocumenTitle str
-        , label = Input.labelAbove [ Font.size 14, Font.bold ] (text "Title")
-        }
+    Element.map DocMsg <|
+        Input.text [ htmlAttribute (Html.Attributes.id "title-input"), width (px 250), height (px 30), Font.color black ]
+            { text = model.documentTitle
+            , placeholder = Nothing
+            , onChange = \str -> AcceptDocumenTitle str
+            , label = Input.labelAbove [ Font.size 14, Font.bold ] (text "Title")
+            }
 
 
 deleteDocumentButton : Model -> Element Msg
@@ -461,12 +463,12 @@ newChildButton_ model =
         headDocument =
             DocumentList.getFirst model.documentList
     in
-    case headDocument.docType of
-        Standard ->
-            Element.none
+        case headDocument.docType of
+            Standard ->
+                Element.none
 
-        Master ->
-            newChildButton__ model
+            Master ->
+                newChildButton__ model
 
 
 newChildButton__ : Model -> Element Msg

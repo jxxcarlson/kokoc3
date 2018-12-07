@@ -185,8 +185,6 @@ type Msg
     | UpdateBigUser
       -- DOCUMENT
     | Search
-    | AcceptDocumenTitle String
-    | AcceptDocumentTagString String
     | AcceptSharingString String
     | AcceptImageName String
     | SetDocumentTextType TextType
