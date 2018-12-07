@@ -9,10 +9,10 @@ import Random
 import SystemDocument
 import Task
 import Time exposing (Posix)
+import Update.Time exposing (getTimeInOneSecond)
 import Update
     exposing
-        ( getTimeInOneSecond
-        , imageRead
+        ( imageRead
         , onUrlChange
         , processUrl
         , update
