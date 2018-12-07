@@ -133,6 +133,7 @@ type DocMsg
     | NewMasterDocument
     | NewChildDocument
     | PrintDocument
+    | ExportLatex
 
 
 

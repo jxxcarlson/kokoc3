@@ -346,10 +346,11 @@ exportDocumentlLink model =
 
 exportDocumentButton : Length -> Model -> Element Msg
 exportDocumentButton width_ model =
-    Input.button (buttonStyle width_)
-        { onPress = Just ExportLatex
-        , label = Element.el [] (Element.text "Export")
-        }
+    Element.map DocMsg <|
+        Input.button (buttonStyle width_)
+            { onPress = Just ExportLatex
+            , label = Element.el [] (Element.text "Export")
+            }
 
 
 modeButtonStyle appMode buttonMode width_ =

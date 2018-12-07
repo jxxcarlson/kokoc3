@@ -204,7 +204,6 @@ type Msg
     | GenerateSeed
     | NewSeed Int
     | DoFullRender
-    | ExportLatex
       -- IMAGE
     | GetImages String
     | ImageMsg ImageManager.ImageMsg

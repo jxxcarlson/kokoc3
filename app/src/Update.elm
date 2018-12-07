@@ -804,9 +804,6 @@ update msg model =
         DoFullRender ->
             Update.Document.doFullRender model
 
-        ExportLatex ->
-            Update.Document.downloadCurrentLatexDocument model
-
 
 
 -- UPDATE END

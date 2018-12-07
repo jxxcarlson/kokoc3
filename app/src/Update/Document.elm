@@ -310,6 +310,9 @@ update docMsg model =
                     , sendDocumentForPrinting (Document.encodeString (Document.printUrl model.currentDocument))
                     )
 
+        ExportLatex ->
+            downloadCurrentLatexDocument model
+
 
 getUserDocuments : Model -> String -> ( Model, Cmd Msg )
 getUserDocuments model queryString =
