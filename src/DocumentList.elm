@@ -1,38 +1,39 @@
-module DocumentList exposing
-    ( DocListMsg(..)
-    , DocumentList
-    , IntList
-    , addAndSelect
-    , deleteItemInDocumentListAt
-    , documentListEncoder
-    , documentListFromDocumentQueue
-    , documentListLength
-    , documentQueueToDocumentList
-    , documents
-    , empty
-    , emptyIntList
-    , encodeDocumentQueue
-    , findDocuments
-    , getFirst
-    , intListDecoder
-    , intListForDocumentQueueDecoder
-    , intListFromDocumentList
-    , loadMasterDocument
-    , loadMasterDocumentTask
-    , loadMasterDocumentAndSelect
-    , loadMasterDocumentWithCurrentSelection
-    , make
-    , nextDocumentList
-    , prepend
-    , retrievDocumentsFromIntList
-    , retrievRecentDocumentQueueFromIntList
-    , retrievRecentDocumentQueueFromIntListAtSignIn
-    , select
-    , selectFirst
-    , selected
-    , setDocuments
-    , updateDocument
-    )
+module DocumentList
+    exposing
+        ( DocListMsg(..)
+        , DocumentList
+        , IntList
+        , addAndSelect
+        , deleteItemInDocumentListAt
+        , documentListEncoder
+        , documentListFromDocumentQueue
+        , documentListLength
+        , documentQueueToDocumentList
+        , documents
+        , empty
+        , emptyIntList
+        , encodeDocumentQueue
+        , findDocuments
+        , getFirst
+        , intListDecoder
+        , intListForDocumentQueueDecoder
+        , intListFromDocumentList
+        , loadMasterDocument
+        , loadMasterDocumentTask
+        , loadMasterDocumentAndSelect
+        , loadMasterDocumentWithCurrentSelection
+        , make
+        , nextDocumentList
+        , prepend
+        , retrievDocumentsFromIntList
+        , retrievRecentDocumentQueueFromIntList
+        , retrievRecentDocumentQueueFromIntListAtSignIn
+        , select
+        , selectFirst
+        , selected
+        , setDocuments
+        , updateDocument
+        )
 
 import Configuration
 import Document exposing (Document, documentDecoder)
@@ -44,7 +45,7 @@ import List.Extra
 import Queue exposing (Queue)
 import User exposing (User)
 import Utility
-import Task exposing(Task)
+import Task exposing (Task)
 
 
 type DocumentList
@@ -61,6 +62,20 @@ type alias IntList =
     { ints : List Int
     , selected : Int
     }
+
+
+
+{- MSG -}
+
+
+type DocListMsg
+    = ReceiveDocumentList (Result Http.Error DocumentList)
+    | ReceiveDocumentListWithSelectedId (Result Http.Error DocumentList)
+    | RestoreDocumentList (Result Http.Error DocumentList)
+    | RestoreRecentDocumentQueue (Result Http.Error (Queue Document))
+    | RestoreRecentDocumentQueueAtSignIn (Result Http.Error (Queue Document))
+    | ReceiveDocumentListAndPreserveCurrentSelection (Result Http.Error DocumentList)
+    | GetPublicDocuments String
 
 
 
@@ -183,7 +198,7 @@ selectFirst documentList =
         maybeFirstDocument =
             List.head (documents documentList)
     in
-    select maybeFirstDocument documentList
+        select maybeFirstDocument documentList
 
 
 {-| Replace the element in `documentList` whose id is that of
@@ -198,7 +213,7 @@ updateDocument document documentList =
         newdocs_ =
             Utility.replaceIf (\doc -> doc.id == document.id) document docs_
     in
-    setDocuments newdocs_ documentList
+        setDocuments newdocs_ documentList
 
 
 nextDocumentList : Int -> Document -> DocumentList -> DocumentList
@@ -212,13 +227,13 @@ nextDocumentList targetDocId document documentList =
                 maybeTargetIndex =
                     List.Extra.findIndex (\doc -> doc.id == targetDocId) (documents documentList)
             in
-            case maybeTargetIndex of
-                Nothing ->
-                    prepend document documentList
+                case maybeTargetIndex of
+                    Nothing ->
+                        prepend document documentList
 
-                Just k ->
-                    setDocuments (Utility.listInsertAt (k + 1) document (documents documentList)) documentList
-                        |> select (Just document)
+                    Just k ->
+                        setDocuments (Utility.listInsertAt (k + 1) document (documents documentList)) documentList
+                            |> select (Just document)
 
 
 deleteItemInDocumentListAt : Int -> DocumentList -> DocumentList
@@ -232,12 +247,12 @@ deleteItemInDocumentListAt targetDocId documentList =
                 maybeTargetIndex =
                     List.Extra.findIndex (\doc -> doc.id == targetDocId) (documents documentList)
             in
-            case maybeTargetIndex of
-                Nothing ->
-                    documentList
+                case maybeTargetIndex of
+                    Nothing ->
+                        documentList
 
-                Just k ->
-                    setDocuments (Utility.listDeleteAt k (documents documentList)) documentList
+                    Just k ->
+                        setDocuments (Utility.listDeleteAt k (documents documentList)) documentList
 
 
 
@@ -250,20 +265,7 @@ notFoundDocument =
         doc =
             Document.basicDocument
     in
-    { doc | title = "Not found" }
-
-
-
-{- MSG -}
-
-
-type DocListMsg
-    = ReceiveDocumentList (Result Http.Error DocumentList)
-    | ReceiveDocumentListWithSelectedId (Result Http.Error DocumentList)
-    | RestoreDocumentList (Result Http.Error DocumentList)
-    | RestoreRecentDocumentQueue (Result Http.Error (Queue Document))
-    | RestoreRecentDocumentQueueAtSignIn (Result Http.Error (Queue Document))
-    | ReceiveDocumentListAndPreserveCurrentSelection (Result Http.Error DocumentList)
+        { doc | title = "Not found" }
 
 
 
@@ -284,7 +286,7 @@ retrievDocumentsFromIntList maybeUser intList =
         queryString =
             "idlist=" ++ ids
     in
-    Http.send RestoreDocumentList <| findDocumentsRequest maybeUser queryString
+        Http.send RestoreDocumentList <| findDocumentsRequest maybeUser queryString
 
 
 retrievRecentDocumentQueueFromIntList : Maybe User -> List Int -> Cmd DocListMsg
@@ -296,7 +298,7 @@ retrievRecentDocumentQueueFromIntList maybeUser intList =
         queryString =
             "idlist=" ++ ids
     in
-    Http.send RestoreRecentDocumentQueue <| findDocumentQueueRequest maybeUser queryString
+        Http.send RestoreRecentDocumentQueue <| findDocumentQueueRequest maybeUser queryString
 
 
 retrievRecentDocumentQueueFromIntListAtSignIn : Maybe User -> List Int -> Cmd DocListMsg
@@ -308,12 +310,13 @@ retrievRecentDocumentQueueFromIntListAtSignIn maybeUser intList =
         queryString =
             "idlist=" ++ ids
     in
-    Http.send RestoreRecentDocumentQueueAtSignIn <| findDocumentQueueRequest maybeUser queryString
+        Http.send RestoreRecentDocumentQueueAtSignIn <| findDocumentQueueRequest maybeUser queryString
 
 
 loadMasterDocument : Maybe User -> Int -> Cmd DocListMsg
 loadMasterDocument maybeUser docId =
     Http.send ReceiveDocumentList <| loadMasterDocumentRequest maybeUser docId
+
 
 loadMasterDocumentTask : Maybe User -> Int -> Task Http.Error DocumentList
 loadMasterDocumentTask maybeUser docId =
@@ -381,10 +384,10 @@ documentListEncoder documentList =
         intList =
             intListFromDocumentList documentList
     in
-    Encode.object
-        [ ( "selected", Encode.int intList.selected )
-        , ( "documentIds", Encode.list Encode.int intList.ints )
-        ]
+        Encode.object
+            [ ( "selected", Encode.int intList.selected )
+            , ( "documentIds", Encode.list Encode.int intList.ints )
+            ]
 
 
 
@@ -406,15 +409,15 @@ findDocumentsRequest maybeUser queryString =
                     , [ Http.header "APIVersion" "V2", Http.header "authorization" ("Bearer " ++ User.getTokenString user) ]
                     )
     in
-    Http.request
-        { method = "Get"
-        , headers = headers
-        , url = Configuration.backend ++ route
-        , body = Http.jsonBody Encode.null
-        , expect = Http.expectJson documentListDecoder
-        , timeout = Just Configuration.timeout
-        , withCredentials = False
-        }
+        Http.request
+            { method = "Get"
+            , headers = headers
+            , url = Configuration.backend ++ route
+            , body = Http.jsonBody Encode.null
+            , expect = Http.expectJson documentListDecoder
+            , timeout = Just Configuration.timeout
+            , withCredentials = False
+            }
 
 
 findDocumentQueueRequest : Maybe User -> String -> Http.Request (Queue Document)
@@ -432,15 +435,15 @@ findDocumentQueueRequest maybeUser queryString =
                     , [ Http.header "APIVersion" "V2", Http.header "authorization" ("Bearer " ++ User.getTokenString user) ]
                     )
     in
-    Http.request
-        { method = "Get"
-        , headers = headers
-        , url = Configuration.backend ++ route
-        , body = Http.jsonBody Encode.null
-        , expect = Http.expectJson documentQueueDecoder
-        , timeout = Just Configuration.timeout
-        , withCredentials = False
-        }
+        Http.request
+            { method = "Get"
+            , headers = headers
+            , url = Configuration.backend ++ route
+            , body = Http.jsonBody Encode.null
+            , expect = Http.expectJson documentQueueDecoder
+            , timeout = Just Configuration.timeout
+            , withCredentials = False
+            }
 
 
 loadMasterDocumentRequest : Maybe User -> Int -> Http.Request DocumentList
@@ -456,15 +459,15 @@ loadMasterDocumentRequest maybeUser docId =
                     , [ Http.header "APIVersion" "V2", Http.header "authorization" ("Bearer " ++ User.getTokenString user) ]
                     )
     in
-    Http.request
-        { method = "Get"
-        , headers = headers
-        , url = Configuration.backend ++ route
-        , body = Http.jsonBody Encode.null
-        , expect = Http.expectJson documentListDecoder
-        , timeout = Just Configuration.timeout
-        , withCredentials = False
-        }
+        Http.request
+            { method = "Get"
+            , headers = headers
+            , url = Configuration.backend ++ route
+            , body = Http.jsonBody Encode.null
+            , expect = Http.expectJson documentListDecoder
+            , timeout = Just Configuration.timeout
+            , withCredentials = False
+            }
 
 
 

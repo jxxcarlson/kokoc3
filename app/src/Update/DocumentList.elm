@@ -2,11 +2,12 @@ module Update.DocumentList exposing (update)
 
 import Document exposing (DocType(..))
 import DocumentList exposing (DocListMsg(..))
-import Model exposing (Model, Msg(..), DocumentListSource(..))
+import Model exposing (Model, Msg(..), DocumentListSource(..), ToolPanelState(..), AppMode(..))
 import Update.HttpError as HttpError
 import Update.Document
 import Update.Outside as Outside
 import List.Extra
+import Query
 
 
 update : DocListMsg -> Model -> ( Model, Cmd Msg )
@@ -173,3 +174,14 @@ update docListMsg model =
 
                 Err err ->
                     ( { model | message = HttpError.handle err }, Cmd.none )
+
+        GetPublicDocuments query ->
+            ( { model
+                | appMode = Reading
+                , toolPanelState = HideToolPanel
+              }
+            , Cmd.batch
+                [ Cmd.map DocListMsg (DocumentList.findDocuments Nothing (Query.parse query))
+                , Update.Document.saveCurrentDocumentIfDirty model
+                ]
+            )

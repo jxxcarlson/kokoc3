@@ -358,17 +358,6 @@ update msg model =
         DocViewMsg (LoadMasterWithCurrentSelection docId) ->
             ( { model | appMode = Reading, toolPanelState = HideToolPanel, masterDocLoaded = True, documentListSource = SearchResults }, Cmd.map DocListMsg (DocumentList.loadMasterDocumentWithCurrentSelection model.maybeCurrentUser docId) )
 
-        GetPublicDocuments query ->
-            ( { model
-                | appMode = Reading
-                , toolPanelState = HideToolPanel
-              }
-            , Cmd.batch
-                [ Cmd.map DocListMsg (DocumentList.findDocuments Nothing (Query.parse query))
-                , Update.Document.saveCurrentDocumentIfDirty model
-                ]
-            )
-
         SetSignupMode signupMode_ ->
             ( { model | signupMode = signupMode_ }, Cmd.none )
 

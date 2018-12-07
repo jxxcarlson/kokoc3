@@ -189,7 +189,6 @@ type Msg
     | AcceptImageName String
     | SetDocumentTextType TextType
     | SetDocumentType DocType
-    | GetPublicDocuments String
     | GetPublicDocumentsRawQuery String
     | GetUserDocuments String
     | LoadMasterDocument String
