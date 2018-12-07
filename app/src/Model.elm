@@ -171,6 +171,7 @@ type Msg
     = NoOp
     | Test
     | Bozo BozoMsg
+      --| UI UIMsg
       -- USER
     | AcceptPassword String
     | AcceptEmail String

@@ -4,7 +4,7 @@ import Model exposing (Model, Msg, FocusedElement(..), AppMode(..))
 import Keyboard exposing (Key(..))
 import Update.Search as Search
 import Update.Document
-import Update.UI as UI
+import UI.Update as UI
 
 
 gateway : Model -> ( List Key, Maybe Keyboard.KeyChange ) -> ( Model, Cmd Msg )
