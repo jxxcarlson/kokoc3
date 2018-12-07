@@ -540,9 +540,6 @@ update msg model =
                 Err _ ->
                     ( { model | debugString = "doc VP ERROR" }, Cmd.none )
 
-        CancelDeleteCurrentDocument ->
-            ( { model | deleteDocumentState = DeleteIsOnSafety }, Cmd.none )
-
         LogErr error ->
             ( model, Cmd.none )
 

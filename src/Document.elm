@@ -128,6 +128,7 @@ type DocMsg
     | SaveCurrentDocument Posix
     | NewDocument
     | DeleteCurrentDocument
+    | CancelDeleteCurrentDocument
 
 
 

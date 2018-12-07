@@ -286,6 +286,9 @@ update docMsg model =
                     DeleteIsArmed ->
                         ( { model | deleteDocumentState = DeleteIsOnSafety }, Cmd.map DocMsg (Document.deleteDocument tokenString model.currentDocument) )
 
+        CancelDeleteCurrentDocument ->
+            ( { model | deleteDocumentState = DeleteIsOnSafety }, Cmd.none )
+
 
 getUserDocuments : Model -> String -> ( Model, Cmd Msg )
 getUserDocuments model queryString =

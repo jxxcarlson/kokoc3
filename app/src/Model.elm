@@ -202,7 +202,6 @@ type Msg
     | NewMasterDocument
     | NewChildDocument
     | FindViewportOfRenderedText (Result Dom.Error Dom.Viewport)
-    | CancelDeleteCurrentDocument
     | SetDocumentPublic Bool
     | ToggleDocumentSource
     | PrintDocument
