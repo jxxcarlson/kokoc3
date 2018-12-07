@@ -323,6 +323,16 @@ update docMsg model =
             in
                 ( { model | currentDocument = nextDocument, currentDocumentDirty = True }, Cmd.none )
 
+        SetDocumentType docType ->
+            let
+                document =
+                    model.currentDocument
+
+                nextDocument =
+                    { document | docType = docType }
+            in
+                ( { model | currentDocument = nextDocument, currentDocumentDirty = True }, Cmd.none )
+
 
 getUserDocuments : Model -> String -> ( Model, Cmd Msg )
 getUserDocuments model queryString =

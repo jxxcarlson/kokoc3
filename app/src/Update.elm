@@ -498,16 +498,6 @@ update msg model =
         ToggleToolPanelState ->
             UI.toggleToolPanelState model
 
-        SetDocumentType docType ->
-            let
-                document =
-                    model.currentDocument
-
-                nextDocument =
-                    { document | docType = docType }
-            in
-                ( { model | currentDocument = nextDocument, currentDocumentDirty = True }, Cmd.none )
-
         GetViewport viewport ->
             ( { model | viewport = viewport }, Cmd.none )
 

@@ -187,7 +187,6 @@ type Msg
     | Search
     | AcceptSharingString String
     | AcceptImageName String
-    | SetDocumentType DocType
     | GetPublicDocumentsRawQuery String
     | LoadMasterDocument String
     | DocMsg Document.DocMsg

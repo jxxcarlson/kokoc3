@@ -335,10 +335,11 @@ documentTypeButtonStyle model docType =
 
 standardDocumentButton : Model -> Element Msg
 standardDocumentButton model =
-    Input.button (documentTypeButtonStyle model Standard)
-        { onPress = Just (SetDocumentType Standard)
-        , label = Element.el [] (Element.text "Standard")
-        }
+    Element.map DocMsg <|
+        Input.button (documentTypeButtonStyle model Standard)
+            { onPress = Just (SetDocumentType Standard)
+            , label = Element.el [] (Element.text "Standard")
+            }
 
 
 publicButton : Document -> Element Msg
@@ -369,10 +370,11 @@ publicIndicatorColor actual target =
 
 masterDocumentButton : Model -> Element Msg
 masterDocumentButton model =
-    Input.button (documentTypeButtonStyle model Master)
-        { onPress = Just (SetDocumentType Master)
-        , label = Element.el [] (Element.text "Master")
-        }
+    Element.map DocMsg <|
+        Input.button (documentTypeButtonStyle model Master)
+            { onPress = Just (SetDocumentType Master)
+            , label = Element.el [] (Element.text "Master")
+            }
 
 
 deleteCurrentDocumentButton : Length -> Model -> Element Msg

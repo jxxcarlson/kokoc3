@@ -135,6 +135,7 @@ type DocMsg
     | PrintDocument
     | ExportLatex
     | SetDocumentTextType TextType
+    | SetDocumentType DocType
 
 
 
