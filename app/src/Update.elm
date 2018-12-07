@@ -498,11 +498,6 @@ update msg model =
         ToggleToolPanelState ->
             UI.toggleToolPanelState model
 
-        NewChildDocument ->
-            ( { model | toolMenuState = HideToolMenu, appMode = Writing }
-            , Cmd.map DocMsg (Update.Document.newChildDocument model)
-            )
-
         SetDocumentTextType textType ->
             let
                 document =

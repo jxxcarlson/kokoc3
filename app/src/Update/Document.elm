@@ -295,6 +295,11 @@ update docMsg model =
         NewMasterDocument ->
             doNewMasterDocument model
 
+        NewChildDocument ->
+            ( { model | toolMenuState = HideToolMenu, appMode = Writing }
+            , Cmd.map DocMsg (newChildDocument model)
+            )
+
 
 getUserDocuments : Model -> String -> ( Model, Cmd Msg )
 getUserDocuments model queryString =

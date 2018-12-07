@@ -478,10 +478,11 @@ newChildButton_ model =
 
 newChildButton__ : Model -> Element Msg
 newChildButton__ model =
-    Input.button (buttonStyle (px 90))
-        { onPress = Just NewChildDocument
-        , label = Element.el [] (Element.text "New subdoc")
-        }
+    Element.map DocMsg <|
+        Input.button (buttonStyle (px 90))
+            { onPress = Just NewChildDocument
+            , label = Element.el [] (Element.text "New subdoc")
+            }
 
 
 newMasterButton : Model -> Element Msg

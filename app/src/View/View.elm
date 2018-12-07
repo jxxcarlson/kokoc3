@@ -738,10 +738,11 @@ newStandardDocItem =
 
 newSubDocumentItem : Element Msg
 newSubDocumentItem =
-    Input.button (Widget.menuItemStyle (px 160))
-        { onPress = Just NewChildDocument
-        , label = Element.el [] (Element.text "New subdocument Ctrl-J")
-        }
+    Element.map DocMsg <|
+        Input.button (Widget.menuItemStyle (px 160))
+            { onPress = Just NewChildDocument
+            , label = Element.el [] (Element.text "New subdocument Ctrl-J")
+            }
 
 
 newMasterDocItem : Element Msg

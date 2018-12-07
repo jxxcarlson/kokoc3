@@ -131,6 +131,7 @@ type DocMsg
     | CancelDeleteCurrentDocument
     | UpdateCurrentDocument
     | NewMasterDocument
+    | NewChildDocument
 
 
 
