@@ -1,17 +1,68 @@
 module Update.User exposing (..)
 
-import Model exposing (Model, Msg(..), ErrorResponse(..))
+import Model exposing (Model, Msg(..), ErrorResponse(..), initialModel, DocumentListSource(..))
 import Queue
 import User exposing (UserMsg(..))
 import Update.HttpError as HttpError
 import Update.Outside as Outside
+import Update.Time
 import DocumentList
 import SystemDocument
+import Document
 
 
 update : UserMsg -> Model -> ( Model, Cmd Msg )
 update userMsg model =
     case userMsg of
+        AcceptPassword str ->
+            ( { model | password = str }, Cmd.none )
+
+        AcceptEmail str ->
+            ( { model | email = str }, Cmd.none )
+
+        AcceptUserName str ->
+            ( { model | username = str }, Cmd.none )
+
+        SignIn ->
+            signIn model
+
+        SignOut ->
+            signOutCurrentUser model
+
+        SessionStatus t ->
+            let
+                sessionExpired =
+                    case model.maybeCurrentUser of
+                        Nothing ->
+                            True
+
+                        Just user ->
+                            User.sessionIsExpired t user
+
+                sessionString =
+                    case sessionExpired of
+                        True ->
+                            "Not signed in"
+
+                        False ->
+                            "UTC " ++ Update.Time.toUtcString t
+            in
+                case ( sessionExpired, model.maybeCurrentUser ) of
+                    ( True, Just _ ) ->
+                        signOutCurrentUser model
+
+                    ( _, _ ) ->
+                        ( { model | message = sessionString }, Cmd.none )
+
+        -- Handler: RespondToNewUser
+        RegisterUser ->
+            case String.length model.password < 8 of
+                True ->
+                    ( { model | message = "Password must have at least 8 characters" }, Cmd.none )
+
+                False ->
+                    ( model, Cmd.map UserMsg (User.registerUser model.email model.username "anon" model.password) )
+
         ListUsers result ->
             case result of
                 Ok userList ->
@@ -133,6 +184,54 @@ update userMsg model =
 
                 Err err ->
                     ( { model | message = HttpError.handle err }, Cmd.none )
+
+
+signOutCurrentUser : Model -> ( Model, Cmd Msg )
+signOutCurrentUser model =
+    let
+        freshModel =
+            initialModel "" model.windowWidth model.windowHeight SystemDocument.signedOut
+    in
+        ( { freshModel
+            | maybeCurrentUser = Nothing
+            , maybeToken = Nothing
+            , message = "Signed out"
+            , currentDocumentDirty = False
+          }
+        , Cmd.batch
+            [ Outside.eraseLocalStorage
+
+            -- , Update.Document.saveCurrentDocumentIfDirty model --ACHTUNG!!
+            ]
+        )
+
+
+signIn : Model -> ( Model, Cmd Msg )
+signIn model =
+    case String.length model.password < 8 of
+        True ->
+            ( { model | message = "Password must contain at least 8 characters" }, Cmd.none )
+
+        False ->
+            let
+                basicDoc =
+                    Document.basicDocument
+
+                startupDoc =
+                    SystemDocument.signIn
+
+                freshModel =
+                    initialModel "" model.windowWidth model.windowHeight startupDoc
+
+                documentListSource =
+                    RecentDocumentsQueue
+            in
+                ( freshModel
+                , Cmd.batch
+                    [ Cmd.map UserMsg (User.getTokenCmd model.email model.password)
+                    , Outside.eraseLocalStorage
+                    ]
+                )
 
 
 updateBigUserCmd : Model -> Cmd Msg

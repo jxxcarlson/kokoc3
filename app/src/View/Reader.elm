@@ -37,7 +37,6 @@ import View.Widget as Widget exposing (..)
 import VirtualDom exposing (Handler(..))
 
 
-
 -- READER
 
 
@@ -175,10 +174,11 @@ logoutPanel model =
 
 signInButton : Length -> Model -> Element Msg
 signInButton width_ model =
-    Input.button (buttonStyle width_)
-        { onPress = Just SignIn
-        , label = Element.el [] (Element.text "Sign in")
-        }
+    Element.map UserMsg <|
+        Input.button (buttonStyle width_)
+            { onPress = Just SignIn
+            , label = Element.el [] (Element.text "Sign in")
+            }
 
 
 resetPasswordLink : Model -> Element Msg
@@ -209,10 +209,11 @@ verifyUserLink model =
 
 registerUserButton : Length -> Model -> Element Msg
 registerUserButton width_ model =
-    Input.button (buttonStyle width_)
-        { onPress = Just RegisterUser
-        , label = Element.el [] (Element.text "Sign up")
-        }
+    Element.map UserMsg <|
+        Input.button (buttonStyle width_)
+            { onPress = Just RegisterUser
+            , label = Element.el [] (Element.text "Sign up")
+            }
 
 
 cancelRegistrationButton : Length -> Model -> Element Msg
@@ -233,15 +234,16 @@ gotoRegistrationButton width_ model =
 
 signoutButton : Length -> Model -> Element Msg
 signoutButton width_ model =
-    case model.maybeCurrentUser of
-        Nothing ->
-            Element.none
+    Element.map UserMsg <|
+        case model.maybeCurrentUser of
+            Nothing ->
+                Element.none
 
-        Just _ ->
-            Input.button (buttonStyle width_)
-                { onPress = Just SignOut
-                , label = Element.el [] (Element.text "Sign out")
-                }
+            Just _ ->
+                Input.button (buttonStyle width_)
+                    { onPress = Just SignOut
+                    , label = Element.el [] (Element.text "Sign out")
+                    }
 
 
 passwordInput : Model -> Element Msg
@@ -250,7 +252,7 @@ passwordInput model =
         { text = model.password
         , placeholder = Nothing
         , show = False
-        , onChange = \str -> AcceptPassword str
+        , onChange = \str -> (UserMsg << AcceptPassword) str
         , label = Input.labelAbove [ Font.size 12, Font.bold, moveDown 0 ] (text "Password")
         }
 
@@ -260,7 +262,7 @@ emailInput model =
     Input.text [ width (px 180), height (px 30), Font.color black ]
         { text = model.email
         , placeholder = Nothing
-        , onChange = \str -> AcceptEmail str
+        , onChange = \str -> (UserMsg << AcceptEmail) str
         , label = Input.labelAbove [ Font.size 12, Font.bold, moveDown 0 ] (text "Email")
         }
 
@@ -270,7 +272,7 @@ usernameInput model =
     Input.text [ width (px 180), height (px 30), Font.color black ]
         { text = model.username
         , placeholder = Nothing
-        , onChange = \str -> AcceptUserName str
+        , onChange = \str -> (UserMsg << AcceptUserName) str
         , label = Input.labelAbove [ Font.size 12, Font.bold, moveDown 0 ] (text "User name")
         }
 

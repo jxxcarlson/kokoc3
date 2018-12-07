@@ -173,20 +173,13 @@ type Msg
     | Bozo BozoMsg
       --| UI UIMsg
       -- USER
-    | AcceptPassword String
-    | AcceptEmail String
-    | AcceptUserName String
+    | SetSignupMode SignupMode
     | AcceptSearchQuery String
     | SendEmail
-    | SignIn
-    | SignOut
-    | RegisterUser
-    | SetSignupMode SignupMode
     | AcceptEmailSubject String
     | AcceptEmailText String
     | AcceptBlurb String
     | UserMsg User.UserMsg
-    | SessionStatus Posix
     | GetUsers
     | GetBigUser
     | UpdateBigUser

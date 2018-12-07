@@ -266,15 +266,6 @@ update msg model =
         UserMsg userMsg ->
             Update.User.update userMsg model
 
-        AcceptPassword str ->
-            ( { model | password = str }, Cmd.none )
-
-        AcceptEmail str ->
-            ( { model | email = str }, Cmd.none )
-
-        AcceptUserName str ->
-            ( { model | username = str }, Cmd.none )
-
         AcceptSearchQuery searchQueryString ->
             ( { model
                 | searchQueryString = searchQueryString
@@ -390,24 +381,6 @@ update msg model =
         DocViewMsg (LoadMasterWithCurrentSelection docId) ->
             ( { model | appMode = Reading, toolPanelState = HideToolPanel, masterDocLoaded = True, documentListSource = SearchResults }, Cmd.map DocListMsg (DocumentList.loadMasterDocumentWithCurrentSelection model.maybeCurrentUser docId) )
 
-        SignIn ->
-            signIn model
-
-        SignOut ->
-            signOutCurrentUser model
-
-        -- Handler: RespondToNewUser
-        RegisterUser ->
-            case String.length model.password < 8 of
-                True ->
-                    ( { model | message = "Password must have at least 8 characters" }, Cmd.none )
-
-                False ->
-                    ( model, Cmd.map UserMsg (User.registerUser model.email model.username "anon" model.password) )
-
-        SetSignupMode signupMode_ ->
-            ( { model | signupMode = signupMode_ }, Cmd.none )
-
         GetDocumentById id ->
             ( model, Cmd.map DocMsg (Document.getDocumentById id (readToken model.maybeToken)) )
 
@@ -421,6 +394,9 @@ update msg model =
                 , Update.Document.saveCurrentDocumentIfDirty model
                 ]
             )
+
+        SetSignupMode signupMode_ ->
+            ( { model | signupMode = signupMode_ }, Cmd.none )
 
         GetPublicDocumentsRawQuery query ->
             Search.getPublicDocumentsRawQuery model query
@@ -757,31 +733,6 @@ update msg model =
             in
                 ( { model | maybeImageString = nextImageString, message = "ImageRead" }, Cmd.map UserMsg <| User.incrementMediaCountForMaybeUser model.maybeCurrentUser )
 
-        SessionStatus t ->
-            let
-                sessionExpired =
-                    case model.maybeCurrentUser of
-                        Nothing ->
-                            True
-
-                        Just user ->
-                            User.sessionIsExpired t user
-
-                sessionString =
-                    case sessionExpired of
-                        True ->
-                            "Not signed in"
-
-                        False ->
-                            "UTC " ++ Update.Time.toUtcString t
-            in
-                case ( sessionExpired, model.maybeCurrentUser ) of
-                    ( True, Just _ ) ->
-                        signOutCurrentUser model
-
-                    ( _, _ ) ->
-                        ( { model | message = sessionString }, Cmd.none )
-
         PrintDocument ->
             case model.currentDocument.textType of
                 MiniLatex ->
@@ -980,51 +931,6 @@ imageAccessbilityToBool imageAccessibility =
 
 {-| Handler: ListUsers
 -}
-signOutCurrentUser : Model -> ( Model, Cmd Msg )
-signOutCurrentUser model =
-    let
-        freshModel =
-            initialModel "" model.windowWidth model.windowHeight SystemDocument.signedOut
-    in
-        ( { freshModel
-            | maybeCurrentUser = Nothing
-            , maybeToken = Nothing
-            , message = "Signed out"
-            , currentDocumentDirty = False
-          }
-        , Cmd.batch
-            [ Outside.eraseLocalStorage
-            , Update.Document.saveCurrentDocumentIfDirty model
-            ]
-        )
-
-
-signIn : Model -> ( Model, Cmd Msg )
-signIn model =
-    case String.length model.password < 8 of
-        True ->
-            ( { model | message = "Password must contain at least 8 characters" }, Cmd.none )
-
-        False ->
-            let
-                basicDoc =
-                    Document.basicDocument
-
-                startupDoc =
-                    SystemDocument.signIn
-
-                freshModel =
-                    initialModel "" model.windowWidth model.windowHeight startupDoc
-
-                documentListSource =
-                    RecentDocumentsQueue
-            in
-                ( freshModel
-                , Cmd.batch
-                    [ Cmd.map UserMsg (User.getTokenCmd model.email model.password)
-                    , Outside.eraseLocalStorage
-                    ]
-                )
 
 
 

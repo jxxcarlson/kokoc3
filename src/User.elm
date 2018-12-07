@@ -1,32 +1,33 @@
-module User exposing
-    ( BigUser
-    , Token
-    , User
-    , UserMsg(..)
-    , decodeUserFromOutside
-    , email
-    , encodeUserForOutside
-    , getBigUserRecord
-    , getBigUserRecordAtSignIn
-    , getToken
-    , getTokenCmd
-    , getTokenString
-    , getTokenStringFromMaybeUser
-    , getUsers
-    , incrementMediaCountForMaybeUser
-    , invalidToken
-    , maybeSetToken
-    , maybeUserFromEmailAndToken
-    , readToken
-    , registerUser
-    , sessionIsExpired
-    , stringFromMaybeToken
-    , stringFromToken
-    , updateBigUser
-    , userId
-    , username
-    , usernameFromMaybeUser
-    )
+module User
+    exposing
+        ( BigUser
+        , Token
+        , User
+        , UserMsg(..)
+        , decodeUserFromOutside
+        , email
+        , encodeUserForOutside
+        , getBigUserRecord
+        , getBigUserRecordAtSignIn
+        , getToken
+        , getTokenCmd
+        , getTokenString
+        , getTokenStringFromMaybeUser
+        , getUsers
+        , incrementMediaCountForMaybeUser
+        , invalidToken
+        , maybeSetToken
+        , maybeUserFromEmailAndToken
+        , readToken
+        , registerUser
+        , sessionIsExpired
+        , stringFromMaybeToken
+        , stringFromToken
+        , updateBigUser
+        , userId
+        , username
+        , usernameFromMaybeUser
+        )
 
 import Configuration
 import Http
@@ -35,7 +36,6 @@ import Json.Decode.Pipeline as JPipeline exposing (hardcoded, optional, required
 import Json.Encode as Encode
 import Jwt exposing (decodeToken)
 import Time exposing (Posix)
-
 
 
 -- localhost:4000/api/authentication
@@ -100,7 +100,7 @@ getTokenString (User user) =
         (Token str) =
             user.token
     in
-    str
+        str
 
 
 getToken : User -> Token
@@ -196,6 +196,13 @@ type UserMsg
     | ReceiveBigUserRecord (Result Http.Error BigUserRecord)
     | ReceiveBigUserRecordAtSignIn (Result Http.Error BigUserRecord)
     | AcknowlegeBigUserUpdate (Result Http.Error BigUserRecord)
+    | AcceptPassword String
+    | AcceptEmail String
+    | AcceptUserName String
+    | SignIn
+    | SignOut
+    | RegisterUser
+    | SessionStatus Posix
 
 
 
@@ -345,7 +352,7 @@ maybeUserFromEmailAndToken email_ token =
                 userRecord =
                     { email = email_, id = value.userId, token = Token token, username = value.username }
             in
-            Just (User userRecord)
+                Just (User userRecord)
 
         Err error ->
             Nothing
@@ -413,15 +420,15 @@ getUsersRequest query =
                 False ->
                     "?" ++ query
     in
-    Http.request
-        { method = "Get"
-        , headers = [ Http.header "APIVersion" "V2" ]
-        , url = Configuration.backend ++ "/api/users" ++ queryString
-        , body = Http.emptyBody
-        , expect = Http.expectJson userListDecoder
-        , timeout = Just Configuration.timeout
-        , withCredentials = False
-        }
+        Http.request
+            { method = "Get"
+            , headers = [ Http.header "APIVersion" "V2" ]
+            , url = Configuration.backend ++ "/api/users" ++ queryString
+            , body = Http.emptyBody
+            , expect = Http.expectJson userListDecoder
+            , timeout = Just Configuration.timeout
+            , withCredentials = False
+            }
 
 
 getUsers : String -> Cmd UserMsg
