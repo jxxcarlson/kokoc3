@@ -126,6 +126,7 @@ type DocMsg
     | GetDocumentById Int
     | IncrementVersion
     | SaveCurrentDocument Posix
+    | NewDocument
 
 
 

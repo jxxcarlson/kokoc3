@@ -270,6 +270,9 @@ update docMsg model =
                         , Cmd.batch [ saveCurrentDocumentIfDirty model, Update.Time.getTime ]
                         )
 
+        NewDocument ->
+            doNewStandardDocument model
+
 
 getUserDocuments : Model -> String -> ( Model, Cmd Msg )
 getUserDocuments model queryString =

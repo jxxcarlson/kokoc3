@@ -199,7 +199,6 @@ type Msg
     | GetContent String
     | UpdateEditorContent String
     | UpdateCurrentDocument
-    | NewDocument
     | NewMasterDocument
     | NewChildDocument
     | FindViewportOfRenderedText (Result Dom.Error Dom.Viewport)

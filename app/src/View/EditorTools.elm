@@ -439,10 +439,11 @@ newDocumentButton : Model -> Element Msg
 newDocumentButton model =
     case model.appMode of
         Writing ->
-            Input.button (buttonStyle (px 90))
-                { onPress = Just NewDocument
-                , label = Element.el [] (Element.text "New doc")
-                }
+            Element.map DocMsg <|
+                Input.button (buttonStyle (px 90))
+                    { onPress = Just NewDocument
+                    , label = Element.el [] (Element.text "New doc")
+                    }
 
         _ ->
             Element.none

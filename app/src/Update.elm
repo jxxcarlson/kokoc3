@@ -501,9 +501,6 @@ update msg model =
         ToggleToolPanelState ->
             UI.toggleToolPanelState model
 
-        NewDocument ->
-            Update.Document.doNewStandardDocument model
-
         NewMasterDocument ->
             Update.Document.doNewMasterDocument model
 
