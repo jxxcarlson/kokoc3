@@ -775,10 +775,11 @@ goToStartItem =
 
 incrementVersionItem : Element Msg
 incrementVersionItem =
-    Input.button (Widget.menuItemStyle (px 160))
-        { onPress = Just IncrementVersion
-        , label = Element.el [] (Element.text "New version Ctrl-V")
-        }
+    Element.map DocMsg <|
+        Input.button (Widget.menuItemStyle (px 160))
+            { onPress = Just IncrementVersion
+            , label = Element.el [] (Element.text "New version Ctrl-V")
+            }
 
 
 toggleUserPreferencesItem : Element Msg

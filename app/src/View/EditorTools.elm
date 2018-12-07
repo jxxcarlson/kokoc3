@@ -262,10 +262,11 @@ newVersionUrl document =
 
 newVersionButton : Model -> Element Msg
 newVersionButton model =
-    Input.button (textTypeButtonStyle model MiniLatex)
-        { onPress = Just IncrementVersion
-        , label = Element.el [] (Element.text "New version")
-        }
+    Element.map DocMsg <|
+        Input.button (textTypeButtonStyle model MiniLatex)
+            { onPress = Just IncrementVersion
+            , label = Element.el [] (Element.text "New version")
+            }
 
 
 miniLatexTypeButton : Model -> Element Msg

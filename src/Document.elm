@@ -124,6 +124,7 @@ type DocMsg
     | ReceiveWorkerReply (Result Http.Error String)
     | ReceiveLatexExportText (Result Http.Error String)
     | GetDocumentById Int
+    | IncrementVersion
 
 
 

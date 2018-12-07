@@ -207,7 +207,6 @@ type Msg
     | DeleteCurrentDocument
     | CancelDeleteCurrentDocument
     | SetDocumentPublic Bool
-    | IncrementVersion
     | ToggleDocumentSource
     | PrintDocument
     | GenerateSeed

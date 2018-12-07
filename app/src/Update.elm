@@ -696,9 +696,6 @@ update msg model =
                 _ ->
                     ( { model | toolMenuState = HideToolMenu }, Update.Document.sendDocumentForPrinting (Document.encodeString (Document.printUrl model.currentDocument)) )
 
-        IncrementVersion ->
-            Update.Document.doIncrementVersion model
-
         ImageMsg (ReceiveImageList result) ->
             case result of
                 Ok imageList ->

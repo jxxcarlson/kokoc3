@@ -247,6 +247,9 @@ update docMsg model =
         GetDocumentById id ->
             ( model, Cmd.map DocMsg <| Document.getDocumentById id (readToken model.maybeToken) )
 
+        IncrementVersion ->
+            doIncrementVersion model
+
 
 getUserDocuments : Model -> String -> ( Model, Cmd Msg )
 getUserDocuments model queryString =
