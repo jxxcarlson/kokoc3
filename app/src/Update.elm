@@ -639,14 +639,6 @@ update msg model =
             in
                 ( { model | maybeImageString = nextImageString, message = "ImageRead" }, Cmd.map UserMsg <| User.incrementMediaCountForMaybeUser model.maybeCurrentUser )
 
-        PrintDocument ->
-            case model.currentDocument.textType of
-                MiniLatex ->
-                    Update.Document.printLatex model
-
-                _ ->
-                    ( { model | toolMenuState = HideToolMenu }, Update.Document.sendDocumentForPrinting (Document.encodeString (Document.printUrl model.currentDocument)) )
-
         ImageMsg (ReceiveImageList result) ->
             case result of
                 Ok imageList ->

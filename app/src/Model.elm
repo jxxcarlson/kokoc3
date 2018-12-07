@@ -201,7 +201,6 @@ type Msg
     | FindViewportOfRenderedText (Result Dom.Error Dom.Viewport)
     | SetDocumentPublic Bool
     | ToggleDocumentSource
-    | PrintDocument
     | GenerateSeed
     | NewSeed Int
     | DoFullRender

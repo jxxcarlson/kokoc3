@@ -300,6 +300,16 @@ update docMsg model =
             , Cmd.map DocMsg (newChildDocument model)
             )
 
+        PrintDocument ->
+            case model.currentDocument.textType of
+                MiniLatex ->
+                    printLatex model
+
+                _ ->
+                    ( { model | toolMenuState = HideToolMenu }
+                    , sendDocumentForPrinting (Document.encodeString (Document.printUrl model.currentDocument))
+                    )
+
 
 getUserDocuments : Model -> String -> ( Model, Cmd Msg )
 getUserDocuments model queryString =

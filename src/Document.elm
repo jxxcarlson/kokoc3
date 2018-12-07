@@ -132,6 +132,7 @@ type DocMsg
     | UpdateCurrentDocument
     | NewMasterDocument
     | NewChildDocument
+    | PrintDocument
 
 
 

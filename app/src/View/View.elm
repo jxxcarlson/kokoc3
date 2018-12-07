@@ -548,10 +548,11 @@ printButton model =
 
 printLatexButton : Model -> Element Msg
 printLatexButton model =
-    Input.button (Widget.buttonStyle (px 45))
-        { onPress = Just PrintDocument
-        , label = Element.el [] (Element.text "Print")
-        }
+    Element.map DocMsg <|
+        Input.button (Widget.buttonStyle (px 45))
+            { onPress = Just PrintDocument
+            , label = Element.el [] (Element.text "Print")
+            }
 
 
 
@@ -764,10 +765,11 @@ toggleEditPanelItem =
 
 printItem : Element Msg
 printItem =
-    Input.button (Widget.menuItemStyle (px 160))
-        { onPress = Just PrintDocument
-        , label = Element.el [] (Element.text "Print Ctrl-P")
-        }
+    Element.map DocMsg <|
+        Input.button (Widget.menuItemStyle (px 160))
+            { onPress = Just PrintDocument
+            , label = Element.el [] (Element.text "Print Ctrl-P")
+            }
 
 
 goToStartItem : Element Msg
