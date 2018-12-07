@@ -123,6 +123,7 @@ type DocMsg
     | AcknowledgeDocumentDeleted (Result Http.Error String)
     | ReceiveWorkerReply (Result Http.Error String)
     | ReceiveLatexExportText (Result Http.Error String)
+    | GetDocumentById Int
 
 
 

@@ -358,9 +358,6 @@ update msg model =
         DocViewMsg (LoadMasterWithCurrentSelection docId) ->
             ( { model | appMode = Reading, toolPanelState = HideToolPanel, masterDocLoaded = True, documentListSource = SearchResults }, Cmd.map DocListMsg (DocumentList.loadMasterDocumentWithCurrentSelection model.maybeCurrentUser docId) )
 
-        GetDocumentById id ->
-            ( model, Cmd.map DocMsg (Document.getDocumentById id (readToken model.maybeToken)) )
-
         GetPublicDocuments query ->
             ( { model
                 | appMode = Reading

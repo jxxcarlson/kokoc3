@@ -244,6 +244,9 @@ update docMsg model =
                 Err err ->
                     ( { model | message = HttpError.handle err }, Cmd.none )
 
+        GetDocumentById id ->
+            ( model, Cmd.map DocMsg <| Document.getDocumentById id (readToken model.maybeToken) )
+
 
 getUserDocuments : Model -> String -> ( Model, Cmd Msg )
 getUserDocuments model queryString =
