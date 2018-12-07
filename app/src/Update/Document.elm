@@ -51,13 +51,172 @@ import File.Download as Download
 import DocumentDictionary exposing (DocDictMsg(..), DocumentDictionary)
 import Update.Outside as Outside
 import Update.Time
+import Update.User
 import View.EditorTools as EditorTools
+import Update.HttpError as HttpError
 
 
 port incrementVersion : String -> Cmd msg
 
 
 port sendDocumentForPrinting : Value -> Cmd msg
+
+
+port sendPdfFileName : Value -> Cmd msg
+
+
+update : DocMsg -> Model -> ( Model, Cmd Msg )
+update docMsg model =
+    case docMsg of
+        ReceiveDocument result ->
+            case result of
+                Ok documentRecord ->
+                    ( { model | currentDocument = documentRecord.document, bigEditRecord = updateBigEditRecord model documentRecord.document }
+                    , Cmd.batch
+                        [ loadTexMacrosForDocument documentRecord.document model
+                        ]
+                    )
+
+                Err err ->
+                    ( { model | message = HttpError.handle err }, Cmd.none )
+
+        AcknowledgeDocumentDeleted result ->
+            -- SET CURRENT DOCUMENT
+            case result of
+                Ok reply ->
+                    let
+                        documents =
+                            DocumentList.documents model.documentList
+
+                        idOfDocumentToDelete =
+                            String.toInt reply |> Maybe.withDefault 0
+
+                        indexOfDocumentToDelete =
+                            List.Extra.findIndex (\doc -> doc.id == idOfDocumentToDelete) documents |> Maybe.withDefault 0
+
+                        maybeDocumentAboveDeleteDocument =
+                            List.Extra.getAt (indexOfDocumentToDelete - 1) documents
+
+                        maybeDocumentBelowDeleteDocument =
+                            List.Extra.getAt (indexOfDocumentToDelete + 1) documents
+
+                        maybeDocumentToSelect =
+                            case maybeDocumentAboveDeleteDocument of
+                                Just document ->
+                                    Just document
+
+                                Nothing ->
+                                    case maybeDocumentBelowDeleteDocument of
+                                        Just document ->
+                                            Just document
+
+                                        Nothing ->
+                                            Nothing
+
+                        documentSelectedId =
+                            case maybeDocumentToSelect of
+                                Just document ->
+                                    document.id
+
+                                Nothing ->
+                                    0
+
+                        documentSelected =
+                            case maybeDocumentToSelect of
+                                Just doc ->
+                                    doc
+
+                                Nothing ->
+                                    Document.basicDocument
+
+                        nextDocumentList_ =
+                            DocumentList.select maybeDocumentToSelect model.documentList
+
+                        nextDocumentQueue =
+                            Queue.removeWithPredicate (\doc -> doc.id == idOfDocumentToDelete) model.recentDocumentQueue
+
+                        nextModel =
+                            { model
+                                | message = "Document deleted: " ++ String.fromInt indexOfDocumentToDelete ++ ", Document selected: " ++ String.fromInt documentSelectedId
+                                , currentDocument = documentSelected
+                                , bigEditRecord = updateBigEditRecord model documentSelected
+                                , toolPanelState = HideToolPanel
+                                , documentList = DocumentList.deleteItemInDocumentListAt idOfDocumentToDelete nextDocumentList_
+                                , recentDocumentQueue = nextDocumentQueue
+                            }
+                    in
+                        ( nextModel
+                        , Cmd.batch
+                            [ Update.User.updateBigUserCmd nextModel
+                            , Outside.saveRecentDocumentQueueToLocalStorage nextDocumentQueue
+                            ]
+                        )
+
+                Err err ->
+                    ( { model | message = HttpError.handle err }, Cmd.none )
+
+        NewDocumentCreated result ->
+            -- SET CURRENT DOCUMENT
+            case result of
+                Ok documentRecord ->
+                    let
+                        nextDocument =
+                            documentRecord.document
+
+                        selectedDocId_ =
+                            Document.selectedDocId nextDocument
+
+                        cmd =
+                            Cmd.map DocMsg (Document.attachDocumentToMasterBelowCmd (User.getTokenStringFromMaybeUser model.maybeCurrentUser) selectedDocId_ nextDocument model.maybeMasterDocument)
+
+                        nextDocumentList_ =
+                            DocumentList.nextDocumentList selectedDocId_ nextDocument model.documentList
+
+                        nextDocumentQueue =
+                            Queue.enqueueUnique nextDocument model.recentDocumentQueue
+
+                        nextModel =
+                            { model
+                                | currentDocument = nextDocument
+                                , bigEditRecord = updateBigEditRecord model nextDocument
+                                , sourceText = nextDocument.content
+                                , documentList = nextDocumentList_
+                                , recentDocumentQueue = nextDocumentQueue
+                            }
+                    in
+                        ( nextModel
+                        , Cmd.batch
+                            [ Update.User.updateBigUserCmd nextModel
+                            , Outside.saveRecentDocumentQueueToLocalStorage nextDocumentQueue
+                            ]
+                        )
+
+                Err err ->
+                    ( { model | message = HttpError.handle err }, Cmd.none )
+
+        AcknowledgeUpdateOfDocument result ->
+            case result of
+                Ok documentRecord ->
+                    ( model, Cmd.none )
+
+                Err err ->
+                    ( { model | message = HttpError.handle err }, Cmd.none )
+
+        ReceiveWorkerReply result ->
+            case result of
+                Ok pdfFileName ->
+                    ( { model | message = pdfFileName }, sendPdfFileName (Document.encodeString pdfFileName) )
+
+                Err err ->
+                    ( { model | message = HttpError.handle err }, Cmd.none )
+
+        ReceiveLatexExportText result ->
+            case result of
+                Ok str ->
+                    ( { model | message = "Export file: " ++ String.fromInt (String.length str) }, Cmd.map DocMsg <| Document.sendToWorker str )
+
+                Err err ->
+                    ( { model | message = HttpError.handle err }, Cmd.none )
 
 
 getUserDocuments : Model -> String -> ( Model, Cmd Msg )

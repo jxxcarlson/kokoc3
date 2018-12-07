@@ -13,6 +13,7 @@ import Update.Outside as Outside exposing (InfoForOutside(..), InfoForElm(..))
 import Update.Document
 import Update.Keyboard
 import Update.Search as Search
+import Update.User
 import Update.Time
 import UI.Update as UI
 import MiniLatexTools
@@ -97,9 +98,6 @@ port imageRead : (Value -> msg) -> Sub msg
 
 
 port sendCredentials : Value -> Cmd msg
-
-
-port sendPdfFileName : Value -> Cmd msg
 
 
 port onUrlChange : (String -> msg) -> Sub msg
@@ -261,6 +259,9 @@ update msg model =
             Bozo.Update.update bozoMsg model.bozo
                 |> bozoMap model
 
+        DocMsg docMsg ->
+            Update.Document.update docMsg model
+
         AcceptPassword str ->
             ( { model | password = str }, Cmd.none )
 
@@ -385,141 +386,6 @@ update msg model =
                           }
                         , Outside.sendMaybeUserDataToLocalStorage maybeCurrentUser
                         )
-
-                Err err ->
-                    ( { model | message = HttpError.handle err }, Cmd.none )
-
-        DocMsg (ReceiveDocument result) ->
-            -- SET CURRENT DOCUMENT
-            case result of
-                Ok documentRecord ->
-                    ( { model | currentDocument = documentRecord.document, bigEditRecord = Update.Document.updateBigEditRecord model documentRecord.document }
-                    , Cmd.batch
-                        [ Update.Document.loadTexMacrosForDocument documentRecord.document model
-                        ]
-                    )
-
-                Err err ->
-                    ( { model | message = HttpError.handle err }, Cmd.none )
-
-        DocMsg (AcknowledgeDocumentDeleted result) ->
-            -- SET CURRENT DOCUMENT
-            case result of
-                Ok reply ->
-                    let
-                        documents =
-                            DocumentList.documents model.documentList
-
-                        idOfDocumentToDelete =
-                            String.toInt reply |> Maybe.withDefault 0
-
-                        indexOfDocumentToDelete =
-                            List.Extra.findIndex (\doc -> doc.id == idOfDocumentToDelete) documents |> Maybe.withDefault 0
-
-                        maybeDocumentAboveDeleteDocument =
-                            List.Extra.getAt (indexOfDocumentToDelete - 1) documents
-
-                        maybeDocumentBelowDeleteDocument =
-                            List.Extra.getAt (indexOfDocumentToDelete + 1) documents
-
-                        maybeDocumentToSelect =
-                            case maybeDocumentAboveDeleteDocument of
-                                Just document ->
-                                    Just document
-
-                                Nothing ->
-                                    case maybeDocumentBelowDeleteDocument of
-                                        Just document ->
-                                            Just document
-
-                                        Nothing ->
-                                            Nothing
-
-                        documentSelectedId =
-                            case maybeDocumentToSelect of
-                                Just document ->
-                                    document.id
-
-                                Nothing ->
-                                    0
-
-                        documentSelected =
-                            case maybeDocumentToSelect of
-                                Just doc ->
-                                    doc
-
-                                Nothing ->
-                                    Document.basicDocument
-
-                        nextDocumentList_ =
-                            DocumentList.select maybeDocumentToSelect model.documentList
-
-                        nextDocumentQueue =
-                            Queue.removeWithPredicate (\doc -> doc.id == idOfDocumentToDelete) model.recentDocumentQueue
-
-                        nextModel =
-                            { model
-                                | message = "Document deleted: " ++ String.fromInt indexOfDocumentToDelete ++ ", Document selected: " ++ String.fromInt documentSelectedId
-                                , currentDocument = documentSelected
-                                , bigEditRecord = Update.Document.updateBigEditRecord model documentSelected
-                                , toolPanelState = HideToolPanel
-                                , documentList = DocumentList.deleteItemInDocumentListAt idOfDocumentToDelete nextDocumentList_
-                                , recentDocumentQueue = nextDocumentQueue
-                            }
-                    in
-                        ( nextModel
-                        , Cmd.batch
-                            [ updateBigUserCmd nextModel
-                            , Outside.saveRecentDocumentQueueToLocalStorage nextDocumentQueue
-                            ]
-                        )
-
-                Err err ->
-                    ( { model | message = HttpError.handle err }, Cmd.none )
-
-        DocMsg (NewDocumentCreated result) ->
-            -- SET CURRENT DOCUMENT
-            case result of
-                Ok documentRecord ->
-                    let
-                        nextDocument =
-                            documentRecord.document
-
-                        selectedDocId_ =
-                            Document.selectedDocId nextDocument
-
-                        cmd =
-                            Cmd.map DocMsg (Document.attachDocumentToMasterBelowCmd (User.getTokenStringFromMaybeUser model.maybeCurrentUser) selectedDocId_ nextDocument model.maybeMasterDocument)
-
-                        nextDocumentList_ =
-                            DocumentList.nextDocumentList selectedDocId_ nextDocument model.documentList
-
-                        nextDocumentQueue =
-                            Queue.enqueueUnique nextDocument model.recentDocumentQueue
-
-                        nextModel =
-                            { model
-                                | currentDocument = nextDocument
-                                , bigEditRecord = Update.Document.updateBigEditRecord model nextDocument
-                                , sourceText = nextDocument.content
-                                , documentList = nextDocumentList_
-                                , recentDocumentQueue = nextDocumentQueue
-                            }
-                    in
-                        ( nextModel
-                        , Cmd.batch
-                            [ updateBigUserCmd nextModel
-                            , Outside.saveRecentDocumentQueueToLocalStorage nextDocumentQueue
-                            ]
-                        )
-
-                Err err ->
-                    ( { model | message = HttpError.handle err }, Cmd.none )
-
-        DocMsg (AcknowledgeUpdateOfDocument result) ->
-            case result of
-                Ok documentRecord ->
-                    ( model, Cmd.none )
 
                 Err err ->
                     ( { model | message = HttpError.handle err }, Cmd.none )
@@ -739,7 +605,7 @@ update msg model =
                     , Outside.saveDocToLocalStorage document
                     , Outside.saveRecentDocumentQueueToLocalStorage nextDocumentQueue
                     , Outside.saveDocumentListToLocalStorage documentList
-                    , updateBigUserCmd newModel
+                    , Update.User.updateBigUserCmd newModel
                     , Update.Document.loadTexMacrosForDocument document newModel
                     , pushDocument document
                     ]
@@ -1121,22 +987,6 @@ update msg model =
             in
                 ( { model | maybeImageString = nextImageString, message = "ImageRead" }, Cmd.map UserMsg <| User.incrementMediaCountForMaybeUser model.maybeCurrentUser )
 
-        DocMsg (ReceiveWorkerReply result) ->
-            case result of
-                Ok pdfFileName ->
-                    ( { model | message = pdfFileName }, sendPdfFileName (Document.encodeString pdfFileName) )
-
-                Err err ->
-                    ( { model | message = HttpError.handle err }, Cmd.none )
-
-        DocMsg (ReceiveLatexExportText result) ->
-            case result of
-                Ok str ->
-                    ( { model | message = "Export file: " ++ String.fromInt (String.length str) }, Cmd.map DocMsg <| Document.sendToWorker str )
-
-                Err err ->
-                    ( { model | message = HttpError.handle err }, Cmd.none )
-
         SessionStatus t ->
             let
                 sessionExpired =
@@ -1327,7 +1177,7 @@ update msg model =
                     ( model, Cmd.map UserMsg <| User.getBigUserRecord (User.userId user) )
 
         UpdateBigUser ->
-            ( model, updateBigUserCmd model )
+            ( model, Update.User.updateBigUserCmd model )
 
         AcceptBlurb str ->
             ( { model | blurb = str }, Cmd.none )
@@ -1474,17 +1324,3 @@ getViewPort =
 getViewPortOfRenderedText : String -> Cmd Msg
 getViewPortOfRenderedText id =
     Task.attempt FindViewportOfRenderedText (Dom.getViewportOf id)
-
-
-updateBigUserCmd : Model -> Cmd Msg
-updateBigUserCmd model =
-    case model.maybeBigUser of
-        Nothing ->
-            Cmd.none
-
-        Just bigUser ->
-            let
-                nextBigUser =
-                    { bigUser | blurb = model.blurb, documentIds = List.map .id <| Queue.list model.recentDocumentQueue }
-            in
-                Cmd.map UserMsg <| User.updateBigUser (User.getTokenStringFromMaybeUser model.maybeCurrentUser) nextBigUser
