@@ -130,6 +130,7 @@ type DocMsg
     | DeleteCurrentDocument
     | CancelDeleteCurrentDocument
     | UpdateCurrentDocument
+    | NewMasterDocument
 
 
 

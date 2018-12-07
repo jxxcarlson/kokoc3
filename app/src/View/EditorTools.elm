@@ -486,10 +486,11 @@ newChildButton__ model =
 
 newMasterButton : Model -> Element Msg
 newMasterButton model =
-    Input.button (buttonStyle (px 90))
-        { onPress = Just NewMasterDocument
-        , label = Element.el [] (Element.text "New master")
-        }
+    Element.map DocMsg <|
+        Input.button (buttonStyle (px 90))
+            { onPress = Just NewMasterDocument
+            , label = Element.el [] (Element.text "New master")
+            }
 
 
 bodyReaderColumn : Viewport -> Int -> Model -> Element Msg

@@ -746,10 +746,11 @@ newSubDocumentItem =
 
 newMasterDocItem : Element Msg
 newMasterDocItem =
-    Input.button (Widget.menuItemStyle (px 160))
-        { onPress = Just NewMasterDocument
-        , label = Element.el [] (Element.text "New master doc Ctrl-M")
-        }
+    Element.map DocMsg <|
+        Input.button (Widget.menuItemStyle (px 160))
+            { onPress = Just NewMasterDocument
+            , label = Element.el [] (Element.text "New master doc Ctrl-M")
+            }
 
 
 toggleEditPanelItem : Element Msg

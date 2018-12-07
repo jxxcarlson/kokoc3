@@ -292,6 +292,9 @@ update docMsg model =
         UpdateCurrentDocument ->
             saveCurrentDocument model
 
+        NewMasterDocument ->
+            doNewMasterDocument model
+
 
 getUserDocuments : Model -> String -> ( Model, Cmd Msg )
 getUserDocuments model queryString =
