@@ -41,10 +41,8 @@ import ImageManager exposing (ImageMsg(..))
 import Json.Decode as Decode exposing (Decoder, Value)
 import Json.Encode as Encode
 import Keyboard exposing (Key(..))
-import Keyboard.Arrows
 import List.Extra
 import Mail
-import Task exposing (Task)
 import Model
     exposing
         ( AppMode(..)
@@ -63,19 +61,10 @@ import Model
         , ToolPanelState(..)
         , initialModel
         )
-import Process
 import Query
-
-
--- ^^ HH
-
 import Queue exposing (Queue)
 import Random
 import SystemDocument
-
-
--- ^^
-
 import Task
 import Time
 import UrlAppParser exposing (Route(..))
@@ -91,10 +80,6 @@ import User
 import Utility
 import View.Common as Common
 import View.EditorTools as EditorTools
-
-
--- ^^
-
 import VirtualDom exposing (Handler(..))
 import BigEditRecord
 import Bozo.Update
@@ -122,10 +107,6 @@ port onUrlChange : (String -> msg) -> Sub msg
 port pushUrl : String -> Cmd msg
 
 
-
--- OUTSIDE
-
-
 bigUserCmd2 maybeCurrentUser =
     case maybeCurrentUser of
         Nothing ->
@@ -133,13 +114,6 @@ bigUserCmd2 maybeCurrentUser =
 
         Just user ->
             Cmd.map UserMsg <| User.getBigUserRecord (User.userId user)
-
-
-
--- ABC
--- link : msg -> List (Html.Attribute msg) -> List (Html msg) -> Html msg
--- link href attrs children =
---   Html.a (preventDefaultOn "click" (Decode.succeed (href, True)) :: attrs) children
 
 
 processInfoForElm :
@@ -1495,11 +1469,6 @@ getViewPortOfRenderedText id =
     Task.attempt FindViewportOfRenderedText (Dom.getViewportOf id)
 
 
-
--- "_textView_" "re nderedText"
--- FindViewportOfRenderedText : Result x a -> msg
-
-
 updateBigUserCmd : Model -> Cmd Msg
 updateBigUserCmd model =
     case model.maybeBigUser of
@@ -1512,7 +1481,3 @@ updateBigUserCmd model =
                     { bigUser | blurb = model.blurb, documentIds = List.map .id <| Queue.list model.recentDocumentQueue }
             in
                 Cmd.map UserMsg <| User.updateBigUser (User.getTokenStringFromMaybeUser model.maybeCurrentUser) nextBigUser
-
-
-
--- BOTTOM
