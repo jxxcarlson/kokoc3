@@ -107,15 +107,6 @@ port onUrlChange : (String -> msg) -> Sub msg
 port pushUrl : String -> Cmd msg
 
 
-bigUserCmd2 maybeCurrentUser =
-    case maybeCurrentUser of
-        Nothing ->
-            Cmd.none
-
-        Just user ->
-            Cmd.map UserMsg <| User.getBigUserRecord (User.userId user)
-
-
 processInfoForElm :
     Model
     -> InfoForElm
@@ -155,6 +146,15 @@ processInfoForElm model infoForElm_ =
                     ( { model | documentListSource = RecentDocumentsQueue }
                     , Cmd.map DocListMsg (DocumentList.retrievRecentDocumentQueueFromIntList model.maybeCurrentUser intList)
                     )
+
+
+bigUserCmd2 maybeCurrentUser =
+    case maybeCurrentUser of
+        Nothing ->
+            Cmd.none
+
+        Just user ->
+            Cmd.map UserMsg <| User.getBigUserRecord (User.userId user)
 
 
 
