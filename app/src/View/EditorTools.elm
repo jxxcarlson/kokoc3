@@ -376,10 +376,11 @@ deleteCurrentDocumentButton width_ model =
             Element.none
 
         Just _ ->
-            Input.button (buttonStyleWithColor (deleteButtonBackgroundColor model) width_)
-                { onPress = Just DeleteCurrentDocument
-                , label = Element.el [] (Element.text "Delete")
-                }
+            Element.map DocMsg <|
+                Input.button (buttonStyleWithColor (deleteButtonBackgroundColor model) width_)
+                    { onPress = Just DeleteCurrentDocument
+                    , label = Element.el [] (Element.text "Delete")
+                    }
 
 
 cancelDeleteCurrentDocumentButton : Length -> Model -> Element Msg

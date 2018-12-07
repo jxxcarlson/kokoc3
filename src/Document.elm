@@ -127,6 +127,7 @@ type DocMsg
     | IncrementVersion
     | SaveCurrentDocument Posix
     | NewDocument
+    | DeleteCurrentDocument
 
 
 

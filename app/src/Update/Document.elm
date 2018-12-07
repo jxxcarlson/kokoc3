@@ -9,6 +9,7 @@ import Model
         , ToolPanelState(..)
         , ToolMenuState(..)
         , DocumentListSource(..)
+        , DeleteDocumentState(..)
         )
 import Document
     exposing
@@ -272,6 +273,18 @@ update docMsg model =
 
         NewDocument ->
             doNewStandardDocument model
+
+        DeleteCurrentDocument ->
+            let
+                tokenString =
+                    User.getTokenStringFromMaybeUser model.maybeCurrentUser
+            in
+                case model.deleteDocumentState of
+                    DeleteIsOnSafety ->
+                        ( { model | deleteDocumentState = DeleteIsArmed }, Cmd.none )
+
+                    DeleteIsArmed ->
+                        ( { model | deleteDocumentState = DeleteIsOnSafety }, Cmd.map DocMsg (Document.deleteDocument tokenString model.currentDocument) )
 
 
 getUserDocuments : Model -> String -> ( Model, Cmd Msg )

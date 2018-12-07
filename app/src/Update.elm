@@ -540,18 +540,6 @@ update msg model =
                 Err _ ->
                     ( { model | debugString = "doc VP ERROR" }, Cmd.none )
 
-        DeleteCurrentDocument ->
-            let
-                tokenString =
-                    User.getTokenStringFromMaybeUser model.maybeCurrentUser
-            in
-                case model.deleteDocumentState of
-                    DeleteIsOnSafety ->
-                        ( { model | deleteDocumentState = DeleteIsArmed }, Cmd.none )
-
-                    DeleteIsArmed ->
-                        ( { model | deleteDocumentState = DeleteIsOnSafety }, Cmd.map DocMsg (Document.deleteDocument tokenString model.currentDocument) )
-
         CancelDeleteCurrentDocument ->
             ( { model | deleteDocumentState = DeleteIsOnSafety }, Cmd.none )
 
