@@ -728,10 +728,11 @@ homeItem model =
 
 newStandardDocItem : Element Msg
 newStandardDocItem =
-    Input.button (Widget.menuItemStyle (px 160))
-        { onPress = Just NewDocument
-        , label = Element.el [] (Element.text "New document Ctrl-N")
-        }
+    Element.map DocMsg <|
+        Input.button (Widget.menuItemStyle (px 160))
+            { onPress = Just NewDocument
+            , label = Element.el [] (Element.text "New document Ctrl-N")
+            }
 
 
 newSubDocumentItem : Element Msg
