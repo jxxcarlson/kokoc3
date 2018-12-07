@@ -65,6 +65,9 @@ port sendDocumentForPrinting : Value -> Cmd msg
 port sendPdfFileName : Value -> Cmd msg
 
 
+port pushUrl : String -> Cmd msg
+
+
 update : DocMsg -> Model -> ( Model, Cmd Msg )
 update docMsg model =
     case docMsg of
@@ -669,6 +672,11 @@ saveCurrentMasterDocument model =
                 )
             ]
         )
+
+
+pushDocument : Document -> Cmd Msg
+pushDocument document =
+    pushUrl <| "/" ++ String.fromInt document.id
 
 
 

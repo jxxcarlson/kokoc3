@@ -11,6 +11,7 @@ port module Update
 
 import Update.Outside as Outside exposing (InfoForOutside(..), InfoForElm(..))
 import Update.Document
+import Update.DocumentList
 import Update.Keyboard
 import Update.Search as Search
 import Update.User
@@ -101,9 +102,6 @@ port sendCredentials : Value -> Cmd msg
 
 
 port onUrlChange : (String -> msg) -> Sub msg
-
-
-port pushUrl : String -> Cmd msg
 
 
 processInfoForElm :
@@ -262,6 +260,9 @@ update msg model =
         DocMsg docMsg ->
             Update.Document.update docMsg model
 
+        DocListMsg docListMsg ->
+            Update.DocumentList.update docListMsg model
+
         UserMsg userMsg ->
             Update.User.update userMsg model
 
@@ -321,168 +322,6 @@ update msg model =
         AcceptImageName str ->
             ( { model | imageName = str }, Cmd.none )
 
-        DocListMsg (RestoreDocumentList result) ->
-            -- SET CURRENT DOCUMENT
-            case result of
-                Ok documentList ->
-                    let
-                        currentDocumentId =
-                            model.documentIdList.selected
-
-                        maybeCurrentDocument =
-                            List.Extra.find (\doc -> doc.id == currentDocumentId) (DocumentList.documents documentList)
-
-                        currentDocument =
-                            maybeCurrentDocument |> Maybe.withDefault Document.basicDocument
-
-                        nextMaybeMasterDocument =
-                            case currentDocument.docType of
-                                Standard ->
-                                    Nothing
-
-                                Master ->
-                                    Just currentDocument
-                    in
-                        ( { model
-                            | documentList = DocumentList.select maybeCurrentDocument documentList
-                            , currentDocument = currentDocument
-                            , bigEditRecord = Update.Document.updateBigEditRecord model currentDocument
-                            , maybeMasterDocument = nextMaybeMasterDocument
-                          }
-                        , Cmd.batch
-                            [ Update.Document.loadTexMacrosForDocument currentDocument model
-                            , Outside.saveDocumentListToLocalStorage documentList
-                            ]
-                        )
-
-                Err err ->
-                    ( { model | message = HttpError.handle err }, Cmd.none )
-
-        -- DocListMsg (RestoreRecentDocumentQueue result) ->
-        --   case result of
-        --     Ok documentList ->
-        --       (model, Cmd.none)
-        --     Err err ->
-        --         ({model | message = HttpError.handle err},   Cmd.none  )
-        DocListMsg (RestoreRecentDocumentQueue result) ->
-            case result of
-                Ok restoredDocumentQueue ->
-                    ( { model | recentDocumentQueue = restoredDocumentQueue }, Cmd.none )
-
-                Err err ->
-                    ( { model | message = HttpError.handle err }, Cmd.none )
-
-        DocListMsg (RestoreRecentDocumentQueueAtSignIn result) ->
-            case result of
-                Ok restoredDocumentQueue ->
-                    ( { model
-                        | recentDocumentQueue = restoredDocumentQueue
-                        , documentListSource = RecentDocumentsQueue
-                      }
-                    , Outside.saveRecentDocumentQueueToLocalStorage restoredDocumentQueue
-                    )
-
-                Err err ->
-                    ( { model | message = HttpError.handle err }, Cmd.none )
-
-        DocListMsg (ReceiveDocumentListWithSelectedId result) ->
-            -- SET
-            case result of
-                Ok documentList ->
-                    let
-                        idOfSelectedDocument =
-                            model.selectedDocumentId
-
-                        documents_ =
-                            DocumentList.documents documentList
-
-                        indexOfSelectedDocument =
-                            List.Extra.findIndex (\doc -> doc.id == idOfSelectedDocument) documents_ |> Maybe.withDefault 0
-
-                        selectedDocument =
-                            List.Extra.getAt indexOfSelectedDocument documents_ |> Maybe.withDefault Document.basicDocument
-                    in
-                        ( { model
-                            | documentList = DocumentList.select (Just selectedDocument) documentList
-                            , currentDocument = selectedDocument
-                            , bigEditRecord = Update.Document.updateBigEditRecord model selectedDocument
-                          }
-                        , Cmd.batch
-                            [ Update.Document.loadTexMacrosForDocument selectedDocument model
-                            , Outside.saveDocumentListToLocalStorage documentList
-                            , pushDocument selectedDocument
-                            ]
-                        )
-
-                Err err ->
-                    ( { model | message = HttpError.handle err }, Cmd.none )
-
-        DocListMsg (ReceiveDocumentList result) ->
-            -- SET CURRENT DOCUMENT
-            case result of
-                Ok documentList ->
-                    let
-                        currentDocument =
-                            DocumentList.getFirst documentList
-
-                        ( nextMaybeMasterDocument, loadTexMacrosForMasterDocument ) =
-                            case currentDocument.docType of
-                                Standard ->
-                                    ( Nothing, Cmd.none )
-
-                                Master ->
-                                    ( Just currentDocument, Update.Document.loadTexMacrosForDocument currentDocument model )
-                    in
-                        ( { model
-                            | documentList = DocumentList.selectFirst documentList
-                            , currentDocument = currentDocument
-                            , bigEditRecord = Update.Document.updateBigEditRecord model currentDocument
-                            , maybeMasterDocument = nextMaybeMasterDocument
-                          }
-                        , Cmd.batch
-                            [ Update.Document.loadTexMacrosForDocument currentDocument model
-                            , loadTexMacrosForMasterDocument
-                            , Outside.saveDocumentListToLocalStorage documentList
-                            , pushDocument currentDocument
-                            ]
-                        )
-
-                Err err ->
-                    ( { model | message = HttpError.handle err }, Cmd.none )
-
-        DocListMsg (ReceiveDocumentListAndPreserveCurrentSelection result) ->
-            -- SET CURRENT DOCUMENT
-            case result of
-                Ok documentList ->
-                    let
-                        currentDocument =
-                            DocumentList.getFirst documentList
-
-                        nextMaybeMasterDocument =
-                            case currentDocument.docType of
-                                Standard ->
-                                    Nothing
-
-                                Master ->
-                                    Just currentDocument
-
-                        nextDocumentList_ =
-                            DocumentList.select (Just model.currentDocument) documentList
-                    in
-                        ( { model
-                            | documentList = nextDocumentList_
-                            , maybeMasterDocument = nextMaybeMasterDocument
-                            , bigEditRecord = Update.Document.updateBigEditRecord model currentDocument
-                          }
-                        , Cmd.batch
-                            [ Outside.saveDocumentListToLocalStorage documentList
-                            , Update.Document.loadTexMacrosForDocument currentDocument model
-                            ]
-                        )
-
-                Err err ->
-                    ( { model | message = HttpError.handle err }, Cmd.none )
-
         DocListViewMsg (SetCurrentDocument document) ->
             -- SET CURRENT DOCUMENT
             let
@@ -538,7 +377,7 @@ update msg model =
                     , Outside.saveDocumentListToLocalStorage documentList
                     , Update.User.updateBigUserCmd newModel
                     , Update.Document.loadTexMacrosForDocument document newModel
-                    , pushDocument document
+                    , Update.Document.pushDocument document
                     ]
                 )
 
@@ -1192,11 +1031,6 @@ signIn model =
 -- DOCUMENT
 
 
-pushDocument : Document -> Cmd Msg
-pushDocument document =
-    pushUrl <| "/" ++ String.fromInt document.id
-
-
 getViewPort : Cmd Msg
 getViewPort =
     Task.perform GetViewport Dom.getViewport
@@ -1205,3 +1039,7 @@ getViewPort =
 getViewPortOfRenderedText : String -> Cmd Msg
 getViewPortOfRenderedText id =
     Task.attempt FindViewportOfRenderedText (Dom.getViewportOf id)
+
+
+
+-- BOTTOM
