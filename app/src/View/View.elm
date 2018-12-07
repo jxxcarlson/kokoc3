@@ -438,7 +438,8 @@ getAuthorsDocumentsButton_ width_ model =
 -}
 saveCurrentDocumentButton : Length -> Model -> Element Msg
 saveCurrentDocumentButton width_ model =
-    xbutton model (buttonStyle width_) "Save" (SaveCurrentDocument (Time.millisToPosix 10))
+    Element.map DocMsg <|
+        xbutton model (buttonStyle width_) "Save" (SaveCurrentDocument (Time.millisToPosix 10))
 
 
 startButton : Length -> Model -> Element Msg

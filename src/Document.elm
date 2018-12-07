@@ -125,6 +125,7 @@ type DocMsg
     | ReceiveLatexExportText (Result Http.Error String)
     | GetDocumentById Int
     | IncrementVersion
+    | SaveCurrentDocument Posix
 
 
 

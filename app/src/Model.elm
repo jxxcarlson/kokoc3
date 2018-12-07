@@ -198,7 +198,6 @@ type Msg
     | DocDictMsg DocumentDictionary.DocDictMsg
     | GetContent String
     | UpdateEditorContent String
-    | SaveCurrentDocument Posix
     | UpdateCurrentDocument
     | NewDocument
     | NewMasterDocument

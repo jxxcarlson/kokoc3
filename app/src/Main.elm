@@ -7,6 +7,7 @@ import Keyboard
 import Model exposing (Model, Msg(..), initialModel)
 import Random
 import SystemDocument
+import Document exposing (DocMsg(..))
 import Task
 import Time exposing (Posix)
 import Update.Time exposing (getTimeInOneSecond)
@@ -59,7 +60,8 @@ init flags =
 
 autosaveSubscription : Model -> Sub Msg
 autosaveSubscription model =
-    Time.every model.autosaveDuration SaveCurrentDocument
+    Sub.map DocMsg <|
+        Time.every model.autosaveDuration SaveCurrentDocument
 
 
 subscriptions model =
