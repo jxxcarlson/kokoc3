@@ -289,6 +289,9 @@ update docMsg model =
         CancelDeleteCurrentDocument ->
             ( { model | deleteDocumentState = DeleteIsOnSafety }, Cmd.none )
 
+        UpdateCurrentDocument ->
+            saveCurrentDocument model
+
 
 getUserDocuments : Model -> String -> ( Model, Cmd Msg )
 getUserDocuments model queryString =

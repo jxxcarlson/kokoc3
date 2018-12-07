@@ -492,9 +492,6 @@ update msg model =
                 , Cmd.none
                 )
 
-        UpdateCurrentDocument ->
-            Update.Document.saveCurrentDocument model
-
         Outside infoForElm_ ->
             processInfoForElm model infoForElm_
 

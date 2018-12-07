@@ -129,6 +129,7 @@ type DocMsg
     | NewDocument
     | DeleteCurrentDocument
     | CancelDeleteCurrentDocument
+    | UpdateCurrentDocument
 
 
 

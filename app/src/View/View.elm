@@ -664,10 +664,11 @@ toggleToolMenu =
 
 saveCurrentDocumentItem : Element Msg
 saveCurrentDocumentItem =
-    Input.button (Widget.menuItemStyle (px 160))
-        { onPress = Just UpdateCurrentDocument
-        , label = Element.el [] (Element.text "Save doc Ctrl-S")
-        }
+    Element.map DocMsg <|
+        Input.button (Widget.menuItemStyle (px 160))
+            { onPress = Just UpdateCurrentDocument
+            , label = Element.el [] (Element.text "Save doc Ctrl-S")
+            }
 
 
 randomDocumentItem : Model -> Element Msg

@@ -198,7 +198,6 @@ type Msg
     | DocDictMsg DocumentDictionary.DocDictMsg
     | GetContent String
     | UpdateEditorContent String
-    | UpdateCurrentDocument
     | NewMasterDocument
     | NewChildDocument
     | FindViewportOfRenderedText (Result Dom.Error Dom.Viewport)
