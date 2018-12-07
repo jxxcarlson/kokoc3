@@ -313,6 +313,16 @@ update docMsg model =
         ExportLatex ->
             downloadCurrentLatexDocument model
 
+        SetDocumentTextType textType ->
+            let
+                document =
+                    model.currentDocument
+
+                nextDocument =
+                    { document | textType = textType }
+            in
+                ( { model | currentDocument = nextDocument, currentDocumentDirty = True }, Cmd.none )
+
 
 getUserDocuments : Model -> String -> ( Model, Cmd Msg )
 getUserDocuments model queryString =

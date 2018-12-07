@@ -271,50 +271,56 @@ newVersionButton model =
 
 miniLatexTypeButton : Model -> Element Msg
 miniLatexTypeButton model =
-    Input.button (textTypeButtonStyle model MiniLatex)
-        { onPress = Just (SetDocumentTextType MiniLatex)
-        , label = Element.el [] (Element.text "MiniLatex")
-        }
+    Element.map DocMsg <|
+        Input.button (textTypeButtonStyle model MiniLatex)
+            { onPress = Just (SetDocumentTextType MiniLatex)
+            , label = Element.el [] (Element.text "MiniLatex")
+            }
 
 
 elmMarkupTypeButton : Model -> Element Msg
 elmMarkupTypeButton model =
-    Input.button (textTypeButtonStyle model ElmMarkup)
-        { onPress = Just (SetDocumentTextType ElmMarkup)
-        , label = Element.el [] (Element.text "Elm markup")
-        }
+    Element.map DocMsg <|
+        Input.button (textTypeButtonStyle model ElmMarkup)
+            { onPress = Just (SetDocumentTextType ElmMarkup)
+            , label = Element.el [] (Element.text "Elm markup")
+            }
 
 
 asciidocTypeButton : Model -> Element Msg
 asciidocTypeButton model =
-    Input.button (textTypeButtonStyle model Asciidoc)
-        { onPress = Just (SetDocumentTextType Asciidoc)
-        , label = Element.el [] (Element.text "Asciidoc")
-        }
+    Element.map DocMsg <|
+        Input.button (textTypeButtonStyle model Asciidoc)
+            { onPress = Just (SetDocumentTextType Asciidoc)
+            , label = Element.el [] (Element.text "Asciidoc")
+            }
 
 
 asciidocLatexTypeButton : Model -> Element Msg
 asciidocLatexTypeButton model =
-    Input.button (textTypeButtonStyle model AsciidocLatex)
-        { onPress = Just (SetDocumentTextType AsciidocLatex)
-        , label = Element.el [] (Element.text "Asciidoc Latex")
-        }
+    Element.map DocMsg <|
+        Input.button (textTypeButtonStyle model AsciidocLatex)
+            { onPress = Just (SetDocumentTextType AsciidocLatex)
+            , label = Element.el [] (Element.text "Asciidoc Latex")
+            }
 
 
 markdownTypeButton : Model -> Element Msg
 markdownTypeButton model =
-    Input.button (textTypeButtonStyle model Markdown)
-        { onPress = Just (SetDocumentTextType Markdown)
-        , label = Element.el [] (Element.text "Markdown")
-        }
+    Element.map DocMsg <|
+        Input.button (textTypeButtonStyle model Markdown)
+            { onPress = Just (SetDocumentTextType Markdown)
+            , label = Element.el [] (Element.text "Markdown")
+            }
 
 
 plainTextTypeButton : Model -> Element Msg
 plainTextTypeButton model =
-    Input.button (textTypeButtonStyle model PlainText)
-        { onPress = Just (SetDocumentTextType PlainText)
-        , label = Element.el [] (Element.text "Plain Text")
-        }
+    Element.map DocMsg <|
+        Input.button (textTypeButtonStyle model PlainText)
+            { onPress = Just (SetDocumentTextType PlainText)
+            , label = Element.el [] (Element.text "Plain Text")
+            }
 
 
 textTypeButtonStyle : Model -> TextType -> List (Attribute msg)

@@ -134,6 +134,7 @@ type DocMsg
     | NewChildDocument
     | PrintDocument
     | ExportLatex
+    | SetDocumentTextType TextType
 
 
 
