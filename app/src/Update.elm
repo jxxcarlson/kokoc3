@@ -375,14 +375,6 @@ update msg model =
                 ]
             )
 
-        GetUserDocuments query ->
-            case model.maybeCurrentUser of
-                Nothing ->
-                    ( model, Cmd.none )
-
-                Just user ->
-                    ( { model | toolPanelState = HideToolPanel }, Cmd.map DocListMsg (DocumentList.findDocuments (Just user) (Query.parse query)) )
-
         LoadMasterDocument idString ->
             case String.toInt idString of
                 Nothing ->

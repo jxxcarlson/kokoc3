@@ -76,6 +76,7 @@ type DocListMsg
     | RestoreRecentDocumentQueueAtSignIn (Result Http.Error (Queue Document))
     | ReceiveDocumentListAndPreserveCurrentSelection (Result Http.Error DocumentList)
     | GetPublicDocuments String
+    | GetUserDocuments String
 
 
 

@@ -190,7 +190,6 @@ type Msg
     | SetDocumentTextType TextType
     | SetDocumentType DocType
     | GetPublicDocumentsRawQuery String
-    | GetUserDocuments String
     | LoadMasterDocument String
     | DocMsg Document.DocMsg
     | DocListMsg DocumentList.DocListMsg

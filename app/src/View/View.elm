@@ -6,7 +6,7 @@ import Browser.Dom exposing (Viewport)
 import Configuration
 import Document exposing (DocMsg(..), DocType(..), Document, TextType(..))
 import DocumentDictionary
-import DocumentList
+import DocumentList exposing (DocListMsg(..))
 import DocumentListView exposing (DocListViewMsg(..))
 import DocumentView
 import Element exposing (..)
@@ -427,10 +427,11 @@ getAuthorsDocumentsButton_ width_ model =
                             }
 
                     True ->
-                        Input.button (buttonStyle width_ ++ [ Font.center ])
-                            { onPress = Just (GetUserDocuments ("authorname=" ++ authorname ++ "&sort=title" ++ "&docs=any"))
-                            , label = Element.el [] (Element.text authorname)
-                            }
+                        Element.map DocListMsg <|
+                            Input.button (buttonStyle width_ ++ [ Font.center ])
+                                { onPress = Just (GetUserDocuments ("authorname=" ++ authorname ++ "&sort=title" ++ "&docs=any"))
+                                , label = Element.el [] (Element.text authorname)
+                                }
 
 
 {-| Not used.
