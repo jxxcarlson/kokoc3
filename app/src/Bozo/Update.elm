@@ -1,26 +1,13 @@
 module Bozo.Update exposing (..)
 
-import Model exposing (Model, Msg)
 import Bozo.Model exposing (..)
 
 
-update : BozoMsg -> Model -> ( Model, Cmd Msg )
+update : BozoMsg -> BozoModel -> ( BozoModel, Cmd BozoMsg )
 update msg model =
     case msg of
         MoveUp ->
-            ( updateState Up model, Cmd.none )
+            ( { model | state = Up }, Cmd.none )
 
         MoveDown ->
-            ( updateState Down model, Cmd.none )
-
-
-updateState : BozoState -> Model -> Model
-updateState nextState model =
-    let
-        bozoModel =
-            model.bozo
-
-        nextBozoModel =
-            { bozoModel | state = nextState }
-    in
-        { model | bozo = nextBozoModel }
+            ( { model | state = Down }, Cmd.none )

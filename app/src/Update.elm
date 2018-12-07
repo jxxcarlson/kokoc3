@@ -14,7 +14,7 @@ import Update.Document
 import Update.Keyboard
 import Update.Search as Search
 import Update.Time
-import Update.UI as UI
+import UI.Update as UI
 import MiniLatexTools
 import AppUtility
 import BigEditRecord exposing (BigEditRecord)
@@ -82,6 +82,7 @@ import View.Common as Common
 import View.EditorTools as EditorTools
 import VirtualDom exposing (Handler(..))
 import BigEditRecord
+import Bozo.Model exposing (BozoModel, BozoMsg)
 import Bozo.Update
 import Update.HttpError as HttpError
 
@@ -245,6 +246,11 @@ focusSearchBox =
 -- UPDATE
 
 
+bozoMap : Model -> ( BozoModel, Cmd BozoMsg ) -> ( Model, Cmd Msg )
+bozoMap model ( bozoModel, bozoMsg ) =
+    ( { model | bozo = bozoModel }, Cmd.map Bozo bozoMsg )
+
+
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
@@ -252,7 +258,8 @@ update msg model =
             ( model, Cmd.none )
 
         Bozo bozoMsg ->
-            Bozo.Update.update bozoMsg model
+            Bozo.Update.update bozoMsg model.bozo
+                |> bozoMap model
 
         AcceptPassword str ->
             ( { model | password = str }, Cmd.none )

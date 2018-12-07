@@ -129,10 +129,10 @@ footer model =
 
         -- , Element.el [] (text <| "access: " ++ (Document.accessDictToString model.currentDocument.access))
         , Element.el [] (text <| viewportInfo model)
+        , Element.map Bozo Bozo.View.buttonUp
+        , Element.map Bozo Bozo.View.buttonDown
+        , Bozo.View.view model.bozo
 
-        -- , Element.map Bozo Bozo.View.buttonUp
-        -- , Element.map Bozo Bozo.View.buttonDown
-        -- , Bozo.View.view model.bozo
         --  , Element.el [] (text <| "TMX: " ++ (String.fromInt <| String.length <| model.texMacros))
         ]
 
