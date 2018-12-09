@@ -1,5 +1,10 @@
 port module Update.Document exposing (..)
 
+import Http
+import Random
+import Task exposing (Task)
+import Json.Decode as Decode exposing (Decoder, Value)
+import List.Extra
 import Model
     exposing
         ( Model
@@ -19,10 +24,7 @@ import Document
         , DocType(..)
         , DocMsg(..)
         )
-import Json.Decode as Decode exposing (Decoder, Value)
-import Random
 import SystemDocument
-import Http
 import ImageManager
 import DocumentList
     exposing
@@ -44,8 +46,6 @@ import BigEditRecord exposing (BigEditRecord)
 import MiniLatex.Export as Export
 import LatexHelper
 import MiniLatexTools
-import List.Extra
-import Task exposing (Task)
 import Query
 import Queue
 import File.Download as Download
@@ -98,7 +98,10 @@ update docMsg model =
         ReceiveDocument result ->
             case result of
                 Ok documentRecord ->
-                    ( { model | currentDocument = documentRecord.document, bigEditRecord = updateBigEditRecord model documentRecord.document }
+                    ( { model
+                        | currentDocument = documentRecord.document
+                        , bigEditRecord = updateBigEditRecord model documentRecord.document
+                      }
                     , Cmd.batch
                         [ loadTexMacrosForDocument documentRecord.document model
                         ]

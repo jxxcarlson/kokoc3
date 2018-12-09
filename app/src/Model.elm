@@ -111,8 +111,6 @@ type alias Model =
 
     -- DOCUMENT
     , currentDocument : Document
-    , texMacros : String
-    , bigEditRecord : BigEditRecord Msg
     , selectedDocumentId : Int
     , maybeMasterDocument : Maybe Document
     , documentList : DocumentList
@@ -122,6 +120,8 @@ type alias Model =
     , debounceCounter : Int
     , debounce : Debounce String
     , sourceText : String
+    , bigEditRecord : BigEditRecord Msg
+    , texMacros : String
     , currentDocumentDirty : Bool
     , autosaveDuration : Float
     , deleteDocumentState : DeleteDocumentState

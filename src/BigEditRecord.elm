@@ -1,4 +1,38 @@
-module BigEditRecord exposing (BigEditRecord(..), docId, incrementSeed,editRecord, empty, fromDocument, fromText, getRenderedText, getRenderedTextAsElements, idListAsString, isEmpty, seed, updateFromDocument)
+module BigEditRecord
+    exposing
+        ( BigEditRecord(..)
+        , docId
+        , incrementSeed
+        , editRecord
+        , empty
+        , fromDocument
+        , fromText
+        , getRenderedText
+        , getRenderedTextAsElements
+        , idListAsString
+        , isEmpty
+        , seed
+        , updateFromDocument
+        )
+
+{-| BigEditRecord is an opaque type that carries an
+EditRecord and two integers -- the id of the document
+to which the EditRecord is associated, and a seed,
+which is used to generate ids for each paragraph in the
+rendered text. These ids are necessary for correct processing
+of math text by MathJax. ids are changed using the seed
+if the content of the associated paragraph changes.
+
+The key function is `updateFromDocument`, which
+takes as input a BigEditRecord, a document, a string
+consisting of LaTeX macros, and an integer seed,
+and which produces a output an new BigEditRecord.
+If the id of the document agrees with the id of the
+BigEditRecord, the BigEditRecord is updated and returned.
+If he ids do not a agree, a new BigEditRecord based on the
+given document is returned.
+
+-}
 
 import Document exposing (Document)
 import Element exposing (Element)
@@ -36,9 +70,10 @@ seed : BigEditRecord msg -> Int
 seed (BigEditRecord editRecord_ docId_ seed_) =
     seed_
 
+
 incrementSeed : BigEditRecord msg -> BigEditRecord msg
-incrementSeed (BigEditRecord er docId_ seed_) = 
-  BigEditRecord er docId_ (seed_ + 1)
+incrementSeed (BigEditRecord er docId_ seed_) =
+    BigEditRecord er docId_ (seed_ + 1)
 
 
 docId : BigEditRecord msg -> Int
