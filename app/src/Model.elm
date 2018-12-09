@@ -119,7 +119,6 @@ type alias Model =
     , counter : Int
     , debounceCounter : Int
     , debounce : Debounce String
-    , sourceText : String
     , bigEditRecord : BigEditRecord Msg
     , texMacros : String
     , currentDocumentDirty : Bool
@@ -257,7 +256,6 @@ initialModel locationHref windowWidth windowHeight document =
     , debounceCounter = 0
     , debounce = Debounce.init
     , appMode = Reading
-    , sourceText = ""
     , currentDocumentDirty = False
     , autosaveDuration = Configuration.autosaveDuration
     , toolPanelState = HideToolPanel

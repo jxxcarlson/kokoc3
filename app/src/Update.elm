@@ -458,8 +458,7 @@ update msg model =
                     Debounce.push debounceConfig str model.debounce
             in
                 ( { model
-                    | sourceText = str
-                    , currentDocumentDirty = True
+                    | currentDocumentDirty = True
                     , debounce = debounce
                   }
                 , cmd

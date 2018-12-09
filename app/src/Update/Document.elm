@@ -209,7 +209,6 @@ update docMsg model =
                             { model
                                 | currentDocument = nextDocument
                                 , bigEditRecord = updateBigEditRecord model nextDocument
-                                , sourceText = nextDocument.content
                                 , documentList = nextDocumentList_
                                 , recentDocumentQueue = nextDocumentQueue
                             }
