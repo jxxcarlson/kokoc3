@@ -1,59 +1,85 @@
-module Configuration exposing(
-    backend
-   , client
-   , autosaveDuration
-   , debounceDelay  
-   , coverArtUrl
-   , userManualId
-   , basicDocumentText
-   , newMiniLatexDocumentText
-   , newUserText
-   , signInText
-   , signedOutText
-   , signedUpText 
-   , welcomeText
-   , bucket
-   , timeout
-   , adminUsername
-   , documentQueueCapacity)
+module Configuration
+    exposing
+        ( backend
+        , client
+        , autosaveDuration
+        , debounceDelay
+        , coverArtUrl
+        , userManualId
+        , basicDocumentText
+        , newMiniLatexDocumentText
+        , newUserText
+        , signInText
+        , signedOutText
+        , signedUpText
+        , welcomeText
+        , bucket
+        , timeout
+        , adminUsername
+        , documentQueueCapacity
+        )
 
 
-adminUsername : String 
-adminUsername = "jxxcarlson"
+adminUsername : String
+adminUsername =
+    "jxxcarlson"
 
-timeout : Float 
-timeout = 20000
+
+timeout : Float
+timeout =
+    20000
+
 
 backend : String
-backend = "http://localhost:4000"
-
-client : String 
-client = "http://localhost:8080"
+backend =
+    "http://localhost:4000"
 
 
-documentQueueCapacity : Int 
-documentQueueCapacity = 10
+client : String
+client =
+    "http://localhost:8080"
+
+
+documentQueueCapacity : Int
+documentQueueCapacity =
+    10
+
 
 bucket : String
-bucket = "noteimages"
+bucket =
+    "noteimages"
 
-autosaveDuration : Float 
+
+autosaveDuration : Float
 autosaveDuration =
-  8*1000 -- in milliseconds
+    8 * 1000
+
+
+
+-- in milliseconds
+
 
 debounceDelay : Float
-debounceDelay = 250
+debounceDelay =
+    250
 
-coverArtUrl : String 
-coverArtUrl = "http://noteimages.s3.amazonaws.com/app_images/robin2.jpg"
 
-userManualId : Int  
-userManualId = 750
+coverArtUrl : String
+coverArtUrl =
+    "http://noteimages.s3.amazonaws.com/app_images/robin2.jpg"
+
+
+userManualId : Int
+userManualId =
+    750
+
+
 
 -- TEXT
 
-signInText = 
-   """
+
+signInText =
+    """
 This is knode.io, ready to run MiniLatex, Asciidoc, or Markdown.
 
 $$\\int_0^1 x^n dx = \\frac{1}{n+1}$$
@@ -61,29 +87,33 @@ $$\\int_0^1 x^n dx = \\frac{1}{n+1}$$
 Click on \\strong{Home} to go to your home page
 """
 
+
 signedOutText : String
-signedOutText = 
+signedOutText =
     """
 You are now signed out. See you later.
 """
 
+
 signedUpText : String
 signedUpText =
- """ 
+    """
 Welcome to knode.io.  We are ready to run MiniLatex, Asciidoc, or Markdown for you
 
 $$\\int_0^1 x^n dx = \\frac{1}{n+1}$$
 
-Click on \\strong{Home} to go to your home page. 
+Click on \\strong{Home} to go to your home page.
 Click on \\strong{Write} to create or edit a document.
 """
 
-newMiniLatexDocumentText = 
+
+newMiniLatexDocumentText =
     """
     NEW DOCUMENT: WRITE YOUR TEXT HERE
 """
 
-newMiniLatexDocumentText1 = 
+
+newMiniLatexDocumentText1 =
     """
 \\tableofcontents
 
@@ -107,7 +137,8 @@ $$\\int_0^1 x^n dx = \\frac{1}{n+1}$$
 \\href{\\https://nytimes.com}{The New York Times}
 """
 
-basicDocumentText = 
+
+basicDocumentText =
     """
 
 This is \\strong{knode.io}, ready to run MiniLatex,
@@ -122,20 +153,21 @@ Click on \\strong{\\blue{Home}} to go to your home page.
 
 \\medskip
 
-\\image{http://noteimages.s3.amazonaws.com/uploads/butterfly.jpg}{}{width: 450}
+\\image{https://noteimages.s3.amazonaws.com/app_images/vintage-typewriter-in-black-and-white-lynn-langmade.jpg}{}{width: 550}
 
 \\medskip
 
 Click on  \\strong{\\blue{Random}} to explore.  To find things, type something in
 the search box, e.g., \\italic{matt}, \\italic{wave}, or \\italic{snow},
 then type Ctrl-ENTER or Ctrl-RETURN.
- 
+
 
 \\strong{knode.io} is made with \\href{http://elm-lang.org/}{Elm}.
 
 
 \\subheading{Sample documents}
-\\begin{itemize} 
+
+\\begin{itemize}
   \\item \\href{http://localhost:8080/424}{Quantum Field Theory Notes}
   \\item \\href{http://localhost:8080/365}{Visual Literacy}
   \\item \\href{http://localhost:8080/754}{Butterfly}
@@ -143,16 +175,19 @@ then type Ctrl-ENTER or Ctrl-RETURN.
 \\end{itemize}
 
 
-Check out the \\href{https://jxxcarlson.github.io/app/miniLatexLive/index.html}{MiniLatex Live demo}
+For other apps that use MiniLaTeX,
+check out \\href{https://jxxcarlson.github.io/app/miniLatexLive/index.html}{MiniLatex Live}
+or \\href{http://localhost:8080/reader2}{MiniLaTeX Reader}
 \\mdash no login needed.
 
 If you have questions or comments about MiniLatex or knode.io, please contact
 Jim Carlson: jxxcarlson at gmail.
 """
 
-newUserText = 
+
+newUserText =
     """
-Welcome!  
+Welcome!
 
 We sent you a verification email \\mdash check it out, OK?
 
@@ -160,7 +195,7 @@ We sent you a verification email \\mdash check it out, OK?
 
 \\item Click on \\strong{Home} to go to your home page.
 
-\\item Click on \\strong{Random} to explore.  
+\\item Click on \\strong{Random} to explore.
 
 \\item To find things, type something in
 the search box, e.g., \\italic{matt}, \\italic{wave}, or \\italic{snow}.
@@ -177,7 +212,8 @@ Please contact jxxcarlson at gmail.com if you have questions or comments about t
 \\image{https://noteimages.s3.amazonaws.com/app_images/vintage-typewriter-in-black-and-white-lynn-langmade.jpg}{}{width: 450}
 """
 
-welcomeText = 
+
+welcomeText =
     """
 \\section{Getting started}
 
@@ -196,14 +232,14 @@ or for that mattter \\strong{ato hy}.
 \\item Every document has a numerical ID, like a person's
 social security number. You can type the ID in the search
 box to find a document.   If someone says, "My class notes
-are on document \\strong{440} at knode.io"" you 
-know what to do. 
+are on document \\strong{440} at knode.io"" you
+know what to do.
 
 \\item To find all the public articles by an author
 with user name \\italic{jxxcarlson}, Use
-the search term \\strong{author=jxxcarlson}.    
+the search term \\strong{author=jxxcarlson}.
 For all the articles by that author with title
-including \\italic{haskell}, search on 
+including \\italic{haskell}, search on
 \\strong{author=jxxcarlson, title=haskell}.
 
 \\item You can do full text searches.  For example,
@@ -221,12 +257,12 @@ There is more to searching, but this is enough for now.....
 
 \\section{About kNode}
 
-\\strong{kNode.io} is an app for sharing your knowledge 
+\\strong{kNode.io} is an app for sharing your knowledge
  with others.  With the kNode Reader,
  you can read what others write without signing in.
  To keep track of what you are reading or to
- write your own content to distribute on kNode.io, 
- sign up for an account. You can write in 
+ write your own content to distribute on kNode.io,
+ sign up for an account. You can write in
  plain text, Markdown, Asciidoc, or MiniLatex.
 
  For questions or comments, contact jxxcarlson at gmail.
