@@ -87,7 +87,12 @@ latexPreamble =
 \\newtheorem{remark}{Remark}
 
 %% Null commands in MiniLatex
-\\newcommand{\\innertableofcontents}[1]{}
+\\newcommand{\\innertableofcontents}[1]{
+  \\begingroup
+  \\parskip3pt
+  \\tableofcontents
+  \\endgroup
+}
 \\newcommand{\\setdocid}[1]{}   %% Needed?
 \\newcommand{\\setclient}[1]{}  %% Needed?
 
