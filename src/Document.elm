@@ -15,10 +15,10 @@ module Document
         , decodeDocumentFromOutside
         , deleteDocument
         , documentDecoder
+        , documentRecordDecoder
         , encodeDocumentForOutside
         , encodeString
         , getDocumentById
-        , getDocumentByIdRequest
         , getExportLatex
         , newDocument
         , printUrl
@@ -29,6 +29,7 @@ module Document
         , wordCount
         )
 
+import Bytes exposing (Bytes)
 import Configuration
 import Dict exposing (Dict)
 import Http
@@ -136,6 +137,8 @@ type DocMsg
     | ExportLatex
     | SetDocumentTextType TextType
     | SetDocumentType DocType
+    | GetImageData
+    | GotImageData (Result Http.Error Bytes)
 
 
 
@@ -526,12 +529,8 @@ kvTupleToString ( str, accessValue ) =
     str ++ ": " ++ accessTypeToString accessValue
 
 
-
--- REQUESTS
-
-
-getDocumentByIdRequest : Int -> Maybe String -> Http.Request DocumentRecord
-getDocumentByIdRequest id maybeTokenString =
+getDocumentById : Int -> Maybe String -> Cmd DocMsg
+getDocumentById id maybeTokenString =
     let
         ( route, headers ) =
             case maybeTokenString of
@@ -548,54 +547,10 @@ getDocumentByIdRequest id maybeTokenString =
             , headers = headers
             , url = Configuration.backend ++ route
             , body = Http.jsonBody Encode.null
-            , expect = Http.expectJson documentRecordDecoder
+            , expect = Http.expectJson ReceiveDocument documentRecordDecoder
             , timeout = Just Configuration.timeout
-            , withCredentials = False
+            , tracker = Nothing
             }
-
-
-getDocumentById : Int -> Maybe String -> Cmd DocMsg
-getDocumentById id maybeTokenString =
-    Http.send ReceiveDocument <| getDocumentByIdRequest id maybeTokenString
-
-
-saveDocumentRequest : String -> Document -> Http.Request DocumentRecord
-saveDocumentRequest tokenString document =
-    Http.request
-        { method = "Put"
-        , headers = [ Http.header "APIVersion" "V2", Http.header "Authorization" ("Bearer " ++ tokenString) ]
-        , url = Configuration.backend ++ "/api/documents/" ++ String.fromInt document.id
-        , body = Http.jsonBody (encodeDocumentRecord document)
-        , expect = Http.expectJson documentRecordDecoder
-        , timeout = Just Configuration.timeout
-        , withCredentials = False
-        }
-
-
-updateDocumentWithQueryStringRequest : String -> String -> Document -> Http.Request DocumentRecord
-updateDocumentWithQueryStringRequest tokenString queryString document =
-    Http.request
-        { method = "Put"
-        , headers = [ Http.header "APIVersion" "V2", Http.header "Authorization" ("Bearer " ++ tokenString) ]
-        , url = Configuration.backend ++ "/api/documents/" ++ String.fromInt document.id ++ "?" ++ queryString
-        , body = Http.jsonBody (encodeDocumentRecord document)
-        , expect = Http.expectJson documentRecordDecoder
-        , timeout = Just Configuration.timeout
-        , withCredentials = False
-        }
-
-
-getExportLatexRequest : Document -> Http.Request String
-getExportLatexRequest document =
-    Http.request
-        { method = "Get"
-        , headers = []
-        , url = Configuration.backend ++ "/api/export/" ++ String.fromInt document.id
-        , body = Http.jsonBody Encode.null
-        , expect = Http.expectJson dataStringDecoder
-        , timeout = Just Configuration.timeout
-        , withCredentials = False
-        }
 
 
 
@@ -687,22 +642,17 @@ attachDocumentToMasterBelowCmd_ tokenString selectedDocId_ childDocument masterD
                 updateDocumentWithQueryString tokenString query masterDocument
 
 
-sendToWorkerRequest : String -> Http.Request String
-sendToWorkerRequest content =
+sendToWorker : String -> Cmd DocMsg
+sendToWorker content =
     Http.request
         { method = "Post"
         , headers = []
         , url = "https://knode.work/processLatex.php"
         , body = Http.multipartBody [ Http.stringPart "data" content ]
-        , expect = Http.expectJson stringDecoder
+        , expect = Http.expectJson ReceiveWorkerReply stringDecoder
         , timeout = Just Configuration.timeout
-        , withCredentials = False
+        , tracker = Nothing
         }
-
-
-sendToWorker : String -> Cmd DocMsg
-sendToWorker content =
-    Http.send ReceiveWorkerReply <| sendToWorkerRequest content
 
 
 encodeString : String -> Encode.Value
@@ -713,66 +663,116 @@ encodeString content =
 
 getExportLatex : Document -> Cmd DocMsg
 getExportLatex document =
-    Http.send ReceiveLatexExportText <| getExportLatexRequest document
+    Http.request
+        { method = "Get"
+        , headers = []
+        , url = Configuration.backend ++ "/api/export/" ++ String.fromInt document.id
+        , body = Http.jsonBody Encode.null
+        , expect = Http.expectJson ReceiveLatexExportText dataStringDecoder
+        , timeout = Just Configuration.timeout
+        , tracker = Nothing
+        }
 
 
 
 -- CMD
 
 
-createDocumentRequest : String -> Document -> Http.Request DocumentRecord
-createDocumentRequest tokenString document =
+createDocument : String -> Document -> Cmd DocMsg
+createDocument tokenString document =
     Http.request
         { method = "Post"
         , headers = [ Http.header "APIVersion" "V2", Http.header "Authorization" ("Bearer " ++ tokenString) ]
         , url = Configuration.backend ++ "/api/documents/"
         , body = Http.jsonBody (encodeDocumentRecord document)
-        , expect = Http.expectJson documentRecordDecoder
+        , expect = Http.expectJson NewDocumentCreated documentRecordDecoder
         , timeout = Just Configuration.timeout
-        , withCredentials = False
-        }
-
-
-createDocument : String -> Document -> Cmd DocMsg
-createDocument tokenString document =
-    Http.send NewDocumentCreated <| createDocumentRequest tokenString document
-
-
-createDocumentTask : String -> Document -> Task Http.Error DocumentRecord
-createDocumentTask tokenString document =
-    createDocumentRequest tokenString document
-        |> Http.toTask
-
-
-deleteDocumentRequest : String -> Document -> Http.Request String
-deleteDocumentRequest tokenString document =
-    Http.request
-        { method = "Delete"
-        , headers = [ Http.header "APIVersion" "V2", Http.header "Authorization" ("Bearer " ++ tokenString) ]
-        , url = Configuration.backend ++ "/api/documents/" ++ String.fromInt document.id
-        , body = Http.jsonBody (encodeDocumentRecord document)
-        , expect = Http.expectJson replyDecoder
-        , timeout = Just Configuration.timeout
-        , withCredentials = False
+        , tracker = Nothing
         }
 
 
 deleteDocument : String -> Document -> Cmd DocMsg
 deleteDocument tokenString document =
-    Http.send AcknowledgeDocumentDeleted <| deleteDocumentRequest tokenString document
+    Http.request
+        { method = "Delete"
+        , headers = [ Http.header "APIVersion" "V2", Http.header "Authorization" ("Bearer " ++ tokenString) ]
+        , url = Configuration.backend ++ "/api/documents/" ++ String.fromInt document.id
+        , body = Http.jsonBody (encodeDocumentRecord document)
+        , expect = Http.expectJson AcknowledgeDocumentDeleted replyDecoder
+        , timeout = Just Configuration.timeout
+        , tracker = Nothing
+        }
 
 
 saveDocument : String -> Document -> Cmd DocMsg
 saveDocument tokenString document =
-    Http.send AcknowledgeUpdateOfDocument <| saveDocumentRequest tokenString document
+    Http.request
+        { method = "Put"
+        , headers = [ Http.header "APIVersion" "V2", Http.header "Authorization" ("Bearer " ++ tokenString) ]
+        , url = Configuration.backend ++ "/api/documents/" ++ String.fromInt document.id
+        , body = Http.jsonBody (encodeDocumentRecord document)
+        , expect = Http.expectJson AcknowledgeUpdateOfDocument documentRecordDecoder
+        , timeout = Just Configuration.timeout
+        , tracker = Nothing
+        }
+
+
+createDocumentTask : String -> Document -> Task Http.Error DocumentRecord
+createDocumentTask tokenString document =
+    Http.task
+        { method = "Post"
+        , headers = [ Http.header "APIVersion" "V2", Http.header "Authorization" ("Bearer " ++ tokenString) ]
+        , url = Configuration.backend ++ "/api/documents/"
+        , body = Http.jsonBody (encodeDocumentRecord document)
+        , resolver = Http.stringResolver (responder documentRecordDecoder)
+        , timeout = Just Configuration.timeout
+        }
 
 
 saveDocumentTask : String -> Document -> Task Http.Error DocumentRecord
 saveDocumentTask tokenString document =
-    saveDocumentRequest tokenString document
-        |> Http.toTask
+    Http.task
+        { method = "Put"
+        , headers = [ Http.header "APIVersion" "V2", Http.header "Authorization" ("Bearer " ++ tokenString) ]
+        , url = Configuration.backend ++ "/api/documents/" ++ String.fromInt document.id
+        , body = Http.jsonBody (encodeDocumentRecord document)
+        , resolver = Http.stringResolver (responder documentRecordDecoder)
+        , timeout = Just Configuration.timeout
+        }
+
+
+responder : Decoder a -> Http.Response String -> Result Http.Error a
+responder decoder response =
+    case response of
+        Http.BadUrl_ url ->
+            Err (Http.BadUrl url)
+
+        Http.Timeout_ ->
+            Err Http.Timeout
+
+        Http.NetworkError_ ->
+            Err Http.NetworkError
+
+        Http.BadStatus_ metadata body ->
+            Err (Http.BadStatus metadata.statusCode)
+
+        Http.GoodStatus_ metadata body ->
+            case Decode.decodeString decoder body of
+                Ok value ->
+                    Ok value
+
+                Err err ->
+                    Err (Http.BadBody (Decode.errorToString err))
 
 
 updateDocumentWithQueryString : String -> String -> Document -> Cmd DocMsg
 updateDocumentWithQueryString tokenString queryString document =
-    Http.send AcknowledgeUpdateOfDocument <| updateDocumentWithQueryStringRequest tokenString queryString document
+    Http.request
+        { method = "Put"
+        , headers = [ Http.header "APIVersion" "V2", Http.header "Authorization" ("Bearer " ++ tokenString) ]
+        , url = Configuration.backend ++ "/api/documents/" ++ String.fromInt document.id ++ "?" ++ queryString
+        , body = Http.jsonBody (encodeDocumentRecord document)
+        , expect = Http.expectJson AcknowledgeUpdateOfDocument documentRecordDecoder
+        , timeout = Just Configuration.timeout
+        , tracker = Nothing
+        }

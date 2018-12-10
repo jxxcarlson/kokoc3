@@ -304,35 +304,17 @@ registrationEncoder email_ username_ name_ password_ =
 -- REQUEST
 
 
-tokenRequest : String -> String -> Http.Request Token
-tokenRequest email_ password =
-    Http.request
-        { method = "Post"
-        , headers = []
-        , url = Configuration.backend ++ "/api/authentication/"
-        , body = Http.jsonBody (authenticationEncoder email_ password)
-        , expect = Http.expectJson tokenDecoder
-        , timeout = Just Configuration.timeout
-        , withCredentials = False
-        }
-
-
-registerUserRequest : String -> String -> String -> String -> Http.Request Token
-registerUserRequest email_ username_ name_ password_ =
+registerUser : String -> String -> String -> String -> Cmd UserMsg
+registerUser email_ username_ name_ password_ =
     Http.request
         { method = "Post"
         , headers = [ Http.header "APIVersion" "V2" ]
         , url = Configuration.backend ++ "/api/users"
         , body = Http.jsonBody (registrationEncoder email_ username_ name_ password_)
-        , expect = Http.expectJson tokenDecoder
+        , expect = Http.expectJson RespondToNewUser tokenDecoder
         , timeout = Just Configuration.timeout
-        , withCredentials = False
+        , tracker = Nothing
         }
-
-
-registerUser : String -> String -> String -> String -> Cmd UserMsg
-registerUser email_ username_ name_ password_ =
-    Http.send RespondToNewUser <| registerUserRequest email_ username_ name_ password_
 
 
 
@@ -341,7 +323,15 @@ registerUser email_ username_ name_ password_ =
 
 getTokenCmd : String -> String -> Cmd UserMsg
 getTokenCmd email_ password =
-    Http.send ReceiveToken <| tokenRequest email_ password
+    Http.request
+        { method = "Post"
+        , headers = []
+        , url = Configuration.backend ++ "/api/authentication/"
+        , body = Http.jsonBody (authenticationEncoder email_ password)
+        , expect = Http.expectJson ReceiveToken tokenDecoder
+        , timeout = Just Configuration.timeout
+        , tracker = Nothing
+        }
 
 
 maybeUserFromEmailAndToken : String -> String -> Maybe User
@@ -409,8 +399,8 @@ userListDecoder =
     Decode.field "users" (Decode.list bigUserDecoder)
 
 
-getUsersRequest : String -> Http.Request (List BigUser)
-getUsersRequest query =
+getUsers : String -> Cmd UserMsg
+getUsers query =
     let
         queryString =
             case query == "" of
@@ -425,50 +415,35 @@ getUsersRequest query =
             , headers = [ Http.header "APIVersion" "V2" ]
             , url = Configuration.backend ++ "/api/users" ++ queryString
             , body = Http.emptyBody
-            , expect = Http.expectJson userListDecoder
+            , expect = Http.expectJson ListUsers userListDecoder
             , timeout = Just Configuration.timeout
-            , withCredentials = False
+            , tracker = Nothing
             }
 
 
-getUsers : String -> Cmd UserMsg
-getUsers query =
-    Http.send ListUsers <| getUsersRequest query
-
-
-getBigUserRequest : Int -> Http.Request BigUserRecord
-getBigUserRequest userId_ =
+getBigUserRecord : Int -> Cmd UserMsg
+getBigUserRecord userId_ =
     Http.request
         { method = "Get"
         , headers = [ Http.header "APIVersion" "V2" ]
         , url = Configuration.backend ++ "/api/users/" ++ String.fromInt userId_
         , body = Http.emptyBody
-        , expect = Http.expectJson bigUserRecordDecoder
+        , expect = Http.expectJson ReceiveBigUserRecord bigUserRecordDecoder
         , timeout = Just Configuration.timeout
-        , withCredentials = False
+        , tracker = Nothing
         }
-
-
-getBigUserRecord : Int -> Cmd UserMsg
-getBigUserRecord userId_ =
-    Http.send ReceiveBigUserRecord <| getBigUserRequest userId_
 
 
 getBigUserRecordAtSignIn : Int -> Cmd UserMsg
 getBigUserRecordAtSignIn userId_ =
-    Http.send ReceiveBigUserRecordAtSignIn <| getBigUserRequest userId_
-
-
-updateBigUserRequest : String -> BigUser -> Http.Request BigUserRecord
-updateBigUserRequest tokenString bigUser =
     Http.request
-        { method = "Put"
-        , headers = [ Http.header "APIVersion" "V2", Http.header "Authorization" ("Bearer " ++ tokenString) ]
-        , url = Configuration.backend ++ "/api/users/" ++ String.fromInt bigUser.id
-        , body = Http.jsonBody (bigUserRecordEncoder bigUser)
-        , expect = Http.expectJson bigUserRecordDecoder
+        { method = "Get"
+        , headers = [ Http.header "APIVersion" "V2" ]
+        , url = Configuration.backend ++ "/api/users/" ++ String.fromInt userId_
+        , body = Http.emptyBody
+        , expect = Http.expectJson ReceiveBigUserRecordAtSignIn bigUserRecordDecoder
         , timeout = Just Configuration.timeout
-        , withCredentials = False
+        , tracker = Nothing
         }
 
 
@@ -478,7 +453,15 @@ updateBigUserRequest tokenString bigUser =
 
 updateBigUser : String -> BigUser -> Cmd UserMsg
 updateBigUser tokenString bigUser =
-    Http.send AcknowlegeBigUserUpdate <| updateBigUserRequest tokenString bigUser
+    Http.request
+        { method = "Put"
+        , headers = [ Http.header "APIVersion" "V2", Http.header "Authorization" ("Bearer " ++ tokenString) ]
+        , url = Configuration.backend ++ "/api/users/" ++ String.fromInt bigUser.id
+        , body = Http.jsonBody (bigUserRecordEncoder bigUser)
+        , expect = Http.expectJson AcknowlegeBigUserUpdate bigUserRecordDecoder
+        , timeout = Just Configuration.timeout
+        , tracker = Nothing
+        }
 
 
 incrementMediaCountForMaybeUser : Maybe User -> Cmd UserMsg
@@ -493,17 +476,12 @@ incrementMediaCountForMaybeUser maybeUser =
 
 incrementMediaCountForUser : User -> Cmd UserMsg
 incrementMediaCountForUser user =
-    Http.send AcknowledgeMediaCountIncrement <| incrementMediaCountRequest user
-
-
-incrementMediaCountRequest : User -> Http.Request String
-incrementMediaCountRequest user =
     Http.request
         { method = "Post"
         , headers = [ Http.header "APIVersion" "V2" ]
         , url = Configuration.backend ++ "/api/users/increment_media_count/" ++ (String.fromInt <| userId user)
         , body = Http.emptyBody
-        , expect = Http.expectJson replyDecoder
+        , expect = Http.expectJson AcknowledgeMediaCountIncrement replyDecoder
         , timeout = Just Configuration.timeout
-        , withCredentials = False
+        , tracker = Nothing
         }

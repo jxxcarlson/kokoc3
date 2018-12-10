@@ -1,6 +1,8 @@
 port module Update.Document exposing (..)
 
 import Http
+import Bytes exposing (Bytes)
+import ImageGrabber
 import Random
 import Task exposing (Task)
 import Json.Decode as Decode exposing (Decoder, Value)
@@ -334,6 +336,52 @@ update docMsg model =
                     { document | docType = docType }
             in
                 ( { model | currentDocument = nextDocument, currentDocumentDirty = True }, Cmd.none )
+
+        GetImageData ->
+            case List.head model.urlList of
+                Nothing ->
+                    ( model, Cmd.none )
+
+                Just url ->
+                    ( { model | url = url }, getImageDataFromList model )
+
+        GotImageData result ->
+            case result of
+                Ok data ->
+                    case List.head model.urlList of
+                        Nothing ->
+                            ( model, Cmd.none )
+
+                        Just url ->
+                            let
+                                newModel =
+                                    { model
+                                        | status =
+                                            "Bytes received = " ++ (String.fromInt (Bytes.width data))
+                                        , maybeBytes = Just data
+                                        , urlList = List.drop 1 model.urlList
+                                        , dataList = ( url, data ) :: model.dataList
+                                    }
+                            in
+                                ( newModel, getImageDataFromList newModel )
+
+                Err _ ->
+                    ( { model | status = "Invalid data" }, Cmd.none )
+
+
+getImageDataFromList : Model -> Cmd Msg
+getImageDataFromList model =
+    case List.head model.urlList of
+        Nothing ->
+            ImageGrabber.downloadTarArchiveCmd model.dataList
+
+        Just url ->
+            getImageData url
+
+
+getImageData : String -> Cmd Msg
+getImageData url_ =
+    Task.attempt GotData (ImageGrabber.getImageTask url_)
 
 
 getUserDocuments : Model -> String -> ( Model, Cmd Msg )

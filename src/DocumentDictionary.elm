@@ -1,21 +1,24 @@
-module DocumentDictionary exposing
-    ( DocDictMsg(..)
-    , DocumentDictionary
-    , empty
-    , get
-    , keys
-    , loadTexMacros
-    , matchId
-    , member
-    , put
-    , putTexMacroDocumentInDictionaryById
-    , values
-    )
+module DocumentDictionary
+    exposing
+        ( DocDictMsg(..)
+        , DocumentDictionary
+        , empty
+        , get
+        , keys
+        , loadTexMacros
+        , matchId
+        , member
+        , put
+        , putTexMacroDocumentInDictionaryById
+        , values
+        )
 
 import Dict exposing (Dict)
 import Document exposing (Document, DocumentRecord)
 import Http
 import Utility
+import Configuration
+import Json.Encode as Encode
 
 
 type DocumentDictionary
@@ -73,12 +76,12 @@ matchId id key (DocumentDictionary dict) =
         maybeDocument =
             Dict.get key dict
     in
-    case maybeDocument of
-        Nothing ->
-            False
+        case maybeDocument of
+            Nothing ->
+                False
 
-        Just doc ->
-            doc.id == id
+            Just doc ->
+                doc.id == id
 
 
 
@@ -87,7 +90,26 @@ matchId id key (DocumentDictionary dict) =
 
 putTexMacroDocumentInDictionaryById : Int -> Maybe String -> Cmd DocDictMsg
 putTexMacroDocumentInDictionaryById id maybeTokenString =
-    Http.send PutDocumentInDictionaryAsTexMacros (Document.getDocumentByIdRequest id maybeTokenString)
+    let
+        ( route, headers ) =
+            case maybeTokenString of
+                Nothing ->
+                    ( "/api/public/documents/" ++ String.fromInt id, [ Http.header "APIVersion" "V2" ] )
+
+                Just tokenString ->
+                    ( "/api/documents/" ++ String.fromInt id
+                    , [ Http.header "APIVersion" "V2", Http.header "Authorization" ("Bearer " ++ tokenString) ]
+                    )
+    in
+        Http.request
+            { method = "Get"
+            , headers = headers
+            , url = Configuration.backend ++ route
+            , body = Http.jsonBody Encode.null
+            , expect = Http.expectJson PutDocumentInDictionaryAsTexMacros Document.documentRecordDecoder
+            , timeout = Just Configuration.timeout
+            , tracker = Nothing
+            }
 
 
 loadTexMacros : Maybe String -> Document -> List String -> DocumentDictionary -> Cmd DocDictMsg
@@ -109,14 +131,14 @@ loadTexMacros maybeTokenString document tagList documentDictionary =
                         matches =
                             matchId id_ "texmacros" documentDictionary
                     in
-                    ( matches, id_ )
+                        ( matches, id_ )
     in
-    case ( texMacrosPresent, id ) of
-        ( False, 0 ) ->
-            Cmd.none
+        case ( texMacrosPresent, id ) of
+            ( False, 0 ) ->
+                Cmd.none
 
-        ( False, id_ ) ->
-            putTexMacroDocumentInDictionaryById id_ maybeTokenString
+            ( False, id_ ) ->
+                putTexMacroDocumentInDictionaryById id_ maybeTokenString
 
-        ( True, id_ ) ->
-            putTexMacroDocumentInDictionaryById id_ maybeTokenString
+            ( True, id_ ) ->
+                putTexMacroDocumentInDictionaryById id_ maybeTokenString

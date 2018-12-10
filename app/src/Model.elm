@@ -17,6 +17,7 @@ module Model
         , initialModel
         )
 
+import Bytes exposing (Bytes)
 import Update.Outside exposing (InfoForElm(..))
 import BigEditRecord exposing (BigEditRecord)
 import Browser.Dom as Dom exposing (Viewport)
@@ -131,6 +132,11 @@ type alias Model =
     , seed : Int
     , exportText : String
     , imageUrlList : List String
+
+    -- Export Document
+    , maybeBytes : Maybe Bytes
+    , urlList : List String
+    , dataList : List ( String, Bytes )
 
     -- UI
     , appMode : AppMode
@@ -297,6 +303,9 @@ initialModel locationHref windowWidth windowHeight document =
     , miniLatexRenderMode = RenderIncremental
     , exportText = ""
     , imageUrlList = []
+    , maybeBytes = Nothing
+    , urlList = []
+    , dataList = []
     }
 
 
