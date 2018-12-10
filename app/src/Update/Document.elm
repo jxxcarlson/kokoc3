@@ -412,7 +412,7 @@ downloadCurrentLatexDocument model =
         preparedDocumentContent =
             documentContent
                 |> prepend model.texMacros
-                |> prepend (MiniLatexTools.makePreamble document)
+                |> prepend (MiniLatexTools.makeDownloadPreamble document)
                 |> LatexHelper.makeDocument
     in
         if List.length imageUrlList == 0 then

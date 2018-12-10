@@ -1,4 +1,4 @@
-module MiniLatexTools exposing (makePreamble, setupEditRecord, updateEditRecord)
+module MiniLatexTools exposing (makePreamble, makeDownloadPreamble, setupEditRecord, updateEditRecord)
 
 import Configuration
 import Document exposing (Document)
@@ -36,6 +36,16 @@ makePreamble document =
         |> String.join "\n\n"
 
 
+makeDownloadPreamble : Document -> String
+makeDownloadPreamble document =
+    [ decrementedSetCounterText document.tags
+    , setDocId document.id
+    , setClient
+    , ""
+    ]
+        |> String.join "\n\n"
+
+
 setupEditRecord : String -> Document -> EditRecord (Html msg)
 setupEditRecord texMacros document =
     MiniLatex.initializeEditRecord 0 (prepareText texMacros document)
@@ -57,7 +67,21 @@ setCounterText tags =
                 ""
 
             Just sectionNumber ->
-                "\\setcounter{section}{" ++ String.fromInt sectionNumber ++ "}\n\n"
+                "\\setcounter{section}{" ++ String.fromInt (sectionNumber) ++ "}\n\n"
+
+
+decrementedSetCounterText : List String -> String
+decrementedSetCounterText tags =
+    let
+        maybeSectionNumber =
+            KVList.intValueForKey "sectionNumber" tags
+    in
+        case maybeSectionNumber of
+            Nothing ->
+                ""
+
+            Just sectionNumber ->
+                "\\setcounter{section}{" ++ String.fromInt (sectionNumber - 1) ++ "}\n\n"
 
 
 setDocId : Int -> String
