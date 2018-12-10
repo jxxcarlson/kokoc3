@@ -11,29 +11,23 @@ type MailMsg
     = AcknowledgeEmailSent (Result Http.Error String)
 
 
-sendEmailRequest : String -> BigUser -> String -> String -> Http.Request String
-sendEmailRequest tokenString user subject text =
+sendEmail : String -> String -> String -> BigUser -> Cmd MailMsg
+sendEmail tokenString subject text user =
     Http.request
         { method = "Post"
         , headers = [ Http.header "APIVersion" "V2", Http.header "Authorization" ("Bearer " ++ tokenString) ]
         , url = Configuration.backend ++ "/api/mail"
         , body = Http.jsonBody (encodeEmail user.email subject text)
-        , expect = Http.expectJson replyDecoder
+        , expect = Http.expectJson AcknowledgeEmailSent replyDecoder
         , timeout = Just Configuration.timeout
-        , withCredentials = False
+        , tracker = Nothing
         }
-
-
-sendEmail : String -> String -> String -> BigUser -> Cmd MailMsg
-sendEmail tokenString subject text user =
-    Http.send AcknowledgeEmailSent <| sendEmailRequest tokenString user subject text
 
 
 sendEmailToUsers : String -> List BigUser -> String -> String -> Cmd MailMsg
 sendEmailToUsers tokenString userList subject text =
     if userList /= [] && subject /= "" && text /= "" then
         sendEmailToUsers_ tokenString userList subject text
-
     else
         Cmd.none
 

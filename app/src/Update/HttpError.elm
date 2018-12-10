@@ -6,46 +6,40 @@ import Http
 httpErrorHandler : Http.Error -> String
 httpErrorHandler error =
     case error of
-        Http.BadPayload errorString response ->
-            "Bad Payload"
+        _ ->
+            "Http.error"
 
-        -- errorString
-        --   |> Utility.getEnclosedText "{" "}"
-        --   |> String.split ":"
-        --   |> List.drop 1
-        --   |> List.head
-        --   |> Maybe.withDefault ""
-        --   |> String.replace "\"" ""
-        -- |> (\x -> "Bad payload: " ++ x)
-        -- Debug.toString response
-        Http.BadUrl str ->
-            "Bad url: " ++ str
 
-        Http.Timeout ->
-            "timeout"
 
-        Http.NetworkError ->
-            "Network error"
-
-        Http.BadStatus resp ->
-            "Bad status: " ++ "darn!"
+-- Http.BadUrl str ->
+--     "Bad url: " ++ str
+--
+-- Http.Timeout_ ->
+--     "timeout"
+--
+-- Http.NetworkError_ ->
+--     "Network error"
+--
+-- Http.BadStatus_ m k ->
+--     "Bad status: " ++ String.fromInt k
 
 
 handle : Http.Error -> String
 handle error =
     case error of
-        Http.BadUrl str ->
-            str
+        _ ->
+            "Http.error"
 
-        Http.Timeout ->
-            "timeout"
 
-        Http.NetworkError ->
-            "Network error"
 
-        Http.BadStatus resp ->
-            "Bad status (" ++ String.fromInt resp.status.code ++ "): " ++ resp.status.message
-
-        -- (decodeResponse resp) --  ++ "darn! "
-        Http.BadPayload str1 resp ->
-            "Bad payload: " ++ str1 ++ ", payload = " ++ "bad payload"
+-- Http.BadUrl str ->
+--     "Bad url: " ++ str
+--
+-- Http.Timeout_ ->
+--     "timeout"
+--
+-- Http.NetworkError_ ->
+--     "Network error"
+--
+-- Http.BadStatus_ m k ->
+--     "Bad status: " ++ String.fromInt k

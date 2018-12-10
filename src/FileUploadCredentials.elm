@@ -1,26 +1,26 @@
-module FileUploadCredentials exposing
-    ( Credentials
-    , CredentialsWrapper
-    , FileData
-    , FileMsg(..)
-    , Image
-    , decodeFileData
-    , encodeCredentialsWrapper
-    , encodeFileData
-    , encodeFileValueWithUrl
-    , fileInfoTestRecord
-    , getImages
-    , getS3Credentials
-    , getS3PresignedUrl
-    , makeImage
-    )
+module FileUploadCredentials
+    exposing
+        ( Credentials
+        , CredentialsWrapper
+        , FileData
+        , FileMsg(..)
+        , Image
+        , decodeFileData
+        , encodeCredentialsWrapper
+        , encodeFileData
+        , encodeFileValueWithUrl
+        , fileInfoTestRecord
+        , getImages
+        , getS3Credentials
+        , getS3PresignedUrl
+        , makeImage
+        )
 
 import Configuration
 import Http
 import Json.Decode as Decode exposing (field, map2, map7)
 import Json.Decode.Pipeline as JPipeline exposing (hardcoded, optional, required)
 import Json.Encode as Encode
-
 
 
 -- MSG
@@ -160,58 +160,43 @@ queryStringFromFileInfo fileInfo =
         |> (\x -> "?" ++ x)
 
 
-getS3PresignedUrlRequest : String -> String -> String -> String -> Http.Request String
-getS3PresignedUrlRequest tokenString bucket path mimetype =
+getS3PresignedUrl : String -> String -> String -> String -> Cmd FileMsg
+getS3PresignedUrl tokenString bucket path mimetype =
     Http.request
         { method = "Get"
         , headers = [ Http.header "APIVersion" "V2", Http.header "Authorization" ("Bearer " ++ tokenString) ]
         , url = Configuration.backend ++ "/api/presigned" ++ "?bucket=" ++ bucket ++ "&path=" ++ path ++ "&mime_type=" ++ mimetype
         , body = Http.jsonBody Encode.null
-        , expect = Http.expectJson Decode.string
+        , expect = Http.expectJson ReceivePresignedUrl Decode.string
         , timeout = Just Configuration.timeout
-        , withCredentials = False
-        }
-
-
-getS3PresignedUrl : String -> String -> String -> String -> Cmd FileMsg
-getS3PresignedUrl tokenString bucket path mimetype =
-    Http.send ReceivePresignedUrl <| getS3PresignedUrlRequest tokenString bucket path mimetype
-
-
-getS3CredentialsRequest : String -> FileInfo -> Http.Request CredentialsWrapper
-getS3CredentialsRequest tokenString fileInfo =
-    Http.request
-        { method = "Get"
-        , headers = [ Http.header "APIVersion" "V2", Http.header "Authorization" ("Bearer " ++ tokenString) ]
-        , url = Configuration.backend ++ "/api/credentials" ++ queryStringFromFileInfo fileInfo
-        , body = Http.jsonBody Encode.null
-        , expect = Http.expectJson decodeCredentialsWrapper
-        , timeout = Just Configuration.timeout
-        , withCredentials = False
+        , tracker = Nothing
         }
 
 
 getS3Credentials : String -> FileInfo -> Cmd FileMsg
 getS3Credentials tokenString fileInfo =
-    Http.send ReceiveFileCredentials <| getS3CredentialsRequest tokenString fileInfo
-
-
-makeImageRequest : String -> String -> String -> Bool -> Int -> Http.Request String
-makeImageRequest tokenString name url public userId =
     Http.request
-        { method = "Post"
+        { method = "Get"
         , headers = [ Http.header "APIVersion" "V2", Http.header "Authorization" ("Bearer " ++ tokenString) ]
-        , url = Configuration.backend ++ "/api/image"
-        , body = Http.jsonBody <| encodeImageData name url public userId
-        , expect = Http.expectJson decodeReply
+        , url = Configuration.backend ++ "/api/credentials" ++ queryStringFromFileInfo fileInfo
+        , body = Http.jsonBody Encode.null
+        , expect = Http.expectJson ReceiveFileCredentials decodeCredentialsWrapper
         , timeout = Just Configuration.timeout
-        , withCredentials = False
+        , tracker = Nothing
         }
 
 
 makeImage : String -> String -> String -> Bool -> Int -> Cmd FileMsg
 makeImage tokenString name url public userId =
-    Http.send ReceiveMakeImageAcknowledgement <| makeImageRequest tokenString name url public userId
+    Http.request
+        { method = "Post"
+        , headers = [ Http.header "APIVersion" "V2", Http.header "Authorization" ("Bearer " ++ tokenString) ]
+        , url = Configuration.backend ++ "/api/image"
+        , body = Http.jsonBody <| encodeImageData name url public userId
+        , expect = Http.expectJson ReceiveMakeImageAcknowledgement decodeReply
+        , timeout = Just Configuration.timeout
+        , tracker = Nothing
+        }
 
 
 encodeImageData : String -> String -> Bool -> Int -> Encode.Value
@@ -246,8 +231,8 @@ decodeImageList =
     Decode.field "images" (Decode.list decodeImage)
 
 
-getImagesRequest : String -> String -> Http.Request (List Image)
-getImagesRequest tokenString queryString =
+getImages : String -> String -> Cmd FileMsg
+getImages tokenString queryString =
     let
         route =
             case queryString == "" of
@@ -257,20 +242,15 @@ getImagesRequest tokenString queryString =
                 False ->
                     "/api/images?" ++ queryString
     in
-    Http.request
-        { method = "Get"
-        , headers = [ Http.header "Authorization" ("Bearer " ++ tokenString) ]
-        , url = Configuration.backend ++ route
-        , body = Http.emptyBody
-        , expect = Http.expectJson decodeImageList
-        , timeout = Just Configuration.timeout
-        , withCredentials = False
-        }
-
-
-getImages : String -> String -> Cmd FileMsg
-getImages tokenString queryString =
-    Http.send ReceiveImageList <| getImagesRequest tokenString queryString
+        Http.request
+            { method = "Get"
+            , headers = [ Http.header "Authorization" ("Bearer " ++ tokenString) ]
+            , url = Configuration.backend ++ route
+            , body = Http.emptyBody
+            , expect = Http.expectJson ReceiveImageList decodeImageList
+            , timeout = Just Configuration.timeout
+            , tracker = Nothing
+            }
 
 
 

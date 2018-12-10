@@ -343,7 +343,7 @@ update docMsg model =
                     ( model, Cmd.none )
 
                 Just url ->
-                    ( { model | url = url }, getImageDataFromList model )
+                    ( model, getImageDataFromList model )
 
         GotImageData result ->
             case result of
@@ -356,7 +356,7 @@ update docMsg model =
                             let
                                 newModel =
                                     { model
-                                        | status =
+                                        | message =
                                             "Bytes received = " ++ (String.fromInt (Bytes.width data))
                                         , maybeBytes = Just data
                                         , urlList = List.drop 1 model.urlList
@@ -366,7 +366,7 @@ update docMsg model =
                                 ( newModel, getImageDataFromList newModel )
 
                 Err _ ->
-                    ( { model | status = "Invalid data" }, Cmd.none )
+                    ( { model | message = "Invalid data" }, Cmd.none )
 
 
 getImageDataFromList : Model -> Cmd Msg
@@ -381,7 +381,8 @@ getImageDataFromList model =
 
 getImageData : String -> Cmd Msg
 getImageData url_ =
-    Task.attempt GotData (ImageGrabber.getImageTask url_)
+    Task.attempt GotImageData (ImageGrabber.getImageTask url_)
+        |> Cmd.map DocMsg
 
 
 getUserDocuments : Model -> String -> ( Model, Cmd Msg )

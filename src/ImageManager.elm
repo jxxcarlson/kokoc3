@@ -1,4 +1,4 @@
-module ImageManager exposing (ImageMsg(..), dataStringListDecoder, encodeImageList, getImageList, getImageListRequest, imageListToString, processImageList, processImageListRequest, stringDecoder, testData)
+module ImageManager exposing (ImageMsg(..), dataStringListDecoder, encodeImageList, getImageList, imageListToString, processImageList, stringDecoder, testData)
 
 import Configuration
 import Dict exposing (Dict)
@@ -21,40 +21,30 @@ dataStringListDecoder =
     Decode.field "data" (Decode.list Decode.string)
 
 
-getImageListRequest : Document -> Http.Request (List String)
-getImageListRequest document =
+getImageList : Document -> Cmd ImageMsg
+getImageList document =
     Http.request
         { method = "Get"
         , headers = []
         , url = Configuration.backend ++ "/api/image_list/" ++ String.fromInt document.id
         , body = Http.jsonBody Encode.null
-        , expect = Http.expectJson dataStringListDecoder
+        , expect = Http.expectJson ReceiveImageList dataStringListDecoder
         , timeout = Just Configuration.timeout
-        , withCredentials = False
-        }
-
-
-getImageList : Document -> Cmd ImageMsg
-getImageList document =
-    Http.send ReceiveImageList <| getImageListRequest document
-
-
-processImageListRequest : List String -> Http.Request String
-processImageListRequest imageList =
-    Http.request
-        { method = "Post"
-        , headers = []
-        , url = "https://knode.work/processImageList.php"
-        , body = Http.multipartBody [ Http.stringPart "data" (imageListToString imageList) ]
-        , expect = Http.expectJson stringDecoder
-        , timeout = Just Configuration.timeout
-        , withCredentials = False
+        , tracker = Nothing
         }
 
 
 processImageList : List String -> Cmd ImageMsg
 processImageList imageList =
-    Http.send ReceiveImageListReply <| processImageListRequest imageList
+    Http.request
+        { method = "Post"
+        , headers = []
+        , url = "https://knode.work/processImageList.php"
+        , body = Http.multipartBody [ Http.stringPart "data" (imageListToString imageList) ]
+        , expect = Http.expectJson ReceiveImageListReply stringDecoder
+        , timeout = Just Configuration.timeout
+        , tracker = Nothing
+        }
 
 
 encodeImageList : List String -> Encode.Value

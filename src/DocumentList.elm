@@ -275,7 +275,28 @@ notFoundDocument =
 
 findDocuments : Maybe User -> String -> Cmd DocListMsg
 findDocuments maybeUser queryString =
-    Http.send ReceiveDocumentList <| findDocumentsRequest maybeUser queryString
+    let
+        ( route, headers ) =
+            case maybeUser of
+                Nothing ->
+                    ( "/api/public/documents?" ++ queryString
+                    , [ Http.header "APIVersion" "V2" ]
+                    )
+
+                Just user ->
+                    ( "/api/documents?" ++ queryString
+                    , [ Http.header "APIVersion" "V2", Http.header "authorization" ("Bearer " ++ User.getTokenString user) ]
+                    )
+    in
+        Http.request
+            { method = "Get"
+            , headers = headers
+            , url = Configuration.backend ++ route
+            , body = Http.jsonBody Encode.null
+            , expect = Http.expectJson ReceiveDocumentList documentListDecoder
+            , timeout = Just Configuration.timeout
+            , tracker = Nothing
+            }
 
 
 retrievDocumentsFromIntList : Maybe User -> IntList -> Cmd DocListMsg
@@ -286,8 +307,28 @@ retrievDocumentsFromIntList maybeUser intList =
 
         queryString =
             "idlist=" ++ ids
+
+        ( route, headers ) =
+            case maybeUser of
+                Nothing ->
+                    ( "/api/public/documents?" ++ queryString
+                    , [ Http.header "APIVersion" "V2" ]
+                    )
+
+                Just user ->
+                    ( "/api/documents?" ++ queryString
+                    , [ Http.header "APIVersion" "V2", Http.header "authorization" ("Bearer " ++ User.getTokenString user) ]
+                    )
     in
-        Http.send RestoreDocumentList <| findDocumentsRequest maybeUser queryString
+        Http.request
+            { method = "Get"
+            , headers = headers
+            , url = Configuration.backend ++ route
+            , body = Http.jsonBody Encode.null
+            , expect = Http.expectJson RestoreDocumentList documentListDecoder
+            , timeout = Just Configuration.timeout
+            , tracker = Nothing
+            }
 
 
 retrievRecentDocumentQueueFromIntList : Maybe User -> List Int -> Cmd DocListMsg
@@ -298,8 +339,28 @@ retrievRecentDocumentQueueFromIntList maybeUser intList =
 
         queryString =
             "idlist=" ++ ids
+
+        ( route, headers ) =
+            case maybeUser of
+                Nothing ->
+                    ( "/api/public/documents?" ++ queryString
+                    , [ Http.header "APIVersion" "V2" ]
+                    )
+
+                Just user ->
+                    ( "/api/documents?" ++ queryString
+                    , [ Http.header "APIVersion" "V2", Http.header "authorization" ("Bearer " ++ User.getTokenString user) ]
+                    )
     in
-        Http.send RestoreRecentDocumentQueue <| findDocumentQueueRequest maybeUser queryString
+        Http.request
+            { method = "Get"
+            , headers = headers
+            , url = Configuration.backend ++ route
+            , body = Http.jsonBody Encode.null
+            , expect = Http.expectJson RestoreRecentDocumentQueue documentQueueDecoder
+            , timeout = Just Configuration.timeout
+            , tracker = Nothing
+            }
 
 
 retrievRecentDocumentQueueFromIntListAtSignIn : Maybe User -> List Int -> Cmd DocListMsg
@@ -310,28 +371,147 @@ retrievRecentDocumentQueueFromIntListAtSignIn maybeUser intList =
 
         queryString =
             "idlist=" ++ ids
+
+        ( route, headers ) =
+            case maybeUser of
+                Nothing ->
+                    ( "/api/public/documents?" ++ queryString
+                    , [ Http.header "APIVersion" "V2" ]
+                    )
+
+                Just user ->
+                    ( "/api/documents?" ++ queryString
+                    , [ Http.header "APIVersion" "V2", Http.header "authorization" ("Bearer " ++ User.getTokenString user) ]
+                    )
     in
-        Http.send RestoreRecentDocumentQueueAtSignIn <| findDocumentQueueRequest maybeUser queryString
+        Http.request
+            { method = "Get"
+            , headers = headers
+            , url = Configuration.backend ++ route
+            , body = Http.jsonBody Encode.null
+            , expect = Http.expectJson RestoreRecentDocumentQueueAtSignIn documentQueueDecoder
+            , timeout = Just Configuration.timeout
+            , tracker = Nothing
+            }
 
 
 loadMasterDocument : Maybe User -> Int -> Cmd DocListMsg
 loadMasterDocument maybeUser docId =
-    Http.send ReceiveDocumentList <| loadMasterDocumentRequest maybeUser docId
+    let
+        ( route, headers ) =
+            case maybeUser of
+                Nothing ->
+                    ( "/api/public/documents?master=" ++ String.fromInt docId, [ Http.header "APIVersion" "V2" ] )
+
+                Just user ->
+                    ( "/api/documents?master=" ++ String.fromInt docId
+                    , [ Http.header "APIVersion" "V2", Http.header "authorization" ("Bearer " ++ User.getTokenString user) ]
+                    )
+    in
+        Http.request
+            { method = "Get"
+            , headers = headers
+            , url = Configuration.backend ++ route
+            , body = Http.jsonBody Encode.null
+            , expect = Http.expectJson ReceiveDocumentList documentListDecoder
+            , timeout = Just Configuration.timeout
+            , tracker = Nothing
+            }
 
 
 loadMasterDocumentTask : Maybe User -> Int -> Task Http.Error DocumentList
 loadMasterDocumentTask maybeUser docId =
-    Http.toTask (loadMasterDocumentRequest maybeUser docId)
+    let
+        ( route, headers ) =
+            case maybeUser of
+                Nothing ->
+                    ( "/api/public/documents?master=" ++ String.fromInt docId, [ Http.header "APIVersion" "V2" ] )
+
+                Just user ->
+                    ( "/api/documents?master=" ++ String.fromInt docId
+                    , [ Http.header "APIVersion" "V2", Http.header "authorization" ("Bearer " ++ User.getTokenString user) ]
+                    )
+    in
+        Http.task
+            { method = "Get"
+            , headers = headers
+            , url = Configuration.backend ++ route
+            , body = Http.jsonBody Encode.null
+            , resolver = Http.stringResolver (responder documentListDecoder)
+            , timeout = Just Configuration.timeout
+            }
+
+
+responder : Decoder a -> Http.Response String -> Result Http.Error a
+responder decoder response =
+    case response of
+        Http.BadUrl_ url ->
+            Err (Http.BadUrl url)
+
+        Http.Timeout_ ->
+            Err Http.Timeout
+
+        Http.NetworkError_ ->
+            Err Http.NetworkError
+
+        Http.BadStatus_ metadata body ->
+            Err (Http.BadStatus metadata.statusCode)
+
+        Http.GoodStatus_ metadata body ->
+            case Decode.decodeString decoder body of
+                Ok value ->
+                    Ok value
+
+                Err err ->
+                    Err (Http.BadBody (Decode.errorToString err))
 
 
 loadMasterDocumentAndSelect : Maybe User -> Int -> Cmd DocListMsg
 loadMasterDocumentAndSelect maybeUser docId =
-    Http.send ReceiveDocumentListWithSelectedId <| loadMasterDocumentRequest maybeUser docId
+    let
+        ( route, headers ) =
+            case maybeUser of
+                Nothing ->
+                    ( "/api/public/documents?master=" ++ String.fromInt docId, [ Http.header "APIVersion" "V2" ] )
+
+                Just user ->
+                    ( "/api/documents?master=" ++ String.fromInt docId
+                    , [ Http.header "APIVersion" "V2", Http.header "authorization" ("Bearer " ++ User.getTokenString user) ]
+                    )
+    in
+        Http.request
+            { method = "Get"
+            , headers = headers
+            , url = Configuration.backend ++ route
+            , body = Http.jsonBody Encode.null
+            , expect = Http.expectJson ReceiveDocumentListWithSelectedId documentListDecoder
+            , timeout = Just Configuration.timeout
+            , tracker = Nothing
+            }
 
 
 loadMasterDocumentWithCurrentSelection : Maybe User -> Int -> Cmd DocListMsg
 loadMasterDocumentWithCurrentSelection maybeUser docId =
-    Http.send ReceiveDocumentListAndPreserveCurrentSelection <| loadMasterDocumentRequest maybeUser docId
+    let
+        ( route, headers ) =
+            case maybeUser of
+                Nothing ->
+                    ( "/api/public/documents?master=" ++ String.fromInt docId, [ Http.header "APIVersion" "V2" ] )
+
+                Just user ->
+                    ( "/api/documents?master=" ++ String.fromInt docId
+                    , [ Http.header "APIVersion" "V2", Http.header "authorization" ("Bearer " ++ User.getTokenString user) ]
+                    )
+    in
+        Http.request
+            { method = "Get"
+            , headers = headers
+            , url = Configuration.backend ++ route
+            , body = Http.jsonBody Encode.null
+            , expect = Http.expectJson ReceiveDocumentListAndPreserveCurrentSelection documentListDecoder
+            , timeout = Just Configuration.timeout
+            , tracker = Nothing
+            }
 
 
 
@@ -393,85 +573,6 @@ documentListEncoder documentList =
 
 
 {- REQUESTS -}
-
-
-findDocumentsRequest : Maybe User -> String -> Http.Request DocumentList
-findDocumentsRequest maybeUser queryString =
-    let
-        ( route, headers ) =
-            case maybeUser of
-                Nothing ->
-                    ( "/api/public/documents?" ++ queryString
-                    , [ Http.header "APIVersion" "V2" ]
-                    )
-
-                Just user ->
-                    ( "/api/documents?" ++ queryString
-                    , [ Http.header "APIVersion" "V2", Http.header "authorization" ("Bearer " ++ User.getTokenString user) ]
-                    )
-    in
-        Http.request
-            { method = "Get"
-            , headers = headers
-            , url = Configuration.backend ++ route
-            , body = Http.jsonBody Encode.null
-            , expect = Http.expectJson documentListDecoder
-            , timeout = Just Configuration.timeout
-            , withCredentials = False
-            }
-
-
-findDocumentQueueRequest : Maybe User -> String -> Http.Request (Queue Document)
-findDocumentQueueRequest maybeUser queryString =
-    let
-        ( route, headers ) =
-            case maybeUser of
-                Nothing ->
-                    ( "/api/public/documents?" ++ queryString
-                    , [ Http.header "APIVersion" "V2" ]
-                    )
-
-                Just user ->
-                    ( "/api/documents?" ++ queryString
-                    , [ Http.header "APIVersion" "V2", Http.header "authorization" ("Bearer " ++ User.getTokenString user) ]
-                    )
-    in
-        Http.request
-            { method = "Get"
-            , headers = headers
-            , url = Configuration.backend ++ route
-            , body = Http.jsonBody Encode.null
-            , expect = Http.expectJson documentQueueDecoder
-            , timeout = Just Configuration.timeout
-            , withCredentials = False
-            }
-
-
-loadMasterDocumentRequest : Maybe User -> Int -> Http.Request DocumentList
-loadMasterDocumentRequest maybeUser docId =
-    let
-        ( route, headers ) =
-            case maybeUser of
-                Nothing ->
-                    ( "/api/public/documents?master=" ++ String.fromInt docId, [ Http.header "APIVersion" "V2" ] )
-
-                Just user ->
-                    ( "/api/documents?master=" ++ String.fromInt docId
-                    , [ Http.header "APIVersion" "V2", Http.header "authorization" ("Bearer " ++ User.getTokenString user) ]
-                    )
-    in
-        Http.request
-            { method = "Get"
-            , headers = headers
-            , url = Configuration.backend ++ route
-            , body = Http.jsonBody Encode.null
-            , expect = Http.expectJson documentListDecoder
-            , timeout = Just Configuration.timeout
-            , withCredentials = False
-            }
-
-
-
 {- Queue Interop -}
 
 
