@@ -7,6 +7,7 @@ import Random
 import Task exposing (Task)
 import Json.Decode as Decode exposing (Decoder, Value)
 import List.Extra
+import Maybe.Extra
 import Model
     exposing
         ( Model
@@ -314,9 +315,6 @@ update docMsg model =
                     , sendDocumentForPrinting (Document.encodeString (Document.printUrl model.currentDocument))
                     )
 
-        ExportLatex ->
-            downloadCurrentLatexDocument model
-
         SetDocumentTextType textType ->
             let
                 document =
@@ -338,7 +336,7 @@ update docMsg model =
                 ( { model | currentDocument = nextDocument, currentDocumentDirty = True }, Cmd.none )
 
         GetImageData ->
-            case List.head model.urlList of
+            case List.head model.imageUrlList of
                 Nothing ->
                     ( model, Cmd.none )
 
@@ -348,32 +346,103 @@ update docMsg model =
         GotImageData result ->
             case result of
                 Ok data ->
-                    case List.head model.urlList of
+                    case List.head model.imageUrlList of
                         Nothing ->
                             ( model, Cmd.none )
 
                         Just url ->
                             let
+                                url1 =
+                                    case ImageGrabber.simpleFilenameFromUrl url of
+                                        Nothing ->
+                                            "https://image/" ++ url
+
+                                        Just url_ ->
+                                            "https://image/" ++ url_
+
+                                dataList =
+                                    ( url1, data ) :: model.dataList
+
+                                lengthDataList =
+                                    List.length dataList |> String.fromInt
+
+                                message =
+                                    "Data items = "
+                                        ++ (String.fromInt (Bytes.width data))
+                                        ++ ", Bytes received = "
+                                        ++ String.fromInt (Bytes.width data)
+
                                 newModel =
                                     { model
-                                        | message =
-                                            "Bytes received = " ++ (String.fromInt (Bytes.width data))
+                                        | debugString = message
                                         , maybeBytes = Just data
-                                        , urlList = List.drop 1 model.urlList
-                                        , dataList = ( url, data ) :: model.dataList
+                                        , imageUrlList = List.drop 1 model.imageUrlList
+                                        , dataList = dataList
                                     }
                             in
                                 ( newModel, getImageDataFromList newModel )
 
                 Err _ ->
-                    ( { model | message = "Invalid data" }, Cmd.none )
+                    ( { model | debugString = "Invalid data" }, Cmd.none )
+
+        ExportLatex ->
+            downloadCurrentLatexDocument model
+
+
+downloadCurrentLatexDocument : Model -> ( Model, Cmd Msg )
+downloadCurrentLatexDocument model =
+    let
+        document =
+            model.currentDocument
+
+        documentTitle =
+            (String.replace " " "_" document.title) ++ ".tex"
+
+        prepend : String -> String -> String
+        prepend prefix str =
+            prefix ++ "\n\n" ++ str
+
+        ( documentContent, imageUrlList_ ) =
+            document.content |> Export.transform
+
+        imageUrlList =
+            List.map ImageGrabber.s3AdjustUrl imageUrlList_
+                |> Maybe.Extra.values
+
+        preparedDocumentContent =
+            documentContent
+                |> prepend model.texMacros
+                |> prepend (MiniLatexTools.makePreamble document)
+                |> LatexHelper.makeDocument
+    in
+        if List.length imageUrlList == 0 then
+            ( model, Download.string documentTitle "application/text" preparedDocumentContent )
+        else
+            let
+                nextModel =
+                    { model
+                        | exportText = preparedDocumentContent
+                        , imageUrlList = imageUrlList
+                        , debugString = "Images: " ++ (String.fromInt <| List.length imageUrlList)
+                    }
+            in
+                ( nextModel, getImageDataFromList nextModel )
 
 
 getImageDataFromList : Model -> Cmd Msg
 getImageDataFromList model =
-    case List.head model.urlList of
+    case List.head model.imageUrlList of
         Nothing ->
-            ImageGrabber.downloadTarArchiveCmd model.dataList
+            let
+                title =
+                    model.currentDocument.title
+                        |> String.replace " " "_"
+                        |> (\x -> x ++ ".tex")
+
+                content =
+                    model.exportText
+            in
+                ImageGrabber.downloadTarArchiveCmd [ ( title, content ) ] model.dataList
 
         Just url ->
             getImageData url
@@ -485,39 +554,8 @@ updateBigEditRecord model document =
             BigEditRecord.updateFromDocument model.bigEditRecord document model.texMacros model.seed
 
 
-downloadCurrentLatexDocument : Model -> ( Model, Cmd Msg )
-downloadCurrentLatexDocument model =
-    let
-        document =
-            model.currentDocument
 
-        documentTitle =
-            (String.replace " " "_" document.title) ++ ".tex"
-
-        prepend : String -> String -> String
-        prepend prefix str =
-            prefix ++ "\n\n" ++ str
-
-        ( documentContent, imageUrlList ) =
-            document.content |> Export.transform
-
-        preparedDocumentContent =
-            documentContent
-                |> prepend model.texMacros
-                |> prepend (MiniLatexTools.makePreamble document)
-                |> LatexHelper.makeDocument
-    in
-        if List.length imageUrlList == 0 then
-            ( model, Download.string documentTitle "application/text" preparedDocumentContent )
-        else
-            let
-                nextModel =
-                    { model
-                        | exportText = preparedDocumentContent
-                        , imageUrlList = imageUrlList
-                    }
-            in
-                downloadImages nextModel
+-- )
 
 
 doIncrementVersion : Model -> ( Model, Cmd Msg )
@@ -532,14 +570,6 @@ doIncrementVersion model =
         ( { model | toolMenuState = HideToolMenu, currentDocument = nextCurrentDocument }
         , incrementVersion (EditorTools.newVersionUrl model.currentDocument)
         )
-
-
-downloadImages : Model -> ( Model, Cmd Msg )
-downloadImages model =
-    -- if List.length model.imageUrlList == 0 then
-    --     ( { model | exportText = "" }, Download.string currentDocument.title "application/text" model.exportText )
-    -- else
-    ( model, Cmd.none )
 
 
 putCurrentDocumentAtTopOfQueue : Model -> ( Model, Cmd Msg )

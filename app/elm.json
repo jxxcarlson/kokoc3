@@ -23,6 +23,7 @@
             "elm/url": "1.0.0",
             "elm/virtual-dom": "1.0.2",
             "elm-community/list-extra": "8.1.0",
+            "elm-community/maybe-extra": "5.0.0",
             "jinjor/elm-debounce": "3.0.0",
             "jxxcarlson/elm-tar": "2.1.2",
             "jxxcarlson/meenylatex": "7.0.1",
@@ -32,9 +33,7 @@
             "pablohirafuji/elm-markdown": "2.0.5",
             "truqu/elm-base64": "2.0.4"
         },
-        "indirect": {
-            "elm-community/maybe-extra": "5.0.0"
-        }
+        "indirect": {}
     },
     "test-dependencies": {
         "direct": {},

@@ -2,17 +2,22 @@ module ImageGrabber
     exposing
         ( expectBytes
         , getImageTask
-        , filenameFromUrl
+        , authorityFromUrl
         , extension
         , mimeType
         , saveBytes
         , downloadTarArchiveCmd
+        , s3AdjustUrl
+        , simpleFilenameFromUrl
+        , prepareStringData
         )
 
 import Bytes exposing (Bytes)
 import Bytes.Decode exposing (Decoder)
 import Bytes.Encode exposing (encode)
 import File.Download as Download
+import Maybe.Extra
+import Url
 import Http
 import Parser exposing (..)
 import Dict exposing (Dict)
@@ -20,11 +25,14 @@ import Task exposing (Task)
 import Tar exposing (Data(..), FileRecord, defaultFileRecord)
 
 
-downloadTarArchiveCmd : List ( String, Bytes ) -> Cmd msg
-downloadTarArchiveCmd dataList =
+downloadTarArchiveCmd : List ( String, String ) -> List ( String, Bytes ) -> Cmd msg
+downloadTarArchiveCmd stringList dataList =
     let
+        data =
+            (List.map prepareStringData stringList) ++ (List.map prepareData dataList)
+
         archive =
-            Tar.encodeFiles (List.map prepareData dataList) |> encode
+            Tar.encodeFiles data |> encode
     in
         saveBytes "archive" archive
 
@@ -34,9 +42,14 @@ saveBytes archiveName bytes =
     Download.bytes (archiveName ++ ".tar") "application/x-tar" bytes
 
 
+prepareStringData : ( String, String ) -> ( FileRecord, Data )
+prepareStringData ( name, str ) =
+    ( { defaultFileRecord | filename = name }, StringData str )
+
+
 prepareData : ( String, Bytes ) -> ( FileRecord, Data )
 prepareData ( url, bytes ) =
-    case filenameFromUrl url of
+    case authorityFromUrl url of
         Nothing ->
             ( defaultFileRecord, BinaryData bytes )
 
@@ -54,6 +67,10 @@ getImageTask url_ =
         , resolver = Http.bytesResolver bytesResponse
         , timeout = Nothing
         }
+
+
+
+--Http.header "User-Agent" "image/*"
 
 
 bytesResponse : Http.Response Bytes -> Result Http.Error Bytes
@@ -116,14 +133,71 @@ parseBody =
             |. chompWhile (\c -> c /= '?')
 
 
-filenameFromUrl : String -> Maybe String
-filenameFromUrl url =
+authorityFromUrl : String -> Maybe String
+authorityFromUrl url =
     case run parse url of
-        Ok filename ->
-            Just filename
+        Ok authority ->
+            Just authority
 
         Err _ ->
             Nothing
+
+
+prefix : String -> String -> Maybe String
+prefix separator str =
+    String.split separator str
+        |> List.head
+
+
+suffix : String -> String -> Maybe String
+suffix separator str =
+    String.split separator str
+        |> List.reverse
+        |> List.head
+
+
+s3AdjustUrl : String -> Maybe String
+s3AdjustUrl url =
+    let
+        proto =
+            Url.fromString url
+
+        host =
+            Maybe.map .host proto
+
+        prefix_ =
+            Maybe.andThen (prefix ".") host
+                |> Maybe.withDefault ""
+
+        path =
+            Maybe.map .path proto
+                |> Maybe.map (String.dropLeft 1)
+    in
+        case String.contains ".s3." url of
+            False ->
+                Just url
+
+            True ->
+                let
+                    altHost =
+                        Maybe.map (String.replace prefix_ "") host
+                            |> Maybe.map (String.dropLeft 1)
+                in
+                    Maybe.map (String.join "/")
+                        (Maybe.Extra.combine
+                            [ Just "https:/", altHost, Just prefix_, path ]
+                        )
+
+
+simpleFilenameFromUrl : String -> Maybe String
+simpleFilenameFromUrl url =
+    Maybe.map .path (Url.fromString url)
+        |> Maybe.map (String.dropLeft 1)
+        |> Maybe.andThen (suffix "/")
+
+
+
+-- https://psurl.s3.amazonaws.com/images/jc/sinc2-bcbf.png
 
 
 {-| Filename.extension "<http://foo.a.jpg"> == Just "jpg" : Maybe String
@@ -132,7 +206,7 @@ Filename.extension "<http://foo"> == Nothing
 extension : String -> Maybe String
 extension str =
     str
-        |> filenameFromUrl
+        |> authorityFromUrl
         |> Maybe.map (String.split ".")
         |> Maybe.map List.reverse
         |> Maybe.andThen filter

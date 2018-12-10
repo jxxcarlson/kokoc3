@@ -9,10 +9,6 @@ import UI.Update as UI
 
 gateway : Model -> ( List Key, Maybe Keyboard.KeyChange ) -> ( Model, Cmd Msg )
 gateway model ( pressedKeys, maybeKeyChange ) =
-    -- let
-    --     _ =
-    --         Debug.log "PK" pressedKeys
-    -- in
     if List.member Control model.pressedKeys then
         handleKey { model | pressedKeys = [] } (headKey pressedKeys)
     else if model.focusedElement == FocusOnSearchBox && List.member Enter model.pressedKeys then
