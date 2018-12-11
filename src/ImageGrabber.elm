@@ -9,6 +9,7 @@ module ImageGrabber
         , downloadTarArchiveCmd
         , s3AdjustUrl
         , simpleFilenameFromUrl
+        , shortFilenameFromUrl
         , prepareStringData
         )
 
@@ -194,6 +195,16 @@ simpleFilenameFromUrl url =
     Maybe.map .path (Url.fromString url)
         |> Maybe.map (String.dropLeft 1)
         |> Maybe.andThen (suffix "/")
+
+
+shortFilenameFromUrl : String -> String
+shortFilenameFromUrl url =
+    case simpleFilenameFromUrl url of
+        Nothing ->
+            "https://image/" ++ url
+
+        Just url_ ->
+            "https://image/" ++ url_
 
 
 

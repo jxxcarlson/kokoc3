@@ -353,12 +353,7 @@ update docMsg model =
                         Just url ->
                             let
                                 url1 =
-                                    case ImageGrabber.simpleFilenameFromUrl url of
-                                        Nothing ->
-                                            "https://image/" ++ url
-
-                                        Just url_ ->
-                                            "https://image/" ++ url_
+                                    ImageGrabber.shortFilenameFromUrl url
 
                                 dataList =
                                     ( url1, data ) :: model.dataList
@@ -386,11 +381,44 @@ update docMsg model =
                     ( { model | debugString = "Invalid data" }, Cmd.none )
 
         ExportLatex ->
-            downloadCurrentLatexDocument model
+            downloadLatexDocument model
 
 
-downloadCurrentLatexDocument : Model -> ( Model, Cmd Msg )
-downloadCurrentLatexDocument model =
+exportContentAndImageUrls : Document -> ( String, List String )
+exportContentAndImageUrls document =
+    document.content |> Export.transform
+
+
+joinContentAndImageUrls :
+    ( String, List String )
+    -> ( String, List String )
+    -> ( String, List String )
+joinContentAndImageUrls ( str1, urlList1 ) ( str2, urlList2 ) =
+    ( str2 ++ "\n\n" ++ str1, urlList2 ++ urlList1 )
+
+
+reducer : Document -> ( String, List String ) -> ( String, List String )
+reducer document ( content, urlList ) =
+    joinContentAndImageUrls (exportContentAndImageUrls document) ( content, urlList )
+
+
+concatenateChildren : DocumentList -> ( String, List String )
+concatenateChildren documentList =
+    let
+        listOfDocuments =
+            List.drop 1 <| DocumentList.documents documentList
+    in
+        listOfDocuments
+            |> List.foldl reducer ( "", [] )
+
+
+filterIt : Int -> ( String, List String ) -> ( String, List String )
+filterIt k ( str, strList ) =
+    ( str, List.take k strList )
+
+
+downloadLatexDocument : Model -> ( Model, Cmd Msg )
+downloadLatexDocument model =
     let
         document =
             model.currentDocument
@@ -403,11 +431,18 @@ downloadCurrentLatexDocument model =
             prefix ++ "\n\n" ++ str
 
         ( documentContent, imageUrlList_ ) =
-            document.content |> Export.transform
+            case document.docType of
+                Standard ->
+                    exportContentAndImageUrls document
 
+                Master ->
+                    concatenateChildren model.documentList
+
+        --|> filterIt 2
         imageUrlList =
-            List.map ImageGrabber.s3AdjustUrl imageUrlList_
+            (List.map ImageGrabber.s3AdjustUrl imageUrlList_
                 |> Maybe.Extra.values
+            )
 
         preparedDocumentContent =
             documentContent
