@@ -188,7 +188,7 @@ update docMsg model =
                 Err err ->
                     ( { model | message = HttpError.handle err }, Cmd.none )
 
-        NewDocumentCreated result ->
+        NewDocumentCreated selectedDocId_ result ->
             -- SET CURRENT DOCUMENT
             case result of
                 Ok documentRecord ->
@@ -196,11 +196,13 @@ update docMsg model =
                         nextDocument =
                             documentRecord.document
 
-                        selectedDocId_ =
-                            Document.selectedDocId nextDocument
-
+                        -- selectedDocId_ =
+                        --     Document.selectedDocId nextDocument
                         cmd =
-                            Cmd.map DocMsg (Document.attachDocumentToMasterBelowCmd (User.getTokenStringFromMaybeUser model.maybeCurrentUser) selectedDocId_ nextDocument model.maybeMasterDocument)
+                            if selectedDocId_ > 0 then
+                                Cmd.map DocMsg (Document.attachDocumentToMasterBelowCmd (User.getTokenStringFromMaybeUser model.maybeCurrentUser) selectedDocId_ nextDocument model.maybeMasterDocument)
+                            else
+                                Cmd.none
 
                         nextDocumentList_ =
                             DocumentList.nextDocumentList selectedDocId_ nextDocument model.documentList
@@ -220,6 +222,7 @@ update docMsg model =
                         , Cmd.batch
                             [ Update.User.updateBigUserCmd nextModel
                             , Outside.saveRecentDocumentQueueToLocalStorage nextDocumentQueue
+                            , cmd
                             ]
                         )
 
@@ -647,7 +650,7 @@ doNewStandardDocument model =
                 , appMode = Writing
               }
             , Task.attempt
-                (DocMsg << NewDocumentCreated)
+                (DocMsg << NewDocumentCreated 0)
                 ((saveCurrentDocumentIfDirtyTask model)
                     |> Task.andThen
                         (\_ -> newDocumentForUserTask user model Standard)
@@ -670,7 +673,7 @@ doNewMasterDocument model =
                 , appMode = Writing
               }
             , Task.attempt
-                (DocMsg << NewDocumentCreated)
+                (DocMsg << (NewDocumentCreated 0))
                 ((saveCurrentDocumentIfDirtyTask model)
                     |> Task.andThen
                         (\_ -> newDocumentForUserTask user model Master)
@@ -767,7 +770,7 @@ newDocumentForUserWithParent user model =
                 Just selectedDoc ->
                     selectedDoc.id
     in
-        Document.createDocument (User.getTokenString user) (makeNewDocumentWithParent parentId parentTitle selectedDocumentId user)
+        Document.createDocument (User.getTokenString user) selectedDocumentId (makeNewDocumentWithParent parentId parentTitle selectedDocumentId user)
 
 
 {-| NOTE: don't mess with the text ", placeUnder:"

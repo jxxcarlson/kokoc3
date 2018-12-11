@@ -119,7 +119,7 @@ type DocMsg
     = AcceptDocumenTitle String
     | AcceptDocumentTagString String
     | ReceiveDocument (Result Http.Error DocumentRecord)
-    | NewDocumentCreated (Result Http.Error DocumentRecord)
+    | NewDocumentCreated Int (Result Http.Error DocumentRecord)
     | AcknowledgeUpdateOfDocument (Result Http.Error DocumentRecord)
     | AcknowledgeDocumentDeleted (Result Http.Error String)
     | ReceiveWorkerReply (Result Http.Error String)
@@ -678,14 +678,14 @@ getExportLatex document =
 -- CMD
 
 
-createDocument : String -> Document -> Cmd DocMsg
-createDocument tokenString document =
+createDocument : String -> Int -> Document -> Cmd DocMsg
+createDocument tokenString parentId document =
     Http.request
         { method = "Post"
         , headers = [ Http.header "APIVersion" "V2", Http.header "Authorization" ("Bearer " ++ tokenString) ]
         , url = Configuration.backend ++ "/api/documents/"
         , body = Http.jsonBody (encodeDocumentRecord document)
-        , expect = Http.expectJson NewDocumentCreated documentRecordDecoder
+        , expect = Http.expectJson (NewDocumentCreated parentId) documentRecordDecoder
         , timeout = Just Configuration.timeout
         , tracker = Nothing
         }
