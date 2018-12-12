@@ -70,6 +70,7 @@ editor windowHeight_ portion_ model =
 
 
 textArea model width_ label_ =
+    -- ### textArea
     Keyed.row []
         [ ( String.fromInt model.counter
           , Input.multiline

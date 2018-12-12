@@ -375,7 +375,3 @@ toggleUserPublicPrivateButtonTitle model =
 
                 False ->
                     "Private"
-
-
-
--- ### User.updateBigUser bigUser

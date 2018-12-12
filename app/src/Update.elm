@@ -433,6 +433,7 @@ update msg model =
             UI.changeMode model nextAppMode
 
         DebounceMsg msg_ ->
+            -- ### DebounceMsg
             let
                 ( debounce, cmd ) =
                     Debounce.update debounceConfig (Debounce.takeLast updateEditorContentCmd) msg_ model.debounce
@@ -451,6 +452,7 @@ update msg model =
                     [ cmd
                     , Outside.saveDocToLocalStorage model.currentDocument
                     , Random.generate NewSeed (Random.int 1 10000)
+                    , getViewPortOfEditorText
                     ]
                 )
 
@@ -467,15 +469,14 @@ update msg model =
                 )
 
         UpdateEditorContent str ->
+            -- ### UpdateEditorContent
             let
                 currentDocument =
                     model.currentDocument
 
                 nextCurrentDocument =
-                    { currentDocument | content = str }
+                    { currentDocument | content = Shorthand.transform str }
 
-                -- Shorthand.transform str
-                -- ###
                 nextBigEditRecord =
                     Update.Document.updateBigEditRecord model nextCurrentDocument
 
@@ -490,9 +491,10 @@ update msg model =
                     , recentDocumentQueue = nextDocumentQueue
                     , documentList = nextDocumentList
                     , bigEditRecord = nextBigEditRecord
-                    , counter = model.counter + 1
+
+                    -- , counter = model.counter + 1
                   }
-                , Cmd.none
+                , resetEditorViewPort model
                 )
 
         Outside infoForElm_ ->
@@ -557,7 +559,7 @@ update msg model =
 
         Test ->
             -- ( model, getViewPortOfRenderedText "_textView_" )
-            ( model, getViewPortOfEditorText "_textArea_" )
+            ( model, getViewPortOfEditorText )
 
         -- (model, Cmd.map ImageMsg <| ImageManager.getImageList model.currentDocument)
         ReadImage v ->
@@ -803,6 +805,21 @@ update msg model =
 -- DOCUPDATE
 
 
+resetEditorViewPort : Model -> Cmd Msg
+resetEditorViewPort model =
+    -- ### resetEditorViewPort
+    case model.viewPortOfEditorText of
+        Nothing ->
+            Cmd.none
+
+        Just viewport ->
+            let
+                y =
+                    viewport.scene.height
+            in
+                Task.attempt (\_ -> NoOp) (Dom.setViewportOf "_textArea_" 0 y)
+
+
 imageAccessbilityToBool : ImageAccessibility -> Bool
 imageAccessbilityToBool imageAccessibility =
     case imageAccessibility of
@@ -831,9 +848,10 @@ getViewPortOfRenderedText id =
     Task.attempt FindViewportOfRenderedText (Dom.getViewportOf id)
 
 
-getViewPortOfEditorText : String -> Cmd Msg
-getViewPortOfEditorText id =
-    Task.attempt FindViewportOfEditorText (Dom.getViewportOf id)
+getViewPortOfEditorText : Cmd Msg
+getViewPortOfEditorText =
+    -- ### getViewPortOfEditorText
+    Task.attempt FindViewportOfEditorText (Dom.getViewportOf "_textArea_")
 
 
 

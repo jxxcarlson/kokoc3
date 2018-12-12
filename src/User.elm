@@ -447,10 +447,6 @@ getBigUserRecordAtSignIn userId_ =
         }
 
 
-
--- ### User.updateBigUser bigUser
-
-
 updateBigUser : String -> BigUser -> Cmd UserMsg
 updateBigUser tokenString bigUser =
     Http.request

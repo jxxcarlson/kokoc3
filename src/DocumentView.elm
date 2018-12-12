@@ -59,13 +59,11 @@ titleLine document =
                 [ Element.el [ Font.size 18, Font.bold ] (text document.title)
                 , getAuthorsDocumentsTitleButton_ fill document
                 ]
-
         else
             Element.column (titleLineStyle 76)
                 [ loadChildrenButton document
                 , Element.el [ moveRight 20 ] (getAuthorsDocumentsTitleButton_ fill document)
                 ]
-
     else
         Element.column (titleLineStyle 84)
             [ Element.row [ spacing 10 ]
@@ -103,7 +101,7 @@ loadChildrenButton document =
 
 
 
-{- #################################### -}
+{- stuff below here -}
 
 
 documentContentView : Model -> Element Msg
@@ -144,15 +142,15 @@ viewMiniLatex model =
     let
         bigEditRecord =
             -- if BigEditRecord.isEmpty model.bigEditRecord then
-                BigEditRecord.updateFromDocument model.bigEditRecord model.currentDocument model.texMacros model.seed
+            BigEditRecord.updateFromDocument model.bigEditRecord model.currentDocument model.texMacros model.seed
 
-            -- else
-            --    model.bigEditRecord
+        -- else
+        --    model.bigEditRecord
     in
-    bigEditRecord
-        |> BigEditRecord.getRenderedTextAsElements
-        |> List.map (\x -> Element.paragraph [ width (px (texWidth model.viewport)) ] [ x ])
-        |> Element.column [ Element.htmlAttribute <| HA.attribute "id" "_renderedText_" ]
+        bigEditRecord
+            |> BigEditRecord.getRenderedTextAsElements
+            |> List.map (\x -> Element.paragraph [ width (px (texWidth model.viewport)) ] [ x ])
+            |> Element.column [ Element.htmlAttribute <| HA.attribute "id" "_renderedText_" ]
 
 
 viewMarkdown : Document -> Element Msg
@@ -196,7 +194,7 @@ viewCoverArt document =
         coverArtUrl =
             KVList.stringValueForKey "coverArt" document.tags |> Maybe.withDefault Configuration.coverArtUrl
     in
-    Element.image [ width fill ] { src = coverArtUrl, description = "Cover Art" }
+        Element.image [ width fill ] { src = coverArtUrl, description = "Cover Art" }
 
 
 getAuthorsDocumentsTitleButton_ : Length -> Document -> Element Msg
@@ -205,10 +203,10 @@ getAuthorsDocumentsTitleButton_ width_ document =
         authorname =
             document.authorName
      in
-     Input.button (Widget.listItemStyleBoldPale width_)
-        { onPress = Just (GetPublicDocumentsRawQuery2 ("authorname=" ++ authorname))
-        , label = Element.el [] (text authorname)
-        }
+        Input.button (Widget.listItemStyleBoldPale width_)
+            { onPress = Just (GetPublicDocumentsRawQuery2 ("authorname=" ++ authorname))
+            , label = Element.el [] (text authorname)
+            }
     )
         |> Element.map Model.DocViewMsg
 
@@ -219,10 +217,10 @@ getAuthorsDocumentsTitleButton2 width_ document =
         authorname =
             document.authorName
      in
-     Input.button (Widget.listItemStyleBoldPale width_)
-        { onPress = Just (GetPublicDocumentsRawQuery2 ("authorname=" ++ authorname))
-        , label = Element.el [] (text <| "(" ++ authorname ++ ")")
-        }
+        Input.button (Widget.listItemStyleBoldPale width_)
+            { onPress = Just (GetPublicDocumentsRawQuery2 ("authorname=" ++ authorname))
+            , label = Element.el [] (text <| "(" ++ authorname ++ ")")
+            }
     )
         |> Element.map Model.DocViewMsg
 
@@ -260,4 +258,4 @@ currentDevice viewport =
         height =
             viewport.viewport.height
     in
-    classifyDevice { width = round width, height = round height }
+        classifyDevice { width = round width, height = round height }

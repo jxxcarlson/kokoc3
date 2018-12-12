@@ -881,7 +881,7 @@ saveCurrentDocument model =
 
 saveCurrentMasterDocument :
     Model
-    -> ( Model, Cmd Msg ) -- ###
+    -> ( Model, Cmd Msg )
 saveCurrentMasterDocument model =
     let
         tokenString =
