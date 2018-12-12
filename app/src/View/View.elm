@@ -139,7 +139,7 @@ footer model =
 
 viewportInfo : Model -> String
 viewportInfo model =
-    case model.viewPortOfRenderedText of
+    case model.viewPortOfEditorText of
         Nothing ->
             "--"
 

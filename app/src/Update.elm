@@ -444,6 +444,7 @@ update msg model =
                     | debounce = debounce
                     , debounceCounter = model.debounceCounter + 1
 
+                    -- , viewPortOfEditorText = Just viewport
                     --, message = "debounce: " ++ (String.fromInt model.debounceCounter)
                   }
                 , Cmd.batch
@@ -506,7 +507,15 @@ update msg model =
         FindViewportOfRenderedText result ->
             case result of
                 Ok viewport ->
-                    ( { model | viewPortOfRenderedText = Just viewport, debugString = "doc VP OK" }, Cmd.none )
+                    ( { model | viewPortOfRenderedText = Just viewport }, Cmd.none )
+
+                Err _ ->
+                    ( { model | debugString = "doc VP ERROR" }, Cmd.none )
+
+        FindViewportOfEditorText result ->
+            case result of
+                Ok viewport ->
+                    ( { model | viewPortOfEditorText = Just viewport }, Cmd.none )
 
                 Err _ ->
                     ( { model | debugString = "doc VP ERROR" }, Cmd.none )
@@ -547,7 +556,8 @@ update msg model =
                 ( { model | currentDocument = nextCurrentDocument }, Cmd.none )
 
         Test ->
-            ( model, getViewPortOfRenderedText "_textView_" )
+            -- ( model, getViewPortOfRenderedText "_textView_" )
+            ( model, getViewPortOfEditorText "_textArea_" )
 
         -- (model, Cmd.map ImageMsg <| ImageManager.getImageList model.currentDocument)
         ReadImage v ->
@@ -819,6 +829,11 @@ getViewPort =
 getViewPortOfRenderedText : String -> Cmd Msg
 getViewPortOfRenderedText id =
     Task.attempt FindViewportOfRenderedText (Dom.getViewportOf id)
+
+
+getViewPortOfEditorText : String -> Cmd Msg
+getViewPortOfEditorText id =
+    Task.attempt FindViewportOfEditorText (Dom.getViewportOf id)
 
 
 

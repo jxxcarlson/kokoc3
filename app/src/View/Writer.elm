@@ -73,7 +73,12 @@ textArea model width_ label_ =
     Keyed.row []
         [ ( String.fromInt model.counter
           , Input.multiline
-                [ width width_, height (px (round <| model.viewport.viewport.height - 80)), paddingXY 10 0, scrollbarY ]
+                [ width width_
+                , height (px (round <| model.viewport.viewport.height - 80))
+                , paddingXY 10 0
+                , scrollbarY
+                , Element.htmlAttribute <| Html.Attributes.attribute "id" "_textArea_"
+                ]
                 { onChange = GetContent
                 , text = model.currentDocument.content
                 , label = Input.labelLeft [ Font.size 14, Font.bold ] (text "")

@@ -147,6 +147,7 @@ type alias Model =
     , windowHeight : Int
     , viewport : Viewport
     , viewPortOfRenderedText : Maybe Viewport
+    , viewPortOfEditorText : Maybe Viewport
     , pressedKeys : List Key
     , locationHref : String
     , errorResponse : ErrorResponse
@@ -202,6 +203,7 @@ type Msg
     | GetContent String
     | UpdateEditorContent String
     | FindViewportOfRenderedText (Result Dom.Error Dom.Viewport)
+    | FindViewportOfEditorText (Result Dom.Error Dom.Viewport)
     | SetDocumentPublic Bool
     | ToggleDocumentSource
     | GenerateSeed
@@ -274,6 +276,7 @@ initialModel locationHref windowWidth windowHeight document =
         , viewport = { x = 0, y = 0, width = toFloat windowWidth, height = toFloat windowHeight }
         }
     , viewPortOfRenderedText = Nothing
+    , viewPortOfEditorText = Nothing
     , deleteDocumentState = DeleteIsOnSafety
     , pressedKeys = []
     , locationHref = locationHref
