@@ -17,6 +17,7 @@ import Update.Search as Search
 import Update.User
 import Update.Time
 import UI.Update as UI
+import Shorthand
 import MiniLatexTools
 import AppUtility
 import BigEditRecord exposing (BigEditRecord)
@@ -470,7 +471,7 @@ update msg model =
                     model.currentDocument
 
                 nextCurrentDocument =
-                    { currentDocument | content = str }
+                    { currentDocument | content = Shorthand.transform str }
 
                 -- ###
                 nextBigEditRecord =
@@ -487,6 +488,7 @@ update msg model =
                     , recentDocumentQueue = nextDocumentQueue
                     , documentList = nextDocumentList
                     , bigEditRecord = nextBigEditRecord
+                    , counter = model.counter + 1
                   }
                 , Cmd.none
                 )
