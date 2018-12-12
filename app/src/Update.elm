@@ -471,8 +471,9 @@ update msg model =
                     model.currentDocument
 
                 nextCurrentDocument =
-                    { currentDocument | content = Shorthand.transform str }
+                    { currentDocument | content = str }
 
+                -- Shorthand.transform str
                 -- ###
                 nextBigEditRecord =
                     Update.Document.updateBigEditRecord model nextCurrentDocument
