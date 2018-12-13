@@ -1,21 +1,22 @@
-module Configuration exposing
-    ( adminUsername
-    , autosaveDuration
-    , backend
-    , basicDocumentText
-    , bucket
-    , client
-    , coverArtUrl
-    , debounceDelay
-    , newMiniLatexDocumentText
-    , newUserText
-    , signInText
-    , signedOutText
-    , signedUpText
-    , timeout
-    , userManualId
-    , welcomeText
-    )
+module Configuration
+    exposing
+        ( adminUsername
+        , autosaveDuration
+        , backend
+        , basicDocumentText
+        , bucket
+        , client
+        , coverArtUrl
+        , debounceDelay
+        , newMiniLatexDocumentText
+        , newUserText
+        , signInText
+        , signedOutText
+        , signedUpText
+        , timeout
+        , userManualId
+        , welcomeText
+        )
 
 
 adminUsername : String
@@ -30,12 +31,20 @@ timeout =
 
 backend : String
 backend =
-    "https://nshost.herokuapp.com"
+    "http://localhost:4000"
+
+
+
+--  "https://nshost.herokuapp.com"
 
 
 client : String
 client =
-    "https://knode.io"
+    "http://localhost:8080"
+
+
+
+-- "https://knode.io"
 
 
 bucket : String
@@ -90,12 +99,12 @@ You are now signed out. See you later.
 
 signedUpText : String
 signedUpText =
-    """ 
+    """
 Welcome to localhost:8000.  We are ready to run MiniLatex, Asciidoc, or Markdown for you
 
 $$\\int_0^1 x^n dx = \\frac{1}{n+1}$$
 
-Click on \\strong{Home} to go to your home page. 
+Click on \\strong{Home} to go to your home page.
 Click on \\strong{Write} to create or edit a document.
 """
 
@@ -152,7 +161,7 @@ Click on \\strong{Home} to go to your home page.
 Click on \\strong{Random} to explore.  To find things, type something in
 the search box, e.g., \\italic{matt}, \\italic{wave}, or \\italic{snow},
 then type Ctrl-ENTER or Ctrl-RETURN.
- 
+
 
 \\bigskip
 \\strong{localhost:8000} is made with \\href{http://elm-lang.org/}{Elm}.
@@ -160,7 +169,7 @@ then type Ctrl-ENTER or Ctrl-RETURN.
 
 \\bigskip
 \\strong{Sample documents}
-\\begin{itemize} 
+\\begin{itemize}
   \\item \\href{https://localhost:8000/424}{Quantum Field Theory Notes}
   \\item \\href{https://localhost:8000/365}{Visual Literacy}
   \\item \\href{https://localhost:8000/754}{Butterfly}
@@ -191,7 +200,7 @@ Welcome!
 
 \\item Click on \\strong{Home} to go to your home page.
 
-\\item Click on \\strong{Random} to explore.  
+\\item Click on \\strong{Random} to explore.
 
 \\item To find things, type something in
 the search box, e.g., \\italic{matt}, \\italic{wave}, or \\italic{snow}.
@@ -226,14 +235,14 @@ or for that mattter \\strong{ato hy}.
 \\item Every document has a numerical ID, like a person's
 social security number. You can type the ID in the search
 box to find a document.   If someone says, "My class notes
-are on document \\strong{440} at localhost:8000,"" you 
-know what to do. 
+are on document \\strong{440} at localhost:8000,"" you
+know what to do.
 
 \\item To find all the public articles by an author
 with user name \\italic{jxxcarlson}, Use
-the search term \\strong{author=jxxcarlson}.    
+the search term \\strong{author=jxxcarlson}.
 For all the articles by that author with title
-including \\italic{haskell}, search on 
+including \\italic{haskell}, search on
 \\strong{author=jxxcarlson, title=haskell}.
 
 \\item You can do full text searches.  For example,
@@ -251,12 +260,12 @@ There is more to searching, but this is enough for now.....
 
 \\section{About kNode}
 
-\\strong{kNode.io} is an app for sharing your knowledge 
+\\strong{kNode.io} is an app for sharing your knowledge
  with others.  With the kNode Reader,
  you can read what others write without signing in.
  To keep track of what you are reading or to
- write your own content to distribute on kNode.io, 
- sign up for an account. You can write in 
+ write your own content to distribute on kNode.io,
+ sign up for an account. You can write in
  plain text, Markdown, Asciidoc, or MiniLatex.
 
  For questions or comments, contact jxxcarlson at gmail.
