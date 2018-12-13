@@ -477,6 +477,7 @@ update msg model =
                 nextCurrentDocument =
                     { currentDocument | content = Shorthand.transform str }
 
+                -- ###
                 nextBigEditRecord =
                     Update.Document.updateBigEditRecord model nextCurrentDocument
 
@@ -494,7 +495,8 @@ update msg model =
 
                     -- , counter = model.counter + 1
                   }
-                , resetEditorViewPort model
+                  -- ###, resetEditorViewPort model
+                , Cmd.none
                 )
 
         Outside infoForElm_ ->
