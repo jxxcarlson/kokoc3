@@ -347,6 +347,7 @@ update docMsg model =
                     ( model, getImageDataFromList model )
 
         GotImageData result ->
+            -- @@@ GotImageData, pack bytes
             case result of
                 Ok data ->
                     case List.head model.imageUrlList of
@@ -384,6 +385,7 @@ update docMsg model =
                     ( { model | debugString = "Invalid data" }, Cmd.none )
 
         ExportLatex ->
+            -- @@@ ExportLatex
             downloadLatexDocument model
 
 
@@ -422,6 +424,7 @@ filterIt k ( str, strList ) =
 
 downloadLatexDocument : Model -> ( Model, Cmd Msg )
 downloadLatexDocument model =
+    -- @@@ downloadLatexDocument : Model -> ( Model, Cmd Msg )
     let
         document =
             model.currentDocument
@@ -469,6 +472,7 @@ downloadLatexDocument model =
 
 getImageDataFromList : Model -> Cmd Msg
 getImageDataFromList model =
+    -- @@@ getImageDataFromList : Cmd Msg, loop or tar
     case List.head model.imageUrlList of
         Nothing ->
             let
@@ -482,12 +486,14 @@ getImageDataFromList model =
             in
                 ImageGrabber.downloadTarArchiveCmd [ ( title, content ) ] model.dataList
 
+        -- ImageGrabber.downloadTarArchiveCmd [] model.dataList
         Just url ->
             getImageData url
 
 
 getImageData : String -> Cmd Msg
 getImageData url_ =
+    -- @@@ getImageData : Cmd Msg
     Task.attempt GotImageData (ImageGrabber.getImageTask url_)
         |> Cmd.map DocMsg
 

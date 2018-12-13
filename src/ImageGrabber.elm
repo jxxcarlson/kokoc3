@@ -30,7 +30,7 @@ downloadTarArchiveCmd : List ( String, String ) -> List ( String, Bytes ) -> Cmd
 downloadTarArchiveCmd stringList dataList =
     let
         data =
-            (List.map prepareStringData stringList) ++ (List.map prepareData dataList)
+            (List.map prepareData dataList) ++ (List.map prepareStringData stringList)
 
         archive =
             Tar.encodeFiles data |> encode
