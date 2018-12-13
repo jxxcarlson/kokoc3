@@ -88,6 +88,7 @@ editRecord (BigEditRecord editRecord_ docId_ seed_) =
 
 updateFromDocument : BigEditRecord msg -> Document -> String -> Int -> BigEditRecord msg
 updateFromDocument ber document texMacros seed_ =
+    -- ### updateFromDocument, use MiniLatexTools
     case docId ber == document.id of
         True ->
             BigEditRecord (MiniLatexTools.updateEditRecord (editRecord ber) seed_ texMacros document) document.id seed_

@@ -584,6 +584,7 @@ updateBigEditRecordFull model document =
 
 updateBigEditRecord : Model -> Document -> BigEditRecord Msg
 updateBigEditRecord model document =
+    -- ### RenderFull, RenderIncremental, model.miniLatexRenderMode
     case model.miniLatexRenderMode of
         RenderFull ->
             BigEditRecord.updateFromDocument (BigEditRecord.empty 0 0) document model.texMacros model.seed
