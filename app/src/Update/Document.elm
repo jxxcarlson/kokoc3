@@ -391,6 +391,7 @@ update docMsg model =
 
 exportContentAndImageUrls : Document -> ( String, List String )
 exportContentAndImageUrls document =
+    -- !!! exportContentAndImageUrls, use Export.transform
     document.content |> Export.transform
 
 
@@ -402,19 +403,20 @@ joinContentAndImageUrls ( str1, urlList1 ) ( str2, urlList2 ) =
     ( str2 ++ "\n\n" ++ str1, urlList2 ++ urlList1 )
 
 
-reducer : Document -> ( String, List String ) -> ( String, List String )
-reducer document ( content, urlList ) =
+exportReducer : Document -> ( String, List String ) -> ( String, List String )
+exportReducer document ( content, urlList ) =
+    -- !!! exportReducer, uses Export.transform via exportContentAndImageUrls
     joinContentAndImageUrls (exportContentAndImageUrls document) ( content, urlList )
 
 
-concatenateChildren : DocumentList -> ( String, List String )
-concatenateChildren documentList =
+concatenateChildrenForExport : DocumentList -> ( String, List String )
+concatenateChildrenForExport documentList =
     let
         listOfDocuments =
             List.drop 1 <| DocumentList.documents documentList
     in
         listOfDocuments
-            |> List.foldl reducer ( "", [] )
+            |> List.foldl exportReducer ( "", [] )
 
 
 filterIt : Int -> ( String, List String ) -> ( String, List String )
@@ -439,10 +441,12 @@ downloadLatexDocument model =
         ( documentContent, imageUrlList_ ) =
             case document.docType of
                 Standard ->
+                    -- !!! export standard document
                     exportContentAndImageUrls document
 
                 Master ->
-                    concatenateChildren model.documentList
+                    -- !!! export master document
+                    concatenateChildrenForExport model.documentList
 
         --|> filterIt 2
         imageUrlList =
@@ -454,7 +458,7 @@ downloadLatexDocument model =
             documentContent
                 |> prepend model.texMacros
                 |> prepend (MiniLatexTools.makeDownloadPreamble document)
-                |> LatexHelper.makeDocument
+                |> LatexHelper.makeDocument document.docType
     in
         if List.length imageUrlList == 0 then
             ( model, Download.string documentTitle "application/text" preparedDocumentContent )

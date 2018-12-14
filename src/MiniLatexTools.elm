@@ -1,7 +1,7 @@
 module MiniLatexTools exposing (makePreamble, makeDownloadPreamble, setupEditRecord, updateEditRecord)
 
 import Configuration
-import Document exposing (Document)
+import Document exposing (Document, DocType(..))
 import Html exposing (Html)
 import KVList
 import MiniLatex.Differ exposing (EditRecord)
@@ -38,12 +38,22 @@ makePreamble document =
 
 makeDownloadPreamble : Document -> String
 makeDownloadPreamble document =
-    [ decrementedSetCounterText document.tags
-    , setDocId document.id
-    , setClient
-    , ""
-    ]
-        |> String.join "\n\n"
+    case document.docType of
+        Standard ->
+            [ decrementedSetCounterText document.tags
+            , setDocId document.id
+            , setClient
+            , ""
+            ]
+                |> String.join "\n\n"
+
+        Master ->
+            [ setCounterText document.tags
+            , setDocId document.id
+            , setClient
+            , ""
+            ]
+                |> String.join "\n\n"
 
 
 setupEditRecord : String -> Document -> EditRecord (Html msg)

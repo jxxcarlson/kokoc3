@@ -1,9 +1,62 @@
 module LatexHelper exposing (makeDocument)
 
+import Document exposing (DocType(..))
 
-makeDocument : String -> String
-makeDocument content =
-    latexPreamble ++ "\n\n" ++ content ++ "\n\n\\end{document}"
+
+makeDocument : DocType -> String -> String
+makeDocument docType content =
+    latexPreamble
+        ++ "\n\n"
+        ++ docMacros docType
+        ++ "\n\n\\begin{document}\n\n"
+        ++ content
+        ++ "\n\n\\end{document}\n\n%% END DOCUMENT\n\n"
+
+
+tableOfContents : DocType -> String
+tableOfContents docType =
+    case docType of
+        Standard ->
+            ""
+
+        Master ->
+            "\n\n\\begingroup\n\\parskip3pt\n\\tableofcontents\n\\endgroup\n\n"
+
+
+docMacros : DocType -> String
+docMacros docType =
+    case docType of
+        Standard ->
+            standardDocMacros
+
+        Master ->
+            masterDocMacros
+
+
+masterDocMacros : String
+masterDocMacros =
+    """
+\\newcommand{\\innertableofcontents}[1]{}
+\\newcommand{\\maintableofcontents}{
+  \\begingroup
+  \\parskip3pt
+  \\tableofcontents
+  \\endgroup
+}
+"""
+
+
+standardDocMacros : String
+standardDocMacros =
+    """
+\\newcommand{\\innertableofcontents}[1]{
+  \\begingroup
+  \\parskip3pt
+  \\tableofcontents
+  \\endgroup
+}
+\\newcommand{\\maintableofcontents}{}
+"""
 
 
 latexPreamble =
@@ -87,17 +140,10 @@ latexPreamble =
 \\newtheorem{remark}{Remark}
 
 %% Null commands in MiniLatex
-\\newcommand{\\innertableofcontents}[1]{
-  \\begingroup
-  \\parskip3pt
-  \\tableofcontents
-  \\endgroup
-}
 \\newcommand{\\setdocid}[1]{}   %% Needed?
 \\newcommand{\\setclient}[1]{}  %% Needed?
 
 \\parindent0pt
 \\parskip10pt
 
-\\begin{document}
 """
