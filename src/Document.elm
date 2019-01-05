@@ -58,6 +58,8 @@ type alias Document =
     , authorName : String
     , title : String
     , content : String
+    , sectionNumber : Int
+    , texMacroDocumentId : Int
     , level : Int
     , public : Bool
     , access : AccessDict
@@ -156,6 +158,8 @@ basicDocument =
         "— kNode team"
         "Welcome to kNode Reader"
         Configuration.basicDocumentText
+        0
+        0
         1
         True
         Dict.empty
@@ -203,6 +207,8 @@ documentDecoder =
         |> JPipeline.required "authorName" Decode.string
         |> JPipeline.required "title" Decode.string
         |> JPipeline.required "content" Decode.string
+        |> JPipeline.required "sectionNumber" Decode.int
+        |> JPipeline.required "texMacroDocumentId" Decode.int
         |> JPipeline.required "level" Decode.int
         |> JPipeline.required "public" Decode.bool
         |> JPipeline.required "access" (Decode.dict (Decode.map stringToAccessType Decode.string))
@@ -288,6 +294,8 @@ decodeDocumentFromOutside =
         |> JPipeline.required "authorName" Decode.string
         |> JPipeline.required "title" Decode.string
         |> JPipeline.required "content" Decode.string
+        |> JPipeline.required "sectionNumber" Decode.int
+        |> JPipeline.required "texMacroDocumentId" Decode.int
         |> JPipeline.required "level" Decode.int
         |> JPipeline.required "public" Decode.bool
         |> JPipeline.required "access" (Decode.dict (Decode.map stringToAccessType Decode.string))
@@ -330,6 +338,8 @@ encodeDocument document =
         , ( "author_name", Encode.string <| document.authorName )
         , ( "title", Encode.string <| document.title )
         , ( "content", Encode.string <| document.content )
+        , ( "sectionNumber", Encode.int <| document.sectionNumber )
+        , ( "texMacroDocumentId", Encode.int <| document.texMacroDocumentId )
         , ( "tags", Encode.list Encode.string document.tags )
         , ( "parent_id", Encode.int <| document.parentId )
         , ( "parent_title", Encode.string <| document.parentTitle )
@@ -364,6 +374,8 @@ encodeDocumentForOutside document =
         , ( "authorName", Encode.string <| document.authorName )
         , ( "title", Encode.string <| document.title )
         , ( "content", Encode.string <| document.content )
+        , ( "sectionNumber", Encode.int <| document.sectionNumber )
+        , ( "texMacroDocumentId", Encode.int <| document.texMacroDocumentId )
         , ( "level", Encode.int <| document.level )
         , ( "public", Encode.bool <| document.public )
         , ( "access", Encode.dict identity encodeDocumentAccess document.access )

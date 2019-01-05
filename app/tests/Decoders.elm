@@ -32,8 +32,12 @@ suite =
                             Ok document ->
                                 Just document.title
 
-                            Err _ ->
-                                Nothing
+                            Err err ->
+                                let
+                                    _ =
+                                        Debug.log "ERROR" err
+                                in
+                                    Nothing
                 in
                     Expect.equal (Just sourceDocument.title) decodedDocument
         , test "decodeDocumentFromOutside . encodeDocumentForOutside == id" <|
@@ -50,9 +54,14 @@ suite =
                             Ok document ->
                                 Just document.title
 
-                            Err _ ->
-                                Nothing
+                            Err err ->
+                                let
+                                    _ =
+                                        Debug.log "ERROR" err
+                                in
+                                    Nothing
                 in
                     Expect.equal (Just sourceDocument.title) decodedDocument
-        , todo "Implement another test."
+
+        -- , todo "Implement another test."
         ]
