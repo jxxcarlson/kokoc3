@@ -28,7 +28,7 @@ prepareText texMacros document =
 
 makePreamble : Document -> String
 makePreamble document =
-    [ setCounterText document.tags
+    [ setCounterText document
     , setDocId document.id
     , setClient
     , ""
@@ -40,7 +40,7 @@ makeDownloadPreamble : Document -> String
 makeDownloadPreamble document =
     case document.docType of
         Standard ->
-            [ decrementedSetCounterText document.tags
+            [ decrementedSetCounterText document
             , setDocId document.id
             , setClient
             , ""
@@ -48,7 +48,7 @@ makeDownloadPreamble document =
                 |> String.join "\n\n"
 
         Master ->
-            [ setCounterText document.tags
+            [ setCounterText document
             , setDocId document.id
             , setClient
             , ""
@@ -66,32 +66,14 @@ updateEditRecord editRecord seed texMacros document =
     MiniLatex.updateEditRecord seed editRecord (prepareText texMacros document)
 
 
-setCounterText : List String -> String
-setCounterText tags =
-    let
-        maybeSectionNumber =
-            KVList.intValueForKey "sectionNumber" tags
-    in
-        case maybeSectionNumber of
-            Nothing ->
-                ""
-
-            Just sectionNumber ->
-                "\\setcounter{section}{" ++ String.fromInt (sectionNumber) ++ "}\n\n"
+setCounterText : Document -> String
+setCounterText document =
+    "\\setcounter{section}{" ++ String.fromInt (document.sectionNumber) ++ "}\n\n"
 
 
-decrementedSetCounterText : List String -> String
-decrementedSetCounterText tags =
-    let
-        maybeSectionNumber =
-            KVList.intValueForKey "sectionNumber" tags
-    in
-        case maybeSectionNumber of
-            Nothing ->
-                ""
-
-            Just sectionNumber ->
-                "\\setcounter{section}{" ++ String.fromInt (sectionNumber - 1) ++ "}\n\n"
+decrementedSetCounterText : Document -> String
+decrementedSetCounterText document =
+    "\\setcounter{section}{" ++ String.fromInt (document.sectionNumber - 1) ++ "}\n\n"
 
 
 setDocId : Int -> String

@@ -25,6 +25,7 @@ module DocumentList
         , make
         , nextDocumentList
         , prepend
+        , renumberDocuments
         , retrievDocumentsFromIntList
         , retrievRecentDocumentQueueFromIntList
         , retrievRecentDocumentQueueFromIntListAtSignIn
@@ -512,6 +513,16 @@ loadMasterDocumentWithCurrentSelection maybeUser docId =
             , timeout = Just Configuration.timeout
             , tracker = Nothing
             }
+
+
+renumberDocuments : DocumentList -> DocumentList
+renumberDocuments (DocumentList documentList maybeDocument) =
+    let
+        newDocumentList =
+            documentList
+                |> List.indexedMap (\k doc -> { doc | sectionNumber = k })
+    in
+        (DocumentList newDocumentList maybeDocument)
 
 
 

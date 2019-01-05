@@ -21,6 +21,12 @@ update docListMsg model =
                         currentDocument =
                             DocumentList.getFirst documentList
 
+                        nextDocumentList =
+                            if currentDocument.docType == Master then
+                                DocumentList.renumberDocuments documentList
+                            else
+                                documentList
+
                         ( nextMaybeMasterDocument, loadTexMacrosForMasterDocument ) =
                             case currentDocument.docType of
                                 Standard ->
@@ -30,7 +36,7 @@ update docListMsg model =
                                     ( Just currentDocument, Update.Document.loadTexMacrosForDocument currentDocument model )
                     in
                         ( { model
-                            | documentList = DocumentList.selectFirst documentList
+                            | documentList = DocumentList.selectFirst nextDocumentList
                             , currentDocument = currentDocument
                             , bigEditRecord = Update.Document.updateBigEditRecord model currentDocument
                             , maybeMasterDocument = nextMaybeMasterDocument
@@ -38,7 +44,7 @@ update docListMsg model =
                         , Cmd.batch
                             [ Update.Document.loadTexMacrosForDocument currentDocument model
                             , loadTexMacrosForMasterDocument
-                            , Outside.saveDocumentListToLocalStorage documentList
+                            , Outside.saveDocumentListToLocalStorage nextDocumentList
                             , Update.Document.pushDocument currentDocument
                             ]
                         )
@@ -54,6 +60,12 @@ update docListMsg model =
                         currentDocument =
                             DocumentList.getFirst documentList
 
+                        nextDocumentList =
+                            if currentDocument.docType == Master then
+                                DocumentList.renumberDocuments documentList
+                            else
+                                documentList
+
                         nextMaybeMasterDocument =
                             case currentDocument.docType of
                                 Standard ->
@@ -63,7 +75,7 @@ update docListMsg model =
                                     Just currentDocument
 
                         nextDocumentList_ =
-                            DocumentList.select (Just model.currentDocument) documentList
+                            DocumentList.select (Just model.currentDocument) nextDocumentList
                     in
                         ( { model
                             | documentList = nextDocumentList_
