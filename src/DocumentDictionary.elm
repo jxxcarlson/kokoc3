@@ -115,30 +115,22 @@ putTexMacroDocumentInDictionaryById id maybeTokenString =
 loadTexMacros : Maybe String -> Document -> List String -> DocumentDictionary -> Cmd DocDictMsg
 loadTexMacros maybeTokenString document tagList documentDictionary =
     let
-        maybeTexMacroIdString =
-            Utility.lookUpKeyInTagList "texmacros" tagList
+        id_ =
+            document.texMacroDocumentId
 
         ( texMacrosPresent, id ) =
-            case maybeTexMacroIdString of
-                Nothing ->
-                    ( False, 0 )
-
-                Just idString ->
-                    let
-                        id_ =
-                            String.toInt idString |> Maybe.withDefault 0
-
-                        matches =
-                            matchId id_ "texmacros" documentDictionary
-                    in
-                        ( matches, id_ )
+            if document.texMacroDocumentId == 0 then
+                ( False, 0 )
+            else
+                let
+                    matches =
+                        matchId id_ "texmacros" documentDictionary
+                in
+                    ( matches, id_ )
     in
         case ( texMacrosPresent, id ) of
             ( False, 0 ) ->
                 Cmd.none
 
-            ( False, id_ ) ->
-                putTexMacroDocumentInDictionaryById id_ maybeTokenString
-
-            ( True, id_ ) ->
-                putTexMacroDocumentInDictionaryById id_ maybeTokenString
+            ( _, idx ) ->
+                putTexMacroDocumentInDictionaryById idx maybeTokenString
