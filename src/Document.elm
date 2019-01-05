@@ -13,11 +13,12 @@ module Document
         , createDocumentTask
         , saveDocumentTask
         , decodeDocumentFromOutside
-        , deleteDocument
         , documentDecoder
         , documentRecordDecoder
+        , encodeDocument
         , encodeDocumentForOutside
         , encodeString
+        , deleteDocument
         , getDocumentById
         , getExportLatex
         , newDocument
