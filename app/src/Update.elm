@@ -396,10 +396,6 @@ update msg model =
 
                         texMacros =
                             texdoc.content
-
-                        -- bigEditRecord = BigEditRecord.Update.Document.updateBigEditRecord model document
-                        -- bigEditRecord = BigEditRecord.fromDocument model.currentDocument texmacros
-                        -- bigEditRecord = BigEditRecord.fromDocument model.currentDocument documentRecord.document.content
                     in
                         ( { model
                             | documentDictionary = DocumentDictionary.put "texmacros" texdoc dict

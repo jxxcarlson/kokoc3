@@ -120,6 +120,7 @@ type TextType
 
 type DocMsg
     = AcceptDocumenTitle String
+    | AcceptTexMacroId String
     | AcceptDocumentTagString String
     | ReceiveDocument (Result Http.Error DocumentRecord)
     | NewDocumentCreated Int (Result Http.Error DocumentRecord)
@@ -338,8 +339,8 @@ encodeDocument document =
         , ( "author_name", Encode.string <| document.authorName )
         , ( "title", Encode.string <| document.title )
         , ( "content", Encode.string <| document.content )
-        , ( "sectionNumber", Encode.int <| document.sectionNumber )
-        , ( "texMacroDocumentId", Encode.int <| document.texMacroDocumentId )
+        , ( "section_number", Encode.int <| document.sectionNumber )
+        , ( "tex_macro_document_id", Encode.int <| document.texMacroDocumentId )
         , ( "tags", Encode.list Encode.string document.tags )
         , ( "parent_id", Encode.int <| document.parentId )
         , ( "parent_title", Encode.string <| document.parentTitle )

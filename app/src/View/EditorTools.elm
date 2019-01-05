@@ -122,11 +122,23 @@ toolsPanel model =
         , deleteDocumentButton model
         , masterDocPanel model
         , documentTitleInput model
+        , texMacroIdInput model
         , documentPanels model
         , tagInputPane model (px 250) (px 100) "Tags"
         , versionsPanel model
         , sharingInputPane model (px 250) (px 100) "Sharing"
         ]
+
+
+texMacroIdInput : Model -> Element Msg
+texMacroIdInput model =
+    Element.map DocMsg <|
+        Input.text [ htmlAttribute (Html.Attributes.id "texmacroid-input"), width (px 80), height (px 30), Font.color black ]
+            { text = String.fromInt model.currentDocument.texMacroDocumentId
+            , placeholder = Nothing
+            , onChange = \str -> AcceptTexMacroId str
+            , label = Input.labelLeft [ Font.size 14, Font.bold ] (Element.el [ moveDown 8, paddingEach { top = 0, left = 0, right = 8, bottom = 0 } ] (text "TexMacro Id"))
+            }
 
 
 versionsPanel model =

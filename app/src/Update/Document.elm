@@ -85,6 +85,24 @@ update docMsg model =
             in
                 ( { model | documentTitle = str, currentDocument = nextDocument, currentDocumentDirty = True }, Cmd.none )
 
+        AcceptTexMacroId str ->
+            let
+                currentDocument =
+                    model.currentDocument
+
+                id =
+                    case String.toInt str of
+                        Nothing ->
+                            0
+
+                        Just id_ ->
+                            id_
+
+                nextDocument =
+                    { currentDocument | texMacroDocumentId = id }
+            in
+                ( { model | currentDocument = nextDocument, currentDocumentDirty = True }, Cmd.none )
+
         AcceptDocumentTagString str ->
             let
                 currentDocument =
