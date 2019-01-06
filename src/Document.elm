@@ -60,7 +60,7 @@ type alias Document =
     , content : String
     , sectionNumber : Int
     , texMacroDocumentId : Int
-    , coverArt : String
+    , coverArtUrl : String
     , level : Int
     , public : Bool
     , access : AccessDict
@@ -345,7 +345,7 @@ encodeDocument document =
         , ( "content", Encode.string <| document.content )
         , ( "section_number", Encode.int <| document.sectionNumber )
         , ( "tex_macro_document_id", Encode.int <| document.texMacroDocumentId )
-        , ( "cover_art", Encode.string <| document.coverArt )
+        , ( "cover_art", Encode.string <| document.coverArtUrl )
         , ( "tags", Encode.list Encode.string document.tags )
         , ( "parent_id", Encode.int <| document.parentId )
         , ( "parent_title", Encode.string <| document.parentTitle )
@@ -382,7 +382,7 @@ encodeDocumentForOutside document =
         , ( "content", Encode.string <| document.content )
         , ( "sectionNumber", Encode.int <| document.sectionNumber )
         , ( "texMacroDocumentId", Encode.int <| document.texMacroDocumentId )
-        , ( "coverArt", Encode.string <| document.coverArt )
+        , ( "coverArtUrl", Encode.string <| document.coverArtUrl )
         , ( "level", Encode.int <| document.level )
         , ( "public", Encode.bool <| document.public )
         , ( "access", Encode.dict identity encodeDocumentAccess document.access )

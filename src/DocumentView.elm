@@ -190,7 +190,7 @@ viewChildren document =
 
 viewCoverArt : Document -> Element DocViewMsg
 viewCoverArt document =
-    Element.image [ width fill ] { src = document.coverArt, description = "Cover Art" }
+    Element.image [ width fill ] { src = document.coverArtUrl, description = "Cover Art" }
 
 
 getAuthorsDocumentsTitleButton_ : Length -> Document -> Element Msg
