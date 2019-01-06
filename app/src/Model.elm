@@ -106,6 +106,8 @@ type alias Model =
     , blurb : String
     , emailSubject : String
     , emailText : String
+    , zone : Time.Zone
+    , time : Time.Posix
 
     -- SEARCH
     , searchQueryString : String
@@ -238,6 +240,9 @@ type Msg
     | ToggleToolMenu
     | UserClicksOutsideSearchBox Bool
     | SetFocusOnSearchBox (Result Dom.Error ())
+    | Tick Time.Posix
+    | NewTime Time.Posix
+    | AdjustTimeZone Time.Zone
 
 
 initialModel : String -> Int -> Int -> Document -> Model
@@ -309,6 +314,8 @@ initialModel locationHref windowWidth windowHeight document =
     , maybeBytes = Nothing
     , urlList = []
     , dataList = []
+    , zone = Time.utc
+    , time = Time.millisToPosix 0
     }
 
 

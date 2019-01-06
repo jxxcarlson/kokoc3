@@ -50,6 +50,8 @@ init flags =
         , getTimeInOneSecond
         , Task.perform GetViewport Dom.getViewport
         , Random.generate NewSeed (Random.int 1 10000)
+        , Task.perform AdjustTimeZone Time.here
+        , Task.perform NewTime Time.now
         ]
     )
 
@@ -71,4 +73,5 @@ subscriptions model =
         , Sub.map KeyMsg Keyboard.subscriptions
         , onUrlChange UrlChanged
         , imageRead ImageRead
+        , Time.every 10000 Tick
         ]

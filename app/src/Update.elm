@@ -796,6 +796,22 @@ update msg model =
         DoFullRender ->
             Update.Document.doFullRender model
 
+        Tick newTime ->
+            ( model, Cmd.batch [ getNewTime ] )
+
+        NewTime newTime ->
+            ( { model | time = newTime }, Cmd.none )
+
+        AdjustTimeZone newZone ->
+            ( { model | zone = newZone }
+            , Cmd.none
+            )
+
+
+getNewTime : Cmd Msg
+getNewTime =
+    Task.perform NewTime Time.now
+
 
 
 -- UPDATE END

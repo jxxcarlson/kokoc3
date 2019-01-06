@@ -1,8 +1,29 @@
 -- module Utility exposing(replaceIf, toggleList, remove, softBreak, softBreakAlt)
 
 
-module Utility exposing (findTag, flattenList, flattenListList, getEnclosedText, listDeleteAt, listInsertAt, lookUpKeyInTagList, remove, replaceIf, softBreak, softBreakAlt, softBreakAltAux, softBreakRegexp, toggleList, updateIf)
+module Utility
+    exposing
+        ( findTag
+        , flattenList
+        , flattenListList
+        , getEnclosedText
+        , listDeleteAt
+        , listInsertAt
+        , lookUpKeyInTagList
+        , remove
+        , replaceIf
+        , softBreak
+        , softBreakAlt
+        , softBreakAltAux
+        , softBreakRegexp
+        , toggleList
+        , toUtcString
+        , toLocalTimeString
+        , toLocalHourMinuteString
+        , updateIf
+        )
 
+import Time
 import Element
 import Html.Attributes as HA
 import Regex
@@ -38,7 +59,6 @@ updateIf predicate update list =
         (\item ->
             if predicate item then
                 update item
-
             else
                 item
         )
@@ -56,7 +76,6 @@ remove x xs =
         y :: ys ->
             if x == y then
                 ys
-
             else
                 y :: remove x ys
 
@@ -68,7 +87,6 @@ toggleList : a -> List a -> List a
 toggleList x xs =
     if List.member x xs then
         remove x xs
-
     else
         x :: xs
 
@@ -77,7 +95,6 @@ softBreak : Int -> String -> List String
 softBreak width string =
     if width <= 0 then
         []
-
     else
         string
             |> Regex.find (softBreakRegexp width)
@@ -88,7 +105,6 @@ softBreakAltAux : Int -> String -> List String
 softBreakAltAux width string =
     if String.length string < width then
         [ string ]
-
     else
         softBreak width string
 
@@ -112,11 +128,10 @@ flattenList stringList =
         n =
             List.length stringList
     in
-    if n < 2 then
-        List.head stringList |> Maybe.withDefault ""
-
-    else
-        stringList |> String.join "\n"
+        if n < 2 then
+            List.head stringList |> Maybe.withDefault ""
+        else
+            stringList |> String.join "\n"
 
 
 softBreakRegexp : Int -> Regex.Regex
@@ -130,7 +145,6 @@ softBreakRegexp width =
 > foo = [0, 1, 2, 3, 4, 5, 6]
 > listInsertAt 3 111 foo
 > [0,1,2,111,3,4,5,6]
-
 -}
 listInsertAt : Int -> a -> List a -> List a
 listInsertAt k item list =
@@ -151,9 +165,58 @@ getEnclosedText startDelimiter endDelimiter str =
         lastIndex =
             String.indexes endDelimiter str |> List.head
     in
-    case ( firstIndex, lastIndex ) of
-        ( Just i, Just j ) ->
-            String.slice (i + 1) j str
+        case ( firstIndex, lastIndex ) of
+            ( Just i, Just j ) ->
+                String.slice (i + 1) j str
 
-        _ ->
-            ""
+            _ ->
+                ""
+
+
+toUtcString : Time.Posix -> String
+toUtcString time =
+    toLocalTimeString Time.utc time
+
+
+toLocalTimeString : Time.Zone -> Time.Posix -> String
+toLocalTimeString zone time =
+    (String.fromInt (Time.toHour zone time) |> String.padLeft 2 '0')
+        ++ ":"
+        ++ (String.fromInt (Time.toMinute zone time) |> String.padLeft 2 '0')
+        ++ ":"
+        ++ (String.fromInt (Time.toSecond zone time) |> String.padLeft 2 '0')
+
+
+toLocalHourMinuteString : Time.Zone -> Time.Posix -> String
+toLocalHourMinuteString zone time =
+    let
+        hours =
+            Time.toHour zone time
+
+        minutes =
+            Time.toMinute zone time
+
+        seconds =
+            Time.toSecond zone time
+
+        minutes2 =
+            if seconds > 30 then
+                minutes + 1
+            else
+                minutes
+
+        hours2 =
+            if minutes > 60 then
+                hours + 1
+            else
+                hours
+
+        minutes3 =
+            if minutes2 > 60 then
+                0
+            else
+                minutes
+    in
+        (String.fromInt hours2 |> String.padLeft 2 '0')
+            ++ ":"
+            ++ (String.fromInt minutes3 |> String.padLeft 2 '0')

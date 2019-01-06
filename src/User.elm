@@ -51,6 +51,7 @@ type alias UserRecord =
     , id : Int
     , token : Token
     , username : String
+    , exp : Int
     }
 
 
@@ -142,7 +143,7 @@ type Token
 
 
 type alias TokenClaims =
-    { username : String, userId : Int }
+    { username : String, userId : Int, exp : Int }
 
 
 type ValidatedTokenClaims
@@ -219,6 +220,7 @@ jwtDecoder =
     Decode.succeed TokenClaims
         |> JPipeline.required "username" Decode.string
         |> JPipeline.required "user_id" Decode.int
+        |> JPipeline.required "exp" Decode.int
 
 
 replyDecoder : Decoder String
@@ -229,11 +231,12 @@ replyDecoder =
 decodeUserFromOutside : Decoder User
 decodeUserFromOutside =
     Decode.map User <|
-        Decode.map4 UserRecord
+        Decode.map5 UserRecord
             (field "email" string)
             (field "id" int)
             (Decode.map Token (field "token" string))
             (field "username" string)
+            (field "exp" int)
 
 
 bigUserRecordDecoder : Decoder BigUserRecord
@@ -340,7 +343,12 @@ maybeUserFromEmailAndToken email_ token =
         Ok value ->
             let
                 userRecord =
-                    { email = email_, id = value.userId, token = Token token, username = value.username }
+                    { email = email_
+                    , id = value.userId
+                    , token = Token token
+                    , username = value.username
+                    , exp = value.exp
+                    }
             in
                 Just (User userRecord)
 

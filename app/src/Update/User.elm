@@ -5,7 +5,7 @@ import Queue
 import User exposing (UserMsg(..))
 import Update.HttpError as HttpError
 import Update.Outside as Outside
-import Update.Time
+import Utility
 import DocumentList
 import SystemDocument
 import Document
@@ -45,7 +45,7 @@ update userMsg model =
                             "Not signed in"
 
                         False ->
-                            "UTC " ++ Update.Time.toUtcString t
+                            "UTC " ++ Utility.toUtcString t
             in
                 case ( sessionExpired, model.maybeCurrentUser ) of
                     ( True, Just _ ) ->

@@ -3,6 +3,7 @@ module View.View exposing (view)
 import AppUtility
 import BigEditRecord
 import Browser.Dom exposing (Viewport)
+import Utility
 import Configuration
 import Document exposing (DocMsg(..), DocType(..), Document, TextType(..))
 import DocumentDictionary
@@ -134,6 +135,7 @@ footer model =
         -- , Element.map Bozo Bozo.View.buttonDown
         -- , Bozo.View.view model.bozo
         --  , Element.el [] (text <| "TMX: " ++ (String.fromInt <| String.length <| model.texMacros))
+        , Element.el [] (text <| Utility.toLocalHourMinuteString model.zone model.time)
         ]
 
 

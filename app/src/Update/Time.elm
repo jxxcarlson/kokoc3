@@ -25,12 +25,3 @@ getTimeInOneSecond =
 getBigUserInOneSecond =
     Process.sleep 1000
         |> Task.perform (\_ -> Time.now)
-
-
-toUtcString : Time.Posix -> String
-toUtcString time =
-    (String.fromInt (Time.toHour Time.utc time) |> String.padLeft 2 '0')
-        ++ ":"
-        ++ (String.fromInt (Time.toMinute Time.utc time) |> String.padLeft 2 '0')
-        ++ ":"
-        ++ (String.fromInt (Time.toSecond Time.utc time) |> String.padLeft 2 '0')
