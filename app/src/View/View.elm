@@ -136,7 +136,18 @@ footer model =
         -- , Bozo.View.view model.bozo
         --  , Element.el [] (text <| "TMX: " ++ (String.fromInt <| String.length <| model.texMacros))
         , Element.el [] (text <| Utility.toLocalHourMinuteString model.zone model.time)
+        , Element.el [] (text <| "Session expires: " ++ Utility.toLocalHourMinuteString model.zone (userExpiration model.maybeCurrentUser))
         ]
+
+
+userExpiration : Maybe User -> Time.Posix
+userExpiration maybeUser =
+    case maybeUser of
+        Nothing ->
+            Time.millisToPosix 0
+
+        Just user ->
+            User.expAsPosix user
 
 
 viewportInfo : Model -> String

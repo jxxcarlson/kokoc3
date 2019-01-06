@@ -50,8 +50,8 @@ init flags =
         , getTimeInOneSecond
         , Task.perform GetViewport Dom.getViewport
         , Random.generate NewSeed (Random.int 1 10000)
-        , Task.perform AdjustTimeZone Time.here
         , Task.perform NewTime Time.now
+        , Task.perform AdjustTimeZone Time.here
         ]
     )
 

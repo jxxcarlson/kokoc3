@@ -1,5 +1,7 @@
 module Update.User exposing (..)
 
+import Time
+import Task
 import Model exposing (Model, Msg(..), ErrorResponse(..), initialModel, DocumentListSource(..))
 import Queue
 import User exposing (UserMsg(..))
@@ -230,6 +232,7 @@ signIn model =
                 , Cmd.batch
                     [ Cmd.map UserMsg (User.getTokenCmd model.email model.password)
                     , Outside.eraseLocalStorage
+                    , Task.perform AdjustTimeZone Time.here
                     ]
                 )
 

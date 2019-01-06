@@ -7,6 +7,7 @@ module User
         , decodeUserFromOutside
         , email
         , encodeUserForOutside
+        , expAsPosix
         , getBigUserRecord
         , getBigUserRecordAtSignIn
         , getToken
@@ -78,6 +79,11 @@ email (User user) =
 exp : User -> Int
 exp (User user) =
     user.exp
+
+
+expAsPosix : User -> Posix
+expAsPosix (User user) =
+    user.exp |> Time.millisToPosix
 
 
 userId : User -> Int
