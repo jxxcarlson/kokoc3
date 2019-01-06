@@ -190,11 +190,7 @@ viewChildren document =
 
 viewCoverArt : Document -> Element DocViewMsg
 viewCoverArt document =
-    let
-        coverArtUrl =
-            KVList.stringValueForKey "coverArt" document.tags |> Maybe.withDefault Configuration.coverArtUrl
-    in
-        Element.image [ width fill ] { src = coverArtUrl, description = "Cover Art" }
+    Element.image [ width fill ] { src = document.coverArt, description = "Cover Art" }
 
 
 getAuthorsDocumentsTitleButton_ : Length -> Document -> Element Msg

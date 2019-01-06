@@ -60,6 +60,7 @@ type alias Document =
     , content : String
     , sectionNumber : Int
     , texMacroDocumentId : Int
+    , coverArt : String
     , level : Int
     , public : Bool
     , access : AccessDict
@@ -161,6 +162,7 @@ basicDocument =
         Configuration.basicDocumentText
         0
         0
+        ""
         1
         True
         Dict.empty
@@ -210,6 +212,7 @@ documentDecoder =
         |> JPipeline.required "content" Decode.string
         |> JPipeline.required "sectionNumber" Decode.int
         |> JPipeline.required "texMacroDocumentId" Decode.int
+        |> JPipeline.required "coverArt" Decode.string
         |> JPipeline.required "level" Decode.int
         |> JPipeline.required "public" Decode.bool
         |> JPipeline.required "access" (Decode.dict (Decode.map stringToAccessType Decode.string))
@@ -297,6 +300,7 @@ decodeDocumentFromOutside =
         |> JPipeline.required "content" Decode.string
         |> JPipeline.required "sectionNumber" Decode.int
         |> JPipeline.required "texMacroDocumentId" Decode.int
+        |> JPipeline.required "coverArt" Decode.string
         |> JPipeline.required "level" Decode.int
         |> JPipeline.required "public" Decode.bool
         |> JPipeline.required "access" (Decode.dict (Decode.map stringToAccessType Decode.string))
@@ -341,6 +345,7 @@ encodeDocument document =
         , ( "content", Encode.string <| document.content )
         , ( "section_number", Encode.int <| document.sectionNumber )
         , ( "tex_macro_document_id", Encode.int <| document.texMacroDocumentId )
+        , ( "cover_art", Encode.string <| document.coverArt )
         , ( "tags", Encode.list Encode.string document.tags )
         , ( "parent_id", Encode.int <| document.parentId )
         , ( "parent_title", Encode.string <| document.parentTitle )
@@ -377,6 +382,7 @@ encodeDocumentForOutside document =
         , ( "content", Encode.string <| document.content )
         , ( "sectionNumber", Encode.int <| document.sectionNumber )
         , ( "texMacroDocumentId", Encode.int <| document.texMacroDocumentId )
+        , ( "coverArt", Encode.string <| document.coverArt )
         , ( "level", Encode.int <| document.level )
         , ( "public", Encode.bool <| document.public )
         , ( "access", Encode.dict identity encodeDocumentAccess document.access )
