@@ -75,6 +75,11 @@ email (User user) =
     user.email
 
 
+exp : User -> Int
+exp (User user) =
+    user.exp
+
+
 userId : User -> Int
 userId (User user) =
     user.id
@@ -286,6 +291,7 @@ encodeUserForOutside user =
         , ( "id", Encode.int <| userId user )
         , ( "token", Encode.string <| getTokenString user )
         , ( "username", Encode.string <| username user )
+        , ( "exp", Encode.int <| exp user )
         ]
 
 
