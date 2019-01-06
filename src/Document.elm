@@ -122,6 +122,7 @@ type TextType
 type DocMsg
     = AcceptDocumenTitle String
     | AcceptTexMacroId String
+    | AcceptCoverArtUrl String
     | AcceptDocumentTagString String
     | ReceiveDocument (Result Http.Error DocumentRecord)
     | NewDocumentCreated Int (Result Http.Error DocumentRecord)

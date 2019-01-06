@@ -122,6 +122,7 @@ toolsPanel model =
         , deleteDocumentButton model
         , masterDocPanel model
         , documentTitleInput model
+        , coverArtUrlInput model
         , texMacroIdInput model
         , documentPanels model
         , tagInputPane model (px 250) (px 100) "Tags"
@@ -132,13 +133,34 @@ toolsPanel model =
 
 texMacroIdInput : Model -> Element Msg
 texMacroIdInput model =
-    Element.map DocMsg <|
-        Input.text [ htmlAttribute (Html.Attributes.id "texmacroid-input"), width (px 80), height (px 30), Font.color black ]
-            { text = String.fromInt model.currentDocument.texMacroDocumentId
-            , placeholder = Nothing
-            , onChange = \str -> AcceptTexMacroId str
-            , label = Input.labelLeft [ Font.size 14, Font.bold ] (Element.el [ moveDown 8, paddingEach { top = 0, left = 0, right = 8, bottom = 0 } ] (text "TexMacro Id"))
-            }
+    case model.currentDocument.textType of
+        MiniLatex ->
+            Element.map DocMsg <|
+                Input.text [ htmlAttribute (Html.Attributes.id "texmacroid-input"), width (px 80), height (px 30), Font.color black ]
+                    { text = String.fromInt model.currentDocument.texMacroDocumentId
+                    , placeholder = Nothing
+                    , onChange = \str -> AcceptTexMacroId str
+                    , label = Input.labelLeft [ Font.size 14, Font.bold ] (Element.el [ moveDown 8, paddingEach { top = 0, left = 0, right = 8, bottom = 0 } ] (text "TexMacro Id"))
+                    }
+
+        _ ->
+            Element.none
+
+
+coverArtUrlInput : Model -> Element Msg
+coverArtUrlInput model =
+    case model.currentDocument.docType of
+        Master ->
+            Element.map DocMsg <|
+                Input.text [ htmlAttribute (Html.Attributes.id "coverArt-input"), width (px 145), height (px 30), Font.color black ]
+                    { text = model.currentDocument.coverArtUrl
+                    , placeholder = Nothing
+                    , onChange = \str -> AcceptCoverArtUrl str
+                    , label = Input.labelLeft [ Font.size 14, Font.bold ] (Element.el [ moveDown 8, paddingEach { top = 0, left = 0, right = 8, bottom = 0 } ] (text "Cover art URL"))
+                    }
+
+        _ ->
+            Element.none
 
 
 versionsPanel model =

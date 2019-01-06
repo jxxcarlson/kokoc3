@@ -103,6 +103,16 @@ update docMsg model =
             in
                 ( { model | currentDocument = nextDocument, currentDocumentDirty = True }, Cmd.none )
 
+        AcceptCoverArtUrl str ->
+            let
+                currentDocument =
+                    model.currentDocument
+
+                nextDocument =
+                    { currentDocument | coverArtUrl = str }
+            in
+                ( { model | currentDocument = nextDocument, currentDocumentDirty = True }, Cmd.none )
+
         AcceptDocumentTagString str ->
             let
                 currentDocument =
