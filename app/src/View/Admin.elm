@@ -1,4 +1,4 @@
-module View.Admin exposing (dateString, view)
+module View.Admin exposing (view)
 
 import Configuration
 import Element exposing (..)
@@ -13,6 +13,7 @@ import Json.Encode as Encode
 import Model exposing (Model, Msg(..))
 import Time exposing (Month(..), Posix, utc)
 import User exposing (BigUser, Token, User, UserMsg(..), readToken, stringFromMaybeToken)
+import Utility
 import View.Widget as Widget exposing (..)
 
 
@@ -49,12 +50,12 @@ showUserCount model =
         n =
             List.length model.userList
     in
-    case n == 0 of
-        True ->
-            Element.none
+        case n == 0 of
+            True ->
+                Element.none
 
-        False ->
-            Element.el [] (Element.text <| "Users: " ++ String.fromInt n)
+            False ->
+                Element.el [] (Element.text <| "Users: " ++ String.fromInt n)
 
 
 adminCenterColumn : Int -> Int -> Model -> Element Msg
@@ -89,7 +90,7 @@ viewUsers userList =
               , width = px 90
               , view =
                     \user ->
-                        Element.text (dateString user.created)
+                        Element.text (Utility.dateString Time.utc user.created)
               }
             , { header = Element.el [ Font.bold ] (Element.text "Username")
               , width = px 110
@@ -123,61 +124,6 @@ viewUsers userList =
               }
             ]
         }
-
-
-dateString : Posix -> String
-dateString p =
-    let
-        y =
-            Time.toYear utc p |> String.fromInt
-
-        m =
-            Time.toMonth utc p |> stringFromMonth
-
-        d =
-            Time.toDay utc p |> String.fromInt
-    in
-    m ++ " " ++ d ++ ", " ++ y
-
-
-stringFromMonth : Time.Month -> String
-stringFromMonth month =
-    case month of
-        Jan ->
-            "Jan"
-
-        Feb ->
-            "Feb"
-
-        Mar ->
-            "Mar"
-
-        Apr ->
-            "Apr"
-
-        May ->
-            "May"
-
-        Jun ->
-            "Jun"
-
-        Jul ->
-            "Jul"
-
-        Aug ->
-            "Aug"
-
-        Sep ->
-            "Sep"
-
-        Oct ->
-            "Oct"
-
-        Nov ->
-            "Nov"
-
-        Dec ->
-            "Dec"
 
 
 boolToString : Bool -> String

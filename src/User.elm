@@ -8,6 +8,7 @@ module User
         , email
         , encodeUserForOutside
         , expAsPosix
+        , exp
         , getBigUserRecord
         , getBigUserRecordAtSignIn
         , getToken

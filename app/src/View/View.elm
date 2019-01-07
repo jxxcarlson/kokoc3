@@ -135,19 +135,108 @@ footer model =
         -- , Element.map Bozo Bozo.View.buttonDown
         -- , Bozo.View.view model.bozo
         --  , Element.el [] (text <| "TMX: " ++ (String.fromInt <| String.length <| model.texMacros))
-        , Element.el [] (text <| Utility.toLocalHourMinuteString model.zone model.time)
-        , Element.el [] (text <| "Session expires: " ++ Utility.toLocalHourMinuteString model.zone (userExpiration model.maybeCurrentUser))
+        -- , Element.el [] (text <| timeString model.zone model.time)
+        , Element.el [] (text <| expiratonTimeString model.zone model.maybeCurrentUser)
+        , expirationTimeIntervalElement model.time model.maybeCurrentUser
+
+        -- , Element.el [] (text <| "E: " ++ (String.fromInt (expirationInt model.time model.maybeCurrentUser)))
         ]
 
 
-userExpiration : Maybe User -> Time.Posix
-userExpiration maybeUser =
-    case maybeUser of
+uname model =
+    case model.maybeCurrentUser of
         Nothing ->
-            Time.millisToPosix 0
+            "No user"
 
         Just user ->
-            User.expAsPosix user
+            User.username user
+
+
+timeString : Time.Zone -> Time.Posix -> String
+timeString zone time =
+    Utility.dateString zone time ++ " " ++ (time |> Utility.toLocalTimeString zone)
+
+
+expirationTimeIntervalElement : Time.Posix -> Maybe User -> Element msg
+expirationTimeIntervalElement currentTime maybeUser =
+    let
+        t =
+            expirationIntervalMillis currentTime maybeUser
+
+        minutes =
+            round <| (toFloat t) / (1000 * 60)
+
+        hours =
+            (toFloat t) / (1000 * 60 * 60)
+    in
+        if minutes > 60 then
+            Element.el [] (text <| "(" ++ String.fromFloat (round2 hours) ++ " hrs)")
+        else
+            Element.el [ Font.color (rgb 255 0 0) ] (text <| "(" ++ (minutes |> String.fromInt) ++ " min)")
+
+
+expiratonTimeString : Time.Zone -> Maybe User -> String
+expiratonTimeString zone maybeUser =
+    case maybeUser of
+        Nothing ->
+            "No user"
+
+        Just user ->
+            let
+                expiration =
+                    (User.exp user)
+                        |> (\t -> t * 1000)
+                        |> Time.millisToPosix
+            in
+                "Session expires: " ++ Utility.shortDateString zone expiration ++ " " ++ (expiration |> Utility.toLocalHourMinuteString zone)
+
+
+expirationIntervalMillis : Time.Posix -> Maybe User -> Int
+expirationIntervalMillis currentTime maybeUser =
+    case maybeUser of
+        Nothing ->
+            -1
+
+        Just user ->
+            let
+                expirationMillis =
+                    (User.exp user) * 1000
+
+                currentTimeMillis =
+                    Time.posixToMillis currentTime
+            in
+                expirationMillis - currentTimeMillis
+
+
+expirationIntervalString : Time.Posix -> Maybe User -> String
+expirationIntervalString currentTime maybeUser =
+    let
+        t =
+            expirationIntervalMillis currentTime maybeUser
+
+        minutes =
+            round <| (toFloat t) / (1000 * 60)
+
+        hours =
+            (toFloat t) / (1000 * 60 * 60)
+    in
+        if minutes > 60 then
+            String.fromFloat (round2 hours) ++ " hours"
+        else
+            (minutes |> String.fromInt) ++ " min"
+
+
+round2 : Float -> Float
+round2 x =
+    x
+        |> (\u -> 10 * u)
+        |> round
+        |> toFloat
+        |> (\u -> u / 10)
+
+
+
+-- 60 * 60 * 1000
 
 
 viewportInfo : Model -> String

@@ -3,7 +3,8 @@
 
 module Utility
     exposing
-        ( findTag
+        ( dateString
+        , findTag
         , flattenList
         , flattenListList
         , getEnclosedText
@@ -12,6 +13,7 @@ module Utility
         , lookUpKeyInTagList
         , remove
         , replaceIf
+        , shortDateString
         , softBreak
         , softBreakAlt
         , softBreakAltAux
@@ -21,6 +23,7 @@ module Utility
         , toLocalTimeString
         , toLocalHourMinuteString
         , updateIf
+        , weekDayString
         )
 
 import Time
@@ -220,3 +223,95 @@ toLocalHourMinuteString zone time =
         (String.fromInt hours2 |> String.padLeft 2 '0')
             ++ ":"
             ++ (String.fromInt minutes3 |> String.padLeft 2 '0')
+
+
+weekDayString : Time.Zone -> Time.Posix -> String
+weekDayString zone time =
+    case (Time.toWeekday zone time) of
+        Time.Mon ->
+            "Mon"
+
+        Time.Tue ->
+            "Tue"
+
+        Time.Wed ->
+            "Wed"
+
+        Time.Thu ->
+            "Thu"
+
+        Time.Fri ->
+            "Fri"
+
+        Time.Sat ->
+            "Sat"
+
+        Time.Sun ->
+            "Sun"
+
+
+dateString : Time.Zone -> Time.Posix -> String
+dateString zone time =
+    let
+        y =
+            Time.toYear zone time |> String.fromInt
+
+        m =
+            Time.toMonth zone time |> stringFromMonth
+
+        d =
+            Time.toDay zone time |> String.fromInt
+    in
+        m ++ " " ++ d ++ ", " ++ y
+
+
+shortDateString : Time.Zone -> Time.Posix -> String
+shortDateString zone time =
+    let
+        m =
+            Time.toMonth zone time |> stringFromMonth
+
+        d =
+            Time.toDay zone time |> String.fromInt
+    in
+        m ++ " " ++ d
+
+
+stringFromMonth : Time.Month -> String
+stringFromMonth month =
+    case month of
+        Time.Jan ->
+            "Jan"
+
+        Time.Feb ->
+            "Feb"
+
+        Time.Mar ->
+            "Mar"
+
+        Time.Apr ->
+            "Apr"
+
+        Time.May ->
+            "May"
+
+        Time.Jun ->
+            "Jun"
+
+        Time.Jul ->
+            "Jul"
+
+        Time.Aug ->
+            "Aug"
+
+        Time.Sep ->
+            "Sep"
+
+        Time.Oct ->
+            "Oct"
+
+        Time.Nov ->
+            "Nov"
+
+        Time.Dec ->
+            "Dec"
