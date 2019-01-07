@@ -47,7 +47,7 @@ update userMsg model =
                             "Not signed in"
 
                         False ->
-                            "UTC " ++ Utility.toUtcString t
+                            Utility.toLocalHourMinuteString model.zone t
             in
                 case ( sessionExpired, model.maybeCurrentUser ) of
                     ( True, Just _ ) ->
