@@ -129,8 +129,7 @@ footer model =
         , Element.el [] (text <| Configuration.client)
 
         -- , Element.el [] (text <| "access: " ++ (Document.accessDictToString model.currentDocument.access))
-        , Element.el [] (text <| viewportInfo model)
-
+        -- , Element.el [] (text <| viewportInfo model)
         -- , Element.map Bozo Bozo.View.buttonUp
         -- , Element.map Bozo Bozo.View.buttonDown
         -- , Bozo.View.view model.bozo
