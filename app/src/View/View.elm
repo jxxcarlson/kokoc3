@@ -120,7 +120,8 @@ footer model =
         [ Element.el [ width (px 240), Font.family [ Font.typeface "Courier", Font.monospace ] ] (text model.message)
         , Element.el [ documentDirtyIndicator model, padding 5 ] (text ("id " ++ String.fromInt model.currentDocument.id))
         , Element.el [] (text <| docInfo model.currentDocument)
-        , testButton model
+
+        --  testButton model
         , printDocumentButton model
         , exportDocumentlLink model
         , getAuthorsDocumentsButton (px 110) model
@@ -171,7 +172,7 @@ expirationTimeIntervalElement currentTime maybeUser =
         if minutes > 60 then
             Element.el [] (text <| "(" ++ String.fromFloat (round2 hours) ++ " hrs)")
         else
-            Element.el [ Font.color (rgb 255 0 0) ] (text <| "(" ++ (minutes |> String.fromInt) ++ " min)")
+            Element.el [ Font.bold, Font.color (rgb 255 0 0) ] (text <| "(" ++ (minutes |> String.fromInt) ++ " min)")
 
 
 expiratonTimeString : Time.Zone -> Maybe User -> String
