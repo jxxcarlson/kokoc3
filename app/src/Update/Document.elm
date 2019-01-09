@@ -454,7 +454,6 @@ filterIt k ( str, strList ) =
 
 downloadLatexDocument : Model -> ( Model, Cmd Msg )
 downloadLatexDocument model =
-    -- @@@ downloadLatexDocument : Model -> ( Model, Cmd Msg )
     let
         document =
             model.currentDocument
