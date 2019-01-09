@@ -8,6 +8,8 @@ import Task exposing (Task)
 import Json.Decode as Decode exposing (Decoder, Value)
 import List.Extra
 import Maybe.Extra
+import Utility
+import Configuration
 import Model
     exposing
         ( Model
@@ -509,7 +511,14 @@ downloadLatexDocument model =
 
 sendLatexDocumentTarArchive : Model -> ( Model, Cmd DocMsg )
 sendLatexDocumentTarArchive model =
-    handleLatexArchive (TarManager.sendTarArchiveCmd "http://localhost:8080/xxxx" "testArchive") model
+    let
+        filename =
+            Utility.normalize model.currentDocument.title
+
+        url =
+            Configuration.backend ++ "/printToPdf/" ++ filename
+    in
+        handleLatexArchive (TarManager.sendTarArchiveCmd url) model
 
 
 handleLatexArchive : ArchiveProcessor -> Model -> ( Model, Cmd DocMsg )

@@ -11,6 +11,7 @@ module Utility
         , listDeleteAt
         , listInsertAt
         , lookUpKeyInTagList
+        , normalize
         , remove
         , replaceIf
         , shortDateString
@@ -30,6 +31,13 @@ import Time
 import Element
 import Html.Attributes as HA
 import Regex
+
+
+normalize : String -> String
+normalize str =
+    str
+        |> String.toLower
+        |> String.replace " " "_"
 
 
 findTag : String -> List String -> Maybe String

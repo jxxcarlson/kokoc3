@@ -40,8 +40,8 @@ downloadTarArchiveCmd stringList dataList =
         saveBytes "archive" archive
 
 
-sendTarArchiveCmd : String -> String -> List ( String, String ) -> List ( String, Bytes ) -> Cmd DocMsg
-sendTarArchiveCmd url archiveName stringList dataList =
+sendTarArchiveCmd : String -> List ( String, String ) -> List ( String, Bytes ) -> Cmd DocMsg
+sendTarArchiveCmd url stringList dataList =
     let
         data =
             (List.map prepareData dataList) ++ (List.map prepareStringData stringList)
@@ -52,7 +52,7 @@ sendTarArchiveCmd url archiveName stringList dataList =
         Http.request
             { method = "POST"
             , headers = []
-            , url = "http://localhost/8080/sendtararchive/" ++ archiveName
+            , url = url
             , body = Http.bytesBody "application/tar" archive
             , expect = Http.expectWhatever TexToPdf
             , timeout = Nothing
