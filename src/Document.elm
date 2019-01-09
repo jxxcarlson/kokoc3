@@ -6,6 +6,7 @@ module Document
         , Document
         , DocumentRecord
         , TextType(..)
+        , ArchiveProcessor
         , accessDictToString
         , attachDocumentToMasterBelowCmd
         , basicDocument
@@ -115,6 +116,10 @@ type TextType
     | ElmMarkup
 
 
+type alias ArchiveProcessor =
+    List ( String, String ) -> List ( String, Bytes ) -> Cmd DocMsg
+
+
 
 -- MSG
 
@@ -144,7 +149,7 @@ type DocMsg
     | ExportLatex
     | SetDocumentTextType TextType
     | SetDocumentType DocType
-    | GetImageData
+    | GetImageData ArchiveProcessor
     | GotImageData (Result Http.Error Bytes)
 
 

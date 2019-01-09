@@ -28,7 +28,7 @@ import Tar exposing (Data(..), FileRecord, defaultFileRecord)
 import Document exposing (DocMsg(..))
 
 
-downloadTarArchiveCmd : List ( String, String ) -> List ( String, Bytes ) -> Cmd msg
+downloadTarArchiveCmd : List ( String, String ) -> List ( String, Bytes ) -> Cmd DocMsg
 downloadTarArchiveCmd stringList dataList =
     let
         data =
@@ -60,7 +60,7 @@ sendTarArchiveCmd url archiveName stringList dataList =
             }
 
 
-saveBytes : String -> Bytes -> Cmd msg
+saveBytes : String -> Bytes -> Cmd DocMsg
 saveBytes archiveName bytes =
     Download.bytes (archiveName ++ ".tar") "application/x-tar" bytes
 

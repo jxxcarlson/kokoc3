@@ -26,6 +26,7 @@ import Document
         , TextType(..)
         , DocType(..)
         , DocMsg(..)
+        , ArchiveProcessor
         )
 import SystemDocument
 import ImageManager
@@ -70,6 +71,11 @@ port sendPdfFileName : Value -> Cmd msg
 
 
 port pushUrl : String -> Cmd msg
+
+
+myMap : ( Model, Cmd DocMsg ) -> ( Model, Cmd Msg )
+myMap ( model, cmdDocMsg ) =
+    ( model, Cmd.map DocMsg cmdDocMsg )
 
 
 update : DocMsg -> Model -> ( Model, Cmd Msg )
@@ -374,13 +380,13 @@ update docMsg model =
             in
                 ( { model | currentDocument = nextDocument, currentDocumentDirty = True }, Cmd.none )
 
-        GetImageData ->
+        GetImageData archiveProcessor ->
             case List.head model.imageUrlList of
                 Nothing ->
                     ( model, Cmd.none )
 
                 Just url ->
-                    ( model, getImageDataFromList model )
+                    ( model, Cmd.map DocMsg (getImageDataFromList archiveProcessor model) )
 
         GotImageData result ->
             case result of
@@ -414,13 +420,13 @@ update docMsg model =
                                         , dataList = dataList
                                     }
                             in
-                                ( newModel, getImageDataFromList newModel )
+                                ( newModel, Cmd.map DocMsg (getImageDataFromList TarManager.downloadTarArchiveCmd newModel) )
 
                 Err _ ->
                     ( { model | debugString = "Invalid data" }, Cmd.none )
 
         ExportLatex ->
-            downloadLatexDocument model
+            downloadLatexDocument model |> myMap
 
 
 exportContentAndImageUrls : Document -> ( String, List String )
@@ -496,8 +502,18 @@ prepareArchive model =
         ( documentTitle, preparedDocumentContent, imageUrlList )
 
 
-downloadLatexDocument : Model -> ( Model, Cmd Msg )
+downloadLatexDocument : Model -> ( Model, Cmd DocMsg )
 downloadLatexDocument model =
+    handleLatexArchive TarManager.downloadTarArchiveCmd model
+
+
+sendLatexDocumentTarArchive : Model -> ( Model, Cmd DocMsg )
+sendLatexDocumentTarArchive model =
+    handleLatexArchive (TarManager.sendTarArchiveCmd "http://localhost:8080/xxxx" "testArchive") model
+
+
+handleLatexArchive : ArchiveProcessor -> Model -> ( Model, Cmd DocMsg )
+handleLatexArchive archiveProcessor model =
     let
         ( documentTitle, preparedDocumentContent, imageUrlList ) =
             prepareArchive model
@@ -513,11 +529,11 @@ downloadLatexDocument model =
                         , debugString = "Images: " ++ (String.fromInt <| List.length imageUrlList)
                     }
             in
-                ( nextModel, getImageDataFromList nextModel )
+                ( nextModel, getImageDataFromList archiveProcessor nextModel )
 
 
-getImageDataFromList : Model -> Cmd Msg
-getImageDataFromList model =
+getImageDataFromList : ArchiveProcessor -> Model -> Cmd DocMsg
+getImageDataFromList archiveProcessor model =
     case List.head model.imageUrlList of
         Nothing ->
             let
@@ -529,17 +545,15 @@ getImageDataFromList model =
                 content =
                     model.exportText
             in
-                TarManager.downloadTarArchiveCmd [ ( title, content ) ] model.dataList
+                archiveProcessor [ ( title, content ) ] model.dataList
 
         Just url ->
             getImageData url
 
 
-getImageData : String -> Cmd Msg
+getImageData : String -> Cmd DocMsg
 getImageData url_ =
-    -- @@@ getImageData : Cmd Msg
     Task.attempt GotImageData (TarManager.getImageTask url_)
-        |> Cmd.map DocMsg
 
 
 getUserDocuments : Model -> String -> ( Model, Cmd Msg )
