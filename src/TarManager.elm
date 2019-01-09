@@ -1,4 +1,4 @@
-module ImageGrabber
+module TarManager
     exposing
         ( expectBytes
         , getImageTask

@@ -2,7 +2,7 @@ port module Update.Document exposing (..)
 
 import Http
 import Bytes exposing (Bytes)
-import ImageGrabber
+import TarManager
 import Random
 import Task exposing (Task)
 import Json.Decode as Decode exposing (Decoder, Value)
@@ -385,7 +385,7 @@ update docMsg model =
                         Just url ->
                             let
                                 url1 =
-                                    ImageGrabber.shortFilenameFromUrl url
+                                    TarManager.shortFilenameFromUrl url
 
                                 dataList =
                                     ( url1, data ) :: model.dataList
@@ -477,7 +477,7 @@ downloadLatexDocument model =
 
         --|> filterIt 2
         imageUrlList =
-            (List.map ImageGrabber.s3AdjustUrl imageUrlList_
+            (List.map TarManager.s3AdjustUrl imageUrlList_
                 |> Maybe.Extra.values
             )
 
@@ -515,9 +515,9 @@ getImageDataFromList model =
                 content =
                     model.exportText
             in
-                ImageGrabber.downloadTarArchiveCmd [ ( title, content ) ] model.dataList
+                TarManager.downloadTarArchiveCmd [ ( title, content ) ] model.dataList
 
-        -- ImageGrabber.downloadTarArchiveCmd [] model.dataList
+        -- TarManager.downloadTarArchiveCmd [] model.dataList
         Just url ->
             getImageData url
 
@@ -525,7 +525,7 @@ getImageDataFromList model =
 getImageData : String -> Cmd Msg
 getImageData url_ =
     -- @@@ getImageData : Cmd Msg
-    Task.attempt GotImageData (ImageGrabber.getImageTask url_)
+    Task.attempt GotImageData (TarManager.getImageTask url_)
         |> Cmd.map DocMsg
 
 
