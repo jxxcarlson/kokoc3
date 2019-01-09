@@ -7,6 +7,7 @@ module ImageGrabber
         , mimeType
         , saveBytes
         , downloadTarArchiveCmd
+        , sendTarArchiveCmd
         , s3AdjustUrl
         , simpleFilenameFromUrl
         , shortFilenameFromUrl
@@ -36,6 +37,26 @@ downloadTarArchiveCmd stringList dataList =
             Tar.encodeFiles data |> encode
     in
         saveBytes "archive" archive
+
+
+sendTarArchiveCmd : (Result Http.Error () -> msg) -> String -> String -> List ( String, String ) -> List ( String, Bytes ) -> Cmd msg
+sendTarArchiveCmd msg url archiveName stringList dataList =
+    let
+        data =
+            (List.map prepareData dataList) ++ (List.map prepareStringData stringList)
+
+        archive =
+            Tar.encodeFiles data |> encode
+    in
+        Http.request
+            { method = "POST"
+            , headers = []
+            , url = "http://localhost/8080/sendtararchive/" ++ archiveName
+            , body = Http.bytesBody "application/tar" archive
+            , expect = Http.expectWhatever msg
+            , timeout = Nothing
+            , tracker = Nothing
+            }
 
 
 saveBytes : String -> Bytes -> Cmd msg
