@@ -383,7 +383,6 @@ update docMsg model =
                     ( model, getImageDataFromList model )
 
         GotImageData result ->
-            -- @@@ GotImageData, pack bytes
             case result of
                 Ok data ->
                     case List.head model.imageUrlList of
@@ -519,7 +518,6 @@ downloadLatexDocument model =
 
 getImageDataFromList : Model -> Cmd Msg
 getImageDataFromList model =
-    -- @@@ getImageDataFromList : Cmd Msg, loop or tar
     case List.head model.imageUrlList of
         Nothing ->
             let
@@ -533,7 +531,6 @@ getImageDataFromList model =
             in
                 TarManager.downloadTarArchiveCmd [ ( title, content ) ] model.dataList
 
-        -- TarManager.downloadTarArchiveCmd [] model.dataList
         Just url ->
             getImageData url
 
