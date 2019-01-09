@@ -141,6 +141,14 @@ update docMsg model =
                 Err err ->
                     ( { model | message = HttpError.handle err }, Cmd.none )
 
+        TexToPdf result ->
+            case result of
+                Ok _ ->
+                    ( model, Cmd.none )
+
+                Err err ->
+                    ( { model | message = HttpError.handle err }, Cmd.none )
+
         AcknowledgeDocumentDeleted result ->
             -- SET CURRENT DOCUMENT
             case result of
@@ -413,7 +421,6 @@ update docMsg model =
                     ( { model | debugString = "Invalid data" }, Cmd.none )
 
         ExportLatex ->
-            -- @@@ ExportLatex
             downloadLatexDocument model
 
 
@@ -452,8 +459,8 @@ filterIt k ( str, strList ) =
     ( str, List.take k strList )
 
 
-downloadLatexDocument : Model -> ( Model, Cmd Msg )
-downloadLatexDocument model =
+prepareArchive : Model -> ( String, String, List String )
+prepareArchive model =
     let
         document =
             model.currentDocument
@@ -486,6 +493,15 @@ downloadLatexDocument model =
                 |> prepend model.texMacros
                 |> prepend (MiniLatexTools.makeDownloadPreamble document)
                 |> LatexHelper.makeDocument document.docType
+    in
+        ( documentTitle, preparedDocumentContent, imageUrlList )
+
+
+downloadLatexDocument : Model -> ( Model, Cmd Msg )
+downloadLatexDocument model =
+    let
+        ( documentTitle, preparedDocumentContent, imageUrlList ) =
+            prepareArchive model
     in
         if List.length imageUrlList == 0 then
             ( model, Download.string documentTitle "application/text" preparedDocumentContent )

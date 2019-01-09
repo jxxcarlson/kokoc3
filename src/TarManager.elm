@@ -25,6 +25,7 @@ import Parser exposing (..)
 import Dict exposing (Dict)
 import Task exposing (Task)
 import Tar exposing (Data(..), FileRecord, defaultFileRecord)
+import Document exposing (DocMsg(..))
 
 
 downloadTarArchiveCmd : List ( String, String ) -> List ( String, Bytes ) -> Cmd msg
@@ -39,8 +40,8 @@ downloadTarArchiveCmd stringList dataList =
         saveBytes "archive" archive
 
 
-sendTarArchiveCmd : (Result Http.Error () -> msg) -> String -> String -> List ( String, String ) -> List ( String, Bytes ) -> Cmd msg
-sendTarArchiveCmd msg url archiveName stringList dataList =
+sendTarArchiveCmd : String -> String -> List ( String, String ) -> List ( String, Bytes ) -> Cmd DocMsg
+sendTarArchiveCmd url archiveName stringList dataList =
     let
         data =
             (List.map prepareData dataList) ++ (List.map prepareStringData stringList)
@@ -53,7 +54,7 @@ sendTarArchiveCmd msg url archiveName stringList dataList =
             , headers = []
             , url = "http://localhost/8080/sendtararchive/" ++ archiveName
             , body = Http.bytesBody "application/tar" archive
-            , expect = Http.expectWhatever msg
+            , expect = Http.expectWhatever TexToPdf
             , timeout = Nothing
             , tracker = Nothing
             }
