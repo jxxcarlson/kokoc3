@@ -147,6 +147,7 @@ type DocMsg
     | NewChildDocument
     | PrintDocument
     | ExportLatex
+    | PrintToPdf
     | SetDocumentTextType TextType
     | SetDocumentType DocType
     | GetImageData ArchiveProcessor

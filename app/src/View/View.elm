@@ -123,6 +123,7 @@ footer model =
 
         --  testButton model
         , printDocumentButton model
+        , printToPdfButton (px 90) model
         , exportDocumentlLink model
         , getAuthorsDocumentsButton (px 110) model
 
@@ -452,6 +453,15 @@ exportDocumentButton width_ model =
         Input.button (buttonStyle width_)
             { onPress = Just ExportLatex
             , label = Element.el [] (Element.text "Export")
+            }
+
+
+printToPdfButton : Length -> Model -> Element Msg
+printToPdfButton width_ model =
+    Element.map DocMsg <|
+        Input.button (buttonStyle width_)
+            { onPress = Just PrintToPdf
+            , label = Element.el [] (Element.text "Print > PDF")
             }
 
 

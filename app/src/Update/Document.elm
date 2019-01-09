@@ -430,6 +430,9 @@ update docMsg model =
         ExportLatex ->
             downloadLatexDocument model |> myMap
 
+        PrintToPdf ->
+            sendLatexDocumentTarArchive model |> myMap
+
 
 exportContentAndImageUrls : Document -> ( String, List String )
 exportContentAndImageUrls document =
