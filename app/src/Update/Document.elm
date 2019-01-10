@@ -390,7 +390,7 @@ update docMsg model =
                 Just url ->
                     ( model, Cmd.map DocMsg (getImageDataFromList archiveProcessor model) )
 
-        GotImageData result ->
+        GotImageData archiveProcessor result ->
             case result of
                 Ok data ->
                     case List.head model.imageUrlList of
@@ -422,7 +422,7 @@ update docMsg model =
                                         , dataList = dataList
                                     }
                             in
-                                ( newModel, Cmd.map DocMsg (getImageDataFromList TarManager.downloadTarArchiveCmd newModel) )
+                                ( newModel, Cmd.map DocMsg (getImageDataFromList archiveProcessor newModel) )
 
                 Err _ ->
                     ( { model | debugString = "Invalid data" }, Cmd.none )
@@ -560,12 +560,12 @@ getImageDataFromList archiveProcessor model =
                 archiveProcessor [ ( title, content ) ] model.dataList
 
         Just url ->
-            getImageData url
+            getImageData archiveProcessor url
 
 
-getImageData : String -> Cmd DocMsg
-getImageData url_ =
-    Task.attempt GotImageData (TarManager.getImageTask url_)
+getImageData : ArchiveProcessor -> String -> Cmd DocMsg
+getImageData archiveProcessor url_ =
+    Task.attempt (GotImageData archiveProcessor) (TarManager.getImageTask url_)
 
 
 getUserDocuments : Model -> String -> ( Model, Cmd Msg )

@@ -151,7 +151,7 @@ type DocMsg
     | SetDocumentTextType TextType
     | SetDocumentType DocType
     | GetImageData ArchiveProcessor
-    | GotImageData (Result Http.Error Bytes)
+    | GotImageData ArchiveProcessor (Result Http.Error Bytes)
 
 
 
