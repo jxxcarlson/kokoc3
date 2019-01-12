@@ -46,15 +46,16 @@ sendTarArchiveCmd url stringList dataList =
         data =
             (List.map prepareData dataList) ++ (List.map prepareStringData stringList)
 
+        archive : Bytes
         archive =
             Tar.encodeFiles data |> encode
     in
         Http.request
-            { method = "POST"
+            { method = "Post"
             , headers = []
             , url = url
             , body = Http.bytesBody "application/tar" archive
-            , expect = Http.expectWhatever TexToPdf
+            , expect = Http.expectString TexToPdf
             , timeout = Nothing
             , tracker = Nothing
             }

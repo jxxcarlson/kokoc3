@@ -151,8 +151,8 @@ update docMsg model =
 
         TexToPdf result ->
             case result of
-                Ok _ ->
-                    ( model, Cmd.none )
+                Ok url ->
+                    ( { model | message = "URL: " ++ url }, Cmd.none )
 
                 Err err ->
                     ( { model | message = HttpError.handle err }, Cmd.none )
@@ -476,7 +476,7 @@ prepareArchive model =
             model.currentDocument
 
         documentTitle =
-            (String.replace " " "_" document.title) ++ ".tex"
+            (Utility.normalize document.title) ++ ".tex"
 
         prepend : String -> String -> String
         prepend prefix str =
@@ -519,7 +519,7 @@ sendLatexDocumentTarArchive model =
             Utility.normalize model.currentDocument.title
 
         url =
-            Configuration.backend ++ "/printToPdf/" ++ filename
+            Configuration.backend ++ "/api/print/pdf/" ++ filename
     in
         handleLatexArchive (TarManager.sendTarArchiveCmd url) model
 
@@ -531,7 +531,8 @@ handleLatexArchive archiveProcessor model =
             prepareArchive model
     in
         if List.length imageUrlList == 0 then
-            ( model, Download.string documentTitle "application/text" preparedDocumentContent )
+            -- ( model, Download.string documentTitle "application/text" preparedDocumentContent )
+            ( model, archiveProcessor [ ( documentTitle, preparedDocumentContent ) ] [] )
         else
             let
                 nextModel =
