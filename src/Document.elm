@@ -23,7 +23,7 @@ module Document
         , getDocumentById
         , getExportLatex
         , newDocument
-        , printUrl
+        , printReference
         , saveDocument
         , selectedDocId
         , sendToWorker
@@ -585,8 +585,8 @@ getDocumentById id maybeTokenString =
 -- HELPERS: STRING
 
 
-printUrl : Document -> String
-printUrl document =
+printReference : Document -> String
+printReference document =
     Configuration.backend ++ "/print/documents" ++ "/" ++ String.fromInt document.id ++ "?" ++ printTypeString document
 
 

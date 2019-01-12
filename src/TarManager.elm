@@ -61,6 +61,19 @@ sendTarArchiveCmd url stringList dataList =
             }
 
 
+
+-- getPdfFile : String -> Cmd Msg
+-- getPdfFile filename =
+--     let
+--         url =
+--             Configuration.backend ++ "/print/" ++ filename ++ "/" ++ filename ++ ".pdf"
+--     in
+--         Http.get
+--             { url = url
+--             , expect = Http.expectString GotBook
+--             }
+
+
 saveBytes : String -> Bytes -> Cmd DocMsg
 saveBytes archiveName bytes =
     Download.bytes (archiveName ++ ".tar") "application/x-tar" bytes

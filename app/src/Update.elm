@@ -25,7 +25,7 @@ import Browser.Dom as Dom
 import Configuration
 import Debounce exposing (Debounce)
 import DocViewMsg exposing (DocViewMsg(..))
-import Document exposing (DocMsg(..), DocType(..), Document, TextType(..), printUrl, DocumentRecord)
+import Document exposing (DocMsg(..), DocType(..), Document, TextType(..), printReference, DocumentRecord)
 import DocumentDictionary exposing (DocDictMsg(..), DocumentDictionary)
 import DocumentList
     exposing

@@ -20,6 +20,7 @@ import Model
         , ToolMenuState(..)
         , DocumentListSource(..)
         , DeleteDocumentState(..)
+        , PrintState(..)
         )
 import Document
     exposing
@@ -152,7 +153,7 @@ update docMsg model =
         PrintPdfFile result ->
             case result of
                 Ok url ->
-                    ( { model | message = "URL: " ++ url }, Cmd.none )
+                    ( { model | message = url, printReference = String.replace "\"" "" url, printState = PdfReadyToPrint }, Cmd.none )
 
                 Err err ->
                     ( { model | message = HttpError.handle err }, Cmd.none )
@@ -359,7 +360,7 @@ update docMsg model =
 
                 _ ->
                     ( { model | toolMenuState = HideToolMenu }
-                    , sendDocumentForPrinting (Document.encodeString (Document.printUrl model.currentDocument))
+                    , sendDocumentForPrinting (Document.encodeString (Document.printReference model.currentDocument))
                     )
 
         SetDocumentTextType textType ->
@@ -700,7 +701,7 @@ printDocument model =
             printLatex model
 
         _ ->
-            ( model, sendDocumentForPrinting (Document.encodeString (Document.printUrl model.currentDocument)) )
+            ( model, sendDocumentForPrinting (Document.encodeString (Document.printReference model.currentDocument)) )
 
 
 printLatex : Model -> ( Model, Cmd Msg )

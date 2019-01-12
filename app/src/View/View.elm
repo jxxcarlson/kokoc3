@@ -122,8 +122,9 @@ footer model =
         , Element.el [] (text <| docInfo model.currentDocument)
 
         --  testButton model
-        , printDocumentButton model
-        , printToPdfButton (px 90) model
+        -- , printDocumentButton model
+        , makePdfButton (px 90) model
+        , printPDFButton model
         , exportDocumentlLink model
         , getAuthorsDocumentsButton (px 110) model
 
@@ -140,8 +141,30 @@ footer model =
         , Element.el [] (text <| expiratonTimeString model.zone model.maybeCurrentUser)
         , expirationTimeIntervalElement model.time model.maybeCurrentUser
 
+        -- , Element.el [] (text <| "Print: " ++ model.printReference)
         -- , Element.el [] (text <| "E: " ++ (String.fromInt (expirationInt model.time model.maybeCurrentUser)))
         ]
+
+
+printPDFButton model =
+    if model.printReference == "" then
+        Element.none
+    else
+        Element.newTabLink []
+            { url = printUrl model.printReference
+            , label =
+                Element.el
+                    [ padding 4
+                    , Font.color <| rgb255 255 255 255
+                    , Background.color <| rgb255 140 0 0
+                    ]
+                    (text <| "Print")
+            }
+
+
+printUrl : String -> String
+printUrl printReference =
+    Configuration.backend ++ "/print/pdf/" ++ printReference
 
 
 uname model =
@@ -456,12 +479,12 @@ exportDocumentButton width_ model =
             }
 
 
-printToPdfButton : Length -> Model -> Element Msg
-printToPdfButton width_ model =
+makePdfButton : Length -> Model -> Element Msg
+makePdfButton width_ model =
     Element.map DocMsg <|
         Input.button (buttonStyle width_)
             { onPress = Just PrintToPdf
-            , label = Element.el [] (Element.text "Print > PDF")
+            , label = Element.el [] (Element.text "Make PDF")
             }
 
 
@@ -656,7 +679,7 @@ printButton model =
             printLatexButton model
 
         _ ->
-            Widget.linkButtonFat (Document.printUrl model.currentDocument) "Print" (px 45)
+            Widget.linkButtonFat (Document.printReference model.currentDocument) "Print" (px 45)
 
 
 printLatexButton : Model -> Element Msg

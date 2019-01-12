@@ -14,6 +14,7 @@ module Model
         , SignupMode(..)
         , ToolMenuState(..)
         , ToolPanelState(..)
+        , PrintState(..)
         , initialModel
         )
 
@@ -134,6 +135,8 @@ type alias Model =
     , seed : Int
     , exportText : String
     , imageUrlList : List String
+    , printReference : String
+    , printState : PrintState
 
     -- Export Document
     , maybeBytes : Maybe Bytes
@@ -311,12 +314,19 @@ initialModel locationHref windowWidth windowHeight document =
     , miniLatexRenderMode = RenderIncremental
     , exportText = ""
     , imageUrlList = []
+    , printReference = ""
+    , printState = NothingToPrint
     , maybeBytes = Nothing
     , urlList = []
     , dataList = []
     , zone = Time.utc
     , time = Time.millisToPosix 0
     }
+
+
+type PrintState
+    = NothingToPrint
+    | PdfReadyToPrint
 
 
 type ToolMenuState

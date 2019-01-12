@@ -24801,7 +24801,7 @@ var author$project$Main$printTypeString = function (document) {
 			return 'text=markdown';
 	}
 };
-var author$project$Main$printUrl = function (document) {
+var author$project$Main$printReference = function (document) {
 	return author$project$Configuration$backend + ('/print/documents' + ('/' + (elm$core$String$fromInt(document.W) + ('?' + author$project$Main$printTypeString(document)))));
 };
 var mdgriffith$stylish_elephants$Element$moveDown = function (y) {
@@ -24834,7 +24834,7 @@ var author$project$Widget$linkButtonFat = F3(
 var author$project$Main$printButton = function (document) {
 	return A3(
 		author$project$Widget$linkButtonFat,
-		author$project$Main$printUrl(document),
+		author$project$Main$printReference(document),
 		'Print',
 		mdgriffith$stylish_elephants$Element$px(50));
 };
