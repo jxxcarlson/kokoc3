@@ -130,7 +130,7 @@ type DocMsg
     | AcceptCoverArtUrl String
     | AcceptDocumentTagString String
     | ReceiveDocument (Result Http.Error DocumentRecord)
-    | TexToPdf (Result Http.Error String)
+    | PrintPdfFile (Result Http.Error String)
     | NewDocumentCreated Int (Result Http.Error DocumentRecord)
     | AcknowledgeUpdateOfDocument (Result Http.Error DocumentRecord)
     | AcknowledgeDocumentDeleted (Result Http.Error String)

@@ -55,7 +55,7 @@ sendTarArchiveCmd url stringList dataList =
             , headers = []
             , url = url
             , body = Http.bytesBody "application/tar" archive
-            , expect = Http.expectString TexToPdf
+            , expect = Http.expectString PrintPdfFile
             , timeout = Nothing
             , tracker = Nothing
             }

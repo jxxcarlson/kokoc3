@@ -149,7 +149,7 @@ update docMsg model =
                 Err err ->
                     ( { model | message = HttpError.handle err }, Cmd.none )
 
-        TexToPdf result ->
+        PrintPdfFile result ->
             case result of
                 Ok url ->
                     ( { model | message = "URL: " ++ url }, Cmd.none )
