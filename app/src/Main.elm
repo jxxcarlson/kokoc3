@@ -73,5 +73,5 @@ subscriptions model =
         , Sub.map KeyMsg Keyboard.subscriptions
         , onUrlChange UrlChanged
         , imageRead ImageRead
-        , Time.every 100000 Tick
+        , Time.every 1000 Tick
         ]
