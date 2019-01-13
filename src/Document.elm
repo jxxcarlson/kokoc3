@@ -149,6 +149,7 @@ type DocMsg
     | ExportLatex
     | PrintToPdf
     | ResetPrintState
+    | AcknowledgeTarArchiveReset (Result Http.Error String)
     | SetDocumentTextType TextType
     | SetDocumentType DocType
     | GetImageData ArchiveProcessor

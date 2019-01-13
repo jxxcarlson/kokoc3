@@ -435,7 +435,10 @@ update docMsg model =
                     ( { model | printState = NothingToPrint, message = HttpError.handle err }, Cmd.none )
 
         ResetPrintState ->
-            ( { model | printState = NothingToPrint, printReference = "" }, Cmd.none )
+            ( { model | printState = NothingToPrint }, TarManager.resetTarArchiveCmd model.printReference ) |> myMap
+
+        AcknowledgeTarArchiveReset str ->
+            ( { model | printReference = "" }, Cmd.none )
 
 
 exportContentAndImageUrls : Document -> ( String, List String )

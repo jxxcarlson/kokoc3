@@ -148,16 +148,21 @@ footer model =
 
 
 printPDFButton model =
-    if model.printReference == "" then
-        Element.none
-    else
-        Element.newTabLink []
-            { url = printUrl model.printReference
-            , label =
-                Element.el
-                    []
-                    (printPDFButton2 model)
-            }
+    case model.currentDocument.textType of
+        MiniLatex ->
+            if model.printReference == "" then
+                Element.none
+            else
+                Element.newTabLink []
+                    { url = printUrl model.printReference
+                    , label =
+                        Element.el
+                            []
+                            (printPDFButton2 model)
+                    }
+
+        _ ->
+            Element.none
 
 
 printPDFButton2 model =
@@ -474,17 +479,22 @@ viewUserManualLink =
 
 exportDocumentlLink : Model -> Element Msg
 exportDocumentlLink model =
-    case model.maybeCurrentUser of
-        Nothing ->
-            Element.none
-
-        Just user ->
-            case User.userId user == model.currentDocument.authorId of
-                False ->
+    case model.currentDocument.textType of
+        MiniLatex ->
+            case model.maybeCurrentUser of
+                Nothing ->
                     Element.none
 
-                True ->
-                    exportDocumentButton (px 90) model
+                Just user ->
+                    case User.userId user == model.currentDocument.authorId of
+                        False ->
+                            Element.none
+
+                        True ->
+                            exportDocumentButton (px 90) model
+
+        _ ->
+            Element.none
 
 
 
@@ -502,11 +512,16 @@ exportDocumentButton width_ model =
 
 makePdfButton : Length -> Model -> Element Msg
 makePdfButton width_ model =
-    Element.map DocMsg <|
-        Input.button (buttonStyle width_)
-            { onPress = Just PrintToPdf
-            , label = Element.el [] (Element.text "Make PDF")
-            }
+    case model.currentDocument.textType of
+        MiniLatex ->
+            Element.map DocMsg <|
+                Input.button (buttonStyle width_)
+                    { onPress = Just PrintToPdf
+                    , label = Element.el [] (Element.text "Make PDF")
+                    }
+
+        _ ->
+            Element.none
 
 
 modeButtonStyle appMode buttonMode width_ =

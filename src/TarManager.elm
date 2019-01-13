@@ -8,6 +8,7 @@ module TarManager
         , saveBytes
         , downloadTarArchiveCmd
         , sendTarArchiveCmd
+        , resetTarArchiveCmd
         , s3AdjustUrl
         , simpleFilenameFromUrl
         , shortFilenameFromUrl
@@ -26,6 +27,7 @@ import Dict exposing (Dict)
 import Task exposing (Task)
 import Tar exposing (Data(..), FileRecord, defaultFileRecord)
 import Document exposing (DocMsg(..))
+import Configuration
 
 
 downloadTarArchiveCmd : List ( String, String ) -> List ( String, Bytes ) -> Cmd DocMsg
@@ -61,17 +63,21 @@ sendTarArchiveCmd url stringList dataList =
             }
 
 
-
--- getPdfFile : String -> Cmd Msg
--- getPdfFile filename =
---     let
---         url =
---             Configuration.backend ++ "/print/" ++ filename ++ "/" ++ filename ++ ".pdf"
---     in
---         Http.get
---             { url = url
---             , expect = Http.expectString GotBook
---             }
+resetTarArchiveCmd : String -> Cmd DocMsg
+resetTarArchiveCmd printReference =
+    let
+        url =
+            Configuration.backend ++ "/api/print/reset/" ++ printReference
+    in
+        Http.request
+            { method = "Post"
+            , headers = []
+            , url = url
+            , body = Http.emptyBody
+            , expect = Http.expectString AcknowledgeTarArchiveReset
+            , timeout = Nothing
+            , tracker = Nothing
+            }
 
 
 saveBytes : String -> Bytes -> Cmd DocMsg
