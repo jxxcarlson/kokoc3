@@ -148,7 +148,7 @@ $$\\int_0^1 x^n dx = \\frac{1}{n+1}$$
 
 Write formulas, place images, etc.
 Edit live and publish to the web in real time. Lecture notes, poetry, whatever.
-Click on \\strong{\\blue{Home}} to go to your home page.
+Click on \\strong{\\blue{Home}} to go to your home page. Recommended browser: \\strong{\\blue{Firefox}}.
 
 
 \\medskip

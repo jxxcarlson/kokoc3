@@ -3,9 +3,9 @@
 	<head>
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width" />
-		<title>Reader</title>
+		<title>KNODE.IO</title>
 		<script src="https://cdnjs.cloudflare.com/ajax/libs/custom-elements/1.1.1/custom-elements.min.js"></script>
-		
+
 		<script type="text/x-mathjax-config">
 			MathJax.Hub.Config(
 				{   tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]},
@@ -14,7 +14,7 @@
 					processSectionDelay: 0,
 					processUpdateTime: 0,
 					"fast-preview": {disabled: true},
-					TeX: { equationNumbers: {autoNumber: "AMS"}, 
+					TeX: { equationNumbers: {autoNumber: "AMS"},
 						   noErrors: {disabled: true},
 						   extensions: ["mhchem.js"]
 						  }
@@ -22,11 +22,11 @@
 	        );
 		</script>
 
-		
+
 		<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/MathJax.js?config=TeX-MML-AM_CHTML"></script>
-		
+
 		<script src="https://cdnjs.cloudflare.com/ajax/libs/asciidoctor.js/1.5.5-5/asciidoctor.js"></script>
-			
+
 		<script src="/Main.js" charset="utf-8"></script>
 		<style>
 			 p, h2 {
@@ -35,16 +35,16 @@
 				line-height: 1.4;
 				}
 				asciidoc-text {
-				white-space: normal; 
+				white-space: normal;
 			}
-		
+
 		</style>
-	
+
 	</head>
 
 	<body>
-		
-		
+
+
 	<div id="main"></div>
 
 
@@ -57,8 +57,8 @@
 					location: location.href
 				}
 		});
-		
-		// IMAGE UPLOADER 
+
+		// IMAGE UPLOADER
 
 		var globalReader = function () {
 
@@ -69,7 +69,7 @@
 			});
 
 			return reader;
-			
+
 		}();
 
 
@@ -77,7 +77,7 @@
 			globalReader.readAsDataURL(info.fileValue);
 
 			console.log(info.fileValue)
-	
+
 		});
 
 		app.ports.sendPdfFileName.subscribe(function (info) {
@@ -85,7 +85,7 @@
 			console.log(info.data)
 			var url = "https://knode.work/files/" + info.data
 			window.open(url,'_blank');
-	
+
 		});
 
 
@@ -105,7 +105,7 @@
 
 			console.log("JS/url: " + credentialsWrapper.url)
 			console.log("JS/signature: " + credentialsWrapper.credentials.signature)
-	
+
 		});
 
 		// convert datURI to binary data
@@ -148,11 +148,11 @@
 					method: 'PUT',
 					body: blob
 				});
-						
+
 			}
 
 		});
-				
+
 		// NAVIGATION
 
 		// Inform app of browser navigation (the BACK and FORWARD buttons)
@@ -165,7 +165,7 @@
 			history.pushState({}, '', url);
 			app.ports.onUrlChange.send(location.href);
 		});
-				
+
 
 		// MATH TEXT
 
@@ -183,7 +183,7 @@
 				typesetQueue = []
 			}, 1)
 		}
-		
+
 		var updateQueue = []
 		var updateTimeout = null
 		function enqueueUpdate(el) {
@@ -194,17 +194,17 @@
 				updateQueue = []
 			}, 0)
 		}
-		
+
 		customElements.define('math-text', class extends HTMLElement {
 		  constructor() {
 			super()
 			this._content = this.content
 		  }
-		  
+
 			get content() {
 				return this._content
 			}
-		
+
 			set content(value) {
 				if (this._content === value) return
 				this._content = value
@@ -213,7 +213,7 @@
 				jaxScript.textContent = this._content
 				enqueueUpdate(this)
 			}
-		
+
 			connectedCallback() {
 				this.textContent = this._content
 				this._connected = true
@@ -222,23 +222,23 @@
 				enqueueTypeset(this)
 			}
 		})
-		
+
 		// ASCIIDOC
-		
+
 		// https://ellie-test-19-cutover.now.sh/LFVgrr8Cf2a1
-		
+
 		var asciidoctor = Asciidoctor();
-		
+
 		customElements.define('asciidoc-text', class extends HTMLElement {
 			constructor() {
 				super()
 				this._content = this.content
 			}
-		  
+
 			get content() {
 				return this._content
 			}
-		
+
 			set content(value) {
 				if (this._content === value) return
 				this._content = value
@@ -248,7 +248,7 @@
 				jaxScript.textContent = this._content
 				enqueueUpdate(this)
 			}
-		
+
 			connectedCallback() {
 				this._connected = true
 				this.style.opacity = 1
@@ -271,7 +271,7 @@
 				console.log("DocumentData")
 				if (msg.data != null) {
 					localStorage.setItem("currentDocument", JSON.stringify(msg.data));
-				}	
+				}
 				break;
 
 				case "DocumentListData":
@@ -327,21 +327,21 @@
 
 				case "AskToEraseLocalStorage":
 					console.log("AskToEraseLocalStorage")
-					localStorage.setItem("currentUser", null);	
+					localStorage.setItem("currentUser", null);
 					localStorage.setItem("currentDocument", null);
 					localStorage.setItem("currentDocumentList", null);
-					localStorage.setItem("recentDocumentQueue", null);	
+					localStorage.setItem("recentDocumentQueue", null);
 				break;
 
 			}
 
 		})
 
-	
-   
+
+
   </script>
 
- 
+
 </body>
 
 
