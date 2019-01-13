@@ -292,6 +292,19 @@ update msg model =
         AcceptImageName str ->
             ( { model | imageName = str }, Cmd.none )
 
+        DocListViewMsg (LoadMasterDocument2 document) ->
+            case document.docType of
+                Master ->
+                    ( { model
+                        | masterDocLoaded = True
+                        , documentListSource = SearchResults
+                      }
+                    , Cmd.map DocListMsg (DocumentList.loadMasterDocumentAndSelect model.maybeCurrentUser document.id)
+                    )
+
+                Standard ->
+                    ( model, Cmd.none )
+
         DocListViewMsg (SetCurrentDocument document) ->
             -- SET CURRENT DOCUMENT
             let

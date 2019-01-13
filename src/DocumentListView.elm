@@ -5,11 +5,13 @@ import DocumentList exposing (DocumentList, documents)
 import Element exposing (..)
 import Element.Font as Font exposing (Font)
 import Element.Input as Input
+import Element.Events as Events
 import View.Widget as Widget
 
 
 type DocListViewMsg
     = SetCurrentDocument Document
+    | LoadMasterDocument2 Document
 
 
 viewWithHeading : Int -> Bool -> String -> DocumentList -> Element DocListViewMsg
@@ -74,7 +76,7 @@ transformedTitle doc =
 
 activeDocTitle : Maybe Document -> Document -> Element DocListViewMsg
 activeDocTitle maybeSelectedDocument document =
-    Element.el []
+    Element.el [ Events.onDoubleClick <| LoadMasterDocument2 document ]
         (Input.button (Widget.listItemStyle (px 190))
             { onPress = Just (SetCurrentDocument document)
             , label = Element.el (selectedElementStyle maybeSelectedDocument document) (Element.text (transformedTitle document))
@@ -84,7 +86,7 @@ activeDocTitle maybeSelectedDocument document =
 
 activeDocTitleWithIndex : Maybe Document -> Int -> Document -> Element DocListViewMsg
 activeDocTitleWithIndex maybeSelectedDocument index document =
-    Element.el []
+    Element.el [ Events.onDoubleClick <| LoadMasterDocument2 document ]
         (Input.button (Widget.listItemStyle (px 190))
             { onPress = Just (SetCurrentDocument document)
             , label = Element.el (selectedElementStyle maybeSelectedDocument document) (titleWithIndex index document)
@@ -115,6 +117,5 @@ selectedElementStyle maybeSelectedDocument document =
         Just selectedDocument ->
             if selectedDocument.id == document.id then
                 [ Font.extraBold, Font.color Widget.darkRed ]
-
             else
                 [ Font.regular, Font.color Widget.blue ]
