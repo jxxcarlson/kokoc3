@@ -148,6 +148,7 @@ type DocMsg
     | PrintDocument
     | ExportLatex
     | PrintToPdf
+    | ResetPrintState
     | SetDocumentTextType TextType
     | SetDocumentType DocType
     | GetImageData ArchiveProcessor

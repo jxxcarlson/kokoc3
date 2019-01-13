@@ -81,7 +81,7 @@ saveBytes archiveName bytes =
 
 prepareStringData : ( String, String ) -> ( FileRecord, Data )
 prepareStringData ( name, str ) =
-    ( { defaultFileRecord | filename = name }, StringData str )
+    ( { defaultFileRecord | filename = String.toLower name }, StringData str )
 
 
 prepareData : ( String, Bytes ) -> ( FileRecord, Data )

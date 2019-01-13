@@ -31,6 +31,7 @@ import Model
         , SignupMode(..)
         , ToolMenuState(..)
         , ToolPanelState(..)
+        , PrintState(..)
         )
 import OnClickOutside
 import Time
@@ -122,9 +123,9 @@ footer model =
         , Element.el [] (text <| docInfo model.currentDocument)
 
         --  testButton model
-        , ifNotAdmin model printDocumentButton
-        , ifAdmin model (makePdfButton (px 90))
-        , ifAdmin model printPDFButton
+        , neverShow model printDocumentButton
+        , alwaysShow model (makePdfButton (px 90))
+        , alwaysShow model printPDFButton
         , exportDocumentlLink model
         , getAuthorsDocumentsButton (px 110) model
 
@@ -154,12 +155,32 @@ printPDFButton model =
             { url = printUrl model.printReference
             , label =
                 Element.el
-                    [ padding 4
-                    , Font.color <| rgb255 255 255 255
-                    , Background.color <| rgb255 140 0 0
-                    ]
-                    (text <| "Print")
+                    []
+                    (printPDFButton2 model)
             }
+
+
+printPDFButton2 model =
+    Element.map DocMsg <|
+        Input.button (Widget.buttonStyleWithColor (rgb255 150 0 0) (px 50))
+            { onPress = Just ResetPrintState
+            , label = Element.el [] (Element.text "Print")
+            }
+
+
+printPDFStyle model =
+    case model.printState of
+        PdfReadyToPrint ->
+            [ padding 4
+            , Font.color <| rgb255 255 255 255
+            , Background.color <| rgb255 140 0 0
+            ]
+
+        NothingToPrint ->
+            [ padding 4
+            , Font.color <| rgb255 255 255 255
+            , Background.color <| rgb255 80 80 80
+            ]
 
 
 printUrl : String -> String
@@ -662,6 +683,16 @@ authorDisplayModeButton width_ model =
                 { onPress = Just (ChangeMode DisplayAuthors)
                 , label = Element.el [] (Element.text "Authors")
                 }
+
+
+alwaysShow : Model -> (Model -> Element Msg) -> Element Msg
+alwaysShow model element =
+    element model
+
+
+neverShow : Model -> (Model -> Element Msg) -> Element Msg
+neverShow model element =
+    Element.none
 
 
 ifAdmin : Model -> (Model -> Element Msg) -> Element Msg

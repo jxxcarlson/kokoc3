@@ -150,14 +150,6 @@ update docMsg model =
                 Err err ->
                     ( { model | message = HttpError.handle err }, Cmd.none )
 
-        PrintPdfFile result ->
-            case result of
-                Ok url ->
-                    ( { model | message = url, printReference = String.replace "\"" "" url, printState = PdfReadyToPrint }, Cmd.none )
-
-                Err err ->
-                    ( { model | message = HttpError.handle err }, Cmd.none )
-
         AcknowledgeDocumentDeleted result ->
             -- SET CURRENT DOCUMENT
             case result of
@@ -433,6 +425,17 @@ update docMsg model =
 
         PrintToPdf ->
             sendLatexDocumentTarArchive model |> myMap
+
+        PrintPdfFile result ->
+            case result of
+                Ok url ->
+                    ( { model | message = url, printReference = String.replace "\"" "" url, printState = PdfReadyToPrint }, Cmd.none )
+
+                Err err ->
+                    ( { model | printState = NothingToPrint, message = HttpError.handle err }, Cmd.none )
+
+        ResetPrintState ->
+            ( { model | printState = NothingToPrint, printReference = "" }, Cmd.none )
 
 
 exportContentAndImageUrls : Document -> ( String, List String )

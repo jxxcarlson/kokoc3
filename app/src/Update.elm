@@ -62,6 +62,7 @@ import Model
         , SignupMode(..)
         , ToolMenuState(..)
         , ToolPanelState(..)
+        , PrintState(..)
         , initialModel
         )
 import Query
