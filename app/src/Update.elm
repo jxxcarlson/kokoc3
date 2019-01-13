@@ -299,7 +299,7 @@ update msg model =
                         | masterDocLoaded = True
                         , documentListSource = SearchResults
                       }
-                    , Cmd.map DocListMsg (DocumentList.loadMasterDocumentAndSelect model.maybeCurrentUser document.id)
+                    , Cmd.map DocListMsg (DocumentList.loadMasterDocument model.maybeCurrentUser document.id)
                     )
 
                 Standard ->
