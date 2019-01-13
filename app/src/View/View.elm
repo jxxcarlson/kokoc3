@@ -122,9 +122,9 @@ footer model =
         , Element.el [] (text <| docInfo model.currentDocument)
 
         --  testButton model
-        -- , printDocumentButton model
-        , makePdfButton (px 90) model
-        , printPDFButton model
+        , ifNotAdmin model printDocumentButton
+        , ifAdmin model (makePdfButton (px 90))
+        , ifAdmin model printPDFButton
         , exportDocumentlLink model
         , getAuthorsDocumentsButton (px 110) model
 
@@ -662,6 +662,36 @@ authorDisplayModeButton width_ model =
                 { onPress = Just (ChangeMode DisplayAuthors)
                 , label = Element.el [] (Element.text "Authors")
                 }
+
+
+ifAdmin : Model -> (Model -> Element Msg) -> Element Msg
+ifAdmin model element =
+    case model.maybeCurrentUser of
+        Nothing ->
+            Element.none
+
+        Just user ->
+            case User.username user == Configuration.adminUsername of
+                False ->
+                    Element.none
+
+                True ->
+                    element model
+
+
+ifNotAdmin : Model -> (Model -> Element Msg) -> Element Msg
+ifNotAdmin model element =
+    case model.maybeCurrentUser of
+        Nothing ->
+            Element.none
+
+        Just user ->
+            case User.username user == Configuration.adminUsername of
+                False ->
+                    element model
+
+                True ->
+                    Element.none
 
 
 printDocumentButton model =

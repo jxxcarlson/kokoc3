@@ -532,7 +532,6 @@ handleLatexArchive archiveProcessor model =
             prepareArchive model
     in
         if List.length imageUrlList == 0 then
-            -- ( model, Download.string documentTitle "application/text" preparedDocumentContent )
             ( model, archiveProcessor [ ( documentTitle, preparedDocumentContent ) ] [] )
         else
             let
