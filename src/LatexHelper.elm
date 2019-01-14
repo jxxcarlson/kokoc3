@@ -66,19 +66,7 @@ standardDocMacros =
    \\newcommand{\\red}[1]{\\textcolor{red}{#1}}
    \\newcommand{\\blue}[1]{\\textcolor{blue}{#1}}
 
-   \\newcommand{\\imagefloatright}[3]{
-   \\begin{wrapfigure}{R}{0.30\\textwidth}
-   \\includegraphics[width=#3]{#1}
-   \\caption{#2}
-   \\end{wrapfigure}
-   }
 
-   \\newcommand{\\imagefloatleft}[3]{
-   \\begin{wrapfigure}{L}{0.3-\\textwidth}
-   \\includegraphics[width=#3]{#1}
-   \\caption{#2}
-   \\end{wrapfigure}
-   }
 -}
 
 
@@ -123,19 +111,19 @@ latexPreamble =
 }}
 
 
-\\newcommand{\\imagefloatright}[3]{
-% \\begin{wrapfigure}{R}{0.30\\textwidth}
-\\includegraphics[width=#3]{#1}
-%\\caption{#2}
-% \\end{wrapfigure}
-}
+   \\newcommand{\\imagefloatright}[3]{
+   \\begin{wrapfigure}{R}{0.30\\textwidth}
+   \\includegraphics[width=#3]{#1}
+   \\caption{#2}
+   \\end{wrapfigure}
+   }
 
-\\newcommand{\\imagefloatleft}[3]{
-%\\begin{wrapfigure}{L}{0.3-\\textwidth}
-\\includegraphics[width=#3]{#1}
-%\\caption{#2}
-%\\end{wrapfigure}
-}
+   \\newcommand{\\imagefloatleft}[3]{
+   \\begin{wrapfigure}{L}{0.3-\\textwidth}
+   \\includegraphics[width=#3]{#1}
+   \\caption{#2}
+   \\end{wrapfigure}
+   }
 
 
 \\newcommand{\\italic}[1]{{\\sl #1}}
