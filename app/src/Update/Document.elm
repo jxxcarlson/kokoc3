@@ -429,7 +429,7 @@ update docMsg model =
         PrintPdfFile result ->
             case result of
                 Ok url ->
-                    ( { model | message = url, printReference = String.replace "\"" "" url, printState = PdfReadyToPrint }, Cmd.none )
+                    ( { model | message = url, printReference = String.replace "\"" "" url }, Cmd.none )
 
                 Err err ->
                     ( { model | printState = NothingToPrint, message = HttpError.handle err }, Cmd.none )
@@ -528,7 +528,7 @@ sendLatexDocumentTarArchive model =
         url =
             Configuration.backend ++ "/api/print/pdf/" ++ filename
     in
-        handleLatexArchive (TarManager.sendTarArchiveCmd url) model
+        handleLatexArchive (TarManager.sendTarArchiveCmd url) { model | printState = PdfReadyToPrint }
 
 
 handleLatexArchive : ArchiveProcessor -> Model -> ( Model, Cmd DocMsg )

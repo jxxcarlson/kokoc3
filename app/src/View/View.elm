@@ -18,10 +18,12 @@ import Element.Input as Input
 import Element.Keyed as Keyed
 import Element.Lazy
 import Html exposing (Html)
-import Html.Attributes exposing (src, type_, value)
+import Html.Attributes exposing (src, type_, value, style)
 import Html.Events exposing (on)
 import Json.Decode as Decode exposing (Decoder, Value)
 import Json.Encode as Encode
+import Spinner
+import Color exposing (Color)
 import Model
     exposing
         ( AppMode(..)
@@ -123,8 +125,9 @@ footer model =
         , Element.el [] (text <| docInfo model.currentDocument)
 
         --  testButton model
-        , neverShow model printDocumentButton
+        -- model printDocumentButton
         , alwaysShow model (makePdfButton (px 90))
+        , printSpinner model
         , alwaysShow model printPDFButton
         , exportDocumentlLink model
         , getAuthorsDocumentsButton (px 110) model
@@ -145,6 +148,41 @@ footer model =
         -- , Element.el [] (text <| "Print: " ++ model.printReference)
         -- , Element.el [] (text <| "E: " ++ (String.fromInt (expirationInt model.time model.maybeCurrentUser)))
         ]
+
+
+printSpinner : Model -> Element msg
+printSpinner model =
+    case model.printState of
+        NothingToPrint ->
+            Element.none
+
+        PdfReadyToPrint ->
+            Element.el [ moveDown 20 ] <|
+                Element.html <|
+                    Html.div
+                        [ style "width" "40px", style "height" "40px" ]
+                        [ Spinner.view spinnerConfig model.spinner ]
+
+
+spinnerConfig : Spinner.Config
+spinnerConfig =
+    { lines = 8
+    , length = 10
+    , width = 4
+    , radius = 6
+    , scale = 1
+    , corners = 1
+    , opacity = 0.5
+    , rotate = 0
+    , direction = Spinner.Clockwise
+    , speed = 1
+    , trail = 60
+    , translateX = 50
+    , translateY = 0
+    , shadow = True
+    , hwaccel = False
+    , color = always Color.black
+    }
 
 
 printPDFButton model =

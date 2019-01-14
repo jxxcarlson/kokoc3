@@ -31,6 +31,7 @@ import DocumentList exposing (DocListMsg(..), DocumentList)
 import DocumentListView exposing (DocListViewMsg(..))
 import FileUploadCredentials as Credentials exposing (FileData, Image)
 import Html exposing (Html)
+import Spinner
 import ImageManager exposing (ImageMsg(..))
 import Json.Decode as Decode exposing (Decoder, Value)
 import Json.Encode as Encode
@@ -137,6 +138,7 @@ type alias Model =
     , imageUrlList : List String
     , printReference : String
     , printState : PrintState
+    , spinner : Spinner.Model
 
     -- Export Document
     , maybeBytes : Maybe Bytes
@@ -214,6 +216,7 @@ type Msg
     | GenerateSeed
     | NewSeed Int
     | DoFullRender
+    | SpinnerMsg Spinner.Msg
       -- IMAGE
     | GetImages String
     | ImageMsg ImageManager.ImageMsg
@@ -321,6 +324,7 @@ initialModel locationHref windowWidth windowHeight document =
     , dataList = []
     , zone = Time.utc
     , time = Time.millisToPosix 0
+    , spinner = Spinner.init
     }
 
 

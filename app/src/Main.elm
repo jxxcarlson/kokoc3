@@ -10,6 +10,7 @@ import SystemDocument
 import Document exposing (DocMsg(..))
 import Task
 import Time exposing (Posix)
+import Spinner
 import Update.Time exposing (getTimeInOneSecond)
 import Update
     exposing
@@ -74,4 +75,5 @@ subscriptions model =
         , onUrlChange UrlChanged
         , imageRead ImageRead
         , Time.every 100000 Tick
+        , Sub.map SpinnerMsg Spinner.subscription
         ]

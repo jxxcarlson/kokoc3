@@ -68,6 +68,7 @@ import Model
 import Query
 import Queue exposing (Queue)
 import Random
+import Spinner
 import SystemDocument
 import Task
 import Time
@@ -820,6 +821,15 @@ update msg model =
             ( { model | zone = newZone }
             , Cmd.none
             )
+
+        SpinnerMsg spinnerMsg ->
+            let
+                spinnerModel =
+                    Spinner.update spinnerMsg model.spinner
+            in
+                ( { model | spinner = spinnerModel }
+                , Cmd.none
+                )
 
 
 getNewTime : Cmd Msg
