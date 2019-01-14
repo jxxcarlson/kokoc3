@@ -59,17 +59,6 @@ standardDocMacros =
 """
 
 
-
-{-
-   \\usepackage{wrapfig}
-   \\usepackage{xcolor}
-   \\newcommand{\\red}[1]{\\textcolor{red}{#1}}
-   \\newcommand{\\blue}[1]{\\textcolor{blue}{#1}}
-
-
--}
-
-
 latexPreamble =
     """
 \\documentclass[10pt, oneside]{article}
@@ -77,6 +66,8 @@ latexPreamble =
 \\geometry{letterpaper}
 
 \\usepackage{graphicx}
+\\usepackage{wrapfig}
+\\usepackage{xcolor}
 
 \\graphicspath{ {images/} }
 
@@ -128,6 +119,11 @@ latexPreamble =
 
 \\newcommand{\\italic}[1]{{\\sl #1}}
 \\newcommand{\\strong}[1]{{\\bf #1}}
+
+\\newcommand{\\red}[1]{\\textcolor{red}{#1}}
+\\newcommand{\\blue}[1]{\\textcolor{blue}{#1}}
+
+
 \\newcommand{\\subheading}[1]{{\\bf #1}\\par}
 \\newcommand{\\xlinkPublic}[2]{\\href{{http://www.knode.io/\\#@public#1}}{#2}}
 
