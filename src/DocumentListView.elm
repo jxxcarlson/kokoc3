@@ -147,17 +147,3 @@ selectedElementStyle maybeSelectedDocument document =
                 [ Font.extraBold, Font.color Widget.darkRed ]
             else
                 [ Font.regular, Font.color Widget.blue ]
-
-
-
--- ifSelected : Maybe Document -> Document -> List (Element.Attribute msg)
--- ifSelected maybeSelectedDocument document =
---     case maybeSelectedDocument of
---         Nothing ->
---             [ Font.regular, Font.color Widget.blue ]
---
---         Just selectedDocument ->
---             if selectedDocument.id == document.id then
---                 [ Font.extraBold, Font.color Widget.darkRed ]
---             else
---                 [ Font.regular, Font.color Widget.blue ]
