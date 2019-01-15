@@ -33,6 +33,7 @@ module DocumentList
         , select
         , selectFirst
         , selected
+        , selectedData
         , setDocuments
         , updateDocument
         )
@@ -113,6 +114,11 @@ documents (DocumentList latexState_ documentList maybeDocument) =
 latexState : DocumentList -> LatexState
 latexState (DocumentList latexState_ documentList maybeDocument) =
     latexState_
+
+
+selectedData : DocumentList -> ( LatexState, Maybe Document )
+selectedData (DocumentList latexState_ listOfDocuments maybeDocument) =
+    ( latexState_, maybeDocument )
 
 
 selected : DocumentList -> Maybe Document
