@@ -18,6 +18,7 @@ module DocumentList
         , intListDecoder
         , intListForDocumentQueueDecoder
         , intListFromDocumentList
+        , latexState
         , loadMasterDocument
         , loadMasterDocumentTask
         , loadMasterDocumentAndSelect
@@ -47,10 +48,11 @@ import Queue exposing (Queue)
 import User exposing (User)
 import Utility
 import Task exposing (Task)
+import MiniLatex.LatexState as LatexState exposing (LatexState)
 
 
 type DocumentList
-    = DocumentList (List Document) (Maybe Document)
+    = DocumentList LatexState (List Document) (Maybe Document)
 
 
 type alias DocumentListRecord =
@@ -86,17 +88,17 @@ type DocListMsg
 
 fromDocumentAndList : List Document -> Maybe Document -> DocumentList
 fromDocumentAndList listOfDocuments maybeDocument =
-    DocumentList listOfDocuments maybeDocument
+    DocumentList LatexState.emptyLatexState listOfDocuments maybeDocument
 
 
 empty : DocumentList
 empty =
-    DocumentList [] Nothing
+    DocumentList LatexState.emptyLatexState [] Nothing
 
 
 make : Document -> List Document -> DocumentList
 make document listOfDocuments =
-    DocumentList (document :: listOfDocuments) (Just document)
+    DocumentList LatexState.emptyLatexState (document :: listOfDocuments) (Just document)
 
 
 
@@ -104,12 +106,17 @@ make document listOfDocuments =
 
 
 documents : DocumentList -> List Document
-documents (DocumentList documentList maybeDocument) =
+documents (DocumentList latexState_ documentList maybeDocument) =
     documentList
 
 
+latexState : DocumentList -> LatexState
+latexState (DocumentList latexState_ documentList maybeDocument) =
+    latexState_
+
+
 selected : DocumentList -> Maybe Document
-selected (DocumentList listOfDocuments maybeDocument) =
+selected (DocumentList latexState_ listOfDocuments maybeDocument) =
     maybeDocument
 
 
@@ -138,7 +145,7 @@ getFirst documentList =
 
 
 documentListLength : DocumentList -> Int
-documentListLength (DocumentList documentList maybeDocument) =
+documentListLength (DocumentList latexState_ documentList maybeDocument) =
     List.length documentList
 
 
@@ -165,18 +172,18 @@ emptyIntList =
 
 
 prepend : Document -> DocumentList -> DocumentList
-prepend document (DocumentList documentList maybeDocument) =
-    DocumentList (document :: documentList) (Just document)
+prepend document (DocumentList latexState_ documentList maybeDocument) =
+    DocumentList latexState_ (document :: documentList) (Just document)
 
 
 setDocuments : List Document -> DocumentList -> DocumentList
-setDocuments listOfDocuments (DocumentList documentList maybeDocument) =
-    DocumentList listOfDocuments maybeDocument
+setDocuments listOfDocuments (DocumentList latexState_ documentList maybeDocument) =
+    DocumentList latexState_ listOfDocuments maybeDocument
 
 
 select : Maybe Document -> DocumentList -> DocumentList
-select maybeSelectedDocument (DocumentList documentList maybeDocument) =
-    DocumentList documentList maybeSelectedDocument
+select maybeSelectedDocument (DocumentList latexState_ documentList maybeDocument) =
+    DocumentList latexState_ documentList maybeSelectedDocument
 
 
 addAndSelect : Document -> DocumentList -> DocumentList
@@ -190,8 +197,8 @@ addAndSelect document documentList =
 
 
 prependAndSelect : Document -> DocumentList -> DocumentList
-prependAndSelect document (DocumentList documentList maybeDocument) =
-    DocumentList (document :: documentList) (Just document)
+prependAndSelect document (DocumentList latexState_ documentList maybeDocument) =
+    DocumentList latexState_ (document :: documentList) (Just document)
 
 
 selectFirst : DocumentList -> DocumentList
@@ -516,13 +523,13 @@ loadMasterDocumentWithCurrentSelection maybeUser docId =
 
 
 renumberDocuments : DocumentList -> DocumentList
-renumberDocuments (DocumentList documentList maybeDocument) =
+renumberDocuments (DocumentList latexState_ documentList maybeDocument) =
     let
         newDocumentList =
             documentList
                 |> List.indexedMap (\k doc -> { doc | sectionNumber = k })
     in
-        (DocumentList newDocumentList maybeDocument)
+        (DocumentList latexState_ newDocumentList maybeDocument)
 
 
 
@@ -546,7 +553,7 @@ documentListDecoder =
 
 documentListFromRecord : DocumentListRecord -> DocumentList
 documentListFromRecord r =
-    DocumentList r.documents r.selected
+    DocumentList LatexState.emptyLatexState r.documents r.selected
 
 
 documentQueueDecoder : Decoder (Queue Document)
@@ -589,12 +596,12 @@ documentListEncoder documentList =
 
 documentQueueToDocumentList : Document -> Queue Document -> DocumentList
 documentQueueToDocumentList document documentQueue =
-    DocumentList (Queue.list documentQueue) (Just document)
+    DocumentList LatexState.emptyLatexState (Queue.list documentQueue) (Just document)
 
 
 documentListFromDocumentQueue : Queue Document -> DocumentList
 documentListFromDocumentQueue documentQueue =
-    DocumentList (Queue.list documentQueue) Nothing
+    DocumentList LatexState.emptyLatexState (Queue.list documentQueue) Nothing
 
 
 encodeDocumentQueue : Queue Document -> Encode.Value
