@@ -200,7 +200,11 @@ update docMsg model =
                                     Document.basicDocument
 
                         nextDocumentList_ =
-                            DocumentList.select maybeDocumentToSelect model.documentList
+                            let
+                                latexState =
+                                    (BigEditRecord.editRecord model.bigEditRecord).latexState
+                            in
+                                DocumentList.select latexState maybeDocumentToSelect model.documentList
 
                         nextDocumentQueue =
                             Queue.removeWithPredicate (\doc -> doc.id == idOfDocumentToDelete) model.recentDocumentQueue
@@ -642,9 +646,12 @@ selectDocumentWithId id model =
 
         selectedDocument =
             List.Extra.getAt indexOfSelectedDocument documentList |> Maybe.withDefault Document.basicDocument
+
+        latexState =
+            (BigEditRecord.editRecord model.bigEditRecord).latexState
     in
         ( { model
-            | documentList = DocumentList.select (Just selectedDocument) documents_
+            | documentList = DocumentList.select latexState (Just selectedDocument) documents_
             , currentDocument = selectedDocument
             , bigEditRecord = updateBigEditRecord model selectedDocument
             , counter = model.counter + 1

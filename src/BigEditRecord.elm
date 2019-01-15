@@ -11,6 +11,7 @@ module BigEditRecord
         , getRenderedTextAsElements
         , idListAsString
         , isEmpty
+        , latexState
         , seed
         , updateFromDocument
         )
@@ -39,6 +40,7 @@ import Element exposing (Element)
 import Html exposing (Html)
 import MiniLatex.Differ exposing (EditRecord)
 import MiniLatex.MiniLatex as MiniLatex
+import MiniLatex.LatexState as LatexState exposing (LatexState)
 import MiniLatexTools
 
 
@@ -84,6 +86,11 @@ docId (BigEditRecord editRecord_ docId_ seed_) =
 editRecord : BigEditRecord msg -> EditRecord (Html msg)
 editRecord (BigEditRecord editRecord_ docId_ seed_) =
     editRecord_
+
+
+latexState : BigEditRecord msg -> LatexState
+latexState (BigEditRecord editRecord_ docId_ seed_) =
+    editRecord_.latexState
 
 
 updateFromDocument : BigEditRecord msg -> Document -> String -> Int -> BigEditRecord msg

@@ -96,9 +96,9 @@ empty =
     DocumentList LatexState.emptyLatexState [] Nothing
 
 
-make : Document -> List Document -> DocumentList
-make document listOfDocuments =
-    DocumentList LatexState.emptyLatexState (document :: listOfDocuments) (Just document)
+make : LatexState -> Document -> List Document -> DocumentList
+make latexState_ document listOfDocuments =
+    DocumentList latexState_ (document :: listOfDocuments) (Just document)
 
 
 
@@ -181,8 +181,8 @@ setDocuments listOfDocuments (DocumentList latexState_ documentList maybeDocumen
     DocumentList latexState_ listOfDocuments maybeDocument
 
 
-select : Maybe Document -> DocumentList -> DocumentList
-select maybeSelectedDocument (DocumentList latexState_ documentList maybeDocument) =
+select : LatexState -> Maybe Document -> DocumentList -> DocumentList
+select latexState_ maybeSelectedDocument (DocumentList latexState__ documentList maybeDocument) =
     DocumentList latexState_ documentList maybeSelectedDocument
 
 
@@ -201,13 +201,13 @@ prependAndSelect document (DocumentList latexState_ documentList maybeDocument) 
     DocumentList latexState_ (document :: documentList) (Just document)
 
 
-selectFirst : DocumentList -> DocumentList
-selectFirst documentList =
+selectFirst : LatexState -> DocumentList -> DocumentList
+selectFirst latexState_ documentList =
     let
         maybeFirstDocument =
             List.head (documents documentList)
     in
-        select maybeFirstDocument documentList
+        select latexState_ maybeFirstDocument documentList
 
 
 {-| Replace the element in `documentList` whose id is that of
@@ -242,7 +242,7 @@ nextDocumentList targetDocId document documentList =
 
                     Just k ->
                         setDocuments (Utility.listInsertAt (k + 1) document (documents documentList)) documentList
-                            |> select (Just document)
+                            |> select (latexState documentList) (Just document)
 
 
 deleteItemInDocumentListAt : Int -> DocumentList -> DocumentList

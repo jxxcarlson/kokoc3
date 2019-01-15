@@ -8,6 +8,7 @@ import Update.Document
 import Update.Outside as Outside
 import List.Extra
 import Query
+import BigEditRecord exposing (BigEditRecord)
 
 
 update : DocListMsg -> Model -> ( Model, Cmd Msg )
@@ -20,6 +21,12 @@ update docListMsg model =
                     let
                         currentDocument =
                             DocumentList.getFirst documentList
+
+                        bigEditRecord =
+                            Update.Document.updateBigEditRecord model currentDocument
+
+                        latexState_ =
+                            BigEditRecord.latexState bigEditRecord
 
                         nextDocumentList =
                             if currentDocument.docType == Master then
@@ -36,9 +43,9 @@ update docListMsg model =
                                     ( Just currentDocument, Update.Document.loadTexMacrosForDocument currentDocument model )
                     in
                         ( { model
-                            | documentList = DocumentList.selectFirst nextDocumentList
+                            | documentList = DocumentList.selectFirst latexState_ nextDocumentList
                             , currentDocument = currentDocument
-                            , bigEditRecord = Update.Document.updateBigEditRecord model currentDocument
+                            , bigEditRecord = bigEditRecord
                             , maybeMasterDocument = nextMaybeMasterDocument
                           }
                         , Cmd.batch
@@ -60,6 +67,12 @@ update docListMsg model =
                         currentDocument =
                             DocumentList.getFirst documentList
 
+                        bigEditRecord =
+                            Update.Document.updateBigEditRecord model currentDocument
+
+                        latexState =
+                            BigEditRecord.latexState bigEditRecord
+
                         nextDocumentList =
                             if currentDocument.docType == Master then
                                 DocumentList.renumberDocuments documentList
@@ -75,7 +88,7 @@ update docListMsg model =
                                     Just currentDocument
 
                         nextDocumentList_ =
-                            DocumentList.select (Just model.currentDocument) nextDocumentList
+                            DocumentList.select latexState (Just model.currentDocument) nextDocumentList
                     in
                         ( { model
                             | documentList = nextDocumentList_
@@ -107,11 +120,17 @@ update docListMsg model =
 
                         selectedDocument =
                             List.Extra.getAt indexOfSelectedDocument documents_ |> Maybe.withDefault Document.basicDocument
+
+                        bigEditRecord =
+                            Update.Document.updateBigEditRecord model selectedDocument
+
+                        latexState =
+                            BigEditRecord.latexState bigEditRecord
                     in
                         ( { model
-                            | documentList = DocumentList.select (Just selectedDocument) documentList
+                            | documentList = DocumentList.select latexState (Just selectedDocument) documentList
                             , currentDocument = selectedDocument
-                            , bigEditRecord = Update.Document.updateBigEditRecord model selectedDocument
+                            , bigEditRecord = bigEditRecord
                           }
                         , Cmd.batch
                             [ Update.Document.loadTexMacrosForDocument selectedDocument model
@@ -137,6 +156,12 @@ update docListMsg model =
                         currentDocument =
                             maybeCurrentDocument |> Maybe.withDefault Document.basicDocument
 
+                        bigEditRecord =
+                            Update.Document.updateBigEditRecord model currentDocument
+
+                        latexState =
+                            BigEditRecord.latexState bigEditRecord
+
                         nextMaybeMasterDocument =
                             case currentDocument.docType of
                                 Standard ->
@@ -146,9 +171,9 @@ update docListMsg model =
                                     Just currentDocument
                     in
                         ( { model
-                            | documentList = DocumentList.select maybeCurrentDocument documentList
+                            | documentList = DocumentList.select latexState maybeCurrentDocument documentList
                             , currentDocument = currentDocument
-                            , bigEditRecord = Update.Document.updateBigEditRecord model currentDocument
+                            , bigEditRecord = bigEditRecord
                             , maybeMasterDocument = nextMaybeMasterDocument
                           }
                         , Cmd.batch

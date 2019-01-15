@@ -114,14 +114,21 @@ processInfoForElm :
 processInfoForElm model infoForElm_ =
     case infoForElm_ of
         DocumentDataFromOutside document ->
-            ( { model
-                | currentDocument = document
-                , bigEditRecord = Update.Document.updateBigEditRecord model document
-                , documentList = DocumentList.make document []
-                , message = "!got doc from outside"
-              }
-            , Cmd.none
-            )
+            let
+                bigEditRecord =
+                    Update.Document.updateBigEditRecord model document
+
+                editRecord =
+                    BigEditRecord.editRecord bigEditRecord
+            in
+                ( { model
+                    | currentDocument = document
+                    , bigEditRecord = bigEditRecord
+                    , documentList = DocumentList.make editRecord.latexState document []
+                    , message = "!got doc from outside"
+                  }
+                , Cmd.none
+                )
 
         UserDataFromOutside user ->
             ( { model
@@ -309,10 +316,13 @@ update msg model =
         DocListViewMsg (SetCurrentDocument document) ->
             -- SET CURRENT DOCUMENT
             let
+                latexState =
+                    (BigEditRecord.editRecord model.bigEditRecord).latexState
+
                 documentList =
                     case model.documentListSource of
                         SearchResults ->
-                            DocumentList.select (Just document) model.documentList
+                            DocumentList.select latexState (Just document) model.documentList
 
                         RecentDocumentsQueue ->
                             DocumentList.addAndSelect document model.documentList
