@@ -86,12 +86,15 @@ activeDocTitle maybeSelectedDocument document =
 
 activeDocTitleWithIndex : Maybe Document -> Int -> Document -> Element DocListViewMsg
 activeDocTitleWithIndex maybeSelectedDocument index document =
-    Element.el [ Events.onDoubleClick <| LoadMasterDocument2 document ]
-        (Input.button (Widget.listItemStyle (px 190))
-            { onPress = Just (SetCurrentDocument document)
-            , label = Element.el (selectedElementStyle maybeSelectedDocument document) (titleWithIndex index document)
-            }
-        )
+    Element.column []
+        [ Element.el [ Events.onDoubleClick <| LoadMasterDocument2 document ]
+            (Input.button (Widget.listItemStyle (px 190))
+                { onPress = Just (SetCurrentDocument document)
+                , label = Element.el (selectedElementStyle maybeSelectedDocument document) (titleWithIndex index document)
+                }
+            )
+        , Element.el [] (text "toc")
+        ]
 
 
 titleWithIndex : Int -> Document -> Element msg
@@ -119,3 +122,17 @@ selectedElementStyle maybeSelectedDocument document =
                 [ Font.extraBold, Font.color Widget.darkRed ]
             else
                 [ Font.regular, Font.color Widget.blue ]
+
+
+
+-- ifSelected : Maybe Document -> Document -> List (Element.Attribute msg)
+-- ifSelected maybeSelectedDocument document =
+--     case maybeSelectedDocument of
+--         Nothing ->
+--             [ Font.regular, Font.color Widget.blue ]
+--
+--         Just selectedDocument ->
+--             if selectedDocument.id == document.id then
+--                 [ Font.extraBold, Font.color Widget.darkRed ]
+--             else
+--                 [ Font.regular, Font.color Widget.blue ]
