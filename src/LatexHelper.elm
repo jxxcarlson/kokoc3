@@ -127,9 +127,6 @@ latexPreamble =
 \\newcommand{\\subheading}[1]{{\\bf #1}\\par}
 \\newcommand{\\xlinkPublic}[2]{\\href{{http://www.knode.io/\\#@public#1}}{#2}}
 
-\\newcommand{\\red}[1]{{#1}}
-\\newcommand{\\blue}[1]{{#1}}
-
 \\newcommand{\\bibhref}[3]{[#3] \\href{#1}{#2}}
 
 \\newtheorem{theorem}{Theorem}

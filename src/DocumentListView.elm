@@ -87,7 +87,7 @@ innerTocItem document tocEntry =
         name =
             tocEntry.name |> String.replace " " "" |> String.toLower
     in
-        link [ Font.size 11, Font.color (rgb255 100 0 0) ]
+        link [ Font.size 11, Font.color (rgb255 0 0 100) ]
             { url = Configuration.client ++ "/" ++ (String.fromInt document.id) ++ "#_subsection_" ++ name
             , label = text <| tocEntry.label ++ " " ++ tocEntry.name
             }
