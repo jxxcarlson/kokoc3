@@ -311,7 +311,17 @@ update msg model =
                     )
 
                 Standard ->
-                    ( model, Cmd.none )
+                    case document.parentId /= 0 of
+                        True ->
+                            ( { model
+                                | masterDocLoaded = True
+                                , documentListSource = SearchResults
+                              }
+                            , Cmd.map DocListMsg (DocumentList.loadMasterDocumentWithCurrentSelection model.maybeCurrentUser document.parentId)
+                            )
+
+                        False ->
+                            ( model, Cmd.none )
 
         DocListViewMsg (SetCurrentDocument document) ->
             -- SET CURRENT DOCUMENT
