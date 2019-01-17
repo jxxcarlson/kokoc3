@@ -833,65 +833,61 @@ newChildDocument model =
             newDocumentForUserWithParent user model
 
 
+type alias NewSubDocumentInfo =
+    { parentId : Int
+    , texMacroDocumentId : Int
+    , parentTitle : String
+    , textType : TextType
+    , access : AccessDict
+    }
+
+
 newDocumentForUserWithParent : User -> Model -> Cmd DocMsg
 newDocumentForUserWithParent user model =
     let
-        headDocument =
+        masterDocument =
             DocumentList.getFirst model.documentList
-
-        parentId =
-            case headDocument.docType of
-                Master ->
-                    headDocument.id
-
-                Standard ->
-                    0
-
-        access =
-            case headDocument.docType of
-                Master ->
-                    headDocument.access
-
-                Standard ->
-                    Dict.empty
-
-        parentTitle =
-            case headDocument.docType of
-                Master ->
-                    headDocument.title
-
-                Standard ->
-                    ""
 
         selectedDocumentId =
             case DocumentList.selected model.documentList of
                 Nothing ->
-                    parentId
+                    masterDocument.parentId
 
                 Just selectedDoc ->
                     selectedDoc.id
+
+        newSubDocumentInfo =
+            { parentId = masterDocument.id
+            , texMacroDocumentId = masterDocument.texMacroDocumentId
+            , parentTitle = masterDocument.title
+            , textType = masterDocument.textType
+            , access = masterDocument.access
+            }
     in
-        Document.createDocument (User.getTokenString user) selectedDocumentId (makeNewDocumentWithParent parentId parentTitle selectedDocumentId access user)
+        Document.createDocument (User.getTokenString user) selectedDocumentId (makeNewDocumentWithParent newSubDocumentInfo user)
 
 
 {-| NOTE: don't mess with the text ", placeUnder:"
 -- It plays a role in placing the subdocument
 -- I know, I know: very bad coding practie.
 -}
-makeNewDocumentWithParent : Int -> String -> Int -> AccessDict -> User -> Document
-makeNewDocumentWithParent parentId parentTitle selectedDocumentId access user =
+makeNewDocumentWithParent : NewSubDocumentInfo -> User -> Document
+makeNewDocumentWithParent newSubDocumentInfo user =
     let
         newDocument_ =
             Document.basicDocument
     in
         { newDocument_
-            | title = "New Child Document"
+            | title = "New Subdocument"
             , authorId = User.userId user
             , authorName = User.username user
-            , parentId = parentId
-            , parentTitle = parentTitle
-            , access = access
-            , content = "New Child Document of " ++ parentTitle ++ ", placeUnder:" ++ String.fromInt selectedDocumentId
+            , parentId = newSubDocumentInfo.parentId
+            , parentTitle = newSubDocumentInfo.parentTitle
+            , texMacroDocumentId = newSubDocumentInfo.texMacroDocumentId
+            , textType = newSubDocumentInfo.textType
+            , docType = Standard
+            , access = newSubDocumentInfo.access
+            , content = "New Subdocument of " ++ newSubDocumentInfo.parentTitle
         }
 
 
