@@ -7,6 +7,7 @@ module Document
         , DocumentRecord
         , TextType(..)
         , ArchiveProcessor
+        , AccessDict
         , accessDictToString
         , attachDocumentToMasterBelowCmd
         , basicDocument

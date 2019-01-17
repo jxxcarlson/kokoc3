@@ -8,6 +8,7 @@ import Task exposing (Task)
 import Json.Decode as Decode exposing (Decoder, Value)
 import List.Extra
 import Maybe.Extra
+import Dict
 import Utility
 import Configuration
 import Model
@@ -30,6 +31,7 @@ import Document
         , DocType(..)
         , DocMsg(..)
         , ArchiveProcessor
+        , AccessDict
         )
 import SystemDocument
 import ImageManager
@@ -845,6 +847,14 @@ newDocumentForUserWithParent user model =
                 Standard ->
                     0
 
+        access =
+            case headDocument.docType of
+                Master ->
+                    headDocument.access
+
+                Standard ->
+                    Dict.empty
+
         parentTitle =
             case headDocument.docType of
                 Master ->
@@ -861,15 +871,15 @@ newDocumentForUserWithParent user model =
                 Just selectedDoc ->
                     selectedDoc.id
     in
-        Document.createDocument (User.getTokenString user) selectedDocumentId (makeNewDocumentWithParent parentId parentTitle selectedDocumentId user)
+        Document.createDocument (User.getTokenString user) selectedDocumentId (makeNewDocumentWithParent parentId parentTitle selectedDocumentId access user)
 
 
 {-| NOTE: don't mess with the text ", placeUnder:"
 -- It plays a role in placing the subdocument
 -- I know, I know: very bad coding practie.
 -}
-makeNewDocumentWithParent : Int -> String -> Int -> User -> Document
-makeNewDocumentWithParent parentId parentTitle selectedDocumentId user =
+makeNewDocumentWithParent : Int -> String -> Int -> AccessDict -> User -> Document
+makeNewDocumentWithParent parentId parentTitle selectedDocumentId access user =
     let
         newDocument_ =
             Document.basicDocument
@@ -880,6 +890,7 @@ makeNewDocumentWithParent parentId parentTitle selectedDocumentId user =
             , authorName = User.username user
             , parentId = parentId
             , parentTitle = parentTitle
+            , access = access
             , content = "New Child Document of " ++ parentTitle ++ ", placeUnder:" ++ String.fromInt selectedDocumentId
         }
 
