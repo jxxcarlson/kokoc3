@@ -64,11 +64,23 @@ activeDocTitleWithIndex ( latexState, maybeSelectedDocument ) index document =
         [ Element.el [ Events.onDoubleClick <| LoadMasterDocument2 document ]
             (Input.button (Widget.listItemStyle (px 190))
                 { onPress = Just (SetCurrentDocument document)
-                , label = Element.el (selectedElementStyle maybeSelectedDocument document) (titleWithIndex index document)
+                , label = Element.el (selectedElementStyle maybeSelectedDocument document) (tocItem index document)
                 }
             )
         , innerTableOfContents latexState maybeSelectedDocument document
         ]
+
+
+tocItem : Int -> Document -> Element DocListViewMsg
+tocItem index document =
+    let
+        name =
+            document.title |> String.replace " " "" |> String.toLower
+    in
+        link []
+            { url = Configuration.client ++ "/" ++ (String.fromInt document.id) ++ "#_section_" ++ name
+            , label = titleWithIndex index document
+            }
 
 
 innerTableOfContents : LatexState -> Maybe Document -> Document -> Element DocListViewMsg
