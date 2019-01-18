@@ -31,10 +31,12 @@ module DocumentList
         , retrievRecentDocumentQueueFromIntList
         , retrievRecentDocumentQueueFromIntListAtSignIn
         , select
+        , selectDocumentById
         , selectFirst
         , selected
         , selectedData
         , setDocuments
+        , setLatexState
         , updateDocument
         )
 
@@ -187,6 +189,22 @@ setDocuments listOfDocuments (DocumentList latexState_ documentList maybeDocumen
     DocumentList latexState_ listOfDocuments maybeDocument
 
 
+selectDocumentById : Int -> DocumentList -> DocumentList
+selectDocumentById id (DocumentList latexState_ documentList maybeDocument) =
+    case List.Extra.find (\doc -> doc.id == id) documentList of
+        Nothing ->
+            (DocumentList latexState_ documentList Nothing)
+
+        Just document ->
+            (DocumentList latexState_ documentList (Just document))
+
+
+setLatexState : LatexState -> DocumentList -> DocumentList
+setLatexState newLatexState (DocumentList _ listOfDocuments maybeDocument) =
+    DocumentList newLatexState listOfDocuments maybeDocument
+
+
+{-| -}
 select : LatexState -> Maybe Document -> DocumentList -> DocumentList
 select latexState_ maybeSelectedDocument (DocumentList latexState__ documentList maybeDocument) =
     DocumentList latexState_ documentList maybeSelectedDocument
