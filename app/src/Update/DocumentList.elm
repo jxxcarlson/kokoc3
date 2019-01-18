@@ -121,14 +121,14 @@ update docListMsg model =
                         selectedDocument =
                             List.Extra.getAt indexOfSelectedDocument documents_ |> Maybe.withDefault Document.basicDocument
 
-                        masterDocLoaded =
-                            case selectedDocument.docType of
-                                Master ->
-                                    True
-
-                                Standard ->
-                                    False
-
+                        -- ###
+                        -- masterDocLoaded =
+                        --     case selectedDocument.docType of
+                        --         Master ->
+                        --             True
+                        --
+                        --         Standard ->
+                        --             False
                         bigEditRecord =
                             Update.Document.updateBigEditRecord model selectedDocument
 
@@ -139,7 +139,8 @@ update docListMsg model =
                             | documentList = DocumentList.select latexState (Just selectedDocument) documentList
                             , currentDocument = selectedDocument
                             , bigEditRecord = bigEditRecord
-                            , masterDocLoaded = masterDocLoaded
+
+                            -- ###, masterDocLoaded = masterDocLoaded
                           }
                         , Cmd.batch
                             [ Update.Document.loadTexMacrosForDocument selectedDocument model
