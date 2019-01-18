@@ -670,8 +670,7 @@ selectDocumentWithId id model =
         , Cmd.batch
             [ loadTexMacrosForDocument currentDocument model
             , Outside.saveDocumentListToLocalStorage newDocumentList
-
-            -- , commandXX
+            , commandXX
             ]
         )
 
