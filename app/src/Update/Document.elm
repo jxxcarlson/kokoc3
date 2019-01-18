@@ -637,30 +637,37 @@ selectDocumentWithId :
     -> ( Model, Cmd Msg ) -- SET CURRENT DOCUMENT
 selectDocumentWithId id model =
     let
-        documents_ =
-            model.documentList
-
-        documentList =
-            DocumentList.documents documents_
-
-        indexOfSelectedDocument =
-            List.Extra.findIndex (\doc -> doc.id == id) documentList |> Maybe.withDefault 0
-
-        selectedDocument =
-            List.Extra.getAt indexOfSelectedDocument documentList |> Maybe.withDefault Document.basicDocument
-
+        -- documents_ =
+        --     model.documentList
+        --
+        -- documentList =
+        --     DocumentList.documents documents_
+        --
+        -- indexOfSelectedDocument =
+        --     List.Extra.findIndex (\doc -> doc.id == id) documentList |> Maybe.withDefault 0
+        --
+        -- selectedDocument =
+        --     List.Extra.getAt indexOfSelectedDocument documentList |> Maybe.withDefault Document.basicDocument
         latexState =
             (BigEditRecord.editRecord model.bigEditRecord).latexState
+
+        newDocumentList =
+            DocumentList.selectDocumentById id model.documentList
+                |> DocumentList.setLatexState latexState
+
+        currentDocument =
+            DocumentList.selected newDocumentList |> Maybe.withDefault Document.basicDocument
     in
         ( { model
-            | documentList = DocumentList.select latexState (Just selectedDocument) documents_
-            , currentDocument = selectedDocument
-            , bigEditRecord = updateBigEditRecord model selectedDocument
+            | documentList = newDocumentList
+            , currentDocument = currentDocument
+            , bigEditRecord = updateBigEditRecord model currentDocument
             , counter = model.counter + 1
+            , documentListSource = SearchResults
           }
         , Cmd.batch
-            [ loadTexMacrosForDocument selectedDocument model
-            , Outside.saveDocumentListToLocalStorage documents_
+            [ loadTexMacrosForDocument currentDocument model
+            , Outside.saveDocumentListToLocalStorage newDocumentList
             ]
         )
 
