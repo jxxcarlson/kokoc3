@@ -121,6 +121,14 @@ update docListMsg model =
                         selectedDocument =
                             List.Extra.getAt indexOfSelectedDocument documents_ |> Maybe.withDefault Document.basicDocument
 
+                        masterDocLoaded =
+                            case selectedDocument.docType of
+                                Master ->
+                                    True
+
+                                Standard ->
+                                    False
+
                         bigEditRecord =
                             Update.Document.updateBigEditRecord model selectedDocument
 
@@ -131,6 +139,7 @@ update docListMsg model =
                             | documentList = DocumentList.select latexState (Just selectedDocument) documentList
                             , currentDocument = selectedDocument
                             , bigEditRecord = bigEditRecord
+                            , masterDocLoaded = masterDocLoaded
                           }
                         , Cmd.batch
                             [ Update.Document.loadTexMacrosForDocument selectedDocument model
@@ -185,12 +194,6 @@ update docListMsg model =
                 Err err ->
                     ( { model | message = HttpError.handle err }, Cmd.none )
 
-        -- DocListMsg (RestoreRecentDocumentQueue result) ->
-        --   case result of
-        --     Ok documentList ->
-        --       (model, Cmd.none)
-        --     Err err ->
-        --         ({model | message = HttpError.handle err},   Cmd.none  )
         RestoreRecentDocumentQueue result ->
             case result of
                 Ok restoredDocumentQueue ->

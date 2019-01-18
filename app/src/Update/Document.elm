@@ -637,17 +637,6 @@ selectDocumentWithId :
     -> ( Model, Cmd Msg ) -- SET CURRENT DOCUMENT
 selectDocumentWithId id model =
     let
-        -- documents_ =
-        --     model.documentList
-        --
-        -- documentList =
-        --     DocumentList.documents documents_
-        --
-        -- indexOfSelectedDocument =
-        --     List.Extra.findIndex (\doc -> doc.id == id) documentList |> Maybe.withDefault 0
-        --
-        -- selectedDocument =
-        --     List.Extra.getAt indexOfSelectedDocument documentList |> Maybe.withDefault Document.basicDocument
         latexState =
             (BigEditRecord.editRecord model.bigEditRecord).latexState
 
@@ -655,19 +644,34 @@ selectDocumentWithId id model =
             DocumentList.selectDocumentById id model.documentList
                 |> DocumentList.setLatexState latexState
 
+        lengthOfDocumentList =
+            DocumentList.documentListLength model.documentList
+
         currentDocument =
             DocumentList.selected newDocumentList |> Maybe.withDefault Document.basicDocument
+
+        ( masterDocLoaded, commandXX ) =
+            case ( currentDocument.docType, lengthOfDocumentList ) of
+                ( Master, 1 ) ->
+                    ( True, Cmd.map DocListMsg (DocumentList.loadMasterDocument model.maybeCurrentUser currentDocument.id) )
+
+                ( _, _ ) ->
+                    ( False, Cmd.none )
     in
         ( { model
             | documentList = newDocumentList
             , currentDocument = currentDocument
             , bigEditRecord = updateBigEditRecord model currentDocument
             , counter = model.counter + 1
+
+            -- , masterDocLoaded = masterDocLoaded
             , documentListSource = SearchResults
           }
         , Cmd.batch
             [ loadTexMacrosForDocument currentDocument model
             , Outside.saveDocumentListToLocalStorage newDocumentList
+
+            -- , commandXX
             ]
         )
 
