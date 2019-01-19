@@ -32,12 +32,12 @@ timeout =
 
 backend : String
 backend =
-    "http://localhost:4000"
+    "https://nshost.herokuapp.com"
 
 
 client : String
 client =
-    "http://localhost:8080"
+    "https://knode.io"
 
 
 documentQueueCapacity : Int
@@ -84,7 +84,8 @@ This is knode.io, ready to run MiniLatex, Asciidoc, or Markdown.
 
 $$\\int_0^1 x^n dx = \\frac{1}{n+1}$$
 
-Click on \\strong{Home} to go to your home page
+Click on \\strong{Home} in the menu bar above to go to your home page.
+Click on \\xlink{1064}{Manual} above for the manual.
 """
 
 
@@ -102,7 +103,8 @@ Welcome to knode.io.  We are ready to run MiniLatex, Asciidoc, or Markdown for y
 
 $$\\int_0^1 x^n dx = \\frac{1}{n+1}$$
 
-Click on \\strong{Home} to go to your home page.
+Click on \\strong{Home} in the menu bar above to go to your home page.
+Click on \\xlink{1064}{Manual} above for the manual.
 Click on \\strong{Write} to create or edit a document.
 """
 
@@ -148,7 +150,9 @@ $$\\int_0^1 x^n dx = \\frac{1}{n+1}$$
 
 Write formulas, place images, etc.
 Edit live and publish to the web in real time. Lecture notes, poetry, whatever.
-Click on \\strong{\\blue{Home}} to go to your home page. Recommended browser: \\strong{\\blue{Firefox}}.
+Click on \\strong{Home} in the menu bar above to go to your home page.
+Click on \\strong{\\xlink{1064}{Manual}} above for the User Manual.
+   Recommended browser: \\strong{\\blue{Firefox}}.
 
 
 \\medskip
@@ -168,16 +172,16 @@ then type Ctrl-ENTER or Ctrl-RETURN.
 \\subheading{Sample documents}
 
 \\begin{itemize}
-  \\item \\href{http://localhost:8080/424}{Quantum Field Theory Notes}
-  \\item \\href{http://localhost:8080/365}{Visual Literacy}
-  \\item \\href{http://localhost:8080/754}{Butterfly}
-  \\item \\href{http://localhost:8080/346}{Metal}
+  \\item \\href{https://knode.io/424}{Quantum Field Theory Notes}
+  \\item \\href{https://knode.io/365}{Visual Literacy}
+  \\item \\href{https://knode.io/754}{Butterfly}
+  \\item \\href{https://knode.io/346}{Metal}
 \\end{itemize}
 
 
 For other apps that use MiniLaTeX,
 check out \\href{https://jxxcarlson.github.io/app/miniLatexLive/index.html}{MiniLatex Live}
-or \\href{http://localhost:8080/reader2}{MiniLaTeX Reader}
+or \\href{https://knode.io/reader2}{MiniLaTeX Reader}
 \\mdash no login needed.
 
 If you have questions or comments about MiniLatex or knode.io, please contact
