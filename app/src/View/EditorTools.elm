@@ -119,7 +119,7 @@ docListTitle model =
 toolsPanel model =
     Element.column [ spacing 15, padding 10, height shrink, scrollbarY ]
         [ publicControls model
-        , deleteDocumentButton model
+        , Element.row [ spacing 8 ] [ deleteDocumentButton model, saveSettingsButton model ]
         , masterDocPanel model
         , documentTitleInput model
         , coverArtUrlInput model
@@ -408,6 +408,15 @@ masterDocumentButton model =
         Input.button (documentTypeButtonStyle model Master)
             { onPress = Just (SetDocumentType Master)
             , label = Element.el [] (Element.text "Master")
+            }
+
+
+saveSettingsButton : Model -> Element Msg
+saveSettingsButton model =
+    Element.map DocMsg <|
+        Input.button (buttonStyle (px 55))
+            { onPress = Just UpdateCurrentDocument
+            , label = Element.el [] (Element.text "Save")
             }
 
 

@@ -664,7 +664,7 @@ selectDocumentWithId id model =
             , bigEditRecord = updateBigEditRecord model currentDocument
             , counter = model.counter + 1
 
-            -- , masterDocLoaded = masterDocLoaded
+            --   , masterDocLoaded = masterDocLoaded
             , documentListSource = SearchResults
           }
         , Cmd.batch
