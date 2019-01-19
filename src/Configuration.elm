@@ -32,12 +32,12 @@ timeout =
 
 backend : String
 backend =
-    "http://localhost:4000"
+    "https://nshost.herokuapp.com"
 
 
 client : String
 client =
-    "http://localhost:8080"
+    "https://knode.io"
 
 
 documentQueueCapacity : Int
@@ -71,7 +71,7 @@ coverArtUrl =
 
 userManualId : Int
 userManualId =
-    750
+    1064
 
 
 
@@ -168,16 +168,16 @@ then type Ctrl-ENTER or Ctrl-RETURN.
 \\subheading{Sample documents}
 
 \\begin{itemize}
-  \\item \\href{http://localhost:8080/424}{Quantum Field Theory Notes}
-  \\item \\href{http://localhost:8080/365}{Visual Literacy}
-  \\item \\href{http://localhost:8080/754}{Butterfly}
-  \\item \\href{http://localhost:8080/346}{Metal}
+  \\item \\href{https://knode.io/424}{Quantum Field Theory Notes}
+  \\item \\href{https://knode.io/365}{Visual Literacy}
+  \\item \\href{https://knode.io/754}{Butterfly}
+  \\item \\href{https://knode.io/346}{Metal}
 \\end{itemize}
 
 
 For other apps that use MiniLaTeX,
 check out \\href{https://jxxcarlson.github.io/app/miniLatexLive/index.html}{MiniLatex Live}
-or \\href{http://localhost:8080/reader2}{MiniLaTeX Reader}
+or \\href{https://knode.io/reader2}{MiniLaTeX Reader}
 \\mdash no login needed.
 
 If you have questions or comments about MiniLatex or knode.io, please contact
