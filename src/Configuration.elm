@@ -90,8 +90,8 @@ This is knode.io, ready to run MiniLatex, Asciidoc, or Markdown.
 \\[f(a) = \\frac{1}{2\\pi i} \\oint\\frac{f(z)}{z-a}dz\\]
 
 Click on \\strong{Home} in the menu bar above to go to your home page.
-Click on \\xlink{1064}{Manual} above for the manual.  Click \\strong{control-N}
-to make a new document.
+Click on \\xlink{1064}{Manual} above for the manual.  Type \\strong{control-N}
+to make a new document, or type \\strong{control-1} for a sample document.
 """
 
 
@@ -158,7 +158,7 @@ A displayed formula, by Cauchy:
 There are infinitely many primes $p \\equiv 1 (4)$.
 \\end{theorem}
 
-Hmmm ... I refer you to equation \\eqref{eq:cauchy}.
+Hmmm ... I refer you to equation \\ref{eq:cauchy}.
 
 \\image{https://www.storyofmathematics.com/images2/riemann.jpg}{B. Riemann}{float: left, width: 300}
 Bernhard Riemann's life was short, but amazingly creative and productive.  From \\href{https://en.wikipedia.org/wiki/Bernhard_Riemann}{Wikipedia}:
@@ -216,7 +216,8 @@ Write formulas, place images, etc.
 Edit and publish LaTeX to the web in real time. Lecture notes, problem sets, whatever.
 Click on \\strong{Home} in the menu bar above to go to your home page.
 Click on \\strong{\\xlink{1064}{Manual}} above for the User Manual. Sign up
-and click \\strong{control-N} to make a new docuemnt and get started writing.
+and type \\strong{control-N} to make a new document and get started writing.
+You can also type \\strong{control-1} for a sample document.
    Recommended browser: \\strong{\\blue{Firefox}}.
 
 

@@ -885,6 +885,7 @@ displayMenuItems model =
                 , separator
                 , saveCurrentDocumentItem
                 , newStandardDocItem
+                , newSampledDocItem
                 , newMasterDocItem
                 , newSubDocumentItem
                 , incrementVersionItem
@@ -980,6 +981,15 @@ newStandardDocItem =
         Input.button (Widget.menuItemStyle (px 160))
             { onPress = Just NewDocument
             , label = Element.el [] (Element.text "New document Ctrl-N")
+            }
+
+
+newSampledDocItem : Element Msg
+newSampledDocItem =
+    Element.map DocMsg <|
+        Input.button (Widget.menuItemStyle (px 160))
+            { onPress = Just SampleDocument
+            , label = Element.el [] (Element.text "Sample document Ctrl-1")
             }
 
 
