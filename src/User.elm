@@ -1,7 +1,7 @@
 module User
     exposing
         ( BigUser
-        , Token
+        , Token(..)
         , User
         , UserMsg(..)
         , decodeUserFromOutside
@@ -109,11 +109,12 @@ usernameFromMaybeUser maybeUser =
 
 getTokenString : User -> String
 getTokenString (User user) =
-    let
-        (Token str) =
-            user.token
-    in
-        str
+    case user.token of
+        Token str ->
+            str
+
+        TokenError str ->
+            str
 
 
 getToken : User -> Token
@@ -152,6 +153,7 @@ maybeSetToken token_ maybeUser =
 
 type Token
     = Token String
+    | TokenError String
 
 
 
@@ -185,6 +187,9 @@ readToken maybeToken =
         Just (Token str) ->
             Just str
 
+        Just (TokenError str) ->
+            Just str
+
 
 stringFromMaybeToken : Maybe Token -> String
 stringFromMaybeToken maybeToken =
@@ -195,10 +200,18 @@ stringFromMaybeToken maybeToken =
         Just (Token str) ->
             str
 
+        Just (TokenError str) ->
+            "invalidToken"
+
 
 stringFromToken : Token -> String
-stringFromToken (Token str) =
-    str
+stringFromToken token =
+    case token of
+        Token str ->
+            str
+
+        TokenError str ->
+            str
 
 
 
@@ -228,7 +241,10 @@ type UserMsg
 
 tokenDecoder : Decoder Token
 tokenDecoder =
-    Decode.map Token (Decode.field "token" Decode.string)
+    Decode.oneOf
+        [ Decode.map Token (Decode.field "token" Decode.string)
+        , Decode.map TokenError (Decode.field "error" Decode.string)
+        ]
 
 
 jwtDecoder : Decoder TokenClaims

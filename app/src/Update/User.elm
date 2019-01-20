@@ -4,7 +4,7 @@ import Time
 import Task
 import Model exposing (Model, Msg(..), ErrorResponse(..), initialModel, DocumentListSource(..))
 import Queue
-import User exposing (UserMsg(..))
+import User exposing (UserMsg(..), Token(..))
 import Update.HttpError as HttpError
 import Update.Outside as Outside
 import Utility
@@ -118,49 +118,14 @@ update userMsg model =
         ReceiveToken result ->
             case result of
                 Ok token ->
-                    let
-                        maybeToken =
-                            Just token
-
-                        maybeCurrentUser =
-                            User.maybeUserFromEmailAndToken model.email (User.stringFromToken token)
-
-                        bigUserCmd =
-                            case maybeCurrentUser of
-                                Nothing ->
-                                    Cmd.none
-
-                                Just user ->
-                                    Cmd.map UserMsg <| User.getBigUserRecordAtSignIn (User.userId user)
-                    in
-                        ( { model
-                            | maybeToken = maybeToken
-                            , maybeCurrentUser = maybeCurrentUser
-                            , message = "Signed in"
-                            , email = ""
-                            , password = ""
-                            , username = ""
-                          }
-                        , Cmd.batch
-                            [ Outside.sendMaybeUserDataToLocalStorage maybeCurrentUser
-                            , bigUserCmd
-                            ]
-                        )
+                    doSignIn model token
 
                 Err err ->
                     let
                         errorMessage =
                             String.trim <| HttpError.handle err
-
-                        errorResponse =
-                            if errorMessage == "Incorrect email or password" then
-                                ShowPasswordReset
-                            else if errorMessage == "Account not verified" then
-                                ShowVerifyAccount
-                            else
-                                NoErrorResponse
                     in
-                        ( { model | message = errorMessage, errorResponse = errorResponse }, Cmd.none )
+                        ( { model | message = errorMessage, errorResponse = NoErrorResponse }, Cmd.none )
 
         RespondToNewUser result ->
             case result of
@@ -204,6 +169,62 @@ signOutCurrentUser model =
             [ Outside.eraseLocalStorage
 
             -- , Update.Document.saveCurrentDocumentIfDirty model --ACHTUNG!!
+            ]
+        )
+
+
+doSignIn : Model -> Token -> ( Model, Cmd Msg )
+doSignIn model token =
+    case token of
+        Token str ->
+            doValidSignIn model token
+
+        TokenError str ->
+            handleTokenError model str
+
+
+handleTokenError : Model -> String -> ( Model, Cmd Msg )
+handleTokenError model errorMessage =
+    let
+        errorResponse_ =
+            if errorMessage == "Incorrect email or password" then
+                ShowPasswordReset
+            else if errorMessage == "Account not verified" then
+                ShowVerifyAccount
+            else
+                NoErrorResponse
+    in
+        ( { model | message = errorMessage, errorResponse = errorResponse_ }, Cmd.none )
+
+
+doValidSignIn : Model -> Token -> ( Model, Cmd Msg )
+doValidSignIn model token =
+    let
+        maybeToken =
+            Just token
+
+        maybeCurrentUser =
+            User.maybeUserFromEmailAndToken model.email (User.stringFromToken token)
+
+        bigUserCmd =
+            case maybeCurrentUser of
+                Nothing ->
+                    Cmd.none
+
+                Just user ->
+                    Cmd.map UserMsg <| User.getBigUserRecordAtSignIn (User.userId user)
+    in
+        ( { model
+            | maybeToken = maybeToken
+            , maybeCurrentUser = maybeCurrentUser
+            , message = "Signed in"
+            , email = ""
+            , password = ""
+            , username = ""
+          }
+        , Cmd.batch
+            [ Outside.sendMaybeUserDataToLocalStorage maybeCurrentUser
+            , bigUserCmd
             ]
         )
 
