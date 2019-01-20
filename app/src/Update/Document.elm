@@ -324,10 +324,10 @@ update docMsg model =
                         )
 
         NewDocument ->
-            doNewStandardDocument model
+            doNewStandardDocument model Configuration.newDocumentTitle Configuration.newMiniLatexDocumentText
 
         SampleDocument ->
-            doNewStandardDocument model
+            doNewStandardDocument model Configuration.sampleDocumentTitle Configuration.sampleMiniLatexDocumentText
 
         DeleteCurrentDocument ->
             let
@@ -348,7 +348,7 @@ update docMsg model =
             saveCurrentDocument model
 
         NewMasterDocument ->
-            doNewMasterDocument model
+            doNewMasterDocument model Configuration.newMasterDocumentTitle Configuration.newMasterDocumentText
 
         NewChildDocument ->
             ( { model | toolMenuState = HideToolMenu, appMode = Writing }
@@ -742,8 +742,8 @@ printLatex model =
     )
 
 
-doNewStandardDocument : Model -> ( Model, Cmd Msg )
-doNewStandardDocument model =
+doNewStandardDocument : Model -> String -> String -> ( Model, Cmd Msg )
+doNewStandardDocument model title content =
     case model.maybeCurrentUser of
         Nothing ->
             ( model, Cmd.none )
@@ -751,7 +751,7 @@ doNewStandardDocument model =
         Just user ->
             ( { model
                 | toolPanelState = ShowToolPanel
-                , documentTitle = "NEW DOCUMENT"
+                , documentTitle = title
                 , currentDocumentDirty = False
                 , toolMenuState = HideToolMenu
                 , appMode = Writing
@@ -760,13 +760,13 @@ doNewStandardDocument model =
                 (DocMsg << NewDocumentCreated 0)
                 ((saveCurrentDocumentIfDirtyTask model)
                     |> Task.andThen
-                        (\_ -> newDocumentForUserTask user model Standard)
+                        (\_ -> newDocumentForUserTask user model Standard title content)
                 )
             )
 
 
-doNewMasterDocument : Model -> ( Model, Cmd Msg )
-doNewMasterDocument model =
+doNewMasterDocument : Model -> String -> String -> ( Model, Cmd Msg )
+doNewMasterDocument model title content =
     case model.maybeCurrentUser of
         Nothing ->
             ( model, Cmd.none )
@@ -774,7 +774,7 @@ doNewMasterDocument model =
         Just user ->
             ( { model
                 | toolPanelState = ShowToolPanel
-                , documentTitle = "NEW MASTER DOCUMENT"
+                , documentTitle = title
                 , currentDocumentDirty = False
                 , toolMenuState = HideToolMenu
                 , appMode = Writing
@@ -783,13 +783,13 @@ doNewMasterDocument model =
                 (DocMsg << (NewDocumentCreated 0))
                 ((saveCurrentDocumentIfDirtyTask model)
                     |> Task.andThen
-                        (\_ -> newDocumentForUserTask user model Master)
+                        (\_ -> newDocumentForUserTask user model Master title content)
                 )
             )
 
 
-newDocumentForUserTask : User -> Model -> DocType -> Task Http.Error DocumentRecord
-newDocumentForUserTask user model docType =
+newDocumentForUserTask : User -> Model -> DocType -> String -> String -> Task Http.Error DocumentRecord
+newDocumentForUserTask user model docType title content =
     let
         headDocument =
             DocumentList.getFirst model.documentList
@@ -810,11 +810,11 @@ newDocumentForUserTask user model docType =
                 Just selectedDoc ->
                     selectedDoc.id
     in
-        Document.createDocumentTask (User.getTokenString user) (makeNewDocument user docType)
+        Document.createDocumentTask (User.getTokenString user) (makeNewDocument user docType title content)
 
 
-makeNewDocument : User -> DocType -> Document
-makeNewDocument user docType =
+makeNewDocument : User -> DocType -> String -> String -> Document
+makeNewDocument user docType title content =
     let
         newDocument_ =
             SystemDocument.newDocument
@@ -824,7 +824,8 @@ makeNewDocument user docType =
                 { newDocument_
                     | authorId = User.userId user
                     , authorName = User.username user
-                    , title = "NEW DOCUMENT"
+                    , title = title
+                    , content = content
                 }
 
             Master ->

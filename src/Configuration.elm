@@ -7,8 +7,12 @@ module Configuration
         , coverArtUrl
         , userManualId
         , basicDocumentText
+        , newDocumentTitle
         , newMiniLatexDocumentText
+        , sampleDocumentTitle
         , sampleMiniLatexDocumentText
+        , newMasterDocumentTitle
+        , newMasterDocumentText
         , newUserText
         , signInText
         , signedOutText
@@ -111,19 +115,27 @@ Click on \\strong{Write} to create or edit a document.
 """
 
 
+newDocumentTitle =
+    "New Document"
+
+
 newMiniLatexDocumentText =
     """
-\\section{NEW DOCUMENT}
+\\section{New Document}
 
-Edit this text, or wipe it out and
-start fresh.  Type \\strong{control-F} to
-do a full render of your document.
+Edit this text, or wipe it out and start fresh.
+
+Type \\strong{control-F} to do a full render of your document.
 """
+
+
+sampleDocumentTitle =
+    "Sample Document"
 
 
 sampleMiniLatexDocumentText =
     """
-\\section{NEW DOCUMENT}
+\\section{Sample Document}
 
 Edit this text, or wipe it out and
 start fresh.  Type \\strong{control-F} to
@@ -151,6 +163,20 @@ Hmmm ... I refer you to equation \\eqref{eq:cauchy}.
 \\image{https://www.storyofmathematics.com/images2/riemann.jpg}{B. Riemann}{float: left, width: 300}
 Bernhard Riemann's life was short, but amazingly creative and productive.  From \\href{https://en.wikipedia.org/wiki/Bernhard_Riemann}{Wikipedia}:
 \\italic{17 September 1826 – 20 July 1866) was a German mathematician who made contributions to analysis, number theory, and differential geometry. In the field of real analysis, he is mostly known for the first rigorous formulation of the integral, the Riemann integral, and his work on Fourier series. His contributions to complex analysis include most notably the introduction of Riemann surfaces, breaking new ground in a natural, geometric treatment of complex analysis. His famous 1859 paper on the prime-counting function, containing the original statement of the Riemann hypothesis, is regarded as one of the most influential papers in analytic number theory. Through his pioneering contributions to differential geometry, Riemann laid the foundations of the mathematics of general relativity. He is considered by many to be one of a handful of greatest mathematicians of all time}
+"""
+
+
+newMasterDocumentTitle =
+    "New Master Document"
+
+
+newMasterDocumentText =
+    """
+
+Add new sections by using the text '== 1234'
+to add the document with ID 1234.
+
+Add one document per line.
 """
 
 

@@ -5,6 +5,7 @@ import Keyboard exposing (Key(..))
 import Update.Search as Search
 import Update.Document
 import UI.Update as UI
+import Configuration
 
 
 gateway : Model -> ( List Key, Maybe Keyboard.KeyChange ) -> ( Model, Cmd Msg )
@@ -59,10 +60,13 @@ handleKey model key =
             UI.toggleToolPanelState model
 
         Character "m" ->
-            Update.Document.doNewMasterDocument model
+            Update.Document.doNewMasterDocument model Configuration.newMasterDocumentTitle Configuration.sampleMiniLatexDocumentText
+
+        Character "1" ->
+            Update.Document.doNewStandardDocument model Configuration.sampleDocumentTitle Configuration.sampleMiniLatexDocumentText
 
         Character "n" ->
-            Update.Document.doNewStandardDocument model
+            Update.Document.doNewStandardDocument model Configuration.newDocumentTitle Configuration.newMiniLatexDocumentText
 
         Character "p" ->
             Update.Document.printDocument model
