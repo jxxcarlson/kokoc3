@@ -142,7 +142,7 @@ toggleDocumentListDiplayButton : Model -> Element Msg
 toggleDocumentListDiplayButton model =
     Input.button Widget.titleStyle
         { onPress = Just ToggleDocumentSource
-        , label = Element.el [ Font.bold, Font.size 60, moveUp 27 ] (Element.text "∾")
+        , label = Element.el [] (Element.image [ width (px 30), moveUp 2 ] { src = "https://s3.amazonaws.com/noteimages/jxxcarlson/lazy-s.png", description = "lazy-s" })
         }
 
 
