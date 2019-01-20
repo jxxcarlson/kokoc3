@@ -1,4 +1,45 @@
-module View.Widget exposing (black, blue, buttonColor, buttonStyle, buttonStyleWithColor, charcoal, darkBlue, darkGrey, darkRed, grey, indicatorBad, indicatorGood, lightBlue, lightGrey, lightYellow, linkButton, linkButtonFat, listItemStyle, listItemStyleBold, listItemStyleBoldPale, listItemStyleLarge, listItemStyleNarrow, listItemStyleNarrow2, listItemStyleNarrowDark, mediumLightBlue, menuItemStyle, menuSeparatorStyle, mouseDownColor, orange, red, squareButtonStyle, titleButtonStyle, titleStyle, titleStyleLight, veryDarkGrey, white, whiteButtonStyle)
+module View.Widget
+    exposing
+        ( black
+        , blue
+        , buttonColor
+        , buttonStyle
+        , buttonStyleWithColor
+        , charcoal
+        , darkBlue
+        , darkGrey
+        , darkRed
+        , grey
+        , indicatorBad
+        , indicatorGood
+        , lightBlue
+        , lightGrey
+        , lightYellow
+        , linkButton
+        , linkButtonWhite
+        , linkButtonFat
+        , listItemStyle
+        , listItemStyleBold
+        , listItemStyleBoldPale
+        , listItemStyleLarge
+        , listItemStyleNarrow
+        , listItemStyleNarrowWhite
+        , listItemStyleNarrow2
+        , listItemStyleNarrowDark
+        , mediumLightBlue
+        , menuItemStyle
+        , menuSeparatorStyle
+        , mouseDownColor
+        , orange
+        , red
+        , squareButtonStyle
+        , titleButtonStyle
+        , titleStyle
+        , titleStyleLight
+        , veryDarkGrey
+        , white
+        , whiteButtonStyle
+        )
 
 import Element exposing (..)
 import Element.Background as Background
@@ -85,6 +126,17 @@ listItemStyleNarrow width_ =
     ]
 
 
+listItemStyleNarrowWhite width_ =
+    [ Font.size 13
+    , mouseDown [ Font.size 13, Background.color lightYellow ]
+    , Font.color (rgb255 200 200 200)
+    , width width_
+    , height (px 16)
+    , paddingXY 20 0
+    , clipX
+    ]
+
+
 listItemStyleNarrowDark width_ =
     [ Font.size 13
     , mouseDown [ Font.size 13, Background.color lightYellow ]
@@ -100,6 +152,17 @@ listItemStyleNarrow2 width_ =
     [ Font.size 13
     , mouseDown [ Font.size 13, Background.color lightYellow ]
     , Font.color blue
+    , width width_
+    , height (px 16)
+    , clipX
+    ]
+
+
+listItemStyleNarrow2White width_ =
+    [ Font.size 13
+    , mouseDown [ Font.size 13, Background.color lightYellow ]
+    , Font.color (rgb255 200 200 200)
+    , Font.bold
     , width width_
     , height (px 16)
     , clipX
@@ -262,6 +325,13 @@ indicatorGood =
 
 linkButton url label_ width_ =
     newTabLink (listItemStyleNarrow2 width_)
+        { url = url
+        , label = text label_
+        }
+
+
+linkButtonWhite url label_ width_ =
+    newTabLink (listItemStyleNarrow2White width_)
         { url = url
         , label = text label_
         }

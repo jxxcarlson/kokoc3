@@ -1,4 +1,54 @@
-module View.EditorTools exposing (asciidocLatexTypeButton, asciidocTypeButton, bodyReaderColumn, cancelDeleteCurrentDocumentButton, cancelDeleteCurrentDocumentButton_, deleteButtonBackgroundColor, deleteCurrentDocumentButton, deleteDocumentButton, displayDocumentList, docListTitle, documentPanels, documentTitleInput, documentTypeButtonStyle, documentTypePanel, elmMarkupTypeButton, highLightDocumentType, highLightTextType, markdownTypeButton, masterDocPanel, masterDocumentButton, miniLatexTypeButton, newChildButton, newChildButton_, newChildButton__, newDocumentButton, newMasterButton, newVersionButton, newVersionUrl, plainTextTypeButton, privateButton, publicButton, publicControls, publicIndicatorColor, sharingInputPane, sharingInputPane_, showVersionButton, showVersionsUrl, standardDocumentButton, tagInputPane, tagInputPane_, textTypeButtonStyle, textTypePanel, toggleDocumentListDiplayButton, toolsOrContents, toolsOrContentsForUser, toolsOrContentsPublic, toolsPanel, versionsPanel)
+module View.EditorTools
+    exposing
+        ( asciidocLatexTypeButton
+        , asciidocTypeButton
+        , bodyReaderColumn
+        , cancelDeleteCurrentDocumentButton
+        , cancelDeleteCurrentDocumentButton_
+        , deleteButtonBackgroundColor
+        , deleteCurrentDocumentButton
+        , deleteDocumentButton
+        , displayDocumentList
+        , docListTitle
+        , documentPanels
+        , documentTitleInput
+        , documentTypeButtonStyle
+        , documentTypePanel
+        , elmMarkupTypeButton
+        , highLightDocumentType
+        , highLightTextType
+        , markdownTypeButton
+        , masterDocPanel
+        , masterDocumentButton
+        , miniLatexTypeButton
+        , newChildButton
+        , newChildButton_
+        , newChildButton__
+        , newDocumentButton
+        , newMasterButton
+        , newVersionButton
+        , newVersionUrl
+        , plainTextTypeButton
+        , privateButton
+        , publicButton
+        , publicControls
+        , publicIndicatorColor
+        , sharingInputPane
+        , sharingInputPane_
+        , showVersionButton
+        , showVersionsUrl
+        , standardDocumentButton
+        , tagInputPane
+        , tagInputPane_
+        , textTypeButtonStyle
+        , textTypePanel
+        , toggleDocumentListDiplayButton
+        , toolsOrContents
+        , toolsOrContentsForUser
+        , toolsOrContentsPublic
+        , toolsPanel
+        , versionsPanel
+        )
 
 import AppUtility
 import Browser.Dom exposing (Viewport)
@@ -92,7 +142,7 @@ toggleDocumentListDiplayButton : Model -> Element Msg
 toggleDocumentListDiplayButton model =
     Input.button Widget.titleStyle
         { onPress = Just ToggleDocumentSource
-        , label = Element.el [ Font.bold ] (Element.text "<=>")
+        , label = Element.el [ Font.bold, Font.size 60, moveUp 27 ] (Element.text "∾")
         }
 
 
@@ -118,16 +168,16 @@ docListTitle model =
 
 toolsPanel model =
     Element.column [ spacing 15, padding 10, height shrink, scrollbarY ]
-        [ publicControls model
-        , Element.row [ spacing 8 ] [ deleteDocumentButton model, saveSettingsButton model ]
+        [ Element.row [ spacing 8 ] [ deleteDocumentButton model, saveSettingsButton model ]
+        , publicControls model
         , masterDocPanel model
         , documentTitleInput model
         , coverArtUrlInput model
         , texMacroIdInput model
         , documentPanels model
-        , tagInputPane model (px 250) (px 100) "Tags"
-        , versionsPanel model
-        , sharingInputPane model (px 250) (px 100) "Sharing"
+        , tagInputPane model (px 250) (px 80) "Tags"
+        , sharingInputPane model (px 250) (px 80) "Sharing"
+        , Element.el [ height (px 20) ] (text "")
         ]
 
 
@@ -164,11 +214,11 @@ coverArtUrlInput model =
 
 
 versionsPanel model =
-    Element.column [ spacing 5 ]
-        [ Element.el [ Font.bold ] (text <| "Version: " ++ String.fromInt model.currentDocument.version)
+    Element.column [ width <| px 55, spacingXY 12 6, padding 8, Background.color blue ]
+        [ Element.el [ Font.bold, Font.color (rgb255 200 200 200) ] (text <| "v: " ++ String.fromInt model.currentDocument.version)
         , Element.column []
-            [ Element.el [ moveLeft 6 ] (showVersionButton model)
-            , Element.el [ moveLeft 12 ] (newVersionButton model)
+            [ Element.el [ moveLeft 0 ] (showVersionButton model)
+            , Element.el [ moveLeft 22 ] (newVersionButton model)
             ]
         ]
 
@@ -230,11 +280,14 @@ documentPanels model =
 textTypePanel model =
     Element.column [ spacing 5 ]
         [ miniLatexTypeButton model
-        , elmMarkupTypeButton model
+
+        -- , elmMarkupTypeButton model
         , asciidocTypeButton model
-        , asciidocLatexTypeButton model
+
+        -- , asciidocLatexTypeButton model
         , markdownTypeButton model
-        , plainTextTypeButton model
+
+        -- , plainTextTypeButton model
         ]
 
 
@@ -276,12 +329,7 @@ publicControls model =
 
 
 showVersionButton model =
-    linkButton (showVersionsUrl model.currentDocument) " Show versions" (px 100)
-
-
-
--- newVersionButton model =
---   linkButton (newVersionUrl model.currentDocument) "New version" (px 100)
+    linkButtonWhite (showVersionsUrl model.currentDocument) "Show" (px 50)
 
 
 showVersionsUrl : Document -> String
@@ -297,9 +345,9 @@ newVersionUrl document =
 newVersionButton : Model -> Element Msg
 newVersionButton model =
     Element.map DocMsg <|
-        Input.button (textTypeButtonStyle model MiniLatex)
+        Input.button (textTypeButtonStyleWhite model MiniLatex)
             { onPress = Just IncrementVersion
-            , label = Element.el [] (Element.text "New version")
+            , label = Element.el [] (Element.text "New")
             }
 
 
@@ -360,6 +408,11 @@ plainTextTypeButton model =
 textTypeButtonStyle : Model -> TextType -> List (Attribute msg)
 textTypeButtonStyle model textType =
     listItemStyleNarrow (px 110) ++ highLightTextType model.currentDocument.textType textType
+
+
+textTypeButtonStyleWhite : Model -> TextType -> List (Attribute msg)
+textTypeButtonStyleWhite model textType =
+    listItemStyleNarrowWhite (px 110) ++ highLightTextType model.currentDocument.textType textType
 
 
 documentTypeButtonStyle : Model -> DocType -> List (Attribute msg)
@@ -474,10 +527,6 @@ highLightDocumentType docType1 docType2 =
 
         False ->
             [ Font.light ]
-
-
-
--- highLightTextType : TextType -> TextType  -> List (Attribute msg)
 
 
 highLightTextType textType1 textType2 =

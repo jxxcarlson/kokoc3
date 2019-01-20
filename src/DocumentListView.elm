@@ -28,7 +28,7 @@ viewWithHeading height_ masterDocLoaded heading docList =
 viewWithHeadingShifted : Int -> Bool -> String -> DocumentList -> Element DocListViewMsg
 viewWithHeadingShifted height_ masterDocLoaded heading docList =
     Element.column [ spacing 10 ]
-        [ Element.el [ moveRight 45, Font.size 18, Font.bold ] (text heading)
+        [ Element.el [ moveRight 45, Font.size 18, Font.bold, Font.color Widget.blue ] (text heading)
         , view height_ masterDocLoaded docList
         ]
 
