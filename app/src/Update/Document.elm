@@ -326,6 +326,9 @@ update docMsg model =
         NewDocument ->
             doNewStandardDocument model
 
+        SampleDocument ->
+            doNewStandardDocument model
+
         DeleteCurrentDocument ->
             let
                 tokenString =

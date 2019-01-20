@@ -33,6 +33,7 @@ module View.EditorTools
         , publicButton
         , publicControls
         , publicIndicatorColor
+        , saveSettingsButton
         , sharingInputPane
         , sharingInputPane_
         , showVersionButton
@@ -168,8 +169,7 @@ docListTitle model =
 
 toolsPanel model =
     Element.column [ spacing 15, padding 10, height shrink, scrollbarY ]
-        [ Element.row [ spacing 8 ] [ deleteDocumentButton model, saveSettingsButton model ]
-        , publicControls model
+        [ publicControls model
         , masterDocPanel model
         , documentTitleInput model
         , coverArtUrlInput model
@@ -214,7 +214,7 @@ coverArtUrlInput model =
 
 
 versionsPanel model =
-    Element.column [ width <| px 55, spacingXY 12 6, padding 8, Background.color blue ]
+    Element.column [ width <| px 55, height <| px 90, spacingXY 12 6, padding 8, Background.color blue ]
         [ Element.el [ Font.bold, Font.color (rgb255 200 200 200) ] (text <| "v: " ++ String.fromInt model.currentDocument.version)
         , Element.column []
             [ Element.el [ moveLeft 0 ] (showVersionButton model)
@@ -312,8 +312,8 @@ documentTitleInput model =
 deleteDocumentButton : Model -> Element Msg
 deleteDocumentButton model =
     Element.row [ spacing 10 ]
-        [ deleteCurrentDocumentButton (px 60) model
-        , cancelDeleteCurrentDocumentButton (px 60) model
+        [ deleteCurrentDocumentButton (px 90) model
+        , cancelDeleteCurrentDocumentButton (px 90) model
         ]
 
 
@@ -467,7 +467,7 @@ masterDocumentButton model =
 saveSettingsButton : Model -> Element Msg
 saveSettingsButton model =
     Element.map DocMsg <|
-        Input.button (buttonStyle (px 55))
+        Input.button (buttonStyle (px 90))
             { onPress = Just UpdateCurrentDocument
             , label = Element.el [] (Element.text "Save")
             }

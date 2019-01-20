@@ -101,7 +101,7 @@ leftColumn portion_ model =
         , height fill
         , Background.color Widget.lightBlue
         , paddingXY 20 20
-        , spacing 10
+        , spacing 25
         ]
         [ Element.row [ spacing 16 ] [ editorButtons model, EditorTools.versionsPanel model ]
         , EditorTools.toolsOrContents model
@@ -113,4 +113,5 @@ editorButtons model =
     Element.column [ spacing 8 ]
         [ Element.row [ spacing 10 ] [ Common.toggleToolsButton (px 90) model, EditorTools.newDocumentButton model ]
         , Element.row [ spacing 10 ] [ EditorTools.newMasterButton model, EditorTools.newChildButton model ]
+        , Element.row [ spacing 8 ] [ EditorTools.deleteDocumentButton model, EditorTools.saveSettingsButton model ]
         ]

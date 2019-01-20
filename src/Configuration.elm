@@ -8,6 +8,7 @@ module Configuration
         , userManualId
         , basicDocumentText
         , newMiniLatexDocumentText
+        , sampleMiniLatexDocumentText
         , newUserText
         , signInText
         , signedOutText
@@ -32,12 +33,12 @@ timeout =
 
 backend : String
 backend =
-    "https://nshost.herokuapp.com"
+    "http://localhost:4000"
 
 
 client : String
 client =
-    "https://knode.io"
+    "http://localhost:8080"
 
 
 documentQueueCapacity : Int
@@ -82,10 +83,11 @@ signInText =
     """
 This is knode.io, ready to run MiniLatex, Asciidoc, or Markdown.
 
-$$\\int_0^1 x^n dx = \\frac{1}{n+1}$$
+\\[f(a) = \\frac{1}{2\\pi i} \\oint\\frac{f(z)}{z-a}dz\\]
 
 Click on \\strong{Home} in the menu bar above to go to your home page.
-Click on \\xlink{1064}{Manual} above for the manual.
+Click on \\xlink{1064}{Manual} above for the manual.  Click \\strong{control-N}
+to make a new document.
 """
 
 
@@ -101,7 +103,7 @@ signedUpText =
     """
 Welcome to knode.io.  We are ready to run MiniLatex, Asciidoc, or Markdown for you
 
-$$\\int_0^1 x^n dx = \\frac{1}{n+1}$$
+\\[f(a) = \\frac{1}{2\\pi i} \\oint\\frac{f(z)}{z-a}dz\\]
 
 Click on \\strong{Home} in the menu bar above to go to your home page.
 Click on \\xlink{1064}{Manual} above for the manual.
@@ -111,7 +113,44 @@ Click on \\strong{Write} to create or edit a document.
 
 newMiniLatexDocumentText =
     """
-    NEW DOCUMENT: WRITE YOUR TEXT HERE
+\\section{NEW DOCUMENT}
+
+Edit this text, or wipe it out and
+start fresh.  Type \\strong{control-F} to
+do a full render of your document.
+"""
+
+
+sampleMiniLatexDocumentText =
+    """
+\\section{NEW DOCUMENT}
+
+Edit this text, or wipe it out and
+start fresh.  Type \\strong{control-F} to
+do a full render of your document.
+
+\\section{Introduction}
+
+An inline formula, by Pythogoras: $a^2 + b^2 = c^2$.
+
+A displayed formula, by Cauchy:
+
+\\begin{equation}
+\\label{eq:cauchy}
+  f(a) = \\frac{1}{2\\pi i} \\oint\\frac{f(z)}{z-a}dz
+\\end{equation}
+
+\\section{More stuff}
+
+\\begin{theorem}
+There are infinitely many primes $p \\equiv 1 (4)$.
+\\end{theorem}
+
+Hmmm ... I refer you to equation \\eqref{eq:cauchy}.
+
+\\image{https://www.storyofmathematics.com/images2/riemann.jpg}{B. Riemann}{float: left, width: 300}
+Bernhard Riemann's life was short, but amazingly creative and productive.  From \\href{https://en.wikipedia.org/wiki/Bernhard_Riemann}{Wikipedia}:
+\\italic{17 September 1826 – 20 July 1866) was a German mathematician who made contributions to analysis, number theory, and differential geometry. In the field of real analysis, he is mostly known for the first rigorous formulation of the integral, the Riemann integral, and his work on Fourier series. His contributions to complex analysis include most notably the introduction of Riemann surfaces, breaking new ground in a natural, geometric treatment of complex analysis. His famous 1859 paper on the prime-counting function, containing the original statement of the Riemann hypothesis, is regarded as one of the most influential papers in analytic number theory. Through his pioneering contributions to differential geometry, Riemann laid the foundations of the mathematics of general relativity. He is considered by many to be one of a handful of greatest mathematicians of all time}
 """
 
 
@@ -127,7 +166,7 @@ and other document attributes.
 
 \\subsection{A formula}
 
-$$\\int_0^1 x^n dx = \\frac{1}{n+1}$$
+\\[f(a) = \\frac{1}{2\\pi i} \\oint\\frac{f(z)}{z-a}dz\\]
 
 
 \\subsection{An image}
@@ -143,15 +182,15 @@ $$\\int_0^1 x^n dx = \\frac{1}{n+1}$$
 basicDocumentText =
     """
 
-This is \\strong{knode.io}, ready to run MiniLatex,
-Asciidoc, Markdown, or just plain old text.
+This is \\strong{kNode.io}, a knowledge node, ready to run MiniLaTeX.
 
-$$\\int_0^1 x^n dx = \\frac{1}{n+1}$$
+\\[f(a) = \\frac{1}{2\\pi i} \\oint\\frac{f(z)}{z-a}dz\\]
 
 Write formulas, place images, etc.
-Edit live and publish to the web in real time. Lecture notes, poetry, whatever.
+Edit and publish LaTeX to the web in real time. Lecture notes, problem sets, whatever.
 Click on \\strong{Home} in the menu bar above to go to your home page.
-Click on \\strong{\\xlink{1064}{Manual}} above for the User Manual.
+Click on \\strong{\\xlink{1064}{Manual}} above for the User Manual. Sign up
+and click \\strong{control-N} to make a new docuemnt and get started writing.
    Recommended browser: \\strong{\\blue{Firefox}}.
 
 
@@ -163,28 +202,32 @@ Click on \\strong{\\xlink{1064}{Manual}} above for the User Manual.
 
 Click on  \\strong{\\blue{Random}} to explore.  To find things, type something in
 the search box, e.g., \\italic{matt}, \\italic{wave}, or \\italic{snow},
-then type Ctrl-ENTER or Ctrl-RETURN.
+then press RETURN.
 
 
-\\strong{knode.io} is made with \\href{http://elm-lang.org/}{Elm}.
+\\strong{kNode.io} is made with \\href{http://elm-lang.org/}{Elm},
+\\href{https://jxxcarlson.github.io/app/miniLatexLive/index.html}{MiniLaTeX},
+a subset of LaTeX that can be rendered to HTML, and \\href{https://mathjax.org}{MathJax}.
+
+kNode also supports documents written in Asciidoc and Markdown.
 
 
 \\subheading{Sample documents}
 
 \\begin{itemize}
-  \\item \\href{https://knode.io/424}{Quantum Field Theory Notes}
-  \\item \\href{https://knode.io/365}{Visual Literacy}
-  \\item \\href{https://knode.io/754}{Butterfly}
-  \\item \\href{https://knode.io/346}{Metal}
+  \\item \\href{http://localhost:8080/424}{Quantum Field Theory Notes}
+  \\item \\href{http://localhost:8080/365}{Visual Literacy}
+  \\item \\href{http://localhost:8080/754}{Butterfly}
+  \\item \\href{http://localhost:8080/346}{Metal}
 \\end{itemize}
 
 
 For other apps that use MiniLaTeX,
 check out \\href{https://jxxcarlson.github.io/app/miniLatexLive/index.html}{MiniLatex Live}
-or \\href{https://knode.io/reader2}{MiniLaTeX Reader}
+or \\href{http://localhost:8080/reader2}{MiniLaTeX Reader}
 \\mdash no login needed.
 
-If you have questions or comments about MiniLatex or knode.io, please contact
+If you have questions or comments about MiniLatex or kNode.io, please contact
 Jim Carlson: jxxcarlson at gmail.
 """
 
