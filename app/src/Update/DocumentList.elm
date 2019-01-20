@@ -1,7 +1,7 @@
 module Update.DocumentList exposing (update)
 
 import Document exposing (DocType(..))
-import DocumentList exposing (DocListMsg(..))
+import DocumentList exposing (DocListMsg(..), HandleDocumentList(..))
 import Model exposing (Model, Msg(..), DocumentListSource(..), ToolPanelState(..), AppMode(..))
 import Update.HttpError as HttpError
 import Update.Document
@@ -14,11 +14,19 @@ import BigEditRecord exposing (BigEditRecord)
 update : DocListMsg -> Model -> ( Model, Cmd Msg )
 update docListMsg model =
     case docListMsg of
-        ReceiveDocumentList result ->
+        ReceiveDocumentList handleDocumentList result ->
             -- SET CURRENT DOCUMENT
             case result of
                 Ok documentList ->
                     let
+                        masterDocLoaded =
+                            case handleDocumentList of
+                                DLDoNothing ->
+                                    model.masterDocLoaded
+
+                                DLSetMasterLoaded ->
+                                    True
+
                         currentDocument =
                             DocumentList.getFirst documentList
 
@@ -45,6 +53,7 @@ update docListMsg model =
                         ( { model
                             | documentList = DocumentList.selectFirst latexState_ nextDocumentList
                             , currentDocument = currentDocument
+                            , masterDocLoaded = masterDocLoaded
                             , bigEditRecord = bigEditRecord
                             , maybeMasterDocument = nextMaybeMasterDocument
                           }

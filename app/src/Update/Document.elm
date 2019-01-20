@@ -39,6 +39,7 @@ import DocumentList
     exposing
         ( DocListMsg(..)
         , DocumentList
+        , HandleDocumentList(..)
         , documentListLength
         , findDocuments
         )
@@ -1004,7 +1005,7 @@ saveCurrentMasterDocument model =
         , Cmd.batch
             [ Update.Time.getTime
             , Task.attempt
-                (DocListMsg << ReceiveDocumentList)
+                (DocListMsg << (ReceiveDocumentList DLSetMasterLoaded))
                 ((Document.saveDocumentTask tokenString model.currentDocument)
                     |> Task.andThen
                         (\_ -> DocumentList.loadMasterDocumentTask model.maybeCurrentUser model.currentDocument.id)

@@ -3,6 +3,7 @@ module DocumentList
         ( DocListMsg(..)
         , DocumentList
         , IntList
+        , HandleDocumentList(..)
         , addAndSelect
         , deleteItemInDocumentListAt
         , documentListEncoder
@@ -75,7 +76,7 @@ type alias IntList =
 
 
 type DocListMsg
-    = ReceiveDocumentList (Result Http.Error DocumentList)
+    = ReceiveDocumentList HandleDocumentList (Result Http.Error DocumentList)
     | ReceiveDocumentListWithSelectedId (Result Http.Error DocumentList)
     | RestoreDocumentList (Result Http.Error DocumentList)
     | RestoreRecentDocumentQueue (Result Http.Error (Queue Document))
@@ -83,6 +84,11 @@ type DocListMsg
     | ReceiveDocumentListAndPreserveCurrentSelection (Result Http.Error DocumentList)
     | GetPublicDocuments String
     | GetUserDocuments String
+
+
+type HandleDocumentList
+    = DLDoNothing
+    | DLSetMasterLoaded
 
 
 
@@ -325,7 +331,7 @@ findDocuments maybeUser queryString =
             , headers = headers
             , url = Configuration.backend ++ route
             , body = Http.jsonBody Encode.null
-            , expect = Http.expectJson ReceiveDocumentList documentListDecoder
+            , expect = Http.expectJson (ReceiveDocumentList DLDoNothing) documentListDecoder
             , timeout = Just Configuration.timeout
             , tracker = Nothing
             }
@@ -445,7 +451,7 @@ loadMasterDocument maybeUser docId =
             , headers = headers
             , url = Configuration.backend ++ route
             , body = Http.jsonBody Encode.null
-            , expect = Http.expectJson ReceiveDocumentList documentListDecoder
+            , expect = Http.expectJson (ReceiveDocumentList DLSetMasterLoaded) documentListDecoder
             , timeout = Just Configuration.timeout
             , tracker = Nothing
             }
