@@ -223,7 +223,7 @@ You can also type \\strong{control-1} for a sample document.
 
 \\medskip
 
-\\image{https://noteimages.s3.amazonaws.com/app_images/vintage-typewriter-in-black-and-white-lynn-langmade.jpg}{}{width: 550}
+\\image{https://s3.amazonaws.com/noteimages/jxxcarlson/typewriter+arrow.jpg}{}{width: 550}
 
 \\medskip
 
@@ -242,10 +242,10 @@ kNode also supports documents written in Asciidoc and Markdown.
 \\subheading{Sample documents}
 
 \\begin{itemize}
-  \\item \\href{http://localhost:8080/424}{Quantum Field Theory Notes}
-  \\item \\href{http://localhost:8080/365}{Visual Literacy}
-  \\item \\href{http://localhost:8080/754}{Butterfly}
-  \\item \\href{http://localhost:8080/346}{Metal}
+  \\item \\href{http://localhost:8080/424}{Quantum Field Theory Notes} — MiniLaTeX
+  \\item \\href{http://localhost:8080/1017}{Notes on Logic and Type Theory} — MiniLaTeX
+  \\item \\href{http://localhost:8080/365}{Visual Literacy} — Asciidoc
+  \\item \\href{http://localhost:8080/346}{Metal} — Asciidoc
 \\end{itemize}
 
 

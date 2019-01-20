@@ -27,6 +27,9 @@ httpErrorHandler error =
 handle : Http.Error -> String
 handle error =
     case error of
+        Http.BadBody str ->
+            "ERROR: " ++ str
+
         _ ->
             "Http.error"
 

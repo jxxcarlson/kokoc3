@@ -154,6 +154,10 @@ type Token
     = Token String
 
 
+
+-- | TokenError String
+
+
 type alias TokenClaims =
     { username : String, userId : Int, exp : Int }
 

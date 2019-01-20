@@ -37,7 +37,7 @@ authorLeftColumn portion_ model =
         , paddingXY 20 20
         , spacing 10
         ]
-        [ showUserCount model
+        [ showAuthorCount model
         , listUsersButton model
         ]
 
@@ -54,18 +54,18 @@ authorRightColumn portion_ model =
         []
 
 
-showUserCount : Model -> Element msg
-showUserCount model =
+showAuthorCount : Model -> Element msg
+showAuthorCount model =
     let
         n =
             List.length (List.filter (\user -> user.blurb /= "" && user.public) model.userList)
     in
-    case n == 0 of
-        True ->
-            Element.none
+        case n == 0 of
+            True ->
+                Element.none
 
-        False ->
-            Element.el [] (Element.text <| "Users: " ++ String.fromInt n)
+            False ->
+                Element.el [] (Element.text <| "Authors: " ++ String.fromInt n)
 
 
 authorCenterColumn : Int -> Int -> Model -> Element Msg
@@ -74,13 +74,13 @@ authorCenterColumn windowHeight_ portion_ model =
         userList =
             List.filter (\user -> user.blurb /= "" && user.public) model.userList
     in
-    Element.column [ width (fillPortion portion_), height (px (windowHeight_ - 73)), scrollbarY ]
-        [ Element.row [ spacing 10 ]
-            [ Element.el [ paddingXY 30 10, Font.bold, width (px 145) ] (Element.text "Author")
-            , Element.el [ Font.bold, width (px 300) ] (Element.text "Blurb")
+        Element.column [ width (fillPortion portion_), height (px (windowHeight_ - 73)), scrollbarY ]
+            [ Element.row [ spacing 10 ]
+                [ Element.el [ paddingXY 30 10, Font.bold, width (px 145) ] (Element.text "Author")
+                , Element.el [ Font.bold, width (px 300) ] (Element.text "Blurb")
+                ]
+            , viewUsers userList
             ]
-        , viewUsers userList
-        ]
 
 
 viewUsers : List BigUser -> Element Msg
@@ -111,7 +111,7 @@ listUsersButton : Model -> Element Msg
 listUsersButton model =
     Input.button (Widget.buttonStyle (px 115))
         { onPress = Just GetUsers
-        , label = Element.el [] (Element.text "List users")
+        , label = Element.el [] (Element.text "List authors")
         }
 
 

@@ -59,9 +59,13 @@ view model =
             nonPhoneView model
 
 
+myFocusStyle =
+    { borderColor = Nothing, backgroundColor = Nothing, shadow = Nothing }
+
+
 nonPhoneView : Model -> Html Msg
 nonPhoneView model =
-    Element.layout [ Font.size 14, width fill, height fill, clipY ] <|
+    Element.layoutWith { options = [ focusStyle myFocusStyle ] } [ Font.size 14, width fill, height fill, clipY ] <|
         Element.column [ width fill, height (px model.windowHeight) ]
             [ header model
             , body model
