@@ -74,12 +74,8 @@ header model =
     Element.row [ width fill, Background.color Widget.grey, height (px 40), paddingXY 20 0, spacing 10, alignLeft ]
         [ Element.row [ spacing 10 ]
             [ searchInput model
-
-            -- , getDocumentsButton (px 60) model
             , getRandomDocumentsButton (px 70) model
             , spacer 8
-
-            -- , Element.el [ Font.size 24] (text <| appTitle model.appMode)
             , startButton (px 90) model
             , spacer 8
             , homeButton (px 55) model
@@ -656,7 +652,7 @@ startButton : Length -> Model -> Element Msg
 startButton width_ model =
     Input.button (titleButtonStyle width_)
         { onPress = Just GoToStart
-        , label = Element.el [] (Element.text "kNode")
+        , label = Element.el [ width (px 60) ] (Element.text "kNode")
         }
 
 
