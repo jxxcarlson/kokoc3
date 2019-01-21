@@ -20,6 +20,7 @@ module DocumentList
         , intListForDocumentQueueDecoder
         , intListFromDocumentList
         , latexState
+        , length
         , loadMasterDocument
         , loadMasterDocumentTask
         , loadMasterDocumentAndSelect
@@ -117,6 +118,11 @@ make latexState_ document listOfDocuments =
 documents : DocumentList -> List Document
 documents (DocumentList latexState_ documentList maybeDocument) =
     documentList
+
+
+length : DocumentList -> Int
+length (DocumentList latexState_ documentList maybeDocument) =
+    List.length documentList
 
 
 latexState : DocumentList -> LatexState
@@ -304,7 +310,7 @@ notFoundDocument =
         doc =
             Document.basicDocument
     in
-        { doc | title = "Not found" }
+        { doc | title = "Not found", content = "\\strong{Sorry, nothing found}" }
 
 
 

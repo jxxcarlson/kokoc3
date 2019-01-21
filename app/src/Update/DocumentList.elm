@@ -42,6 +42,14 @@ update docListMsg model =
                             else
                                 documentList
 
+                        pushCommand =
+                            case DocumentList.length nextDocumentList == 0 of
+                                True ->
+                                    Cmd.none
+
+                                False ->
+                                    Update.Document.pushDocument currentDocument
+
                         ( nextMaybeMasterDocument, loadTexMacrosForMasterDocument ) =
                             case currentDocument.docType of
                                 Standard ->
@@ -61,7 +69,7 @@ update docListMsg model =
                             [ Update.Document.loadTexMacrosForDocument currentDocument model
                             , loadTexMacrosForMasterDocument
                             , Outside.saveDocumentListToLocalStorage nextDocumentList
-                            , Update.Document.pushDocument currentDocument
+                            , pushCommand
                             ]
                         )
 
@@ -130,14 +138,6 @@ update docListMsg model =
                         selectedDocument =
                             List.Extra.getAt indexOfSelectedDocument documents_ |> Maybe.withDefault Document.basicDocument
 
-                        -- ###
-                        -- masterDocLoaded =
-                        --     case selectedDocument.docType of
-                        --         Master ->
-                        --             True
-                        --
-                        --         Standard ->
-                        --             False
                         bigEditRecord =
                             Update.Document.updateBigEditRecord model selectedDocument
 
@@ -148,8 +148,6 @@ update docListMsg model =
                             | documentList = DocumentList.select latexState (Just selectedDocument) documentList
                             , currentDocument = selectedDocument
                             , bigEditRecord = bigEditRecord
-
-                            -- ###, masterDocLoaded = masterDocLoaded
                           }
                         , Cmd.batch
                             [ Update.Document.loadTexMacrosForDocument selectedDocument model

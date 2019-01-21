@@ -14,6 +14,7 @@ module FileUploadCredentials
         , getS3Credentials
         , getS3PresignedUrl
         , makeImage
+        , fileExtension
         )
 
 import Configuration
@@ -74,15 +75,42 @@ decodeFileData =
         (field "type" Decode.string)
 
 
+fileExtension : String -> Maybe String
+fileExtension filename =
+    let
+        fileParts =
+            filename |> String.split "."
+
+        n =
+            List.length fileParts
+    in
+        if n < 2 then
+            Nothing
+        else
+            List.drop (n - 1) fileParts |> List.head
+
+
 encodeFileData : FileData -> Encode.Value
 encodeFileData fileData =
-    Encode.object
-        [ ( "name", Encode.string <| fileData.name )
-        , ( "lastModified", Encode.int <| fileData.lastModified )
-        , ( "webkitRelativePath", Encode.string <| fileData.webkitRelativePath )
-        , ( "size", Encode.int <| fileData.size )
-        , ( "type", Encode.string <| fileData.mimetype )
-        ]
+    case fileExtension fileData.name of
+        Just "pdf" ->
+            Encode.object
+                [ ( "name", Encode.string <| fileData.name )
+                , ( "Content-Type", Encode.string <| "application/pdf" )
+                , ( "lastModified", Encode.int <| fileData.lastModified )
+                , ( "webkitRelativePath", Encode.string <| fileData.webkitRelativePath )
+                , ( "size", Encode.int <| fileData.size )
+                , ( "type", Encode.string <| fileData.mimetype )
+                ]
+
+        _ ->
+            Encode.object
+                [ ( "name", Encode.string <| fileData.name )
+                , ( "lastModified", Encode.int <| fileData.lastModified )
+                , ( "webkitRelativePath", Encode.string <| fileData.webkitRelativePath )
+                , ( "size", Encode.int <| fileData.size )
+                , ( "type", Encode.string <| fileData.mimetype )
+                ]
 
 
 encodeFileValueWithUrl : Encode.Value -> String -> Encode.Value
