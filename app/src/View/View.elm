@@ -880,6 +880,8 @@ displayMenuItems model =
         ShowToolMenu ->
             Element.column [ moveLeft 10 ]
                 [ separator
+                , createdRecentlyItem model
+                , updatedRecentlyItem model
                 , randomDocumentItem model
                 , separator
                 , readerModeItem model
@@ -929,6 +931,22 @@ randomDocumentItem model =
     Input.button (Widget.menuItemStyle (px 160))
         { onPress = Just (randomItemMsg model)
         , label = Element.el [] (Element.text "Random docs Ctrl-/")
+        }
+
+
+createdRecentlyItem : Model -> Element Msg
+createdRecentlyItem model =
+    Input.button (Widget.menuItemStyle (px 160))
+        { onPress = Just GetDocsCreatedRecently
+        , label = Element.el [] (Element.text "Recently created Ctrl-[")
+        }
+
+
+updatedRecentlyItem : Model -> Element Msg
+updatedRecentlyItem model =
+    Input.button (Widget.menuItemStyle (px 160))
+        { onPress = Just GetDocsUpdatedRecently
+        , label = Element.el [] (Element.text "Recently updated Ctrl-]")
         }
 
 

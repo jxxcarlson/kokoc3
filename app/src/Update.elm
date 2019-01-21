@@ -851,6 +851,12 @@ update msg model =
                 , Cmd.none
                 )
 
+        GetDocsCreatedRecently ->
+            Search.getPublicDocumentsRawQuery model "created=10"
+
+        GetDocsUpdatedRecently ->
+            Search.getPublicDocumentsRawQuery model "updated=10"
+
 
 getNewTime : Cmd Msg
 getNewTime =

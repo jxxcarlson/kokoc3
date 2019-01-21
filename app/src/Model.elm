@@ -217,6 +217,8 @@ type Msg
     | NewSeed Int
     | DoFullRender
     | SpinnerMsg Spinner.Msg
+    | GetDocsCreatedRecently
+    | GetDocsUpdatedRecently
       -- IMAGE
     | GetImages String
     | ImageMsg ImageManager.ImageMsg

@@ -112,6 +112,23 @@ getPublicDocumentsRawQuery model query =
     )
 
 
+getDocumentsRawQuery : Model -> String -> ( Model, Cmd Msg )
+getDocumentsRawQuery model query =
+    ( { model
+        | appMode = Reading
+        , toolPanelState = HideToolPanel
+        , documentListSource = SearchResults
+        , masterDocLoaded = False
+        , currentDocumentDirty = False
+        , toolMenuState = HideToolMenu
+      }
+    , Cmd.batch
+        [ Cmd.map DocListMsg (DocumentList.findDocuments model.maybeCurrentUser query)
+        , Update.Document.saveCurrentDocumentIfDirty model
+        ]
+    )
+
+
 imageQuery : Model -> String -> String
 imageQuery model basicQuery =
     case model.maybeCurrentUser of

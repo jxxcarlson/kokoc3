@@ -5,6 +5,7 @@ import Keyboard exposing (Key(..))
 import Update.Search as Search
 import Update.Document
 import UI.Update as UI
+import User
 import Configuration
 
 
@@ -34,6 +35,23 @@ handleKey model key =
         Character "/" ->
             Search.getPublicDocumentsRawQuery model "random=public"
 
+        Character "[" ->
+            case model.maybeCurrentUser of
+                Nothing ->
+                    Search.getPublicDocumentsRawQuery model "created=10"
+
+                Just user ->
+                    Search.getDocumentsRawQuery model <| "created=10"
+
+        Character "]" ->
+            case model.maybeCurrentUser of
+                Nothing ->
+                    Search.getPublicDocumentsRawQuery model "updated=10"
+
+                Just user ->
+                    Search.getDocumentsRawQuery model <| "updated=10"
+
+        -- &author=" ++ (User.username user)
         Character "w" ->
             UI.changeMode model Writing
 
