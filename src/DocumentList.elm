@@ -28,10 +28,12 @@ module DocumentList
         , make
         , nextDocumentList
         , prepend
+        , propagateSettingsToChildren
         , renumberDocuments
         , retrievDocumentsFromIntList
         , retrievRecentDocumentQueueFromIntList
         , retrievRecentDocumentQueueFromIntListAtSignIn
+        , save
         , select
         , selectDocumentById
         , selectFirst
@@ -43,7 +45,7 @@ module DocumentList
         )
 
 import Configuration
-import Document exposing (Document, documentDecoder)
+import Document exposing (Document, documentDecoder, DocType(..), DocMsg, DocumentRecord)
 import Http
 import Json.Decode as Decode exposing (Decoder, at, decodeString, int, list, string)
 import Json.Decode.Pipeline as JPipeline exposing (hardcoded, optional, required)
@@ -607,6 +609,60 @@ intListDecoder =
 intListForDocumentQueueDecoder : Decoder (List Int)
 intListForDocumentQueueDecoder =
     list int
+
+
+{-| Propgate certain seetings from the head document to the
+remainning documens, which are assumed to be children of the
+head document/
+-}
+propagateSettingsToChildren : DocumentList -> DocumentList
+propagateSettingsToChildren (DocumentList latexState_ listOfDocuments maybeDocument) =
+    let
+        _ =
+            Debug.log "Enter PSTC, n" (List.length listOfDocuments)
+
+        maybeHeadDocument =
+            List.head listOfDocuments
+    in
+        case maybeHeadDocument of
+            Nothing ->
+                DocumentList latexState_ listOfDocuments maybeDocument
+
+            Just headDocument ->
+                case headDocument.docType of
+                    Standard ->
+                        DocumentList latexState_ listOfDocuments maybeDocument
+
+                    Master ->
+                        DocumentList latexState_ (propagateSettingsToListOfDocuments headDocument (List.drop 1 listOfDocuments)) maybeDocument
+
+
+save : String -> Int -> DocumentList -> Cmd DocMsg
+save token offset (DocumentList latexState_ listOfDocuments maybeDocument) =
+    Cmd.batch (List.map (Document.saveDocument token) (List.drop offset listOfDocuments))
+
+
+saveTask : String -> Int -> DocumentList -> Task Http.Error (List DocumentRecord)
+saveTask token offset (DocumentList latexState_ listOfDocuments maybeDocument) =
+    Task.sequence (List.map (Document.saveDocumentTask token) (List.drop offset listOfDocuments))
+
+
+propagateSettingsToListOfDocuments : Document -> List Document -> List Document
+propagateSettingsToListOfDocuments document listOfDocuments =
+    List.map (propagateSettingsFromDocument document) listOfDocuments
+
+
+propagateSettingsFromDocument : Document -> Document -> Document
+propagateSettingsFromDocument fromDoc toDoc =
+    let
+        _ =
+            Debug.log "PSFD: " ( fromDoc.id, toDoc.id )
+    in
+        { toDoc
+            | texMacroDocumentId = fromDoc.texMacroDocumentId
+            , access = fromDoc.access
+            , public = fromDoc.public
+        }
 
 
 

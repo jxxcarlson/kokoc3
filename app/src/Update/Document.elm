@@ -989,13 +989,22 @@ saveCurrentMasterDocument :
     -> ( Model, Cmd Msg )
 saveCurrentMasterDocument model =
     let
+        _ =
+            Debug.log "Enter" "saveCurrentMasterDocument"
+
         tokenString =
             User.getTokenStringFromMaybeUser model.maybeCurrentUser
+
+        documentList1 =
+            DocumentList.updateDocument model.currentDocument model.documentList
+
+        documentList2 =
+            DocumentList.propagateSettingsToChildren documentList1
     in
         ( { model
             | currentDocumentDirty = False
             , message = "(m)" ++ digest model.currentDocument.content
-            , documentList = DocumentList.updateDocument model.currentDocument model.documentList
+            , documentList = documentList2
             , recentDocumentQueue = Queue.replaceUsingPredicate (\doc -> doc.id == model.currentDocument.id) model.currentDocument model.recentDocumentQueue
           }
         , Cmd.batch
@@ -1006,6 +1015,7 @@ saveCurrentMasterDocument model =
                     |> Task.andThen
                         (\_ -> DocumentList.loadMasterDocumentTask model.maybeCurrentUser model.currentDocument.id)
                 )
+            , DocumentList.save tokenString 1 documentList2 |> Cmd.map DocMsg
             ]
         )
 
