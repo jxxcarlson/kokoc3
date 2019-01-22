@@ -87,7 +87,7 @@ myMap ( model, cmdDocMsg ) =
 update : DocMsg -> Model -> ( Model, Cmd Msg )
 update docMsg model =
     case docMsg of
-        AcceptDocumenTitle str ->
+        AcceptDocumentTitle str ->
             let
                 currentDocument =
                     model.currentDocument
@@ -95,7 +95,7 @@ update docMsg model =
                 nextDocument =
                     { currentDocument | title = str }
             in
-                ( { model | documentTitle = str, currentDocument = nextDocument, currentDocumentDirty = True }, Cmd.none )
+                ( { model | currentDocument = nextDocument, currentDocumentDirty = True }, Cmd.none )
 
         AcceptTexMacroId str ->
             let

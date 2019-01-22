@@ -126,7 +126,7 @@ type alias ArchiveProcessor =
 
 
 type DocMsg
-    = AcceptDocumenTitle String
+    = AcceptDocumentTitle String
     | AcceptTexMacroId String
     | AcceptCoverArtUrl String
     | AcceptDocumentTagString String

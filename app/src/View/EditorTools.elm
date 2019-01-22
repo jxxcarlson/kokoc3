@@ -300,9 +300,9 @@ documentTitleInput : Model -> Element Msg
 documentTitleInput model =
     Element.map DocMsg <|
         Input.text [ htmlAttribute (Html.Attributes.id "title-input"), width (px 250), height (px 30), Font.color black ]
-            { text = model.documentTitle
+            { text = model.currentDocument.title
             , placeholder = Nothing
-            , onChange = \str -> AcceptDocumenTitle str
+            , onChange = \str -> AcceptDocumentTitle str
             , label = Input.labelAbove [ Font.size 14, Font.bold ] (text "Title")
             }
 
