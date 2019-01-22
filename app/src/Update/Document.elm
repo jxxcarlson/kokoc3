@@ -200,7 +200,7 @@ update docMsg model =
                                     doc
 
                                 Nothing ->
-                                    Document.basicDocument
+                                    SystemDocument.empty
 
                         nextDocumentList_ =
                             let
