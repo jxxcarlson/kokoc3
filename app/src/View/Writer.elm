@@ -114,4 +114,6 @@ editorButtons model =
         [ Element.row [ spacing 10 ] [ Common.toggleToolsButton (px 90) model, EditorTools.newDocumentButton model ]
         , Element.row [ spacing 10 ] [ EditorTools.newMasterButton model, EditorTools.newChildButton model ]
         , Element.row [ spacing 8 ] [ EditorTools.deleteDocumentButton model, EditorTools.saveSettingsButton model ]
+        , EditorTools.documentTitleInput model
+        , EditorTools.publicControls model
         ]

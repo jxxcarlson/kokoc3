@@ -169,9 +169,7 @@ docListTitle model =
 
 toolsPanel model =
     Element.column [ spacing 15, padding 10, height shrink, scrollbarY ]
-        [ publicControls model
-        , masterDocPanel model
-        , documentTitleInput model
+        [ masterDocPanel model
         , coverArtUrlInput model
         , texMacroIdInput model
         , documentPanels model

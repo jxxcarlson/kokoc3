@@ -37,12 +37,12 @@ timeout =
 
 backend : String
 backend =
-    "https://nshost.herokuapp.com"
+    "http://localhost:4000"
 
 
 client : String
 client =
-    "https://knode.io"
+    "http://localhost:8080"
 
 
 documentQueueCapacity : Int
@@ -242,16 +242,17 @@ kNode also supports documents written in Asciidoc and Markdown.
 \\subheading{Sample documents}
 
 \\begin{itemize}
-  \\item \\href{https://knode.io/424}{Quantum Field Theory Notes} — MiniLaTeX
-  \\item \\href{https://knode.io/1017}{Notes on Logic and Type Theory} — MiniLaTeX
-  \\item \\href{https://knode.io/365}{Visual Literacy} — Asciidoc
-  \\item \\href{https://knode.io/346}{Metal} — Asciidoc
+  \\item \\href{http://localhost:8080/424}{Quantum Field Theory Notes} — MiniLaTeX
+  \\item \\href{http://localhost:8080/1017}{Notes on Logic and Type Theory} — MiniLaTeX
+  \\item \\href{http://localhost:8080/365}{Visual Literacy} — Asciidoc
+  \\item \\href{http://localhost:8080/751}{Moths and Butterflies} — Asciidoc
+  \\item \\href{http://localhost:8080/346}{Metal} — Asciidoc
 \\end{itemize}
 
 
 For other apps that use MiniLaTeX,
 check out \\href{https://jxxcarlson.github.io/app/miniLatexLive/index.html}{MiniLatex Live}
-or \\href{https://knode.io/reader2}{MiniLaTeX Reader}
+or \\href{http://localhost:8080/reader2}{MiniLaTeX Reader}
 \\mdash no login needed.
 
 If you have questions or comments about MiniLatex or kNode.io, please contact

@@ -129,7 +129,7 @@ footer model =
         -- model printDocumentButton
         , alwaysShow model (makePdfButton (px 90))
         , printSpinner model
-        , alwaysShow model printPDFButton
+        , printPDFButton model
         , exportDocumentlLink model
         , getAuthorsDocumentsButton (px 110) model
 
@@ -145,10 +145,20 @@ footer model =
         -- , Element.el [] (text <| timeString model.zone model.time)
         , Element.el [] (text <| expiratonTimeString model.zone model.maybeCurrentUser)
         , expirationTimeIntervalElement model.time model.maybeCurrentUser
+        , Element.el [] (text <| mdloaded model)
 
         -- , Element.el [] (text <| "Print: " ++ model.printReference)
         -- , Element.el [] (text <| "E: " ++ (String.fromInt (expirationInt model.time model.maybeCurrentUser)))
         ]
+
+
+mdloaded model =
+    case model.masterDocLoaded of
+        True ->
+            "Master: loaded"
+
+        False ->
+            "Master: not loaded"
 
 
 printSpinner : Model -> Element msg

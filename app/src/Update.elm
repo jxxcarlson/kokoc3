@@ -337,6 +337,15 @@ update msg model =
                         RecentDocumentsQueue ->
                             DocumentList.addAndSelect document model.documentList
 
+                headDocumentId =
+                    (DocumentList.getFirst documentList).id
+
+                -- case DocumentList.getFirst documentList of
+                --     Nothing ->
+                --         0
+                --
+                --     Just document_ ->
+                --         document_.id
                 nextDocumentQueue =
                     case model.documentListSource of
                         SearchResults ->
@@ -346,12 +355,15 @@ update msg model =
                             model.recentDocumentQueue
 
                 masterDocLoaded =
-                    case document.docType of
-                        Standard ->
+                    case ( document.docType, headDocumentId == document.parentId ) of
+                        ( Standard, True ) ->
                             model.masterDocLoaded
 
-                        Master ->
-                            True
+                        ( Standard, False ) ->
+                            False
+
+                        ( Master, _ ) ->
+                            model.masterDocLoaded
 
                 loadMasterCommand =
                     case document.docType of
