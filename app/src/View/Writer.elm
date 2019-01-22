@@ -102,8 +102,11 @@ leftColumn portion_ model =
         , Background.color Widget.lightBlue
         , paddingXY 20 20
         , spacing 25
+        , alignTop
         ]
         [ Element.row [ spacing 16 ] [ editorButtons model, EditorTools.versionsPanel model ]
+        , EditorTools.documentTitleInput model
+        , EditorTools.publicControls model
         , EditorTools.toolsOrContents model
         ]
 
@@ -114,6 +117,4 @@ editorButtons model =
         [ Element.row [ spacing 10 ] [ Common.toggleToolsButton (px 90) model, EditorTools.newDocumentButton model ]
         , Element.row [ spacing 10 ] [ EditorTools.newMasterButton model, EditorTools.newChildButton model ]
         , Element.row [ spacing 8 ] [ EditorTools.deleteDocumentButton model, EditorTools.saveSettingsButton model ]
-        , EditorTools.documentTitleInput model
-        , EditorTools.publicControls model
         ]

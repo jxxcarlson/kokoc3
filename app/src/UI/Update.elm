@@ -94,8 +94,7 @@ toggleToolPanelState model =
 
                         ShowToolPanel ->
                             { model
-                                | documentTitle = model.currentDocument.title
-                                , toolPanelState = nextToolPanelState
+                                | toolPanelState = nextToolPanelState
                                 , deleteDocumentState = DeleteIsOnSafety
                                 , appMode = Writing
                                 , toolMenuState = HideToolMenu
