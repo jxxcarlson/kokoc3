@@ -476,11 +476,18 @@ saveSettingsButton model =
 
 propagateSettingsButton : Model -> Element Msg
 propagateSettingsButton model =
-    Element.map DocMsg <|
-        Input.button (buttonStyle (px 90))
-            { onPress = Just PropagateSettings
-            , label = Element.el [] (Element.text "Propagate")
-            }
+    case model.currentDocument.docType of
+        Standard ->
+            Element.none
+
+        Master ->
+            Element.map
+                DocMsg
+            <|
+                Input.button (buttonStyle (px 90))
+                    { onPress = Just PropagateSettings
+                    , label = Element.el [] (Element.text "Propagate")
+                    }
 
 
 deleteCurrentDocumentButton : Length -> Model -> Element Msg
