@@ -148,7 +148,6 @@ type alias Model =
     -- UI
     , appMode : AppMode
     , toolPanelState : ToolPanelState
-    , documentTitle : String
     , tagString : String
     , windowWidth : Int
     , windowHeight : Int
@@ -280,7 +279,6 @@ initialModel locationHref windowWidth windowHeight document =
     , currentDocumentDirty = False
     , autosaveDuration = Configuration.autosaveDuration
     , toolPanelState = HideToolPanel
-    , documentTitle = ""
     , tagString = ""
     , windowWidth = windowWidth
     , windowHeight = windowHeight

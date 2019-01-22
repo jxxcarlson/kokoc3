@@ -751,7 +751,6 @@ doNewStandardDocument model title content =
         Just user ->
             ( { model
                 | toolPanelState = ShowToolPanel
-                , documentTitle = title
                 , currentDocumentDirty = False
                 , toolMenuState = HideToolMenu
                 , appMode = Writing
@@ -774,7 +773,6 @@ doNewMasterDocument model title content =
         Just user ->
             ( { model
                 | toolPanelState = ShowToolPanel
-                , documentTitle = title
                 , currentDocumentDirty = False
                 , toolMenuState = HideToolMenu
                 , appMode = Writing
@@ -852,6 +850,7 @@ type alias NewSubDocumentInfo =
     { parentId : Int
     , texMacroDocumentId : Int
     , parentTitle : String
+    , title : String
     , textType : TextType
     , access : AccessDict
     }
@@ -875,6 +874,7 @@ newDocumentForUserWithParent user model =
             { parentId = masterDocument.id
             , texMacroDocumentId = masterDocument.texMacroDocumentId
             , parentTitle = masterDocument.title
+            , title = "New subdocument"
             , textType = masterDocument.textType
             , access = masterDocument.access
             }
@@ -893,7 +893,7 @@ makeNewDocumentWithParent newSubDocumentInfo user =
             Document.basicDocument
     in
         { newDocument_
-            | title = "New Subdocument"
+            | title = newSubDocumentInfo.title
             , authorId = User.userId user
             , authorName = User.username user
             , parentId = newSubDocumentInfo.parentId
@@ -961,16 +961,8 @@ saveCurrentDocument model =
                         False ->
                             newTags
 
-                nextDocumentTitle =
-                    case model.documentTitle == "" of
-                        True ->
-                            currentDocument.title
-
-                        False ->
-                            model.documentTitle
-
                 nextCurrentDocument =
-                    { currentDocument | title = nextDocumentTitle, tags = nextTags }
+                    { currentDocument | tags = nextTags }
 
                 nextDocumentList =
                     DocumentList.updateDocument currentDocument model.documentList
