@@ -34,6 +34,7 @@ module DocumentList
         , retrievRecentDocumentQueueFromIntList
         , retrievRecentDocumentQueueFromIntListAtSignIn
         , save
+        , saveTask
         , select
         , selectDocumentById
         , selectFirst
@@ -618,9 +619,6 @@ head document/
 propagateSettingsToChildren : DocumentList -> DocumentList
 propagateSettingsToChildren (DocumentList latexState_ listOfDocuments maybeDocument) =
     let
-        _ =
-            Debug.log "Enter PSTC, n" (List.length listOfDocuments)
-
         maybeHeadDocument =
             List.head listOfDocuments
     in
@@ -634,7 +632,7 @@ propagateSettingsToChildren (DocumentList latexState_ listOfDocuments maybeDocum
                         DocumentList latexState_ listOfDocuments maybeDocument
 
                     Master ->
-                        DocumentList latexState_ (propagateSettingsToListOfDocuments headDocument (List.drop 1 listOfDocuments)) maybeDocument
+                        DocumentList latexState_ (propagateSettingsToListOfDocuments headDocument listOfDocuments) maybeDocument
 
 
 save : String -> Int -> DocumentList -> Cmd DocMsg
@@ -654,15 +652,11 @@ propagateSettingsToListOfDocuments document listOfDocuments =
 
 propagateSettingsFromDocument : Document -> Document -> Document
 propagateSettingsFromDocument fromDoc toDoc =
-    let
-        _ =
-            Debug.log "PSFD: " ( fromDoc.id, toDoc.id )
-    in
-        { toDoc
-            | texMacroDocumentId = fromDoc.texMacroDocumentId
-            , access = fromDoc.access
-            , public = fromDoc.public
-        }
+    { toDoc
+        | texMacroDocumentId = fromDoc.texMacroDocumentId
+        , access = fromDoc.access
+        , public = fromDoc.public
+    }
 
 
 

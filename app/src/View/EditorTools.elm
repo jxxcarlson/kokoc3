@@ -317,7 +317,10 @@ deleteDocumentButton model =
 
 masterDocPanel model =
     Element.column [ spacing 5 ]
-        [ Element.el [] (text <| "Master doc: " ++ String.fromInt model.currentDocument.parentId)
+        [ Element.row [ spacing 8 ]
+            [ Element.el [] (text <| "Master doc: " ++ String.fromInt model.currentDocument.parentId)
+            , propagateSettingsButton model
+            ]
         ]
 
 
@@ -468,6 +471,15 @@ saveSettingsButton model =
         Input.button (buttonStyle (px 90))
             { onPress = Just UpdateCurrentDocument
             , label = Element.el [] (Element.text "Save")
+            }
+
+
+propagateSettingsButton : Model -> Element Msg
+propagateSettingsButton model =
+    Element.map DocMsg <|
+        Input.button (buttonStyle (px 90))
+            { onPress = Just PropagateSettings
+            , label = Element.el [] (Element.text "Propagate")
             }
 
 

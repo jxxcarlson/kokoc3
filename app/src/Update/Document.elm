@@ -303,6 +303,19 @@ update docMsg model =
         IncrementVersion ->
             doIncrementVersion model
 
+        PropagateSettings ->
+            if model.masterDocLoaded then
+                let
+                    tokenString =
+                        User.getTokenStringFromMaybeUser model.maybeCurrentUser
+
+                    documentList2 =
+                        DocumentList.propagateSettingsToChildren model.documentList
+                in
+                    ( { model | documentList = documentList2 }, DocumentList.save tokenString 1 documentList2 |> Cmd.map DocMsg )
+            else
+                ( model, Cmd.none )
+
         SaveCurrentDocument time ->
             let
                 tokenString =
@@ -989,22 +1002,13 @@ saveCurrentMasterDocument :
     -> ( Model, Cmd Msg )
 saveCurrentMasterDocument model =
     let
-        _ =
-            Debug.log "Enter" "saveCurrentMasterDocument"
-
         tokenString =
             User.getTokenStringFromMaybeUser model.maybeCurrentUser
-
-        documentList1 =
-            DocumentList.updateDocument model.currentDocument model.documentList
-
-        documentList2 =
-            DocumentList.propagateSettingsToChildren documentList1
     in
         ( { model
             | currentDocumentDirty = False
             , message = "(m)" ++ digest model.currentDocument.content
-            , documentList = documentList2
+            , documentList = DocumentList.updateDocument model.currentDocument model.documentList
             , recentDocumentQueue = Queue.replaceUsingPredicate (\doc -> doc.id == model.currentDocument.id) model.currentDocument model.recentDocumentQueue
           }
         , Cmd.batch
@@ -1012,10 +1016,13 @@ saveCurrentMasterDocument model =
             , Task.attempt
                 (DocListMsg << (ReceiveDocumentList DLSetMasterLoaded))
                 ((Document.saveDocumentTask tokenString model.currentDocument)
+                    -- |> Task.andThen
+                    --     (\_ -> DocumentList.saveTask tokenString 1 documentList2)
                     |> Task.andThen
                         (\_ -> DocumentList.loadMasterDocumentTask model.maybeCurrentUser model.currentDocument.id)
                 )
-            , DocumentList.save tokenString 1 documentList2 |> Cmd.map DocMsg
+
+            --, DocumentList.save tokenString 1 documentList2 |> Cmd.map DocMsg
             ]
         )
 

@@ -139,6 +139,7 @@ type DocMsg
     | ReceiveLatexExportText (Result Http.Error String)
     | GetDocumentById Int
     | IncrementVersion
+    | PropagateSettings
     | SaveCurrentDocument Posix
     | NewDocument
     | SampleDocument
