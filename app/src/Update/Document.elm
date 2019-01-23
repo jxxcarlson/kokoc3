@@ -1004,11 +1004,15 @@ saveCurrentMasterDocument model =
     let
         tokenString =
             User.getTokenStringFromMaybeUser model.maybeCurrentUser
+
+        nextDocumentList =
+            DocumentList.updateDocument model.currentDocument model.documentList
+                |> DocumentList.propagateSettingsToChildren
     in
         ( { model
             | currentDocumentDirty = False
             , message = "(m)" ++ digest model.currentDocument.content
-            , documentList = DocumentList.updateDocument model.currentDocument model.documentList
+            , documentList = nextDocumentList
             , recentDocumentQueue = Queue.replaceUsingPredicate (\doc -> doc.id == model.currentDocument.id) model.currentDocument model.recentDocumentQueue
           }
         , Cmd.batch
@@ -1016,13 +1020,9 @@ saveCurrentMasterDocument model =
             , Task.attempt
                 (DocListMsg << (ReceiveDocumentList DLSetMasterLoaded))
                 ((Document.saveDocumentTask tokenString model.currentDocument)
-                    -- |> Task.andThen
-                    --     (\_ -> DocumentList.saveTask tokenString 1 documentList2)
                     |> Task.andThen
-                        (\_ -> DocumentList.loadMasterDocumentTask model.maybeCurrentUser model.currentDocument.id)
+                        (\_ -> DocumentList.saveTask tokenString 0 nextDocumentList)
                 )
-
-            --, DocumentList.save tokenString 1 documentList2 |> Cmd.map DocMsg
             ]
         )
 

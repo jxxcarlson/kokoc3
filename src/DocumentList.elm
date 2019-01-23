@@ -640,9 +640,10 @@ save token offset (DocumentList latexState_ listOfDocuments maybeDocument) =
     Cmd.batch (List.map (Document.saveDocument token) (List.drop offset listOfDocuments))
 
 
-saveTask : String -> Int -> DocumentList -> Task Http.Error (List DocumentRecord)
+saveTask : String -> Int -> DocumentList -> Task Http.Error DocumentList
 saveTask token offset (DocumentList latexState_ listOfDocuments maybeDocument) =
     Task.sequence (List.map (Document.saveDocumentTask token) (List.drop offset listOfDocuments))
+        |> Task.map (\listOfDocumentRecords -> DocumentList latexState_ (List.map .document listOfDocumentRecords) maybeDocument)
 
 
 propagateSettingsToListOfDocuments : Document -> List Document -> List Document
