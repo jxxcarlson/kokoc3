@@ -76,7 +76,7 @@ authorCenterColumn windowHeight_ portion_ model =
     in
         Element.column [ width (fillPortion portion_), height (px (windowHeight_ - 73)), scrollbarY ]
             [ Element.row [ spacing 10 ]
-                [ Element.el [ paddingXY 30 10, Font.bold, width (px 145) ] (Element.text "Author")
+                [ Element.el [ paddingXY 30 10, Font.bold, width (px 145) ] (Element.text "Author/Home")
                 , Element.el [ Font.bold, width (px 300) ] (Element.text "Blurb")
                 ]
             , viewUsers userList
