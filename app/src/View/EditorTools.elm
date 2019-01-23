@@ -319,7 +319,8 @@ masterDocPanel model =
     Element.column [ spacing 5 ]
         [ Element.row [ spacing 8 ]
             [ Element.el [] (text <| "Master doc: " ++ String.fromInt model.currentDocument.parentId)
-            , propagateSettingsButton model
+
+            -- , propagateSettingsButton model
             ]
         ]
 

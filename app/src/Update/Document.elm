@@ -1019,10 +1019,7 @@ saveCurrentMasterDocument model =
             [ Update.Time.getTime
             , Task.attempt
                 (DocListMsg << (ReceiveDocumentList DLSetMasterLoaded))
-                ((Document.saveDocumentTask tokenString model.currentDocument)
-                    |> Task.andThen
-                        (\_ -> DocumentList.saveTask tokenString 0 nextDocumentList)
-                )
+                (DocumentList.saveTask tokenString 0 nextDocumentList)
             ]
         )
 

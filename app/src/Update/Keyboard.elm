@@ -95,9 +95,8 @@ handleKey model key =
         Character "u" ->
             UI.togglePreferences model
 
-        Character "v" ->
-            Update.Document.doIncrementVersion model
-
+        -- Character "v" ->
+        --     Update.Document.doIncrementVersion model
         Character "0" ->
             UI.goToStart model
 

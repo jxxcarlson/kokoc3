@@ -1074,7 +1074,7 @@ incrementVersionItem =
     Element.map DocMsg <|
         Input.button (Widget.menuItemStyle (px 160))
             { onPress = Just IncrementVersion
-            , label = Element.el [] (Element.text "New version Ctrl-V")
+            , label = Element.el [] (Element.text "New version")
             }
 
 
