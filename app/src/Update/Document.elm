@@ -864,6 +864,7 @@ type alias NewSubDocumentInfo =
     , texMacroDocumentId : Int
     , parentTitle : String
     , title : String
+    , content : String
     , textType : TextType
     , access : AccessDict
     }
@@ -888,6 +889,7 @@ newDocumentForUserWithParent user model =
             , texMacroDocumentId = masterDocument.texMacroDocumentId
             , parentTitle = masterDocument.title
             , title = "New subdocument"
+            , content = "\\section{New subdocument}\n\nThis is a new subdocument of " ++ masterDocument.title
             , textType = masterDocument.textType
             , access = masterDocument.access
             }
@@ -915,7 +917,7 @@ makeNewDocumentWithParent newSubDocumentInfo user =
             , textType = newSubDocumentInfo.textType
             , docType = Standard
             , access = newSubDocumentInfo.access
-            , content = "New Subdocument of " ++ newSubDocumentInfo.parentTitle
+            , content = newSubDocumentInfo.content
         }
 
 
