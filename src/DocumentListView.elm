@@ -46,15 +46,29 @@ view height_ masterDocLoaded docList =
             viewSearchResults height_ docList
 
 
+tableBottomInset =
+    150
+
+
+
+--     case model.appMode of
+--         Writing ->
+--             80
+--
+--         _ ->
+--             150
+-- 150
+
+
 viewSearchResults : Int -> DocumentList -> Element DocListViewMsg
 viewSearchResults height_ docList =
-    Element.column [ spacing 5, scrollbarY, height (px (height_ - 150)) ]
+    Element.column [ spacing 5, scrollbarY, height (px (height_ - tableBottomInset)) ]
         (List.map (activeDocTitle (DocumentList.selected docList)) (documents docList))
 
 
 viewTableOfContents : Int -> DocumentList -> Element DocListViewMsg
 viewTableOfContents height_ docList =
-    Element.column [ spacing 5, scrollbarY, height (px (height_ - 150)) ]
+    Element.column [ spacing 5, scrollbarY, height (px (height_ - tableBottomInset)) ]
         (List.indexedMap (activeDocTitleWithIndex (DocumentList.selectedData docList)) (documents docList))
 
 
@@ -62,7 +76,7 @@ activeDocTitleWithIndex : ( LatexState, Maybe Document ) -> Int -> Document -> E
 activeDocTitleWithIndex ( latexState, maybeSelectedDocument ) index document =
     Element.column []
         [ Element.el [ Events.onDoubleClick <| LoadMasterDocument2 document ]
-            (Input.button (Widget.listItemStyle (px 190))
+            (Input.button (Widget.listItemStyle (px tableWidth))
                 { onPress = Just (SetCurrentDocument document)
                 , label = Element.el (selectedElementStyle maybeSelectedDocument document) (tocItem index document)
                 }
@@ -124,10 +138,15 @@ transformedTitle doc =
             doc.title
 
 
+tableWidth : Int
+tableWidth =
+    260
+
+
 activeDocTitle : Maybe Document -> Document -> Element DocListViewMsg
 activeDocTitle maybeSelectedDocument document =
     Element.el [ Events.onDoubleClick <| LoadMasterDocument2 document ]
-        (Input.button (Widget.listItemStyle (px 190))
+        (Input.button (Widget.listItemStyle (px tableWidth))
             { onPress = Just (SetCurrentDocument document)
             , label = Element.el (selectedElementStyle maybeSelectedDocument document) (Element.text (transformedTitle document))
             }

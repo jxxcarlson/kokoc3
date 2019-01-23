@@ -123,7 +123,7 @@ displayDocumentList model =
         SearchResults ->
             Element.map DocListViewMsg
                 (DocumentListView.viewWithHeadingShifted
-                    (model.windowHeight - 20)
+                    (model.windowHeight - (tableInset model))
                     model.masterDocLoaded
                     (docListTitle model)
                     model.documentList
@@ -132,11 +132,21 @@ displayDocumentList model =
         RecentDocumentsQueue ->
             Element.map DocListViewMsg
                 (DocumentListView.viewWithHeadingShifted
-                    (model.windowHeight - 20)
+                    (model.windowHeight - (tableInset model))
                     model.masterDocLoaded
                     "Recent documents"
                     (DocumentList.documentQueueToDocumentList model.currentDocument model.recentDocumentQueue)
                 )
+
+
+tableInset : Model -> Int
+tableInset model =
+    case model.appMode of
+        Writing ->
+            250
+
+        _ ->
+            20
 
 
 toggleDocumentListDiplayButton : Model -> Element Msg
@@ -212,12 +222,10 @@ coverArtUrlInput model =
 
 
 versionsPanel model =
-    Element.column [ width <| px 55, height <| px 90, spacingXY 12 6, padding 8, Background.color blue ]
-        [ Element.el [ Font.bold, Font.color (rgb255 200 200 200) ] (text <| "v: " ++ String.fromInt model.currentDocument.version)
-        , Element.column []
-            [ Element.el [ moveLeft 0 ] (showVersionButton model)
-            , Element.el [ moveLeft 22 ] (newVersionButton model)
-            ]
+    Element.row [ height <| px 25, width <| px 190, spacing 0, padding 8, Background.color blue ]
+        [ Element.el [ Font.bold, Font.color (rgb255 200 200 200) ] (text <| "Versions: " ++ String.fromInt model.currentDocument.version)
+        , Element.el [ moveDown 2.5, moveRight 16 ] (showVersionButton model)
+        , Element.el [ moveDown 2, moveLeft 12 ] (newVersionButton model)
         ]
 
 
