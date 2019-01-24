@@ -340,12 +340,6 @@ update msg model =
                 headDocumentId =
                     (DocumentList.getFirst documentList).id
 
-                -- case DocumentList.getFirst documentList of
-                --     Nothing ->
-                --         0
-                --
-                --     Just document_ ->
-                --         document_.id
                 nextDocumentQueue =
                     case model.documentListSource of
                         SearchResults ->
