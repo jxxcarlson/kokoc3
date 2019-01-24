@@ -227,7 +227,8 @@ Click on \\strong{Home} in the menu bar above to go to your home page.
 Click on \\strong{\\xlink{1064}{Manual}} above for the User Manual. Sign up
 and type \\strong{control-N} to make a new document and get started writing.
 You can also type \\strong{control-1} for a sample document.
-   Recommended browser: \\strong{\\blue{Firefox}}.
+
+Recommended browser: \\strong{\\blue{Firefox}} — fastest at rendering math.
 
 
 \\medskip

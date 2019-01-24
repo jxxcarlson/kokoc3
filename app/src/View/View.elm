@@ -892,13 +892,14 @@ displayMenuItems model =
                 [ separator
                 , createdRecentlyItem model
                 , updatedRecentlyItem model
-                , randomDocumentItem model
                 , separator
+                , randomDocumentItem model
+                , goToStartItem
+                , homeItem model
                 , readerModeItem model
                 , writerModeItem model
                 , imageModeItem model
                 , authorModeItem model
-                , homeItem model
                 , separator
                 , saveCurrentDocumentItem
                 , newStandardDocItem
@@ -912,7 +913,6 @@ displayMenuItems model =
                 , toggleEditPanelItem
                 , toggleUserPreferencesItem
                 , printItem
-                , goToStartItem
                 ]
 
 
