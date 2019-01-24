@@ -253,6 +253,7 @@ kNode also supports documents written in Asciidoc and Markdown.
 
 \\begin{itemize}
   \\item \\href{http://localhost:8080/424}{Quantum Field Theory Notes} — MiniLaTeX
+  \\item \\href{http://localhost:8080/977}{Notes on Physics} — MiniLaTeX
   \\item \\href{http://localhost:8080/1017}{Notes on Logic and Type Theory} — MiniLaTeX
   \\item \\href{http://localhost:8080/365}{Visual Literacy} — Asciidoc
   \\item \\href{http://localhost:8080/751}{Moths and Butterflies} — Asciidoc
