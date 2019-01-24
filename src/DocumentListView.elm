@@ -85,6 +85,11 @@ activeDocTitleWithIndex ( latexState, maybeSelectedDocument ) index document =
         ]
 
 
+tocItem1 : Int -> Document -> Element DocListViewMsg
+tocItem1 index document =
+    Element.el [] (titleWithIndex index document)
+
+
 tocItem : Int -> Document -> Element DocListViewMsg
 tocItem index document =
     let
