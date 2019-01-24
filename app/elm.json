@@ -10,6 +10,7 @@
         "direct": {
             "JonRowe/elm-jwt": "1.0.0",
             "NoRedInk/elm-json-decode-pipeline": "1.0.0",
+            "Punie/elm-parser-extras": "1.0.0",
             "avh4/elm-color": "1.0.0",
             "damienklinnert/elm-spinner": "3.0.2",
             "elm/browser": "1.0.1",

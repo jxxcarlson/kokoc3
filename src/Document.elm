@@ -29,6 +29,7 @@ module Document
         , selectedDocId
         , sendToWorker
         , stringToAccessDict
+        , updateDocumentWithTagString
         , wordCount
         )
 
@@ -542,6 +543,10 @@ stringToAccessDict str =
     str |> String.split "," |> stringListToAccessDict
 
 
+
+-- KVTuple
+
+
 pairToKVTuple : List String -> ( String, AccessType )
 pairToKVTuple list =
     if List.length list /= 2 then
@@ -584,6 +589,33 @@ getDocumentById id maybeTokenString =
             , timeout = Just Configuration.timeout
             , tracker = Nothing
             }
+
+
+
+-- HELPERS
+
+
+updateDocumentWithTagString : String -> Document -> Document
+updateDocumentWithTagString tagString document =
+    let
+        newTags =
+            tagString
+                |> String.split ","
+                |> List.map String.trim
+                |> List.filter (\x -> x /= "")
+
+        tagLengthString =
+            String.fromInt <| List.length newTags
+
+        nextTags =
+            case newTags == [] of
+                True ->
+                    document.tags
+
+                False ->
+                    newTags
+    in
+        { document | tags = nextTags }
 
 
 

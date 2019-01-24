@@ -33,6 +33,7 @@ import Document
         , ArchiveProcessor
         , AccessDict
         )
+import MasterDocument
 import SystemDocument
 import ImageManager
 import DocumentList
@@ -956,31 +957,30 @@ saveCurrentDocument model =
                 currentDocument =
                     model.currentDocument
 
-                tagStringSaved =
-                    model.tagString
+                maybeNextMasterDocument =
+                    MasterDocument.updateMasterFromSubdocument
+                        model.documentList
+                        currentDocument
 
-                newTags =
-                    model.tagString
-                        |> String.split ","
-                        |> List.map String.trim
-                        |> List.filter (\x -> x /= "")
+                saveMasterCmd =
+                    case maybeNextMasterDocument of
+                        Nothing ->
+                            Cmd.none
 
-                tagLengthString =
-                    String.fromInt <| List.length newTags
-
-                nextTags =
-                    case newTags == [] of
-                        True ->
-                            currentDocument.tags
-
-                        False ->
-                            newTags
+                        Just masterDoc ->
+                            Cmd.map DocMsg <| Document.saveDocument tokenString nextCurrentDocument
 
                 nextCurrentDocument =
-                    { currentDocument | tags = nextTags }
+                    Document.updateDocumentWithTagString model.tagString currentDocument
 
                 nextDocumentList =
-                    DocumentList.updateDocument currentDocument model.documentList
+                    case maybeNextMasterDocument of
+                        Nothing ->
+                            DocumentList.updateDocument currentDocument model.documentList
+
+                        Just masterDoc ->
+                            DocumentList.updateDocument currentDocument model.documentList
+                                |> MasterDocument.updateDocumentListWithMaster masterDoc
 
                 nextDocumentQueue =
                     Queue.replaceUsingPredicate (\doc -> doc.id == currentDocument.id) currentDocument model.recentDocumentQueue
@@ -992,10 +992,11 @@ saveCurrentDocument model =
                     , documentList = nextDocumentList
                     , recentDocumentQueue = nextDocumentQueue
                     , toolMenuState = HideToolMenu
-
-                    -- , debugString = "TSL = " ++ tagLengthString ++ ", TS = " ++ tagStringSaved
                   }
-                , Cmd.map DocMsg <| Document.saveDocument tokenString nextCurrentDocument
+                , Cmd.batch
+                    [ Cmd.map DocMsg <| Document.saveDocument tokenString nextCurrentDocument
+                    , saveMasterCmd
+                    ]
                 )
 
 

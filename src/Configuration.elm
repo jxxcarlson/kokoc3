@@ -96,7 +96,7 @@ to make a new document, or type \\strong{control-1} for a sample document.
 \\medskip
 \\strong{\\red{Important Note!}} At the moment I strongly recommend using Firefox:
   (a) Math rendering is faster, (b) Safari and Chrome are known to misbehave
-  when clicking on items in the table of contents.
+  when clicking on items in the table of contents.  (Current version 64.02)
 
 Please send bug reports,
   comments, and suggestions to jxxcarlson AT gmail.
@@ -228,7 +228,7 @@ Click on \\strong{\\xlink{1064}{Manual}} above for the User Manual. Sign up
 and type \\strong{control-N} to make a new document and get started writing.
 You can also type \\strong{control-1} for a sample document.
 
-Recommended browser: \\strong{\\blue{Firefox}} — fastest at rendering math.
+Recommended browser: \\strong{\\blue{Firefox} 64.02} — fastest at rendering math.
 
 
 \\medskip

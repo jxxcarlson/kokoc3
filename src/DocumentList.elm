@@ -1,7 +1,7 @@
 module DocumentList
     exposing
         ( DocListMsg(..)
-        , DocumentList
+        , DocumentList(..)
         , IntList
         , HandleDocumentList(..)
         , addAndSelect
