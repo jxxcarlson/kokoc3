@@ -39,12 +39,12 @@ backend =
 
 
 client : String
-client =
-    "http://localhost:8080"
+client = "https://knode.io"
+   -- "http://localhost:8080"
 
 
 
--- "https://knode.io"
+--
 
 
 bucket : String

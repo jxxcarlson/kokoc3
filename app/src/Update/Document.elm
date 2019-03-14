@@ -958,9 +958,10 @@ saveCurrentDocument model =
                     model.currentDocument
 
                 maybeNextMasterDocument =
-                    MasterDocument.updateMasterFromSubdocument
+                    MasterDocument.updatedMasterFromSubdocument
                         model.documentList
                         currentDocument
+                        |> Maybe.map (MasterDocument.updatedMasterDocumentChildrenFromSubdocument currentDocument)
 
                 saveMasterCmd =
                     case maybeNextMasterDocument of
