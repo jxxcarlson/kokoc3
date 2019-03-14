@@ -25,7 +25,7 @@ import Http
 import Parser exposing (..)
 import Dict exposing (Dict)
 import Task exposing (Task)
-import Tar exposing (Data(..), FileRecord, defaultFileRecord)
+import Tar exposing (Data(..), MetaData, defaultMetadata)
 import Document exposing (DocMsg(..))
 import Configuration
 
@@ -85,19 +85,19 @@ saveBytes archiveName bytes =
     Download.bytes (archiveName ++ ".tar") "application/x-tar" bytes
 
 
-prepareStringData : ( String, String ) -> ( FileRecord, Data )
+prepareStringData : ( String, String ) -> ( MetaData, Data )
 prepareStringData ( name, str ) =
-    ( { defaultFileRecord | filename = String.toLower name }, StringData str )
+    ( { defaultMetadata | filename = String.toLower name, fileNamePrefix =  "files" }, StringData str )
 
 
-prepareData : ( String, Bytes ) -> ( FileRecord, Data )
+prepareData : ( String, Bytes ) -> ( MetaData, Data )
 prepareData ( url, bytes ) =
     case authorityFromUrl url of
         Nothing ->
-            ( defaultFileRecord, BinaryData bytes )
+            ( defaultMetadata, BinaryData bytes )
 
         Just filename ->
-            ( { defaultFileRecord | filename = filename }, BinaryData bytes )
+            ( { defaultMetadata | filename = filename, fileNamePrefix =  "files" }, BinaryData bytes )
 
 
 getImageTask : String -> Task Http.Error Bytes
