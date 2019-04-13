@@ -33,3 +33,7 @@ specifically `Http.expectBytesResponse` will give access to it, and then you hav
 
 joelq [1:50 PM]
 Looks like requests can have a `bytesBody` or a `fileBody` as their payload (in addition to the more traditional string and JSON options)
+
+## NGINX
+
+Configuration file at `/etc/nginx/nginx.conf`
