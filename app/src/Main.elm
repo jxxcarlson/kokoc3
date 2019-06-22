@@ -2,7 +2,6 @@ module Main exposing (main)
 
 import Browser
 import Browser.Dom as Dom
-import Html exposing (Html)
 import Keyboard
 import Model exposing (Model, Msg(..), initialModel)
 import Random
