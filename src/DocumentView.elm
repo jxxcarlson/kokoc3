@@ -18,8 +18,8 @@ import Html exposing (Html)
 import Html.Attributes as HA
 import Json.Encode as Encode
 import KVList
+import MMarkdown
 import Mark
-import Markdown
 import MiniLatex.Differ exposing (EditRecord)
 import MiniLatex.MiniLatex as MiniLatex
 import MiniLatexTools
@@ -158,7 +158,7 @@ viewMiniLatex model =
 viewMarkdown : Document -> Element Msg
 viewMarkdown document =
     Element.el [ Element.paddingEach { top = 0, bottom = 120, left = 0, right = 0 } ]
-        (Element.html <| Markdown.toHtml [] document.content)
+        (Element.html <| MMarkdown.toHtml [] document.content)
 
 
 
@@ -184,7 +184,7 @@ asciidocText str =
 viewPlainText : Document -> Element Msg
 viewPlainText document =
     Element.el [ Element.paddingEach { top = 0, bottom = 120, left = 0, right = 0 } ]
-        (Element.html <| Markdown.toHtml [] document.content)
+        (Element.html <| MMarkdown.toHtml [] document.content)
 
 
 viewChildren : Document -> Element DocViewMsg
