@@ -1,28 +1,27 @@
-module Configuration
-    exposing
-        ( backend
-        , client
-        , autosaveDuration
-        , debounceDelay
-        , coverArtUrl
-        , userManualId
-        , basicDocumentText
-        , newDocumentTitle
-        , newMiniLatexDocumentText
-        , sampleDocumentTitle
-        , sampleMiniLatexDocumentText
-        , newMasterDocumentTitle
-        , newMasterDocumentText
-        , newUserText
-        , signInText
-        , signedOutText
-        , signedUpText
-        , welcomeText
-        , bucket
-        , timeout
-        , adminUsername
-        , documentQueueCapacity
-        )
+module Configuration exposing
+    ( adminUsername
+    , autosaveDuration
+    , backend
+    , basicDocumentText
+    , bucket
+    , client
+    , coverArtUrl
+    , debounceDelay
+    , documentQueueCapacity
+    , newDocumentTitle
+    , newMasterDocumentText
+    , newMasterDocumentTitle
+    , newMiniLatexDocumentText
+    , newUserText
+    , sampleDocumentTitle
+    , sampleMiniLatexDocumentText
+    , signInText
+    , signedOutText
+    , signedUpText
+    , timeout
+    , userManualId
+    , welcomeText
+    )
 
 
 adminUsername : String
@@ -39,13 +38,18 @@ backend : String
 backend =
     "https://nshost.herokuapp.com"
 
+
+
 --backend : String
 --backend =
 --    "https://nshost.herokuapp.com"
 
 
 client : String
-client = "https://knode.io"
+client =
+    "https://knode.io"
+
+
 
 --client : String
 --client =

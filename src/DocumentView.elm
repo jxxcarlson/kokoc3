@@ -5,6 +5,7 @@ import Browser.Dom exposing (Viewport)
 import Configuration
 import DocViewMsg exposing (DocViewMsg(..))
 import Document exposing (Child, DocType(..), Document, TextType(..))
+import DocumentDictionary
 import Element exposing (..)
 import Element.Background as Background
 import Element.Border as Border
@@ -18,13 +19,12 @@ import Html.Attributes as HA
 import Json.Encode as Encode
 import KVList
 import Mark
-import MarkdownTools
+import Markdown
 import MiniLatex.Differ exposing (EditRecord)
 import MiniLatex.MiniLatex as MiniLatex
 import MiniLatexTools
-import Model exposing (Msg, Model)
+import Model exposing (Model, Msg)
 import View.Widget as Widget exposing (..)
-import DocumentDictionary
 
 
 view : Model -> Element Msg
@@ -59,11 +59,13 @@ titleLine document =
                 [ Element.el [ Font.size 18, Font.bold ] (text document.title)
                 , getAuthorsDocumentsTitleButton_ fill document
                 ]
+
         else
             Element.column (titleLineStyle 76)
                 [ loadChildrenButton document
                 , Element.el [ moveRight 20 ] (getAuthorsDocumentsTitleButton_ fill document)
                 ]
+
     else
         Element.column (titleLineStyle 84)
             [ Element.row [ spacing 10 ]
@@ -147,15 +149,16 @@ viewMiniLatex model =
         -- else
         --    model.bigEditRecord
     in
-        bigEditRecord
-            |> BigEditRecord.getRenderedTextAsElements
-            |> List.map (\x -> Element.paragraph [ width (px (texWidth model.viewport)) ] [ x ])
-            |> Element.column [ Element.htmlAttribute <| HA.attribute "id" "_renderedText_" ]
+    bigEditRecord
+        |> BigEditRecord.getRenderedTextAsElements
+        |> List.map (\x -> Element.paragraph [ width (px (texWidth model.viewport)) ] [ x ])
+        |> Element.column [ Element.htmlAttribute <| HA.attribute "id" "_renderedText_" ]
 
 
 viewMarkdown : Document -> Element Msg
 viewMarkdown document =
-    Element.el [ Element.paddingEach { top = 0, bottom = 120, left = 0, right = 0 } ] (Element.html <| MarkdownTools.view document.content)
+    Element.el [ Element.paddingEach { top = 0, bottom = 120, left = 0, right = 0 } ]
+        (Element.html <| Markdown.toHtml [] document.content)
 
 
 
@@ -180,7 +183,8 @@ asciidocText str =
 
 viewPlainText : Document -> Element Msg
 viewPlainText document =
-    Element.el [ Element.paddingEach { top = 0, bottom = 120, left = 0, right = 0 } ] (Element.html <| MarkdownTools.view document.content)
+    Element.el [ Element.paddingEach { top = 0, bottom = 120, left = 0, right = 0 } ]
+        (Element.html <| Markdown.toHtml [] document.content)
 
 
 viewChildren : Document -> Element DocViewMsg
@@ -199,10 +203,10 @@ getAuthorsDocumentsTitleButton_ width_ document =
         authorname =
             document.authorName
      in
-        Input.button (Widget.listItemStyleBoldPale width_)
-            { onPress = Just (GetPublicDocumentsRawQuery2 ("authorname=" ++ authorname))
-            , label = Element.el [] (text authorname)
-            }
+     Input.button (Widget.listItemStyleBoldPale width_)
+        { onPress = Just (GetPublicDocumentsRawQuery2 ("authorname=" ++ authorname))
+        , label = Element.el [] (text authorname)
+        }
     )
         |> Element.map Model.DocViewMsg
 
@@ -213,10 +217,10 @@ getAuthorsDocumentsTitleButton2 width_ document =
         authorname =
             document.authorName
      in
-        Input.button (Widget.listItemStyleBoldPale width_)
-            { onPress = Just (GetPublicDocumentsRawQuery2 ("authorname=" ++ authorname))
-            , label = Element.el [] (text <| "(" ++ authorname ++ ")")
-            }
+     Input.button (Widget.listItemStyleBoldPale width_)
+        { onPress = Just (GetPublicDocumentsRawQuery2 ("authorname=" ++ authorname))
+        , label = Element.el [] (text <| "(" ++ authorname ++ ")")
+        }
     )
         |> Element.map Model.DocViewMsg
 
@@ -254,4 +258,4 @@ currentDevice viewport =
         height =
             viewport.viewport.height
     in
-        classifyDevice { width = round width, height = round height }
+    classifyDevice { width = round width, height = round height }
