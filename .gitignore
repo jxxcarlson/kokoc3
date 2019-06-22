@@ -14,3 +14,4 @@ elm
 dist/Main.min.js.gz
 .vscode
 jim/
+.idea/
