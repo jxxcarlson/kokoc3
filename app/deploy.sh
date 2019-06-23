@@ -5,7 +5,9 @@ reset=`tput setaf 7`
 NGINX_LOCAL="/usr/local/var/www/"
 NGINX_REMOTE="/var/www/html/"
 DIST_LOCAL="./dist/"
+REMOTE_HOST="138.197.81.6"
 COMPILER="elm"
+
 
 # https://guide.elm-lang.org/optimization/asset_size.html
 
@@ -36,8 +38,13 @@ else
     echo "${color}Uglify and deploy to Digital Ocean${reset}"
     time uglifyjs ${NGINX_LOCAL}Main.js --compress 'pure_funcs="F2,F3,F4,F5,F6,F7,F8,F9,A2,A3,A4,A5,A6,A7,A8,A9",pure_getters,keep_fargs=false,unsafe_comps,unsafe' | uglifyjs --mangle --output=${NGINX_LOCAL}Main.min.js
     scp -r ${NGINX_LOCAL}Main.min.js root@138.197.81.6:${NGINX_REMOTE}
+    echo "Start sed on index"
     sed 's/Main.js/Main.min.js/' ./index.html > ${NGINX_LOCAL}index.html
-    scp -r ${NGINX_LOCAL}index.html root@:${NGINX_REMOTE}index.html
+    echo "Start upload of index.html"
+    scp -r ${NGINX_LOCAL}index.html root@138.197.81.6:${NGINX_REMOTE}index.html
     cp  index.html ${NGINX_LOCAL}
     echo "${color}Done!${reset}"
 fi
+
+
+# scp  /usr/local/var/www/index.html root@:/var/www/html/index.html

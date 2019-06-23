@@ -158,7 +158,7 @@ viewMiniLatex model =
 viewMarkdown : Document -> Element Msg
 viewMarkdown document =
     Element.el [ Element.paddingEach { top = 0, bottom = 120, left = 0, right = 0 } ]
-        (Element.html <| MMarkdown.toHtml [] document.content)
+        (Element.html <| MMarkdown.toHtml [ HA.style "width" "400px" ] document.content)
 
 
 

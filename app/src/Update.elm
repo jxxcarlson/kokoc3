@@ -1,31 +1,22 @@
-port module Update
-    exposing
-        ( getViewPort
-        , imageRead
-        , onUrlChange
-        , processUrl
-        , update
-        )
+port module Update exposing
+    ( getViewPort
+    , imageRead
+    , onUrlChange
+    , processUrl
+    , update
+    )
 
 -- IMPORT
 
-import Update.Outside as Outside exposing (InfoForOutside(..), InfoForElm(..))
-import Update.Document
-import Update.DocumentList
-import Update.Keyboard
-import Update.Search as Search
-import Update.User
-import Update.Time
-import UI.Update as UI
-import Shorthand
-import MiniLatexTools
 import AppUtility
 import BigEditRecord exposing (BigEditRecord)
+import Bozo.Model exposing (BozoModel, BozoMsg)
+import Bozo.Update
 import Browser.Dom as Dom
 import Configuration
 import Debounce exposing (Debounce)
 import DocViewMsg exposing (DocViewMsg(..))
-import Document exposing (DocMsg(..), DocType(..), Document, TextType(..), printReference, DocumentRecord)
+import Document exposing (DocMsg(..), DocType(..), Document, DocumentRecord, TextType(..), printReference)
 import DocumentDictionary exposing (DocDictMsg(..), DocumentDictionary)
 import DocumentList
     exposing
@@ -46,6 +37,7 @@ import Json.Encode as Encode
 import Keyboard exposing (Key(..))
 import List.Extra
 import Mail
+import MiniLatexTools
 import Model
     exposing
         ( AppMode(..)
@@ -59,19 +51,29 @@ import Model
         , Model
         , Msg(..)
         , PreferencesPanelState(..)
+        , PrintState(..)
         , SignupMode(..)
         , ToolMenuState(..)
         , ToolPanelState(..)
-        , PrintState(..)
         , initialModel
         )
 import Query
 import Queue exposing (Queue)
 import Random
+import Shorthand
 import Spinner
 import SystemDocument
 import Task
 import Time
+import UI.Update as UI
+import Update.Document
+import Update.DocumentList
+import Update.HttpError as HttpError
+import Update.Keyboard
+import Update.Outside as Outside exposing (InfoForElm(..), InfoForOutside(..))
+import Update.Search as Search
+import Update.Time
+import Update.User
 import UrlAppParser exposing (Route(..))
 import User
     exposing
@@ -86,10 +88,6 @@ import Utility
 import View.Common as Common
 import View.EditorTools as EditorTools
 import VirtualDom exposing (Handler(..))
-import BigEditRecord
-import Bozo.Model exposing (BozoModel, BozoMsg)
-import Bozo.Update
-import Update.HttpError as HttpError
 
 
 port readImage : Value -> Cmd msg
@@ -121,14 +119,14 @@ processInfoForElm model infoForElm_ =
                 editRecord =
                     BigEditRecord.editRecord bigEditRecord
             in
-                ( { model
-                    | currentDocument = document
-                    , bigEditRecord = bigEditRecord
-                    , documentList = DocumentList.make editRecord.latexState document []
-                    , message = "!got doc from outside"
-                  }
-                , Cmd.none
-                )
+            ( { model
+                | currentDocument = document
+                , bigEditRecord = bigEditRecord
+                , documentList = DocumentList.make editRecord.latexState document []
+                , message = "!got doc from outside"
+              }
+            , Cmd.none
+            )
 
         UserDataFromOutside user ->
             ( { model
@@ -295,7 +293,7 @@ update msg model =
                 nextDocument =
                     { currentDocument | access = nextAccessDict }
             in
-                ( { model | sharingString = str, currentDocument = nextDocument, currentDocumentDirty = True }, Cmd.none )
+            ( { model | sharingString = str, currentDocument = nextDocument, currentDocumentDirty = True }, Cmd.none )
 
         AcceptImageName str ->
             ( { model | imageName = str }, Cmd.none )
@@ -379,17 +377,17 @@ update msg model =
                         , counter = model.counter + 1
                     }
             in
-                ( newModel
-                , Cmd.batch
-                    [ loadMasterCommand
-                    , Outside.saveDocToLocalStorage document
-                    , Outside.saveRecentDocumentQueueToLocalStorage nextDocumentQueue
-                    , Outside.saveDocumentListToLocalStorage documentList
-                    , Update.User.updateBigUserCmd newModel
-                    , Update.Document.loadTexMacrosForDocument document newModel
-                    , Update.Document.pushDocument document
-                    ]
-                )
+            ( newModel
+            , Cmd.batch
+                [ loadMasterCommand
+                , Outside.saveDocToLocalStorage document
+                , Outside.saveRecentDocumentQueueToLocalStorage nextDocumentQueue
+                , Outside.saveDocumentListToLocalStorage documentList
+                , Update.User.updateBigUserCmd newModel
+                , Update.Document.loadTexMacrosForDocument document newModel
+                , Update.Document.pushDocument document
+                ]
+            )
 
         DocViewMsg (LoadMaster docId) ->
             ( { model | masterDocLoaded = True, documentListSource = SearchResults }, Cmd.map DocListMsg (DocumentList.loadMasterDocument model.maybeCurrentUser docId) )
@@ -438,12 +436,12 @@ update msg model =
                         texMacros =
                             texdoc.content
                     in
-                        ( { model
-                            | documentDictionary = DocumentDictionary.put "texmacros" texdoc dict
-                            , texMacros = texMacros
-                          }
-                        , Cmd.none
-                        )
+                    ( { model
+                        | documentDictionary = DocumentDictionary.put "texmacros" texdoc dict
+                        , texMacros = texMacros
+                      }
+                    , Cmd.none
+                    )
 
                 Err err ->
                     ( { model | message = HttpError.handle err }, Cmd.none )
@@ -459,12 +457,12 @@ update msg model =
                 queryString =
                     "authorname=" ++ bigUser.username ++ "&key=home"
             in
-                ( { model
-                    | appMode = Reading
-                    , toolPanelState = HideToolPanel
-                  }
-                , Cmd.map DocListMsg (DocumentList.findDocuments Nothing queryString)
-                )
+            ( { model
+                | appMode = Reading
+                , toolPanelState = HideToolPanel
+              }
+            , Cmd.map DocListMsg (DocumentList.findDocuments Nothing queryString)
+            )
 
         ChangeMode nextAppMode ->
             UI.changeMode model nextAppMode
@@ -478,32 +476,32 @@ update msg model =
                 tokenString =
                     User.getTokenStringFromMaybeUser model.maybeCurrentUser
             in
-                ( { model
-                    | debounce = debounce
-                    , debounceCounter = model.debounceCounter + 1
+            ( { model
+                | debounce = debounce
+                , debounceCounter = model.debounceCounter + 1
 
-                    -- , viewPortOfEditorText = Just viewport
-                    --, message = "debounce: " ++ (String.fromInt model.debounceCounter)
-                  }
-                , Cmd.batch
-                    [ cmd
-                    , Outside.saveDocToLocalStorage model.currentDocument
-                    , Random.generate NewSeed (Random.int 1 10000)
-                    , getViewPortOfEditorText
-                    ]
-                )
+                -- , viewPortOfEditorText = Just viewport
+                --, message = "debounce: " ++ (String.fromInt model.debounceCounter)
+              }
+            , Cmd.batch
+                [ cmd
+                , Outside.saveDocToLocalStorage model.currentDocument
+                , Random.generate NewSeed (Random.int 1 10000)
+                , getViewPortOfEditorText
+                ]
+            )
 
         GetContent str ->
             let
                 ( debounce, cmd ) =
                     Debounce.push debounceConfig str model.debounce
             in
-                ( { model
-                    | currentDocumentDirty = True
-                    , debounce = debounce
-                  }
-                , cmd
-                )
+            ( { model
+                | currentDocumentDirty = True
+                , debounce = debounce
+              }
+            , cmd
+            )
 
         UpdateEditorContent str ->
             -- ### UpdateEditorContent
@@ -524,17 +522,17 @@ update msg model =
                 nextDocumentQueue =
                     Queue.replaceUsingPredicate (\doc -> doc.id == nextCurrentDocument.id) nextCurrentDocument model.recentDocumentQueue
             in
-                ( { model
-                    | currentDocument = nextCurrentDocument
-                    , recentDocumentQueue = nextDocumentQueue
-                    , documentList = nextDocumentList
-                    , bigEditRecord = nextBigEditRecord
+            ( { model
+                | currentDocument = nextCurrentDocument
+                , recentDocumentQueue = nextDocumentQueue
+                , documentList = nextDocumentList
+                , bigEditRecord = nextBigEditRecord
 
-                    -- , counter = model.counter + 1
-                  }
-                  -- ###, resetEditorViewPort model
-                , Cmd.none
-                )
+                -- , counter = model.counter + 1
+              }
+              -- ###, resetEditorViewPort model
+            , Cmd.none
+            )
 
         Outside infoForElm_ ->
             processInfoForElm model infoForElm_
@@ -569,11 +567,11 @@ update msg model =
             let
                 ( pressedKeys, maybeKeyChange ) =
                     Keyboard.updateWithKeyChange
-                        (Keyboard.oneOf [ Keyboard.characterKey, Keyboard.modifierKey, Keyboard.whitespaceKey ])
+                        (Keyboard.oneOf [ Keyboard.characterKeyOriginal, Keyboard.modifierKey, Keyboard.whitespaceKey ])
                         keyMsg
                         model.pressedKeys
             in
-                Update.Keyboard.gateway model ( pressedKeys, maybeKeyChange )
+            Update.Keyboard.gateway model ( pressedKeys, maybeKeyChange )
 
         GetUserManual ->
             ( model, Cmd.map DocMsg (Document.getDocumentById Configuration.userManualId Nothing) )
@@ -594,7 +592,7 @@ update msg model =
                 nextCurrentDocument =
                     { currentDocument | public = value }
             in
-                ( { model | currentDocument = nextCurrentDocument }, Cmd.none )
+            ( { model | currentDocument = nextCurrentDocument }, Cmd.none )
 
         Test ->
             -- ( model, getViewPortOfRenderedText "_textView_" )
@@ -629,7 +627,7 @@ update msg model =
                 cmd =
                     Credentials.getS3PresignedUrl (stringFromMaybeToken model.maybeToken) "noteimages" path_ fileInfo.mimetype
             in
-                ( { model | message = fileInfo.filename, maybeFileData = maybeFileData, fileValue = v }, Cmd.map FileMsg cmd )
+            ( { model | message = fileInfo.filename, maybeFileData = maybeFileData, fileValue = v }, Cmd.map FileMsg cmd )
 
         FileMsg (Credentials.ReceiveFileCredentials result) ->
             let
@@ -641,7 +639,7 @@ update msg model =
                         Err _ ->
                             Cmd.none
             in
-                ( model, cmd )
+            ( model, cmd )
 
         FileMsg (Credentials.ReceivePresignedUrl result) ->
             let
@@ -653,24 +651,24 @@ update msg model =
                         Just fileData ->
                             Credentials.encodeFileData fileData
             in
-                case result of
-                    Ok url ->
-                        ( { model | message = "psurl: " ++ url, psurl = url }
-                        , Cmd.batch
-                            [ readImage (Credentials.encodeFileValueWithUrl model.fileValue url)
-                            , uploadImage (Credentials.encodeFileValueWithUrl model.fileValue url)
-                            ]
-                        )
+            case result of
+                Ok url ->
+                    ( { model | message = "psurl: " ++ url, psurl = url }
+                    , Cmd.batch
+                        [ readImage (Credentials.encodeFileValueWithUrl model.fileValue url)
+                        , uploadImage (Credentials.encodeFileValueWithUrl model.fileValue url)
+                        ]
+                    )
 
-                    Err err ->
-                        ( { model | message = HttpError.handle err }, Cmd.none )
+                Err err ->
+                    ( { model | message = HttpError.handle err }, Cmd.none )
 
         ImageRead v ->
             let
                 nextImageString =
                     Decode.decodeValue Decode.string v |> Result.toMaybe
             in
-                ( { model | maybeImageString = nextImageString, message = "ImageRead" }, Cmd.map UserMsg <| User.incrementMediaCountForMaybeUser model.maybeCurrentUser )
+            ( { model | maybeImageString = nextImageString, message = "ImageRead" }, Cmd.map UserMsg <| User.incrementMediaCountForMaybeUser model.maybeCurrentUser )
 
         ImageMsg (ReceiveImageList result) ->
             case result of
@@ -853,9 +851,9 @@ update msg model =
                 spinnerModel =
                     Spinner.update spinnerMsg model.spinner
             in
-                ( { model | spinner = spinnerModel }
-                , Cmd.none
-                )
+            ( { model | spinner = spinnerModel }
+            , Cmd.none
+            )
 
         GetDocsCreatedRecently ->
             Search.getPublicDocumentsRawQuery model "created=10"
@@ -887,7 +885,7 @@ resetEditorViewPort model =
                 y =
                     viewport.scene.height
             in
-                Task.attempt (\_ -> NoOp) (Dom.setViewportOf "_textArea_" 0 y)
+            Task.attempt (\_ -> NoOp) (Dom.setViewportOf "_textArea_" 0 y)
 
 
 imageAccessbilityToBool : ImageAccessibility -> Bool
