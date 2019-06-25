@@ -15,6 +15,7 @@ module BigEditRecord exposing
     , updateFromDocument
     , updateFromMMDocument
     , getRenderedMMTextAsElements
+    , getIDList
     )
 
 {-| BigEditRecord is an opaque type that carries an
@@ -166,6 +167,9 @@ getRenderedMMText : BigEditRecord msg -> List (Html msg)
 getRenderedMMText ber =
     (editRecord ber).renderedParagraphs
 
+getIDList : BigEditRecord msg -> List String
+getIDList ber =
+    (editRecord ber).idList
 
 getRenderedMMTextAsElements : BigEditRecord msg -> List (Element msg)
 getRenderedMMTextAsElements ber =

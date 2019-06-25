@@ -124,7 +124,7 @@ standardDocumentContentView model =
             viewMiniLatex model
 
         Markdown ->
-            viewMarkdown model
+             viewMarkdownFull model
 
         Asciidoc ->
             viewAsciidoc model.debounceCounter model.currentDocument.content
@@ -159,21 +159,41 @@ viewMarkdown : Model -> Element Msg
 viewMarkdown model =
     let
         bigEditRecord =
-            -- if BigEditRecord.isEmpty model.bigEditRecord then
              BigEditRecord.updateFromMMDocument model.bigEditRecord model.currentDocument  model.seed
 
-        -- else
-        --    model.bigEditRecord
-    in
-    bigEditRecord
-        |> BigEditRecord.getRenderedMMTextAsElements
-        |> List.map (\x -> Element.paragraph [ width (px (texWidth model.viewport)) ] [ x ])
-        |> Element.column [ Element.htmlAttribute <| HA.attribute "id" "_renderedText_" ]
+        renderedText = BigEditRecord.getRenderedMMTextAsElements bigEditRecord
 
-viewMarkdownFull : Document -> Element Msg
-viewMarkdownFull document =
-    Element.el [ Element.paddingEach { top = 0, bottom = 120, left = 0, right = 0 } ]
-        (Element.html <| MMarkdown.toHtml [ HA.style "width" "500px" ] document.content)
+        idList_ =  BigEditRecord.getIDList bigEditRecord
+
+        seed_ = BigEditRecord.seed bigEditRecord
+
+        -- List.map2 (\x y ->  (x,y)) idList_ renderedText
+        --         |> Keyed.column[]
+    in
+--    bigEditRecord
+--        |> BigEditRecord.getRenderedMMTextAsElements
+--        |> List.map (\x -> Element.paragraph [ width (px (texWidth model.viewport)) ] [ x ])
+--        |> Element.column [ Element.htmlAttribute <| HA.attribute "id" "_renderedText_" ]
+         List.map2 (\x y ->  (x ,y)) idList_ renderedText
+         -- List.map2 (\x y ->  (x ++ (String.fromInt model.seed),y)) idList_ renderedText
+                        |> Keyed.column[]
+
+--renderedSource : Model -> Html Msg
+--renderedSource model =
+--    let
+--        token =
+--            String.fromInt model.counter
+--    in
+--    Keyed.node "div"
+--        renderedSourceStyle
+--        (List.map2 (\x y -> ( x, y )) model.editRecord.idList model.editRecord.renderedParagraphs)
+
+
+
+viewMarkdownFull : Model -> Element Msg
+viewMarkdownFull model =
+    Keyed.el [ Element.paddingEach { top = 0, bottom = 120, left = 0, right = 0 } ]
+       (String.fromInt model.seed,  (Element.html <| MMarkdown.toHtml [ HA.style "width" "500px" ] model.currentDocument.content))
 
 
 
