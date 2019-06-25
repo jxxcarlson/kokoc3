@@ -124,7 +124,7 @@ standardDocumentContentView model =
             viewMiniLatex model
 
         Markdown ->
-            viewMarkdown model.currentDocument
+            viewMarkdown model
 
         Asciidoc ->
             viewAsciidoc model.debounceCounter model.currentDocument.content
@@ -155,10 +155,26 @@ viewMiniLatex model =
         |> Element.column [ Element.htmlAttribute <| HA.attribute "id" "_renderedText_" ]
 
 
-viewMarkdown : Document -> Element Msg
-viewMarkdown document =
+viewMarkdown : Model -> Element Msg
+viewMarkdown model =
+    let
+        bigEditRecord =
+            -- if BigEditRecord.isEmpty model.bigEditRecord then
+             BigEditRecord.updateFromMMDocument model.bigEditRecord model.currentDocument  model.seed
+
+        -- else
+        --    model.bigEditRecord
+    in
+    bigEditRecord
+        |> BigEditRecord.getRenderedMMTextAsElements
+        |> List.map (\x -> Element.paragraph [ width (px (texWidth model.viewport)) ] [ x ])
+        |> Element.column [ Element.htmlAttribute <| HA.attribute "id" "_renderedText_" ]
+
+viewMarkdownFull : Document -> Element Msg
+viewMarkdownFull document =
     Element.el [ Element.paddingEach { top = 0, bottom = 120, left = 0, right = 0 } ]
         (Element.html <| MMarkdown.toHtml [ HA.style "width" "500px" ] document.content)
+
 
 
 

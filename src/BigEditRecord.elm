@@ -1,20 +1,21 @@
-module BigEditRecord
-    exposing
-        ( BigEditRecord(..)
-        , docId
-        , incrementSeed
-        , editRecord
-        , empty
-        , fromDocument
-        , fromText
-        , getRenderedText
-        , getRenderedTextAsElements
-        , idListAsString
-        , isEmpty
-        , latexState
-        , seed
-        , updateFromDocument
-        )
+module BigEditRecord exposing
+    ( BigEditRecord(..)
+    , docId
+    , editRecord
+    , empty
+    , fromDocument
+    , fromText
+    , getRenderedText
+    , getRenderedTextAsElements
+    , idListAsString
+    , incrementSeed
+    , isEmpty
+    , latexState
+    , seed
+    , updateFromDocument
+    , updateFromMMDocument
+    , getRenderedMMTextAsElements
+    )
 
 {-| BigEditRecord is an opaque type that carries an
 EditRecord and two integers -- the id of the document
@@ -38,10 +39,12 @@ given document is returned.
 import Document exposing (Document)
 import Element exposing (Element)
 import Html exposing (Html)
-import MiniLatex.Differ exposing (EditRecord)
-import MiniLatex.MiniLatex as MiniLatex
+import MiniLatex.Differ exposing (EditRecord, emptyHtmlMsgRecord)
 import MiniLatex.LatexState as LatexState exposing (LatexState)
+import MiniLatex.MiniLatex as MiniLatex
 import MiniLatexTools
+import MMDiffer
+import MMarkdown
 
 
 type BigEditRecord msg
@@ -88,6 +91,7 @@ editRecord (BigEditRecord editRecord_ docId_ seed_) =
     editRecord_
 
 
+
 latexState : BigEditRecord msg -> LatexState
 latexState (BigEditRecord editRecord_ docId_ seed_) =
     editRecord_.latexState
@@ -117,3 +121,52 @@ getRenderedTextAsElements ber =
 idListAsString : BigEditRecord msg -> String
 idListAsString ber =
     ber |> editRecord |> .idList |> String.join ", "
+
+
+
+--
+-- MARKDOWN
+--
+
+mmEditRecord : BigEditRecord a -> MMDiffer.EditRecord (Html a)
+mmEditRecord (BigEditRecord er docId_ seed_) =
+    MMDiffer.EditRecord er.paragraphs er.renderedParagraphs er.idList
+
+
+
+
+updateFromMMDocument : BigEditRecord msg -> Document -> Int -> BigEditRecord msg
+updateFromMMDocument ber document seed_ =
+    case docId ber == document.id of
+        True ->
+            let
+                mmER = MMDiffer.update seed_ (MMarkdown.toHtml []) (mmEditRecord ber)  document.content
+                mlER = { emptyHtmlMsgRecord | paragraphs = mmER.paragraphs
+                           ,  renderedParagraphs = mmER.renderedParagraphs
+                           , idList = mmER.idList
+                           }
+            in
+            BigEditRecord mlER document.id seed_
+
+        False ->
+            let
+               mmER = MMDiffer.createRecord  (MMarkdown.toHtml [])  document.content
+               mlER = { emptyHtmlMsgRecord | paragraphs = mmER.paragraphs
+                                          ,  renderedParagraphs = mmER.renderedParagraphs
+                                          , idList = mmER.idList
+                                          }
+
+            in
+            BigEditRecord mlER document.id 0
+
+
+
+
+getRenderedMMText : BigEditRecord msg -> List (Html msg)
+getRenderedMMText ber =
+    (editRecord ber).renderedParagraphs
+
+
+getRenderedMMTextAsElements : BigEditRecord msg -> List (Element msg)
+getRenderedMMTextAsElements ber =
+   getRenderedMMText ber |> List.map Element.html
