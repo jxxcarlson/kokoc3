@@ -29,19 +29,26 @@ then
     nginx -s reload
 else
     echo "${color}Configure ...${reset}"
+    # Set urls of host and client
     cat ../src/Configuration.elm | sed 's/http:\/\/localhost:4000/https:\/\/nshost.herokuapp.com/' | sed 's/http:\/\/localhost:8080/https:\/\/knode.io/' > ../src/Configuration2.elm
     cp ../src/Configuration2.elm ../src/Configuration.elm
     rm ../src/Configuration2.elm
+
+    # Compile app
     echo "${color}Compile using 0.19 --optimized${reset}"
     time ${COMPILER} make --optimize ./src/Main.elm --output ${NGINX_LOCAL}Main.js
 
+    # Prepare assets for upload
     echo "${color}Uglify and deploy to Digital Ocean${reset}"
     time uglifyjs ${NGINX_LOCAL}Main.js --compress 'pure_funcs="F2,F3,F4,F5,F6,F7,F8,F9,A2,A3,A4,A5,A6,A7,A8,A9",pure_getters,keep_fargs=false,unsafe_comps,unsafe' | uglifyjs --mangle --output=${NGINX_LOCAL}Main.min.js
     scp -r ${NGINX_LOCAL}Main.min.js root@138.197.81.6:${NGINX_REMOTE}
     echo "Start sed on index"
     sed 's/Main.js/Main.min.js/' ./index.html > ${NGINX_LOCAL}index.html
-    echo "Start upload of index.html"
+    # Upload assets
+    echo "Upload assets"
     scp -r ${NGINX_LOCAL}index.html root@138.197.81.6:${NGINX_REMOTE}index.html
+    scp -r custom-element-config.js root@138.197.81.6:${NGINX_REMOTE}
+    scp -r math-text.js root@138.197.81.6:${NGINX_REMOTE}
     cp  index.html ${NGINX_LOCAL}
     echo "${color}Done!${reset}"
 fi
