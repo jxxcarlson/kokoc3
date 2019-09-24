@@ -24,6 +24,11 @@ fi
 
 echo "${color}Copy 'index.html' to /usr/local/var/www/ and restart nginx${reset}"
 cp ./index.html ${NGINX_LOCAL}
-
+cp assets/asciidoc.js ${NGINX_LOCAL}/assets
+cp assets/custom-element-config.js ${NGINX_LOCAL}/assets
+cp assets/image_uploader.js ${NGINX_LOCAL}/assets
+cp assets/math-text.js ${NGINX_LOCAL}/assets
+cp assets/outside.js ${NGINX_LOCAL}/assets
+cp assets/style.css ${NGINX_LOCAL}/assets
 
 nginx -s reload

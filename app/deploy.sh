@@ -47,9 +47,12 @@ else
     # Upload assets
     echo "Upload assets"
     scp -r ${NGINX_LOCAL}index.html root@138.197.81.6:${NGINX_REMOTE}index.html
-    scp -r custom-element-config.js root@138.197.81.6:${NGINX_REMOTE}
-    scp -r math-text.js root@138.197.81.6:${NGINX_REMOTE}
-    cp  index.html ${NGINX_LOCAL}
+    scp -r assets/asciidoc.js root@138.197.81.6:${NGINX_REMOTE}/assets
+    scp -r assets/custom-element-config.js root@138.197.81.6:${NGINX_REMOTE}/assets
+    scp -r assets/math-text.js root@138.197.81.6:${NGINX_REMOTE}/assets
+    scp -r assets/image_uploader.js root@138.197.81.6:${NGINX_REMOTE}/assets
+    scp -r assets/outside.js root@138.197.81.6:${NGINX_REMOTE}/assets
+    scp -r assets/style.css root@138.197.81.6:${NGINX_REMOTE}/assets
     echo "${color}Done!${reset}"
 fi
 

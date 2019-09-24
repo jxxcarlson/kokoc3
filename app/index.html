@@ -6,103 +6,32 @@
 		<title>KNODE.IO</title>
 
         <!-- Load MathJax code -->
-        <script src="custom-element-config.js"></script>
-        <script src="math-text.js"></script>
+        <script src="assets/custom-element-config.js"></script>
+        <script src="assets/math-text.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
 
+		<!-- Style -->
+		<link rel="stylesheet" href="assets/style.css">
 
         <script src="https://cdnjs.cloudflare.com/ajax/libs/asciidoctor.js/1.5.5-5/asciidoctor.js"></script>
 
+		<!-- Syntax highlighting -->
 		<link rel="stylesheet"
 			 href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.8/styles/default.min.css">
 		<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.8/highlight.min.js"></script>
-
         <script>hljs.initHighlightingOnLoad();</script>
 
 		<script src="/Main.js" charset="utf-8"></script>
+
 		<style>
-			 p, h2 {
-				padding: 5px;
-				margin: 0;
-				line-height: 1.4;
-				}
-				asciidoc-text {
-				white-space: normal;
-			}
 
 		</style>
-
-		<style>
-			.mm-code {font-family: "Courier New"
-			  , Courier, monospace; padding: 8px; background-color: #e5e5e5; font-size: 11pt;
-			}
-			.mm-inline-code {font-family: "Courier New"
-			  , Courier, monospace; padding-left: 5px; padding-right: 5px;background-color: #e5e5e5; font-size: 11pt;
-			}
-			.mm-image {width: 100%}
-			.mm-h1 {font-size: 18pt}
-			.mm-h2 {font-size: 16pt}
-			.mm-h3 {font-size: 12pt}
-			.mm-h4 {font-size: 10pt}
-			.mm-h5 {font-size: 10pt}
-			.mm-olist-item {
-				list-style: none;
-			  margin-bottom: 8px;
-			  padding-left: 18px;
-			  text-indent: -18px;
-				width: inherit, 90%;
-				white-space: normal;
-			}
-			.mm-ulist-item {
-			  margin-bottom: 8px;
-			  padding-left: 18px;
-			  text-indent: -18px;
-				white-space: normal;
-			}
-			.mm-quotation {
-				margin-left: 24px;
-				margin-top: 18px;
-				margin-right: 36px;
-				margin-bottom: 18px;
-				line-height: 18px;
-				white-space: normal;
-				width: inherit, 90%;
-			}
-			.mm-poetry {
-				margin-left: 24px;
-				margin-top: 18px;
-				margin-right: 36px;
-				margin-bottom: 18px;
-			}
-			.mm-closed-block {
-				margin-bottom; 12px;
-				width: inherit;
-				white-space: normal;
-			}
-			.mm-closed-block .mm-inlinelist {
-				margin-bottom: 12px;
-				line-height: 18px;
-			}
-			.mm-poetry .mm-inlinelist .mm-inlinelist {
-				margin-bottom: 4px;
-			}
-			.mm-error-message {
-				color: red; margin-bottom: 12px;
-			}
-			.mm-code {
-				font: 16px courier; background-color: #eee;
-			}
-
-    </style>
-
 
 	</head>
 
 	<body>
 
-
 	<div id="main"></div>
-
 
  	<script>
 
@@ -112,101 +41,6 @@
 					height: window.innerHeight,
 					location: location.href
 				}
-		});
-
-		// IMAGE UPLOADER
-
-		var globalReader = function () {
-
-			var reader = new FileReader();
-
-			reader.onload = (function (event) {
-				app.ports.imageRead.send(event.target.result)
-			});
-
-			return reader;
-
-		}();
-
-
-		app.ports.readImage.subscribe(function (info) {
-			globalReader.readAsDataURL(info.fileValue);
-
-			console.log(info.fileValue)
-
-		});
-
-		app.ports.sendPdfFileName.subscribe(function (info) {
-
-			console.log(info.data)
-			var url = "https://knode.work/files/" + info.data
-			window.open(url,'_blank');
-
-		});
-
-
-		app.ports.sendDocumentForPrinting.subscribe(function (info) {
-
-			var url = info.data
-			console.log(url)
-			window.open(url,'_blank');
-
-		});
-
-		app.ports.incrementVersion.subscribe(function (url) {
-			window.open(url,'_blank');
-		});
-
-		app.ports.sendCredentials.subscribe(function (credentialsWrapper) {
-
-			console.log("JS/url: " + credentialsWrapper.url)
-			console.log("JS/signature: " + credentialsWrapper.credentials.signature)
-
-		});
-
-		// convert datURI to binary data
-		function dataURItoBlob(dataURI) {
-			// convert base64 to raw binary data held in a string
-			var byteString = atob(dataURI.split(',')[1]);
-			// separate out the mime component
-			var mimeString = dataURI.split(',')[0].split(':')[1].split(';')[0];
-			// write the bytes of the string to an ArrayBuffer
-			var arrayBuffer = new ArrayBuffer(byteString.length);
-
-			var _ia = new Uint8Array(arrayBuffer);
-			for (var i = 0; i < byteString.length; i++) {
-				_ia[i] = byteString.charCodeAt(i);
-			}
-
-			var dataView = new DataView(arrayBuffer);
-			// var blob = new Blob([dataView], { type: mimeString });
-			return dataView;
-		}
-
-		// https://stackoverflow.com/questions/51758069/s3-jquery-upload-is-corrupted
-
-		app.ports.uploadImage.subscribe(function (info) {
-
-			console.log("xxx, url = " + info.url)
-
-		var reader = new FileReader();
-
-			reader.readAsDataURL(info.fileValue);
-
-			reader.onload = function(e) {
-
-				console.log("file size = " + reader.result.length)
-				console.log("mime type = " + info.fileValue.type)
-
-				const blob = dataURItoBlob(reader.result);
-
-				fetch(info.url, {
-					method: 'PUT',
-					body: blob
-				});
-
-			}
-
 		});
 
 		// NAVIGATION
@@ -222,184 +56,13 @@
 			app.ports.onUrlChange.send(location.href);
 		});
 
-
-		// MATH TEXT
-
-		var typesetTimeout = null
-		var typesetQueue = []
-		function enqueueTypeset(el) {
-			typesetQueue.push(el)
-			clearTimeout(typesetTimeout)
-			typesetTimeout = setTimeout(function () {
-				var toTypeset = typesetQueue
-				MathJax.Hub.Queue(["resetEquationNumbers", MathJax.InputJax.TeX]);
-				MathJax.Hub.Queue(['Typeset', MathJax.Hub, typesetQueue], function (arg) {
-					toTypeset.forEach(function (el) { el.style.opacity = 1 })
-				})
-				typesetQueue = []
-			}, 1)
-		}
-
-		var updateQueue = []
-		var updateTimeout = null
-		function enqueueUpdate(el) {
-			updateQueue.push(el)
-			clearTimeout(updateTimeout)
-			updateTimeout = setTimeout(function () {
-				MathJax.Hub.Queue(['Update', MathJax.Hub, updateQueue])
-				updateQueue = []
-			}, 0)
-		}
-
-		customElements.define('math-text', class extends HTMLElement {
-		  constructor() {
-			super()
-			this._content = this.content
-		  }
-
-			get content() {
-				return this._content
-			}
-
-			set content(value) {
-				if (this._content === value) return
-				this._content = value
-				var jaxScript = this.querySelector('script')
-				if (!jaxScript) return
-				jaxScript.textContent = this._content
-				enqueueUpdate(this)
-			}
-
-			connectedCallback() {
-				this.textContent = this._content
-				this._connected = true
-				this.style.opacity = 1
-				this.style.display = 'inline'
-				enqueueTypeset(this)
-			}
-		})
-
-		// ASCIIDOC
-
-		// https://ellie-test-19-cutover.now.sh/LFVgrr8Cf2a1
-
-		var asciidoctor = Asciidoctor();
-
-		customElements.define('asciidoc-text', class extends HTMLElement {
-			constructor() {
-				super()
-				this._content = this.content
-			}
-
-			get content() {
-				return this._content
-			}
-
-			set content(value) {
-				if (this._content === value) return
-				this._content = value
-
-				var jaxScript = this.querySelector('script')
-				if (!jaxScript) return
-				jaxScript.textContent = this._content
-				enqueueUpdate(this)
-			}
-
-			connectedCallback() {
-				this._connected = true
-				this.style.opacity = 1
-				this.style.display = 'inline'
-				enqueueTypeset(this)
-
-				this.innerHTML = asciidoctor.convert(this._content, {safe: 'safe', attributes: 'icons=font'})
-			}
-		})
-
-		// OUTSIDE
-
-		app.ports.infoForOutside.subscribe(msg => {
-
-			console.log("app.ports.infoForOutside")
-
-			switch(msg.tag) {
-
-				case "DocumentData":
-				console.log("DocumentData")
-				if (msg.data != null) {
-					localStorage.setItem("currentDocument", JSON.stringify(msg.data));
-				}
-				break;
-
-				case "DocumentListData":
-				console.log("DocumentListData")
-				if (msg.data != null) {
-					localStorage.setItem("currentDocumentList", JSON.stringify(msg.data));
-				}
-				break;
-
-				case "DocumentQueueData":
-				console.log("DocumentQueueData")
-				if (msg.data != null) {
-					localStorage.setItem("recentDocumentQueue", JSON.stringify(msg.data));
-				}
-				break;
-
-				case "AskToReconnectDocument":
-				console.log("AskToReconnectDocument")
-				if (localStorage.currentDocument != null && localStorage.currentDocument[0] !='[') {
-					app.ports.infoForElm.send({tag: "ReconnectDocument", data: JSON.parse(localStorage.currentDocument)})
-				}
-				break;
-
-				case "AskToReconnectDocumentList":
-				console.log("AskToReconnectDocumentList")
-				if (localStorage.currentDocumentList != null ) {
-					app.ports.infoForElm.send({tag: "ReconnectDocumentList", data: JSON.parse(localStorage.currentDocumentList)})
-				}
-				break;
-
-				case "AskToReconnectRecentDocumentQueue":
-				console.log("AskToReconnectRecentDocumentQueue")
-				if (localStorage.recentDocumentQueue != null ) {
-					console.log("queue: " + localStorage.recentDocumentQueue)
-					console.log("json: " + JSON.parse(localStorage.recentDocumentQueue))
-					app.ports.infoForElm.send({tag: "ReconnectDocumentQueue", data: JSON.parse(localStorage.recentDocumentQueue)})
-				}
-				break;
-
-				case "UserData":
-				console.log("UserData")
-				if (msg.data != null) {
-				localStorage.setItem("currentUser", JSON.stringify(msg.data));
-				}
-				break;
-
-				case "AskToReconnectUser":
-				console.log("AskToReconnectUser")
-				if (localStorage.currentUser != null) {
-					app.ports.infoForElm.send({tag: "ReconnectUser", data: JSON.parse(localStorage.currentUser)})
-				}
-				break;
-
-				case "AskToEraseLocalStorage":
-					console.log("AskToEraseLocalStorage")
-					localStorage.setItem("currentUser", null);
-					localStorage.setItem("currentDocument", null);
-					localStorage.setItem("currentDocumentList", null);
-					localStorage.setItem("recentDocumentQueue", null);
-				break;
-
-			}
-
-		})
-
-
-
   </script>
 
+  <script src="assets/asciidoc.js"></script>
+  <script src="assets/image_uploader.js"> </script>
+  <script src="assets/outside.js"></script>
 
 </body>
 
-
-	</body>
+</body>
 </html>
