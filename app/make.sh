@@ -15,10 +15,10 @@ echo
 echo "${color}Compile App${reset}"
 if [ "$1" = "--debug" ]
 then
-echo "${color}Compile using 0.19${reset}"
+echo "${color}Compile using 0.19.1${reset}"
 time ${COMPILER} make --debug ./src/Main.elm --output ${NGINX_LOCAL}Main.js
 else
-echo "${color}Compile using 0.19 --optimized${reset}"
+echo "${color}Compile using 0.19.1 --optimized${reset}"
 time ${COMPILER} make --optimize ./src/Main.elm --output ${NGINX_LOCAL}Main.js
 fi
 

@@ -5,7 +5,7 @@
         "../src",
         "../../MeenyLatexPackage2/src/"
     ],
-    "elm-version": "0.19.0",
+    "elm-version": "0.19.1",
     "dependencies": {
         "direct": {
             "JonRowe/elm-jwt": "1.0.0",
