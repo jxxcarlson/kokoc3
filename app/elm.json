@@ -3,7 +3,7 @@
     "source-directories": [
         "src",
         "../src",
-        "../../MeenyLatexPackage2/src/"
+        "../../MiniLatex1/src/"
     ],
     "elm-version": "0.19.1",
     "dependencies": {
