@@ -56,7 +56,7 @@ import Queue exposing (Queue)
 import User exposing (User)
 import Utility
 import Task exposing (Task)
-import MiniLatex.LatexState as LatexState exposing (LatexState)
+import MiniLatex exposing (LatexState)
 
 
 type DocumentList
@@ -101,12 +101,12 @@ type HandleDocumentList
 
 fromDocumentAndList : List Document -> Maybe Document -> DocumentList
 fromDocumentAndList listOfDocuments maybeDocument =
-    DocumentList LatexState.emptyLatexState listOfDocuments maybeDocument
+    DocumentList MiniLatex.emptyLatexState listOfDocuments maybeDocument
 
 
 empty : DocumentList
 empty =
-    DocumentList LatexState.emptyLatexState [] Nothing
+    DocumentList MiniLatex.emptyLatexState [] Nothing
 
 
 make : LatexState -> Document -> List Document -> DocumentList
@@ -592,7 +592,7 @@ documentListDecoder =
 
 documentListFromRecord : DocumentListRecord -> DocumentList
 documentListFromRecord r =
-    DocumentList LatexState.emptyLatexState r.documents r.selected
+    DocumentList MiniLatex.emptyLatexState r.documents r.selected
 
 
 documentQueueDecoder : Decoder (Queue Document)
@@ -683,12 +683,12 @@ documentListEncoder documentList =
 
 documentQueueToDocumentList : Document -> Queue Document -> DocumentList
 documentQueueToDocumentList document documentQueue =
-    DocumentList LatexState.emptyLatexState (Queue.list documentQueue) (Just document)
+    DocumentList MiniLatex.emptyLatexState (Queue.list documentQueue) (Just document)
 
 
 documentListFromDocumentQueue : Queue Document -> DocumentList
 documentListFromDocumentQueue documentQueue =
-    DocumentList LatexState.emptyLatexState (Queue.list documentQueue) Nothing
+    DocumentList MiniLatex.emptyLatexState (Queue.list documentQueue) Nothing
 
 
 encodeDocumentQueue : Queue Document -> Encode.Value

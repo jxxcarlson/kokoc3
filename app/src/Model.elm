@@ -37,8 +37,7 @@ import Json.Decode as Decode exposing (Decoder, Value)
 import Json.Encode as Encode
 import Keyboard exposing (Key(..))
 import Mail
-import MiniLatex.Differ exposing (EditRecord)
-import MiniLatex.MiniLatex as MiniLatex
+import MiniLatex exposing (EditRecord)
 import Queue exposing (Queue)
 import Time exposing (Posix)
 import User exposing (BigUser, Token, User, UserMsg(..))

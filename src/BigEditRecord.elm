@@ -40,9 +40,7 @@ given document is returned.
 import Document exposing (Document)
 import Element exposing (Element)
 import Html exposing (Html)
-import MiniLatex.Differ exposing (EditRecord, emptyHtmlMsgRecord)
-import MiniLatex.LatexState as LatexState exposing (LatexState)
-import MiniLatex.MiniLatex as MiniLatex
+import MiniLatex  exposing (EditRecord, emptyHtmlMsgRecord, LatexState)
 import MiniLatexTools
 import MMDiffer
 import MMarkdown

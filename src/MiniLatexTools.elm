@@ -3,9 +3,7 @@ module MiniLatexTools exposing (makePreamble, makeDownloadPreamble, setupEditRec
 import Configuration
 import Document exposing (Document, DocType(..))
 import Html exposing (Html)
-import KVList
-import MiniLatex.Differ exposing (EditRecord)
-import MiniLatex.MiniLatex as MiniLatex
+import MiniLatex exposing (EditRecord)
 
 
 prepareText : String -> Document -> String

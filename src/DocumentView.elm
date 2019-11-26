@@ -12,17 +12,12 @@ import Element.Border as Border
 import Element.Font as Font
 import Element.Input as Input
 import Element.Keyed as Keyed
-import Element.Lazy
 import ElmMarkup
 import Html exposing (Html)
 import Html.Attributes as HA
 import Json.Encode as Encode
-import KVList
 import MMarkdown
-import Mark
-import MiniLatex.Differ exposing (EditRecord)
-import MiniLatex.MiniLatex as MiniLatex
-import MiniLatexTools
+import MiniLatex exposing(EditRecord)
 import Model exposing (Model, Msg)
 import View.Widget as Widget exposing (..)
 
