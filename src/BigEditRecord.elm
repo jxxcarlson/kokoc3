@@ -40,19 +40,20 @@ given document is returned.
 import Document exposing (Document)
 import Element exposing (Element)
 import Html exposing (Html)
-import MiniLatex  exposing (EditRecord, emptyHtmlMsgRecord, LatexState)
+import MiniLatex  exposing (LatexState)
+import MiniLatex.Edit exposing(emptyData)
 import MiniLatexTools
 import MMDiffer
 import MMarkdown
 
 
 type BigEditRecord msg
-    = BigEditRecord (EditRecord (Html msg)) Int Int -- editRecord docId seed
+    = BigEditRecord ( MiniLatex.Edit.Data (Html msg)) Int Int -- editRecord docId seed
 
 
 empty : Int -> Int -> BigEditRecord msg
 empty docId_ seed_ =
-    BigEditRecord MiniLatex.emptyStringRecord docId_ seed_
+    BigEditRecord MiniLatex.Edit.emptyData docId_ seed_
 
 
 isEmpty : BigEditRecord msg -> Bool
@@ -62,7 +63,7 @@ isEmpty ber =
 
 fromText : String -> Int -> BigEditRecord msg
 fromText text docId_ =
-    BigEditRecord (MiniLatex.initializeEditRecord 0 text) docId_ 0
+    BigEditRecord (MiniLatex.Edit.init 0 text) docId_ 0
 
 
 fromDocument : Document -> String -> BigEditRecord msg
@@ -85,7 +86,7 @@ docId (BigEditRecord editRecord_ docId_ seed_) =
     docId_
 
 
-editRecord : BigEditRecord msg -> EditRecord (Html msg)
+editRecord : BigEditRecord msg -> MiniLatex.Edit.Data (Html msg)
 editRecord (BigEditRecord editRecord_ docId_ seed_) =
     editRecord_
 
@@ -109,12 +110,12 @@ updateFromDocument ber document texMacros seed_ =
 
 getRenderedText : BigEditRecord msg -> List (Html msg)
 getRenderedText ber =
-    MiniLatex.getRenderedText (editRecord ber)
+    MiniLatex.Edit.get (editRecord ber)
 
 
 getRenderedTextAsElements : BigEditRecord msg -> List (Element msg)
 getRenderedTextAsElements ber =
-    MiniLatex.getRenderedText (editRecord ber) |> List.map Element.html
+    MiniLatex.Edit.get (editRecord ber) |> List.map Element.html
 
 
 idListAsString : BigEditRecord msg -> String
@@ -140,7 +141,7 @@ updateFromMMDocument ber document seed_ =
         True ->
             let
                 mmER = MMDiffer.update seed_ (MMarkdown.toHtml []) (mmEditRecord ber)  document.content
-                mlER = { emptyHtmlMsgRecord | paragraphs = mmER.paragraphs
+                mlER = { emptyData | paragraphs = mmER.paragraphs
                            ,  renderedParagraphs = mmER.renderedParagraphs
                            , idList = mmER.idList
                            }
@@ -150,7 +151,7 @@ updateFromMMDocument ber document seed_ =
         False ->
             let
                mmER = MMDiffer.createRecord  (MMarkdown.toHtml [])  document.content
-               mlER = { emptyHtmlMsgRecord | paragraphs = mmER.paragraphs
+               mlER = { emptyData | paragraphs = mmER.paragraphs
                                           ,  renderedParagraphs = mmER.renderedParagraphs
                                           , idList = mmER.idList
                                           }

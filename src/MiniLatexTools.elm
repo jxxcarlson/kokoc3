@@ -3,7 +3,8 @@ module MiniLatexTools exposing (makePreamble, makeDownloadPreamble, setupEditRec
 import Configuration
 import Document exposing (Document, DocType(..))
 import Html exposing (Html)
-import MiniLatex exposing (EditRecord)
+import MiniLatex
+import MiniLatex.Edit
 
 
 prepareText : String -> Document -> String
@@ -54,14 +55,14 @@ makeDownloadPreamble document =
                 |> String.join "\n\n"
 
 
-setupEditRecord : String -> Document -> EditRecord (Html msg)
+setupEditRecord : String -> Document -> MiniLatex.Edit.Data (Html msg)
 setupEditRecord texMacros document =
-    MiniLatex.initializeEditRecord 0 (prepareText texMacros document)
+    MiniLatex.Edit.init 0 (prepareText texMacros document)
 
 
-updateEditRecord : EditRecord (Html msg) -> Int -> String -> Document -> EditRecord (Html msg)
+updateEditRecord :  MiniLatex.Edit.Data (Html msg) -> Int -> String -> Document ->  MiniLatex.Edit.Data (Html msg)
 updateEditRecord editRecord seed texMacros document =
-    MiniLatex.updateEditRecord seed editRecord (prepareText texMacros document)
+    MiniLatex.Edit.update seed editRecord (prepareText texMacros document)
 
 
 setCounterText : Document -> String

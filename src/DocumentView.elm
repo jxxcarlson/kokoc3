@@ -17,7 +17,7 @@ import Html exposing (Html)
 import Html.Attributes as HA
 import Json.Encode as Encode
 import MMarkdown
-import MiniLatex exposing(EditRecord)
+import MiniLatex
 import Model exposing (Model, Msg)
 import View.Widget as Widget exposing (..)
 

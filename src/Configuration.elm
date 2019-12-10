@@ -47,7 +47,8 @@ backend =
 
 client : String
 client =
-    "https://knode.io"
+    -- "https://knode.io"
+    "http://localhost:8080"
 
 
 
