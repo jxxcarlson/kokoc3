@@ -2,7 +2,7 @@ module DocumentListView exposing (DocListViewMsg(..), viewWithHeading, viewWithH
 
 import Document exposing (DocType(..), Document)
 import DocumentList exposing (DocumentList, documents)
-import MiniLatex exposing (LatexState, TocEntry, TableOfContents)
+import MiniLatex exposing (LatexState, TocEntry)
 import Element exposing (..)
 import Element.Font as Font exposing (Font)
 import Element.Input as Input
