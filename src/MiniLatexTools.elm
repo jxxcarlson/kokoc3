@@ -62,7 +62,7 @@ setupEditRecord texMacros document =
 
 updateEditRecord :  MiniLatex.Edit.Data (Html msg) -> Int -> String -> Document ->  MiniLatex.Edit.Data (Html msg)
 updateEditRecord editRecord seed texMacros document =
-    MiniLatex.Edit.update seed editRecord (prepareText texMacros document)
+    MiniLatex.Edit.update seed  (prepareText texMacros document) editRecord
 
 
 setCounterText : Document -> String
