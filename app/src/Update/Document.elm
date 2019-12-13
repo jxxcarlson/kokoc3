@@ -8,9 +8,9 @@ import Task exposing (Task)
 import Json.Decode as Decode exposing (Decoder, Value)
 import List.Extra
 import Maybe.Extra
-import Dict
 import Utility
 import Configuration
+import Interchange
 import Model
     exposing
         ( Model
@@ -457,6 +457,9 @@ update docMsg model =
 
                 Err err ->
                     ( { model | printState = NothingToPrint, message = HttpError.handle err }, Cmd.none )
+
+        DownloadArchive ->
+            Interchange.downloadArchive model.bigSeed model
 
         ResetPrintState ->
             ( { model | printState = NothingToPrint }, TarManager.resetTarArchiveCmd model.printReference ) |> myMap

@@ -157,7 +157,7 @@ signOutCurrentUser : Model -> ( Model, Cmd Msg )
 signOutCurrentUser model =
     let
         freshModel =
-            initialModel "" model.windowWidth model.windowHeight SystemDocument.signedOut
+            initialModel 0 [] "" model.windowWidth model.windowHeight SystemDocument.signedOut
     in
         ( { freshModel
             | maybeCurrentUser = Nothing
@@ -244,7 +244,7 @@ signIn model =
                     SystemDocument.signIn
 
                 freshModel =
-                    initialModel "" model.windowWidth model.windowHeight startupDoc
+                    initialModel 0 [] "" model.windowWidth model.windowHeight startupDoc
 
                 documentListSource =
                     RecentDocumentsQueue

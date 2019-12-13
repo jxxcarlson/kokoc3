@@ -1,12 +1,13 @@
-module Interchange exposing (encodeDocument, encodeDocumentList)
+module Interchange exposing (downloadArchive)
 
 import Document exposing (DocType(..), Document, Child, AccessDict, TextType)
 import Json.Encode as Encode exposing (Value)
-import Parser exposing ((|.), (|=), Parser)
 import Prng.Uuid as Uuid exposing (Uuid)
 import Random.Pcg.Extended exposing (Seed, initialSeed, step)
-import Time exposing(Posix)
 import Dict exposing(Dict)
+import Model exposing(Model, Msg)
+import File.Download as Download
+import DocumentList exposing(DocumentList(..))
 
 
 type Permission
@@ -18,6 +19,13 @@ type Permission
 type UserPermission
     = UserPermission String Permission
 
+downloadArchive : Seed -> Model -> ( Model, Cmd Msg )
+downloadArchive seed model =
+    let
+        (DocumentList _ docList _) = model.documentList
+        userDocuments = docList
+    in
+    ( model, Download.string "documents.json" "application/json" (encodeDocumentList seed userDocuments) )
 
 -- ENCODER
 
@@ -78,12 +86,12 @@ documentEncoder idMap doc =
     Encode.object
         [ ( "id", Encode.string (Uuid.toString uuid))
         , ( "title", Encode.string doc.title )
-        , ( "authorIdentifier", Encode.string doc.authorIdentifier )
+        , ( "authorIdentifier", Encode.string doc.authorName )
         , ( "content", Encode.string doc.content )
         , ( "public", Encode.bool doc.public )
         , ( "tags", Encode.list Encode.string doc.tags )
         , ( "slug", Encode.string slug)
-        , ( "docType", Encode.string "MiniLatex" )
+        , ( "docType", Encode.string "MiniLaTeX" )
         , ( "childInfo", Encode.list (encodeChild idMap) doc.children )
         , ( "permissions", Encode.list Encode.string [] )
         ]

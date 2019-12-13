@@ -152,6 +152,7 @@ type DocMsg
     | PrintDocument
     | ExportLatex
     | PrintToPdf
+    | DownloadArchive
     | ResetPrintState
     | AcknowledgeTarArchiveReset (Result Http.Error String)
     | SetDocumentTextType TextType

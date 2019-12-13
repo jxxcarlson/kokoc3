@@ -128,6 +128,7 @@ footer model =
         --  testButton model
         -- model printDocumentButton
         , alwaysShow model (makePdfButton (px 90))
+        , alwaysShow model (downloadArchiveButton (px 90))
         , printSpinner model
         , printPDFButton model
         , exportDocumentlLink model
@@ -571,6 +572,20 @@ makePdfButton width_ model =
 
         _ ->
             Element.none
+
+downloadArchiveButton : Length -> Model -> Element Msg
+downloadArchiveButton width_ model =
+    case model.currentDocument.textType of
+        MiniLatex ->
+            Element.map DocMsg <|
+                Input.button (buttonStyle width_)
+                    { onPress = Just DownloadArchive
+                    , label = Element.el [] (Element.text "Archive")
+                    }
+
+        _ ->
+            Element.none
+
 
 
 modeButtonStyle appMode buttonMode width_ =

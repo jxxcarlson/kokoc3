@@ -36,6 +36,7 @@ import ImageManager exposing (ImageMsg(..))
 import Json.Decode as Decode exposing (Decoder, Value)
 import Json.Encode as Encode
 import Keyboard exposing (Key(..))
+import Random.Pcg.Extended exposing (Seed, initialSeed, step)
 import Mail
 import MiniLatex
 import Queue exposing (Queue)
@@ -92,6 +93,8 @@ type SignupMode
 -}
 type alias Model =
     { message : String
+    , seed : Int
+    , bigSeed : Seed
     , bozo : BozoModel
 
     -- USER
@@ -132,7 +135,6 @@ type alias Model =
     , masterDocLoaded : Bool
     , recentDocumentQueue : Queue Document
     , documentListSource : DocumentListSource
-    , seed : Int
     , exportText : String
     , imageUrlList : List String
     , printReference : String
@@ -251,9 +253,11 @@ type Msg
     | AdjustTimeZone Time.Zone
 
 
-initialModel : String -> Int -> Int -> Document -> Model
-initialModel locationHref windowWidth windowHeight document =
+initialModel : Int -> List Int ->  String -> Int -> Int -> Document -> Model
+initialModel seed randInts locationHref windowWidth windowHeight document =
     { message = "Not signed in"
+    , seed = seed
+    , bigSeed = initialSeed seed randInts
     , bozo = Bozo.Model.init
     , password = ""
     , username = ""
@@ -312,7 +316,6 @@ initialModel locationHref windowWidth windowHeight document =
     , documentListSource = SearchResults
     , debugString = ""
     , focusedElement = NoFocus
-    , seed = 0
     , miniLatexRenderMode = RenderIncremental
     , exportText = ""
     , imageUrlList = []

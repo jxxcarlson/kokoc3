@@ -41,8 +41,11 @@ main =
 -- TYPES
 
 
+
 type alias Flags =
-    {}
+    {    seed : Int
+       , randInts : List Int
+    }
 
 
 type alias Model =
@@ -85,6 +88,8 @@ init flags =
     let
         doc =
             Document.basicDocument
+        ( newUuid, newSeed ) =
+                    step Uuid.generator (initialSeed flags.seed flags.randInts)
     in
         ( { message = "App started"
           , password = ""

@@ -35,6 +35,8 @@ type alias Flags =
     { width : Int
     , height : Int
     , location : String
+    , seed : Int
+    , randInts : List Int
     }
 
 
@@ -44,7 +46,7 @@ type alias Flags =
 
 init : Flags -> ( Model, Cmd Msg )
 init flags =
-    ( initialModel flags.location flags.width flags.height SystemDocument.welcome
+    ( initialModel flags.seed flags.randInts flags.location flags.width flags.height SystemDocument.welcome
     , Cmd.batch
         [ processUrl flags.location
         , getTimeInOneSecond
